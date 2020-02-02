@@ -49,6 +49,10 @@ module Msf
       Msf::OptAddressRange.new('RHOSTS', [ required, desc, default ], aliases: [ 'RHOST' ])
     end
 
+    def self.RHOST_URLS(default=nil, required=true, desc="The target host URL(s), or file with syntax 'file:<path>'")
+      Msf::OptUrlList.new('RHOST_URLS', [ required, desc, default ])
+    end
+
     # @return [OptPort]
     def self.RPORT(default=nil, required=true, desc="The target port")
       Msf::OptPort.new(__method__.to_s, [ required, desc, default ])
@@ -113,6 +117,7 @@ module Msf
     LPORT = LPORT()
     Proxies = Proxies()
     RHOST = RHOST()
+    RHOST_URLS = RHOST_URLS()
     RHOSTS = RHOSTS()
     RPORT = RPORT()
     SSLVersion = SSLVersion()
