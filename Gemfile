@@ -10,7 +10,7 @@ group :coverage do
   # code coverage for tests
   gem 'simplecov'
 end
-
+gem 'puma'
 group :development do
   # Markdown formatting for yard
   gem 'redcarpet'

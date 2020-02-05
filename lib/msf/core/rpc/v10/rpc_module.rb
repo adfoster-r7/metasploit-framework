@@ -531,7 +531,23 @@ class RPC_Module < RPC_Base
   end
 
   def rpc_ack(uuid)
-    {"success" => !!self.framework.results.delete(uuid)}
+    {"success" => !!self.framework.results.delete(uuid) }
+  end
+
+  # Returns the running module stats.
+  #
+  # @return [Hash] Running module stats that contain the following keys:
+  #  * 'ready' [Integer] The number of ready
+  #  * 'running' [Integer] The number of auxiliary modules.
+  #  * 'results' [Integer] The number of post modules.
+  # @example Here's how you would use this from the client:
+  #  rpc.call('core.running_stats')
+  def rpc_running_stats()
+    {
+        "ready" => self.framework.ready.size,
+        "running" => self.framework.running.size,
+        "results" => self.framework.results.size,
+    }
   end
 
   # Returns a list of executable format names.

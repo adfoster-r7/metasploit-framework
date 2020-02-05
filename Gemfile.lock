@@ -229,6 +229,7 @@ GEM
     net-ssh (5.2.0)
     network_interface (0.0.2)
     nexpose (7.2.1)
+    nio4r (2.5.2)
     nokogiri (1.10.7)
       mini_portile2 (~> 2.4.0)
     octokit (4.15.0)
@@ -256,6 +257,8 @@ GEM
       coderay (~> 1.1.0)
       method_source (~> 0.9.0)
     public_suffix (4.0.3)
+    puma (4.3.1)
+      nio4r (~> 2.0)
     rack (1.6.12)
     rack-protection (1.5.5)
       rack
@@ -405,6 +408,7 @@ DEPENDENCIES
   metasploit-framework!
   octokit
   pry
+  puma
   rake
   redcarpet
   rspec-rails
