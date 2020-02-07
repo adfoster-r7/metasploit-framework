@@ -550,6 +550,11 @@ class RPC_Module < RPC_Base
     }
   end
 
+  def rpc_breakpoint()
+    require 'pry'
+    binding.pry
+  end
+
   # Returns a list of executable format names.
   #
   # @return [Array<String>] A list of executable format names, for example: ["exe"]

@@ -5,6 +5,8 @@ gemspec name: 'metasploit-framework'
 
 gem 'sqlite3', '~>1.3.0'
 gem 'rbtrace'
+gem "gnuplot"
+gem "heapy"
 
 # separate from test as simplecov is not run on travis-ci
 group :coverage do

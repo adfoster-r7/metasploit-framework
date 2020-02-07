@@ -4,6 +4,25 @@
 #
 
 require 'pathname'
+require 'rbtrace'
+
+class Object
+  def run_dump
+    dump_location = "/tmp/ruby-heap-#{Time.now.to_i}.dump"
+    Thread.new do
+      GC.start
+      require "objspace"
+      ObjectSpace.trace_object_allocations_start
+      io = File.open(dump_location, "w")
+      ObjectSpace.dump_all(output: io)
+      io.close
+
+      dump_location
+    end
+    "Kicked off, #{dump_location}"
+  end
+end
+
 @framework_path = '.'
 root = Pathname.new(@framework_path).expand_path
 @framework_lib_path = root.join('lib')
