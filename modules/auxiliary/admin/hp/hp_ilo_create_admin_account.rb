@@ -52,11 +52,12 @@ class MetasploitModule < Msf::Auxiliary
       return Exploit::CheckCode::Unknown
     end
 
-    if res.code == 200 and res.body.include? '"Description":"iLO User Accounts"'
+    # TODO: Add `res && `
+    if res && res.code == 200 and res.body.include? '"Description":"iLO User Accounts"'
       return Exploit::CheckCode::Vulnerable
-    end
+    enflash_rosetta_jsonp_url_disclosure.rbd
 
-    return Exploit::CheckCode::Safe
+    Exploit::CheckCode::Safe
   end
 
   def run

@@ -9,6 +9,23 @@ require 'msf/core/web_services/servlet_helper'
 require 'msf/core/web_services/servlet/auth_servlet'
 require 'msf/core/web_services/servlet/json_rpc_servlet'
 
+class LoggingMiddleware
+  def initialize(app)
+    @app = app
+  end
+
+  def call(env)
+    req = Rack::Request.new(env)
+    body = req.body.read
+    req.body.rewind
+    response = @app.call(env)
+
+    STDERR.puts("#{{ "request": body, "response": response }.to_json}")
+
+    response
+  end
+end
+
 module Msf::WebServices
   class JsonRpcApp < Sinatra::Base
     helpers ServletHelper
@@ -21,12 +38,16 @@ module Msf::WebServices
     register AuthServlet
     register JsonRpcServlet
 
+    use LoggingMiddleware
+
     configure do
       set :dispatchers, {}
 
-      set :sessions, {key: 'msf-ws.session', expire_after: 300}
+      # set :sessions, {key: 'msf-ws.session', expire_after: 300}
       set :session_secret, ENV.fetch('MSF_WS_SESSION_SECRET', SecureRandom.hex(16))
       set :api_token, ENV.fetch('MSF_WS_JSON_RPC_API_TOKEN', nil)
+
+      disable :protection
     end
 
     before do

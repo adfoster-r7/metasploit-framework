@@ -63,16 +63,16 @@ module Msf::RPC::JSON
         else
           response = process_request(request)
         end
-      rescue ParseError, InvalidRequest => e
-        # If there was an error in detecting the id in the Request object
-        # (e.g. Parse error/Invalid Request), then the id member MUST be
-        # Null. Don't pass request obj when building the error response.
-        response = self.class.create_error_response(e)
-      rescue RpcError => e
-        # other JSON-RPC errors should include the id from the Request object
-        response = self.class.create_error_response(e, request)
-      rescue => e
-        response = self.class.create_error_response(ApplicationServerError.new(e), request)
+      # rescue ParseError, InvalidRequest => e
+      #   # If there was an error in detecting the id in the Request object
+      #   # (e.g. Parse error/Invalid Request), then the id member MUST be
+      #   # Null. Don't pass request obj when building the error response.
+      #   response = self.class.create_error_response(e)
+      # rescue RpcError => e
+      #   # other JSON-RPC errors should include the id from the Request object
+      #   response = self.class.create_error_response(e, request)
+      # rescue => e
+      #   response = self.class.create_error_response(ApplicationServerError.new(e), request)
       end
 
       # When a rpc call is made, the Server MUST reply with a Response, except
@@ -90,7 +90,7 @@ module Msf::RPC::JSON
     # @returns [Hash] JSON-RPC response that encapsulates the RPC result
     # if successful; otherwise, a JSON-RPC error response.
     def process_request(request)
-      begin
+      # begin
         if !validate_rpc_request(request)
           response = self.class.create_error_response(InvalidRequest.new)
           return response
@@ -111,11 +111,11 @@ module Msf::RPC::JSON
         end
 
         response
-      rescue ArgumentError
-        raise InvalidParams.new
-      rescue Msf::RPC::Exception => e
-        raise ApplicationServerError.new(e.message, data: { code: e.code })
-      end
+      # rescue ArgumentError
+      #   raise InvalidParams.new
+      # rescue Msf::RPC::Exception => e
+      #   raise ApplicationServerError.new(e.message, data: { code: e.code })
+      # end
     end
 
     # Validate the JSON-RPC request.
