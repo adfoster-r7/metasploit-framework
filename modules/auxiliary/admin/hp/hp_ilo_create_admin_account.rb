@@ -55,7 +55,7 @@ class MetasploitModule < Msf::Auxiliary
     # TODO: Add `res && `
     if res && res.code == 200 and res.body.include? '"Description":"iLO User Accounts"'
       return Exploit::CheckCode::Vulnerable
-    enflash_rosetta_jsonp_url_disclosure.rbd
+    end
 
     Exploit::CheckCode::Safe
   end
