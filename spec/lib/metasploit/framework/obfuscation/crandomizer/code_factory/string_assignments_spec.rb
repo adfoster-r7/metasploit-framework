@@ -1,7 +1,6 @@
 require 'metasploit/framework/obfuscation/crandomizer/code_factory'
 
 RSpec.describe Metasploit::Framework::Obfuscation::CRandomizer::CodeFactory::StringAssignments do
-
   subject(:stringassignments) do
     described_class.new
   end

@@ -1,4 +1,5 @@
 # encoding: binary
+
 require 'rex/parser/group_policy_preferences'
 
 xml_group = '

@@ -33,7 +33,6 @@ RSpec.shared_examples "datastore" do
 end
 
 RSpec.describe Msf::DataStore do
-
   describe "#import_option" do
     subject do
       s = described_class.new
@@ -82,6 +81,4 @@ RSpec.describe Msf::DataStore do
 
     it_behaves_like "datastore"
   end
-
-
 end

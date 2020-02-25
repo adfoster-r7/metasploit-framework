@@ -18,7 +18,7 @@ RSpec.describe Metasploit::Framework::Obfuscation::CRandomizer::Parser do
 
   describe '#parse' do
     it 'returns a parser' do
-      source_code = %Q|
+      source_code = %|
       int main() {
         const char* s = "Hello World";
         return 0;

@@ -1,18 +1,18 @@
 require 'spec_helper'
 
 RSpec.describe Msf::ModuleSet do
-  subject(:module_set) {
+  subject(:module_set) do
     described_class.new(module_type)
-  }
+  end
 
-  let(:module_type) {
+  let(:module_type) do
     FactoryBot.generate :mdm_module_detail_mtype
-  }
+  end
 
   context '#rank_modules' do
-    subject(:rank_modules) {
+    subject(:rank_modules) do
       module_set.send(:rank_modules)
-    }
+    end
 
     context 'with Msf::SymbolicModule' do
       before(:example) do
@@ -26,13 +26,13 @@ RSpec.describe Msf::ModuleSet do
         # lets
         #
 
-        let(:b_class) {
+        let(:b_class) do
           Class.new
-        }
+        end
 
-        let(:c_class) {
+        let(:c_class) do
           Class.new
-        }
+        end
 
         context 'returns nil' do
           before(:example) do
@@ -48,20 +48,20 @@ RSpec.describe Msf::ModuleSet do
             allow(module_set).to receive(:create).with('c').and_return(c_class.new)
           end
 
-          specify {
-            expect {
+          specify do
+            expect do
               rank_modules
-            }.not_to raise_error
-          }
+            end.not_to raise_error
+          end
 
           it 'is ranked as Manual' do
             expect(rank_modules).to eq(
-                                        [
-                                            ['c', Msf::SymbolicModule],
-                                            ['b', Msf::SymbolicModule],
-                                            ['a', Msf::SymbolicModule]
-                                        ]
-                                    )
+              [
+                ['c', Msf::SymbolicModule],
+                ['b', Msf::SymbolicModule],
+                ['a', Msf::SymbolicModule]
+              ]
+            )
           end
         end
 
@@ -70,9 +70,9 @@ RSpec.describe Msf::ModuleSet do
           # lets
           #
 
-          let(:a_class) {
+          let(:a_class) do
             Class.new
-          }
+          end
 
           #
           # Callbacks
@@ -98,12 +98,12 @@ RSpec.describe Msf::ModuleSet do
 
             it 'is ranked using Rank' do
               expect(rank_modules).to eq(
-                                          [
-                                              ['c', Msf::SymbolicModule],
-                                              ['b', Msf::SymbolicModule],
-                                              ['a', Msf::SymbolicModule]
-                                          ]
-                                      )
+                [
+                  ['c', Msf::SymbolicModule],
+                  ['b', Msf::SymbolicModule],
+                  ['a', Msf::SymbolicModule]
+                ]
+              )
             end
           end
 
@@ -121,12 +121,12 @@ RSpec.describe Msf::ModuleSet do
 
             it 'is ranked as Normal' do
               expect(rank_modules).to eq(
-                                          [
-                                              ['c', Msf::SymbolicModule],
-                                              ['a', Msf::SymbolicModule],
-                                              ['b', Msf::SymbolicModule]
-                                          ]
-                                      )
+                [
+                  ['c', Msf::SymbolicModule],
+                  ['a', Msf::SymbolicModule],
+                  ['b', Msf::SymbolicModule]
+                ]
+              )
             end
           end
         end
@@ -138,17 +138,17 @@ RSpec.describe Msf::ModuleSet do
       # lets
       #
 
-      let(:a_class) {
+      let(:a_class) do
         Class.new
-      }
+      end
 
-      let(:b_class) {
+      let(:b_class) do
         Class.new
-      }
+      end
 
-      let(:c_class) {
+      let(:c_class) do
         Class.new
-      }
+      end
 
       #
       # Callbacks
@@ -162,25 +162,25 @@ RSpec.describe Msf::ModuleSet do
 
       context 'with Rank' do
         before(:example) do
-              stub_const('A', a_class)
-              stub_const('A::Rank', Msf::LowRanking)
+          stub_const('A', a_class)
+          stub_const('A::Rank', Msf::LowRanking)
 
-              stub_const('B', b_class)
-              stub_const('B::Rank', Msf::AverageRanking)
+          stub_const('B', b_class)
+          stub_const('B::Rank', Msf::AverageRanking)
 
-              stub_const('C', c_class)
-              stub_const('C::Rank', Msf::GoodRanking)
-            end
+          stub_const('C', c_class)
+          stub_const('C::Rank', Msf::GoodRanking)
+        end
 
-            it 'is ranked using Rank' do
-              expect(rank_modules).to eq(
-                                          [
-                                              ['c', c_class],
-                                              ['b', b_class],
-                                              ['a', a_class]
-                                          ]
-                                      )
-            end
+        it 'is ranked using Rank' do
+          expect(rank_modules).to eq(
+            [
+              ['c', c_class],
+              ['b', b_class],
+              ['a', a_class]
+            ]
+          )
+        end
       end
 
       context 'without Rank' do
@@ -197,12 +197,12 @@ RSpec.describe Msf::ModuleSet do
 
         it 'is ranked as Normal' do
           expect(rank_modules).to eq(
-                                      [
-                                          ['c', c_class],
-                                          ['a', a_class],
-                                          ['b', b_class]
-                                      ]
-                                  )
+            [
+              ['c', c_class],
+              ['a', a_class],
+              ['b', b_class]
+            ]
+          )
         end
       end
     end

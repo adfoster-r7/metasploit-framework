@@ -1,13 +1,13 @@
 # frozen_string_literal: true
+
 require 'spec_helper'
 
 require 'msf/ui'
 require 'msf/ui/console/command_dispatcher/creds'
 
 RSpec.describe Msf::Ui::Console::CommandDispatcher::Creds do
-
   if ENV['REMOTE_DB']
-    before {skip("Awaiting credentials port")}
+    before { skip("Awaiting credentials port") }
   end
 
   include_context 'Msf::DBManager'
@@ -36,7 +36,7 @@ RSpec.describe Msf::Ui::Console::CommandDispatcher::Creds do
         let(:nonblank_password)   { 'nonblank_pass' }
 
         let!(:origin) { FactoryBot.create(:metasploit_credential_origin_import) }
-        
+
         let!(:priv) { FactoryBot.create(:metasploit_credential_password, data: password) }
         let!(:pub) { FactoryBot.create(:metasploit_credential_username, username: username) }
         let!(:blank_pub) { blank_pub = FactoryBot.create(:metasploit_credential_blank_username) }
@@ -45,76 +45,76 @@ RSpec.describe Msf::Ui::Console::CommandDispatcher::Creds do
         let!(:blank_priv) { FactoryBot.create(:metasploit_credential_password, data: blank_password) }
         before(:example) do
           FactoryBot.create(:metasploit_credential_core,
-            origin: origin,
-            private: priv,
-            public: pub,
-            realm: nil,
-            workspace: framework.db.workspace)
-          
+                            origin: origin,
+                            private: priv,
+                            public: pub,
+                            realm: nil,
+                            workspace: framework.db.workspace)
+
           FactoryBot.create(:metasploit_credential_core,
-            origin: origin,
-            private: nonblank_priv,
-            public: blank_pub,
-            realm: nil,
-            workspace: framework.db.workspace)
-            
+                            origin: origin,
+                            private: nonblank_priv,
+                            public: blank_pub,
+                            realm: nil,
+                            workspace: framework.db.workspace)
+
           FactoryBot.create(:metasploit_credential_core,
-            origin: origin,
-            private: blank_priv,
-            public: nonblank_pub,
-            realm: nil,
-            workspace: framework.db.workspace)
+                            origin: origin,
+                            private: blank_priv,
+                            public: nonblank_pub,
+                            realm: nil,
+                            workspace: framework.db.workspace)
         end
 
         context 'when the credential is present' do
           it 'should show a user that matches the given expression' do
             creds.cmd_creds('-u', username)
             expect(@output).to eq([
-              'Credentials',
-              '===========',
-              '',
-              'host  origin  service  public    private   realm  private_type  JtR Format',
-              '----  ------  -------  ------    -------   -----  ------------  ----------',
-              '                       thisuser  thispass         Password      '
-            ])
+                                    'Credentials',
+                                    '===========',
+                                    '',
+                                    'host  origin  service  public    private   realm  private_type  JtR Format',
+                                    '----  ------  -------  ------    -------   -----  ------------  ----------',
+                                    '                       thisuser  thispass         Password      '
+                                  ])
           end
 
           it 'should not match a regular expression' do
             creds.cmd_creds('-u', "^#{username}$")
             expect(@output).to_not eq([
-              'Credentials',
-              '===========',
-              '',
-              'host  origin  service  public    private   realm  private_type  JtR Format',
-              '----  ------  -------  ------    -------   -----  ------------  ----------',
-              '                       thisuser  thispass         Password      '
-            ])
+                                        'Credentials',
+                                        '===========',
+                                        '',
+                                        'host  origin  service  public    private   realm  private_type  JtR Format',
+                                        '----  ------  -------  ------    -------   -----  ------------  ----------',
+                                        '                       thisuser  thispass         Password      '
+                                      ])
           end
 
           context 'and when the username is blank' do
             it 'should show a user that matches the given expression' do
               creds.cmd_creds('-u', blank_username)
               expect(@output).to eq([
-                'Credentials',
-                '===========',
-                '',
-                'host  origin  service  public  private        realm  private_type  JtR Format',
-                '----  ------  -------  ------  -------        -----  ------------  ----------',
-                '                               nonblank_pass         Password      '
-              ])
+                                      'Credentials',
+                                      '===========',
+                                      '',
+                                      'host  origin  service  public  private        realm  private_type  JtR Format',
+                                      '----  ------  -------  ------  -------        -----  ------------  ----------',
+                                      '                               nonblank_pass         Password      '
+                                    ])
             end
           end
           context 'and when the password is blank' do
             it 'should show a user that matches the given expression' do
               creds.cmd_creds('-P', blank_password)
               expect(@output).to eq([
-                'Credentials',
-                '===========',
-                '',
-                'host  origin  service  public         private  realm  private_type  JtR Format',
-                '----  ------  -------  ------         -------  -----  ------------  ----------',
-                '                       nonblank_user                  Password      '
-              ])
+                                      'Credentials',
+                                      '===========',
+                                      '',
+                                      'host  origin  service  public         private  realm  private_type  JtR Format',
+                                      '----  ------  -------  ------         -------  -----  ------------  ----------',
+                                      '                       nonblank_user                  Password      '
+                                    ])
             end
           end
         end
@@ -124,24 +124,24 @@ RSpec.describe Msf::Ui::Console::CommandDispatcher::Creds do
             it 'should return a blank set' do
               creds.cmd_creds('-u', nomatch_username)
               expect(@output).to eq([
-                'Credentials',
-                '===========',
-                '',
-                'host  origin  service  public  private  realm  private_type  JtR Format',
-                '----  ------  -------  ------  -------  -----  ------------  ----------'
-              ])
+                                      'Credentials',
+                                      '===========',
+                                      '',
+                                      'host  origin  service  public  private  realm  private_type  JtR Format',
+                                      '----  ------  -------  ------  -------  -----  ------------  ----------'
+                                    ])
             end
           end
           context 'due to a nonmatching password' do
             it 'should return a blank set' do
               creds.cmd_creds('-P', nomatch_password)
               expect(@output).to eq([
-                'Credentials',
-                '===========',
-                '',
-                'host  origin  service  public  private  realm  private_type  JtR Format',
-                '----  ------  -------  ------  -------  -----  ------------  ----------'
-              ])
+                                      'Credentials',
+                                      '===========',
+                                      '',
+                                      'host  origin  service  public  private  realm  private_type  JtR Format',
+                                      '----  ------  -------  ------  -------  -----  ------------  ----------'
+                                    ])
             end
           end
         end
@@ -166,11 +166,11 @@ RSpec.describe Msf::Ui::Console::CommandDispatcher::Creds do
           let!(:password_core) do
             priv = FactoryBot.create(:metasploit_credential_password, data: password)
             FactoryBot.create(:metasploit_credential_core,
-                               origin: FactoryBot.create(:metasploit_credential_origin_import),
-                               private: priv,
-                               public: pub,
-                               realm: nil,
-                               workspace: framework.db.workspace)
+                              origin: FactoryBot.create(:metasploit_credential_origin_import),
+                              private: priv,
+                              public: pub,
+                              realm: nil,
+                              workspace: framework.db.workspace)
           end
 
           #         # Somehow this is hitting a unique constraint on Cores with the same
@@ -205,13 +205,13 @@ RSpec.describe Msf::Ui::Console::CommandDispatcher::Creds do
               creds.cmd_creds('-t', 'password')
               # Table matching really sucks
               expect(@output).to eq([
-                'Credentials',
-                '===========',
-                '',
-                'host  origin  service  public    private   realm  private_type  JtR Format',
-                '----  ------  -------  ------    -------   -----  ------------  ----------',
-                '                       thisuser  thispass         Password      '
-              ])
+                                      'Credentials',
+                                      '===========',
+                                      '',
+                                      'host  origin  service  public    private   realm  private_type  JtR Format',
+                                      '----  ------  -------  ------    -------   -----  ------------  ----------',
+                                      '                       thisuser  thispass         Password      '
+                                    ])
             end
           end
 
@@ -241,152 +241,152 @@ RSpec.describe Msf::Ui::Console::CommandDispatcher::Creds do
       context 'Cores with public privates and realms' do
         context 'username password and realm' do
           it 'creates a core if one does not exist' do
-            expect {
+            expect do
               creds.cmd_creds('add', "user:#{username}", "password:#{password}", "realm:#{realm}")
-            }.to change { Metasploit::Credential::Core.count }.by 1
+            end.to change { Metasploit::Credential::Core.count }.by 1
           end
           it 'does not create a core if it already exists' do
             FactoryBot.create(:metasploit_credential_core,
-              origin: FactoryBot.create(:metasploit_credential_origin_import),
-              private: priv,
-              public: pub,
-              realm: r,
-              workspace: framework.db.workspace)
-              expect {
-                creds.cmd_creds('add', "user:#{username}", "password:#{password}", "realm:#{realm}")
-              }.to_not change { Metasploit::Credential::Core.count }
-            end
+                              origin: FactoryBot.create(:metasploit_credential_origin_import),
+                              private: priv,
+                              public: pub,
+                              realm: r,
+                              workspace: framework.db.workspace)
+            expect do
+              creds.cmd_creds('add', "user:#{username}", "password:#{password}", "realm:#{realm}")
+            end.to_not change { Metasploit::Credential::Core.count }
           end
-          context 'username and realm' do
-            it 'creates a core if one does not exist' do
-              expect {
-                creds.cmd_creds('add', "user:#{username}", "realm:#{realm}")
-              }.to change { Metasploit::Credential::Core.count }.by 1
-            end
-            it 'does not create a core if it already exists' do
-              FactoryBot.create(:metasploit_credential_core,
-                origin: FactoryBot.create(:metasploit_credential_origin_import),
-                private: nil,
-                public: pub,
-                realm: r,
-                workspace: framework.db.workspace)
-              expect {
-                creds.cmd_creds('add', "user:#{username}", "realm:#{realm}")
-              }.to_not change { Metasploit::Credential::Core.count }
-            end
+        end
+        context 'username and realm' do
+          it 'creates a core if one does not exist' do
+            expect do
+              creds.cmd_creds('add', "user:#{username}", "realm:#{realm}")
+            end.to change { Metasploit::Credential::Core.count }.by 1
           end
+          it 'does not create a core if it already exists' do
+            FactoryBot.create(:metasploit_credential_core,
+                              origin: FactoryBot.create(:metasploit_credential_origin_import),
+                              private: nil,
+                              public: pub,
+                              realm: r,
+                              workspace: framework.db.workspace)
+            expect do
+              creds.cmd_creds('add', "user:#{username}", "realm:#{realm}")
+            end.to_not change { Metasploit::Credential::Core.count }
+          end
+        end
 
-          context 'username and password' do
-            it 'creates a core if one does not exist' do
-              expect {
-                creds.cmd_creds('add', "user:#{username}", "password:#{password}")
-              }.to change { Metasploit::Credential::Core.count }.by 1
-            end
-            it 'does not create a core if it already exists' do
-              FactoryBot.create(:metasploit_credential_core,
-                origin: FactoryBot.create(:metasploit_credential_origin_import),
-                private: priv,
-                public: pub,
-                realm: nil,
-                workspace: framework.db.workspace)
-              expect {
-                creds.cmd_creds('add', "user:#{username}", "password:#{password}")
-              }.to_not change { Metasploit::Credential::Core.count }
-            end
+        context 'username and password' do
+          it 'creates a core if one does not exist' do
+            expect do
+              creds.cmd_creds('add', "user:#{username}", "password:#{password}")
+            end.to change { Metasploit::Credential::Core.count }.by 1
           end
+          it 'does not create a core if it already exists' do
+            FactoryBot.create(:metasploit_credential_core,
+                              origin: FactoryBot.create(:metasploit_credential_origin_import),
+                              private: priv,
+                              public: pub,
+                              realm: nil,
+                              workspace: framework.db.workspace)
+            expect do
+              creds.cmd_creds('add', "user:#{username}", "password:#{password}")
+            end.to_not change { Metasploit::Credential::Core.count }
+          end
+        end
 
-          context 'password and realm' do
-            it 'creates a core if one does not exist' do
-              expect {
-                creds.cmd_creds('add', "password:#{password}", "realm:#{realm}")
-              }.to change { Metasploit::Credential::Core.count }.by 1
-            end
-            it 'does not create a core if it already exists' do
-              FactoryBot.create(:metasploit_credential_core,
-                origin: FactoryBot.create(:metasploit_credential_origin_import),
-                private: priv,
-                public: nil,
-                realm: r,
-                workspace: framework.db.workspace)
-              expect {
-                creds.cmd_creds('add', "password:#{password}", "realm:#{realm}")
-              }.to_not change { Metasploit::Credential::Core.count }
-            end
+        context 'password and realm' do
+          it 'creates a core if one does not exist' do
+            expect do
+              creds.cmd_creds('add', "password:#{password}", "realm:#{realm}")
+            end.to change { Metasploit::Credential::Core.count }.by 1
           end
+          it 'does not create a core if it already exists' do
+            FactoryBot.create(:metasploit_credential_core,
+                              origin: FactoryBot.create(:metasploit_credential_origin_import),
+                              private: priv,
+                              public: nil,
+                              realm: r,
+                              workspace: framework.db.workspace)
+            expect do
+              creds.cmd_creds('add', "password:#{password}", "realm:#{realm}")
+            end.to_not change { Metasploit::Credential::Core.count }
+          end
+        end
 
-          context 'username' do
-            it 'creates a core if one does not exist' do
-              expect {
-                creds.cmd_creds('add', "user:#{username}")
-              }.to change { Metasploit::Credential::Core.count }.by 1
-            end
-            it 'does not create a core if it already exists' do
-              FactoryBot.create(:metasploit_credential_core,
-                origin: FactoryBot.create(:metasploit_credential_origin_import),
-                private: nil,
-                public: pub,
-                realm: nil,
-                workspace: framework.db.workspace)
-              expect {
-                creds.cmd_creds('add', "user:#{username}")
-              }.to_not change { Metasploit::Credential::Core.count }
-            end
+        context 'username' do
+          it 'creates a core if one does not exist' do
+            expect do
+              creds.cmd_creds('add', "user:#{username}")
+            end.to change { Metasploit::Credential::Core.count }.by 1
           end
+          it 'does not create a core if it already exists' do
+            FactoryBot.create(:metasploit_credential_core,
+                              origin: FactoryBot.create(:metasploit_credential_origin_import),
+                              private: nil,
+                              public: pub,
+                              realm: nil,
+                              workspace: framework.db.workspace)
+            expect do
+              creds.cmd_creds('add', "user:#{username}")
+            end.to_not change { Metasploit::Credential::Core.count }
+          end
+        end
         context 'private_types' do
           context 'password' do
             it 'creates a core if one does not exist' do
-              expect {
+              expect do
                 creds.cmd_creds('add', "password:#{password}")
-              }.to change { Metasploit::Credential::Core.count }.by 1
+              end.to change { Metasploit::Credential::Core.count }.by 1
             end
             it 'does not create a core if it already exists' do
               FactoryBot.create(:metasploit_credential_core,
-                origin: FactoryBot.create(:metasploit_credential_origin_import),
-                private: priv,
-                public: nil,
-                realm: nil,
-                workspace: framework.db.workspace)
-              expect {
+                                origin: FactoryBot.create(:metasploit_credential_origin_import),
+                                private: priv,
+                                public: nil,
+                                realm: nil,
+                                workspace: framework.db.workspace)
+              expect do
                 creds.cmd_creds('add', "password:#{password}")
-              }.to_not change { Metasploit::Credential::Core.count }
+              end.to_not change { Metasploit::Credential::Core.count }
             end
           end
           context 'ntlm' do
             let(:priv) { FactoryBot.create(:metasploit_credential_ntlm_hash) }
             it 'creates a core if one does not exist' do
-              expect {
+              expect do
                 creds.cmd_creds('add', "ntlm:#{priv.data}")
-              }.to change { Metasploit::Credential::Core.count }.by 1
+              end.to change { Metasploit::Credential::Core.count }.by 1
             end
             it 'does not create a core if it already exists' do
               FactoryBot.create(:metasploit_credential_core,
-                origin: FactoryBot.create(:metasploit_credential_origin_import),
-                private: priv,
-                public: nil,
-                realm: nil,
-                workspace: framework.db.workspace)
-              expect {
+                                origin: FactoryBot.create(:metasploit_credential_origin_import),
+                                private: priv,
+                                public: nil,
+                                realm: nil,
+                                workspace: framework.db.workspace)
+              expect do
                 creds.cmd_creds('add', "ntlm:#{priv.data}")
-              }.to_not change { Metasploit::Credential::Core.count }
+              end.to_not change { Metasploit::Credential::Core.count }
             end
           end
           context 'hash' do
             let(:priv) { FactoryBot.create(:metasploit_credential_nonreplayable_hash) }
             it 'creates a core if one does not exist' do
-              expect {
+              expect do
                 creds.cmd_creds('add', "hash:#{priv.data}")
-              }.to change { Metasploit::Credential::Core.count }.by 1
+              end.to change { Metasploit::Credential::Core.count }.by 1
             end
             it 'does not create a core if it already exists' do
               FactoryBot.create(:metasploit_credential_core,
-                origin: FactoryBot.create(:metasploit_credential_origin_import),
-                private: priv,
-                public: nil,
-                realm: nil,
-                workspace: framework.db.workspace)
-              expect {
+                                origin: FactoryBot.create(:metasploit_credential_origin_import),
+                                private: priv,
+                                public: nil,
+                                realm: nil,
+                                workspace: framework.db.workspace)
+              expect do
                 creds.cmd_creds('add', "hash:#{priv.data}")
-              }.to_not change { Metasploit::Credential::Core.count }
+              end.to_not change { Metasploit::Credential::Core.count }
             end
           end
           context 'ssh-key' do
@@ -397,42 +397,42 @@ RSpec.describe Msf::Ui::Console::CommandDispatcher::Creds do
               @file.close
             end
             it 'creates a core if one does not exist' do
-              expect {
+              expect do
                 creds.cmd_creds('add', "user:#{username}", "ssh-key:#{@file.path}")
-              }.to change { Metasploit::Credential::Core.count }.by 1
+              end.to change { Metasploit::Credential::Core.count }.by 1
             end
             it 'does not create a core if it already exists' do
               FactoryBot.create(:metasploit_credential_core,
-                origin: FactoryBot.create(:metasploit_credential_origin_import),
-                private: priv,
-                public: pub,
-                realm: nil,
-                workspace: framework.db.workspace)
-              expect {
+                                origin: FactoryBot.create(:metasploit_credential_origin_import),
+                                private: priv,
+                                public: pub,
+                                realm: nil,
+                                workspace: framework.db.workspace)
+              expect do
                 creds.cmd_creds('add', "user:#{username}", "ssh-key:#{@file.path}")
-              }.to_not change { Metasploit::Credential::Core.count }
+              end.to_not change { Metasploit::Credential::Core.count }
             end
           end
         end
         context 'realm-types' do
           Metasploit::Model::Realm::Key::SHORT_NAMES.each do |short_name, long_name|
-            context "#{short_name}" do
+            context short_name.to_s do
               let(:r) { FactoryBot.create(:metasploit_credential_realm, key: long_name) }
               it 'creates a core if one does not exist' do
-                expect {
+                expect do
                   creds.cmd_creds('add', "realm:#{r.value}", "realm-type:#{short_name}")
-                }.to change { Metasploit::Credential::Core.count }.by 1
+                end.to change { Metasploit::Credential::Core.count }.by 1
               end
               it 'does not create a core if it already exists' do
                 FactoryBot.create(:metasploit_credential_core,
-                  origin: FactoryBot.create(:metasploit_credential_origin_import),
-                  private: nil,
-                  public: nil,
-                  realm: r,
-                  workspace: framework.db.workspace)
-                expect {
+                                  origin: FactoryBot.create(:metasploit_credential_origin_import),
+                                  private: nil,
+                                  public: nil,
+                                  realm: r,
+                                  workspace: framework.db.workspace)
+                expect do
                   creds.cmd_creds('add', "realm:#{r.value}", "realm-type:#{short_name}")
-                }.to_not change { Metasploit::Credential::Core.count }
+                end.to_not change { Metasploit::Credential::Core.count }
               end
             end
           end
@@ -444,11 +444,12 @@ RSpec.describe Msf::Ui::Console::CommandDispatcher::Creds do
         let(:proto)   { 'tcp' }
         let(:name)    { 'Web Service' }
         context 'With valid params' do
-          let(:create_core_with_login) {
+          let(:create_core_with_login) do
             creds.cmd_creds(
               'add', "user:#{username}", "password:#{password}", "realm:#{realm}",
-              "address:#{address}", "port:#{port}", "protocol:#{proto}", "service-name:#{name}")
-          }
+              "address:#{address}", "port:#{port}", "protocol:#{proto}", "service-name:#{name}"
+            )
+          end
           it 'creates a core' do
             expect { create_core_with_login }.to change { Metasploit::Credential::Core.count }.by 1
           end
@@ -462,8 +463,6 @@ RSpec.describe Msf::Ui::Console::CommandDispatcher::Creds do
             expect { create_core_with_login }.to change { Mdm::Host.count }.by 1
           end
         end
-
-
       end
     end
   end

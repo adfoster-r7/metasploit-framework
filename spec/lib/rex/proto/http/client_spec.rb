@@ -1,4 +1,5 @@
 # -*- coding:binary -*-
+
 require 'rex/proto/http/client'
 
 # Note: Some of these tests require a failed
@@ -6,13 +7,12 @@ require 'rex/proto/http/client'
 # firewall that is dropping packets to this, your tests
 # might be slow. I wonder how Travis-CI will react to this...
 RSpec.describe Rex::Proto::Http::Client do
-
   class << self
 
     # Set a standard excuse that indicates that the method
     # under test needs to be first examined to figure out
     # what's sane and what's not.
-    def excuse_lazy(test_method=nil)
+    def excuse_lazy(test_method = nil)
       ret = "need to determine pass/fail criteria"
       test_method ? ret << " for #{test_method.inspect}" : ret
     end
@@ -36,11 +36,9 @@ RSpec.describe Rex::Proto::Http::Client do
   end
 
   describe "#set_config" do
-
     it "should respond to #set_config" do
       expect(cli.set_config).to eq({})
     end
-
   end
 
   it "should respond to initialize" do
@@ -70,7 +68,7 @@ RSpec.describe Rex::Proto::Http::Client do
   context "with authorization" do
     subject(:cli) do
       cli = Rex::Proto::Http::Client.new(ip)
-      cli.set_config({"authorization" => "Basic base64dstuffhere"})
+      cli.set_config({ "authorization" => "Basic base64dstuffhere" })
       cli
     end
     let(:user)   { "user" }
@@ -79,7 +77,7 @@ RSpec.describe Rex::Proto::Http::Client do
 
     context "and an Authorization header" do
       before do
-        cli.set_config({"headers" => { "Authorization" => "Basic #{base64}" } })
+        cli.set_config({ "headers" => { "Authorization" => "Basic #{base64}" } })
       end
       it "should have one Authorization header" do
         req = cli.request_cgi
@@ -102,12 +100,12 @@ RSpec.describe Rex::Proto::Http::Client do
       cli = Rex::Proto::Http::Client.new(ip)
       cli
     end
-    let(:first_response) {
+    let(:first_response) do
       "HTTP/1.1 401 Unauthorized\r\nContent-Length: 0\r\nWWW-Authenticate: Basic realm=\"foo\"\r\n\r\n"
-    }
-    let(:authed_response) {
+    end
+    let(:authed_response) do
       "HTTP/1.1 200 Ok\r\nContent-Length: 0\r\n\r\n"
-    }
+    end
     let(:user) { "user" }
     let(:pass) { "pass" }
 
@@ -138,14 +136,13 @@ RSpec.describe Rex::Proto::Http::Client do
 
       allow(Rex::Socket::Tcp).to receive(:create).and_return(conn)
 
-      opts = { "username" => user, "password" => pass}
+      opts = { "username" => user, "password" => pass }
       req = cli.request_cgi(opts)
       cli.send_recv(req)
 
       # Make sure it didn't modify the argument
-      expect(opts).to eq({ "username" => user, "password" => pass})
+      expect(opts).to eq({ "username" => user, "password" => pass })
     end
-
   end
 
   it "should attempt to connect to a server" do
@@ -157,45 +154,39 @@ RSpec.describe Rex::Proto::Http::Client do
     expect(cli.close).to be_nil
   end
 
-  it "should send a request and receive a response", :skip => excuse_needs_connection do
-
+  it "should send a request and receive a response", skip: excuse_needs_connection do
   end
 
-  it "should send a request and receive a response without auth handling", :skip => excuse_needs_connection do
-
+  it "should send a request and receive a response without auth handling", skip: excuse_needs_connection do
   end
 
-  it "should send a request", :skip => excuse_needs_connection do
-
+  it "should send a request", skip: excuse_needs_connection do
   end
 
   it "should test for credentials" do
     skip "Should actually respond to :has_creds" do
       expect(cli).not_to have_creds
-      this_cli = described_class.new("127.0.0.1", 1, {}, false, nil, nil, "user1", "pass1" )
+      this_cli = described_class.new("127.0.0.1", 1, {}, false, nil, nil, "user1", "pass1")
       expect(this_cli).to have_creds
     end
   end
 
-  it "should send authentication", :skip => excuse_needs_connection
+  it "should send authentication", skip: excuse_needs_connection
 
   it "should produce a basic authentication header" do
     u = "user1"
     p = "pass1"
     b64 = ["#{u}:#{p}"].pack("m*").strip
-    expect(cli.basic_auth_header("user1","pass1")).to eq "Basic #{b64}"
+    expect(cli.basic_auth_header("user1", "pass1")).to eq "Basic #{b64}"
   end
 
-  it "should perform digest authentication", :skip => excuse_needs_auth do
-
+  it "should perform digest authentication", skip: excuse_needs_auth do
   end
 
-  it "should perform negotiate authentication", :skip => excuse_needs_auth do
-
+  it "should perform negotiate authentication", skip: excuse_needs_auth do
   end
 
-  it "should get a response", :skip => excuse_needs_connection do
-
+  it "should get a response", skip: excuse_needs_connection do
   end
 
   it "should end a connection with a stop" do
@@ -230,10 +221,9 @@ RSpec.describe Rex::Proto::Http::Client do
   # Not super sure why these are protected...
   # Me either...
   it "should refuse access to its protected accessors" do
-    expect {cli.ssl}.to raise_error NoMethodError
-    expect {cli.ssl_version}.to raise_error NoMethodError
-    expect {cli.hostname}.to raise_error NoMethodError
-    expect {cli.port}.to raise_error NoMethodError
+    expect { cli.ssl }.to raise_error NoMethodError
+    expect { cli.ssl_version }.to raise_error NoMethodError
+    expect { cli.hostname }.to raise_error NoMethodError
+    expect { cli.port }.to raise_error NoMethodError
   end
-
 end

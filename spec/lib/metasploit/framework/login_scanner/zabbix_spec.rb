@@ -1,12 +1,10 @@
-
 require 'spec_helper'
 require 'metasploit/framework/login_scanner/zabbix'
 
 RSpec.describe Metasploit::Framework::LoginScanner::Zabbix do
-
   subject(:http_scanner) { described_class.new }
 
-  it_behaves_like 'Metasploit::Framework::LoginScanner::Base',  has_realm_key: true, has_default_realm: false
+  it_behaves_like 'Metasploit::Framework::LoginScanner::Base', has_realm_key: true, has_default_realm: false
   it_behaves_like 'Metasploit::Framework::LoginScanner::RexSocket'
 
 
@@ -52,9 +50,9 @@ RSpec.describe Metasploit::Framework::LoginScanner::Zabbix do
 
   let(:disabled_cred) do
     Metasploit::Framework::Credential.new(
-        paired: true,
-        public: username_disabled,
-        private: password_disabled
+      paired: true,
+      public: username_disabled,
+      private: password_disabled
     )
   end
 
@@ -68,7 +66,7 @@ RSpec.describe Metasploit::Framework::LoginScanner::Zabbix do
 
   context '#send_request' do
     let(:req_opts) do
-      {'uri'=>'/', 'method'=>'GET'}
+      { 'uri' => '/', 'method' => 'GET' }
     end
 
     it 'returns a Rex::Proto::Http::Response object' do
@@ -86,37 +84,35 @@ RSpec.describe Metasploit::Framework::LoginScanner::Zabbix do
 
   context '#try_credential' do
     it 'sends a login request to /index.php' do
-      expect(http_scanner).to receive(:send_request).with(hash_including('uri'=>'/index.php'))
+      expect(http_scanner).to receive(:send_request).with(hash_including('uri' => '/index.php'))
       http_scanner.try_credential(cred)
     end
 
     it 'sends a login request containing the username and password' do
-      expect(http_scanner).to receive(:send_request).with(hash_including('data'=>"request=&name=#{username}&password=#{password}&autologin=1&enter=Sign%20in"))
+      expect(http_scanner).to receive(:send_request).with(hash_including('data' => "request=&name=#{username}&password=#{password}&autologin=1&enter=Sign%20in"))
       http_scanner.try_credential(cred)
     end
   end
 
   context '#try_login' do
-
     let(:login_ok_message) do
       '<title>Zabbix 2.4 Appliance: User profile</title>'
     end
 
     before :example do
-      allow_any_instance_of(Rex::Proto::Http::Client).to receive(:send_recv) do |cli, req|
-        if req.opts['uri'] && req.opts['uri'].include?('index.php') &&
-            req.opts['data'] &&
-            req.opts['data'].include?("name=#{username}") &&
-            req. opts['data'].include?("password=#{password}")
+      allow_any_instance_of(Rex::Proto::Http::Client).to receive(:send_recv) do |_cli, req|
+        if req.opts['uri']&.include?('index.php') &&
+           req.opts['data'] &&
+           req.opts['data'].include?("name=#{username}") &&
+           req. opts['data'].include?("password=#{password}")
           res = Rex::Proto::Http::Response.new(302)
           res.headers['Location'] = 'profile.php'
           res.headers['Set-Cookie'] = 'zbx_sessionid=GOODSESSIONID'
           res
-        elsif req.opts['uri'] && req.opts['uri'].include?('index.php')
+        elsif req.opts['uri']&.include?('index.php')
           res = Rex::Proto::Http::Response.new(200)
           res.body = 'bad login'
-        elsif req.opts['uri'] &&
-            req.opts['uri'].include?('profile.php')
+        elsif   req.opts['uri']&.include?('profile.php')
           res = Rex::Proto::Http::Response.new(200)
           res.body = '<title>Zabbix 2.4 Appliance: User profile</title>'
         else
@@ -164,20 +160,19 @@ RSpec.describe Metasploit::Framework::LoginScanner::Zabbix do
       end
 
       it 'returns a Metasploit::Framework::LoginScanner::Result' do
-        allow_any_instance_of(Rex::Proto::Http::Client).to receive(:send_recv) do |cli, req|
-          if req.opts['uri'] && req.opts['uri'].include?('index.php') &&
-              req.opts['data'] &&
-              req.opts['data'].include?("name=#{username}") &&
-              req. opts['data'].include?("password=#{password}")
+        allow_any_instance_of(Rex::Proto::Http::Client).to receive(:send_recv) do |_cli, req|
+          if req.opts['uri']&.include?('index.php') &&
+             req.opts['data'] &&
+             req.opts['data'].include?("name=#{username}") &&
+             req. opts['data'].include?("password=#{password}")
             res = Rex::Proto::Http::Response.new(302)
             res.headers['Location'] = 'profile.php'
             res.headers['Set-Cookie'] = 'zbx_sessionid=GOODSESSIONID'
             res
-          elsif req.opts['uri'] && req.opts['uri'].include?('index.php')
+          elsif req.opts['uri']&.include?('index.php')
             res = Rex::Proto::Http::Response.new(200)
             res.body = 'bad login'
-          elsif req.opts['uri'] &&
-              req.opts['uri'].include?('profile.php')
+          elsif   req.opts['uri']&.include?('profile.php')
             res = Rex::Proto::Http::Response.new(200)
             res.body = '<title>Zabbix 2.4 Appliance: User profile</title>'
           else
@@ -189,10 +184,6 @@ RSpec.describe Metasploit::Framework::LoginScanner::Zabbix do
 
         expect(http_scanner.attempt_login(cred)).to be_kind_of(Metasploit::Framework::LoginScanner::Result)
       end
-
     end
-
   end
-
 end
-

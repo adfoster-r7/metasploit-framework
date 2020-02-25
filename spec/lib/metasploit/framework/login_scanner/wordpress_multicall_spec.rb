@@ -2,8 +2,7 @@ require 'spec_helper'
 require 'metasploit/framework/login_scanner/wordpress_multicall'
 
 RSpec.describe Metasploit::Framework::LoginScanner::WordpressMulticall do
-
-  it_behaves_like 'Metasploit::Framework::LoginScanner::Base',  has_realm_key: true, has_default_realm: false
+  it_behaves_like 'Metasploit::Framework::LoginScanner::Base', has_realm_key: true, has_default_realm: false
   it_behaves_like 'Metasploit::Framework::LoginScanner::RexSocket'
 
   subject do
@@ -23,7 +22,7 @@ RSpec.describe Metasploit::Framework::LoginScanner::WordpressMulticall do
   end
 
   let(:good_response) do
-    %Q|<?xml version="1.0" encoding="UTF-8"?>
+    %(<?xml version="1.0" encoding="UTF-8"?>
 <methodResponse>
   <params>
     <param>
@@ -45,7 +44,7 @@ RSpec.describe Metasploit::Framework::LoginScanner::WordpressMulticall do
     </param>
   </params>
 </methodResponse>
-    |
+    )
   end
 
   let(:response) do
@@ -104,5 +103,4 @@ RSpec.describe Metasploit::Framework::LoginScanner::WordpressMulticall do
       end
     end
   end
-
 end

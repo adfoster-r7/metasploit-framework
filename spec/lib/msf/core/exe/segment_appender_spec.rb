@@ -2,12 +2,11 @@ require 'spec_helper'
 require 'msf/core/exe/segment_appender'
 
 RSpec.describe Msf::Exe::SegmentAppender do
-
   let(:opts) do
     option_hash = {
-        :template => File.join(File.dirname(__FILE__), "..", "..", "..", "..", "..", "data", "templates", "template_x86_windows.exe"),
-        :payload  => "\xd9\xeb\x9b\xd9\x74\x24",
-        :arch     => :x86
+      template: File.join(File.dirname(__FILE__), "..", "..", "..", "..", "..", "data", "templates", "template_x86_windows.exe"),
+        payload: "\xd9\xeb\x9b\xd9\x74\x24",
+        arch: :x86
     }
   end
   subject(:injector) { Msf::Exe::SegmentInjector.new(opts) }
@@ -32,10 +31,10 @@ RSpec.describe Msf::Exe::SegmentAppender do
     context 'when given a non-default buffer register' do
       let(:opts) do
         option_hash = {
-            :template => File.join(File.dirname(__FILE__), "..", "..", "..", "..", "..", "data", "templates", "template_x86_windows.exe"),
-            :payload  => "\xd9\xeb\x9b\xd9\x74\x24",
-            :arch     => :x86,
-            :buffer_register => 'eax'
+          template: File.join(File.dirname(__FILE__), "..", "..", "..", "..", "..", "data", "templates", "template_x86_windows.exe"),
+            payload: "\xd9\xeb\x9b\xd9\x74\x24",
+            arch: :x86,
+            buffer_register: 'eax'
         }
       end
       it 'should use the correct buffer register' do
@@ -46,11 +45,11 @@ RSpec.describe Msf::Exe::SegmentAppender do
 
   describe '#generate_pe' do
     it 'should return a string' do
-      expect(injector.generate_pe.kind_of?(String)).to eq true
+      expect(injector.generate_pe.is_a?(String)).to eq true
     end
 
     it 'should produce a valid PE exe' do
-      expect {Metasm::PE.decode(injector.generate_pe) }.to_not raise_exception
+      expect { Metasm::PE.decode(injector.generate_pe) }.to_not raise_exception
     end
 
     context 'the generated exe' do
@@ -65,8 +64,8 @@ RSpec.describe Msf::Exe::SegmentAppender do
 
       it 'should have all the right original section names' do
         s_names = []
-        exe.sections.collect {|s| s_names << s.name}
-        expect(s_names[0,4]).to eq [".text", ".rdata", ".data", ".rsrc"]
+        exe.sections.collect { |s| s_names << s.name }
+        expect(s_names[0, 4]).to eq [".text", ".rdata", ".data", ".rsrc"]
       end
 
       it 'should have the last section set to RWX' do
@@ -79,4 +78,3 @@ RSpec.describe Msf::Exe::SegmentAppender do
     end
   end
 end
-

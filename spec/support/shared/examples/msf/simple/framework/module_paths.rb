@@ -53,8 +53,8 @@ RSpec.shared_examples_for 'Msf::Simple::Framework::ModulePaths' do
 
           it 'should add Msf::Config.user_module_directory to module paths' do
             expect(framework.modules).to receive(:add_module_path).with(
-                user_module_directory,
-                options
+              user_module_directory,
+              options
             )
 
             init_module_paths

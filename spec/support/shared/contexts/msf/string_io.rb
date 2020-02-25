@@ -1,7 +1,6 @@
 require 'stringio'
 
 RSpec.shared_context 'Msf::StringIO' do
-
   #
   # lets
   #

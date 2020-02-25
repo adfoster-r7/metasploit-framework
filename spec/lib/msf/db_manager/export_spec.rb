@@ -15,7 +15,7 @@ RSpec.describe Msf::DBManager::Export do
 
   let(:workspace) do
     FactoryBot.create(
-        :mdm_workspace
+      :mdm_workspace
     )
   end
 
@@ -43,8 +43,8 @@ RSpec.describe Msf::DBManager::Export do
 
       let!(:module_details) do
         FactoryBot.create_list(
-            :mdm_module_detail,
-            module_detail_count
+          :mdm_module_detail,
+          module_detail_count
         )
       end
 

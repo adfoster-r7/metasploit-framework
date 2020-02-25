@@ -1,4 +1,5 @@
 # -*- coding: binary -*-
+
 require 'spec_helper'
 
 require 'rex/proto/natpmp/packet'

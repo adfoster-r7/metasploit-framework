@@ -20,18 +20,17 @@ RSpec.describe Msf::Sessions::Meterpreter do
       Rex::Post::Meterpreter::Extensions::Stdapi::Net::Route.new(
         IPAddr.new("0.0.0.0").hton, # Subnet
         IPAddr.new("0.0.0.0").hton, # Netmask
-        IPAddr.new("192.168.3.1").hton  # Gateway
+        IPAddr.new("192.168.3.1").hton # Gateway
       ),
       Rex::Post::Meterpreter::Extensions::Stdapi::Net::Route.new(
         IPAddr.new("::").hton, # Subnet
         IPAddr.new("::").hton, # Netmask
-        IPAddr.new(v6_gateway).hton  # Gateway
+        IPAddr.new(v6_gateway).hton # Gateway
       )
     ]
   end
 
   describe "#find_internet_connected_address" do
-
     subject(:connected_address) do
       allow_message_expectations_on_nil
       m = described_class.new(StringIO.new(""), skip_ssl: true)
@@ -45,10 +44,10 @@ RSpec.describe Msf::Sessions::Meterpreter do
 
     let(:interfaces) do
       ifaces = []
-      interface_config.each_with_index { |iface_hash, idx|
+      interface_config.each_with_index do |iface_hash, idx|
         ifaces << Rex::Post::Meterpreter::Extensions::Stdapi::Net::Interface.new(
           index: idx,
-          mac_addr: "00:11:22:33:44:%02x"%idx,
+          mac_addr: "00:11:22:33:44:%02x" % idx,
           mac_name: "eth0",
           mtu: 1500,
           flags: 0,
@@ -56,7 +55,7 @@ RSpec.describe Msf::Sessions::Meterpreter do
           netmasks: iface_hash[:masks],
           scopes: [ "" ]
         )
-      }
+      end
 
       ifaces
     end
@@ -66,12 +65,12 @@ RSpec.describe Msf::Sessions::Meterpreter do
     context "with an address that matches #session_host" do
       let(:interface_config) do
         [
-          { ips: [ "192.168.10.1" ], masks: [ "255.255.255.0" ], },
-          { ips: [ "192.168.11.1" ], masks: [ "255.255.255.0" ], },
-          { ips: [ "192.168.12.1" ], masks: [ "255.255.255.0" ], },
-          { ips: [ session_host   ], masks: [ "255.255.255.0" ], },
-          { ips: [ "192.168.14.1" ], masks: [ "255.255.255.0" ], },
-          { ips: [ "192.168.16.1" ], masks: [ "255.255.255.0" ], },
+          { ips: [ "192.168.10.1" ], masks: [ "255.255.255.0" ] },
+          { ips: [ "192.168.11.1" ], masks: [ "255.255.255.0" ] },
+          { ips: [ "192.168.12.1" ], masks: [ "255.255.255.0" ] },
+          { ips: [ session_host   ], masks: [ "255.255.255.0" ] },
+          { ips: [ "192.168.14.1" ], masks: [ "255.255.255.0" ] },
+          { ips: [ "192.168.16.1" ], masks: [ "255.255.255.0" ] },
         ]
       end
       it "returns nil" do
@@ -84,7 +83,7 @@ RSpec.describe Msf::Sessions::Meterpreter do
 
     context "one interface with one IPv4 address" do
       let(:interface_config) do
-        [ { ips: [ "10.2.3.4" ], masks: [ "255.255.255.0" ], } ]
+        [ { ips: [ "10.2.3.4" ], masks: [ "255.255.255.0" ] } ]
       end
       it "returns that address" do
         expect(connected_address).to eq("10.2.3.4")
@@ -94,7 +93,7 @@ RSpec.describe Msf::Sessions::Meterpreter do
     context "one interface with one IPv6 address" do
       let(:interface_config) do
         [
-          { ips: [ v6_linklocal ], masks: [ "ffff:ffff:ffff:ffff::" ], },
+          { ips: [ v6_linklocal ], masks: [ "ffff:ffff:ffff:ffff::" ] },
         ]
       end
       it "returns that address" do
@@ -106,8 +105,8 @@ RSpec.describe Msf::Sessions::Meterpreter do
       context "first is correct" do
         let(:interface_config) do
           [
-            { ips: [ "192.168.3.4" ], masks: [ "255.255.255.0" ], },
-            { ips: [ v6_linklocal ], masks: [ "ffff:ffff:ffff:ffff::" ], },
+            { ips: [ "192.168.3.4" ], masks: [ "255.255.255.0" ] },
+            { ips: [ v6_linklocal ], masks: [ "ffff:ffff:ffff:ffff::" ] },
           ]
         end
         it "returns first address" do
@@ -117,8 +116,8 @@ RSpec.describe Msf::Sessions::Meterpreter do
       context "second address is correct" do
         let(:interface_config) do
           [
-            { ips: [ v6_linklocal ], masks: [ "ffff:ffff:ffff:ffff::" ], },
-            { ips: [ "192.168.3.4" ], masks: [ "255.255.255.0" ], },
+            { ips: [ v6_linklocal ], masks: [ "ffff:ffff:ffff:ffff::" ] },
+            { ips: [ "192.168.3.4" ], masks: [ "255.255.255.0" ] },
           ]
         end
         it "returns second address" do
@@ -132,7 +131,7 @@ RSpec.describe Msf::Sessions::Meterpreter do
         let(:interface_config) do
           [ {
             ips: ["192.168.3.4", "10.2.3.4"],
-            masks: [ "255.255.255.0", "255.0.0.0"],
+            masks: [ "255.255.255.0", "255.0.0.0"]
           } ]
         end
         it "returns first address" do
@@ -143,7 +142,7 @@ RSpec.describe Msf::Sessions::Meterpreter do
         let(:interface_config) do
           [ {
             ips: [ "10.2.3.4", "192.168.3.4" ],
-            masks: [ "255.0.0.0", "255.255.255.0" ],
+            masks: [ "255.0.0.0", "255.255.255.0" ]
           } ]
         end
         it "returns second address" do
@@ -151,8 +150,5 @@ RSpec.describe Msf::Sessions::Meterpreter do
         end
       end
     end
-
   end
-
 end
-

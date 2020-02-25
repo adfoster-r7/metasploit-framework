@@ -7,9 +7,9 @@ RSpec.describe Msf::OptionContainer do
   it "should create new options for it's args" do
     foo_inst = double(
       "foo_inst",
-      :'advanced=' => nil,
-      :'evasion=' => nil,
-      :'owner=' => nil
+      'advanced=': nil,
+      'evasion=': nil,
+      'owner=': nil
     )
     allow(foo_inst).to receive(:name).and_return("thing")
     foo_class = double 'opt_class',
@@ -17,11 +17,8 @@ RSpec.describe Msf::OptionContainer do
                        new: foo_inst
 
     subject = described_class.new({
-      'thing' => [ foo_class, true, nil, false ]
-    })
+                                    'thing' => [ foo_class, true, nil, false ]
+                                  })
     expect(subject["thing"]).to eq foo_inst
-
   end
-
-
 end

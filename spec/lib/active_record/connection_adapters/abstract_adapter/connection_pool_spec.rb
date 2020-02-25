@@ -1,4 +1,5 @@
 # -*- coding:binary -*-
+
 require 'spec_helper'
 
 RSpec.describe ActiveRecord::ConnectionAdapters::ConnectionPool do
@@ -70,21 +71,21 @@ RSpec.describe ActiveRecord::ConnectionAdapters::ConnectionPool do
 
     it 'should call #current_connection_id' do
       expect(connection_pool).to receive(
-          :current_connection_id
+        :current_connection_id
       ).at_least(
-          :once
+        :once
       ).and_call_original
 
-      connection_pool.with_connection { }
+      connection_pool.with_connection {}
     end
 
     it 'should yield #connection' do
       connection = double('Connection')
       allow(connection_pool).to receive(:connection).and_return(connection)
 
-      expect { |block|
+      expect do |block|
         connection_pool.with_connection(&block)
-      }.to yield_with_args(connection)
+      end.to yield_with_args(connection)
     end
 
     context 'with active thread connection' do
@@ -102,15 +103,15 @@ RSpec.describe ActiveRecord::ConnectionAdapters::ConnectionPool do
 
       context 'with error' do
         it 'should not release connection' do
-          expect {
+          expect do
             # capture error so it doesn't stop example
-            expect {
+            expect do
               connection_pool.with_connection do
                 # raise error to trigger with_connection's ensure
                 raise ArgumentError, 'bad arguments'
               end
-            }.to raise_error(ArgumentError)
-          }.to change {
+            end.to raise_error(ArgumentError)
+          end.to change {
             reserved_connection_count
           }.by(0)
         end
@@ -118,9 +119,9 @@ RSpec.describe ActiveRecord::ConnectionAdapters::ConnectionPool do
 
       context 'without error' do
         it 'should not release connection' do
-          expect {
-            connection_pool.with_connection { }
-          }.to change{
+          expect do
+            connection_pool.with_connection {}
+          end.to change {
             reserved_connection_count
           }.by(0)
         end
@@ -134,15 +135,15 @@ RSpec.describe ActiveRecord::ConnectionAdapters::ConnectionPool do
 
       context 'with error' do
         it 'should not leave connection created for block' do
-          expect {
+          expect do
             # capture error so it doesn't stop example
-            expect {
+            expect do
               connection_pool.with_connection do
                 # raise error to trigger with_connection's ensure
                 raise ArgumentError, 'bad arguments'
               end
-            }.to raise_error(ArgumentError)
-          }.to change {
+            end.to raise_error(ArgumentError)
+          end.to change {
             reserved_connection_count
           }.by(0)
         end
@@ -150,9 +151,9 @@ RSpec.describe ActiveRecord::ConnectionAdapters::ConnectionPool do
 
       context 'without error' do
         it 'should not leave connection created for block' do
-          expect {
-            connection_pool.with_connection { }
-          }.to change{
+          expect do
+            connection_pool.with_connection {}
+          end.to change {
             reserved_connection_count
           }.by(0)
         end
@@ -185,10 +186,10 @@ RSpec.describe ActiveRecord::ConnectionAdapters::ConnectionPool do
         it 'should use connection reserved outside with_connection' do
           # Using query methods without a block is expected to retain the
           # reserved connection
-          expect {
+          expect do
             # access database outside with_connection block
             Mdm::Host.count
-          }.to change {
+          end.to change {
             reserved_connection_count
           }.by(1)
 

@@ -5,34 +5,34 @@ RSpec.describe Metasploit::Framework::LoginScanner::SMB do
   let(:public) { 'root' }
   let(:private) { 'toor' }
 
-  let(:pub_blank) {
+  let(:pub_blank) do
     Metasploit::Framework::Credential.new(
-        paired: true,
-        public: public,
-        private: ''
+      paired: true,
+      public: public,
+      private: ''
     )
-  }
+  end
 
-  let(:pub_pub) {
+  let(:pub_pub) do
     Metasploit::Framework::Credential.new(
-        paired: true,
-        public: public,
-        private: public
+      paired: true,
+      public: public,
+      private: public
     )
-  }
+  end
 
-  let(:pub_pri) {
+  let(:pub_pri) do
     Metasploit::Framework::Credential.new(
-        paired: true,
-        public: public,
-        private: private
+      paired: true,
+      public: public,
+      private: private
     )
-  }
+  end
 
 
   subject(:login_scanner) { described_class.new }
 
-  it_behaves_like 'Metasploit::Framework::LoginScanner::Base',  has_realm_key: true, has_default_realm: true
+  it_behaves_like 'Metasploit::Framework::LoginScanner::Base', has_realm_key: true, has_default_realm: true
   it_behaves_like 'Metasploit::Framework::LoginScanner::RexSocket'
   it_behaves_like 'Metasploit::Framework::Tcp::Client'
 
@@ -67,7 +67,7 @@ RSpec.describe Metasploit::Framework::LoginScanner::SMB do
       end
 
       it 'returns a result with INCORRECT status if it fails' do
-        expect_any_instance_of(RubySMB::Client).to receive(:login).and_return(fail)
+        expect_any_instance_of(RubySMB::Client).to receive(:login).and_return(raise)
         expect(login_scanner.attempt_login(pub_pri).status).to eq Metasploit::Model::Login::Status::INCORRECT
       end
 
@@ -87,6 +87,4 @@ RSpec.describe Metasploit::Framework::LoginScanner::SMB do
       end
     end
   end
-
 end
-

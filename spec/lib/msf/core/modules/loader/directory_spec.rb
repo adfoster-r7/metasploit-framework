@@ -1,4 +1,5 @@
 # -*- coding:binary -*-
+
 require 'spec_helper'
 require 'msf/core'
 require 'msf/core/modules/loader/directory'
@@ -30,7 +31,7 @@ RSpec.describe Msf::Modules::Loader::Directory do
         include_context 'Metasploit::Framework::Spec::Constants cleaner'
 
         let(:framework) do
-          framework = double('Msf::Framework', :datastore => {})
+          framework = double('Msf::Framework', datastore: {})
 
           events = double('Events')
           allow(events).to receive(:on_module_load)
@@ -114,9 +115,9 @@ RSpec.describe Msf::Modules::Loader::Directory do
         it 'should not raise an error' do
           expect(File.exist?(module_path)).to be_falsey
 
-          expect {
+          expect do
             subject.load_module(parent_path, type, module_reference_name)
-          }.to_not raise_error
+          end.to_not raise_error
         end
 
         it 'should return false' do
@@ -146,9 +147,9 @@ RSpec.describe Msf::Modules::Loader::Directory do
         end
 
         it 'should not raise an error' do
-          expect {
+          expect do
             subject.send(:read_module_content, parent_path, type, module_reference_name)
-          }.to_not raise_error
+          end.to_not raise_error
         end
 
         it 'should return an empty string' do

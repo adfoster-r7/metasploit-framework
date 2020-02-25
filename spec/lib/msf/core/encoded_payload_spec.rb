@@ -13,32 +13,32 @@ RSpec.describe Msf::EncodedPayload do
         'x86/call4_dword_xor',
         'x86/xor_dynamic',
         'generic/none',
-        ],
+      ],
       module_type: 'encoder',
-      modules_path: modules_path,
+      modules_path: modules_path
     )
   end
 
-  let(:ancestor_reference_names) {
+  let(:ancestor_reference_names) do
     # A module that doesn't require any datastore junk to generate
-    %w{singles/linux/x86/shell_bind_tcp}
-  }
+    %w[singles/linux/x86/shell_bind_tcp]
+  end
 
-  let(:module_type) {
+  let(:module_type) do
     'payload'
-  }
+  end
 
-  let(:reference_name) {
+  let(:reference_name) do
     'linux/x86/shell_bind_tcp'
-  }
+  end
 
-  let(:payload) {
+  let(:payload) do
     load_and_create_module(
-        ancestor_reference_names: ancestor_reference_names,
-        module_type: module_type,
-        reference_name: reference_name
+      ancestor_reference_names: ancestor_reference_names,
+      module_type: module_type,
+      reference_name: reference_name
     )
-  }
+  end
 
   subject(:encoded_payload) do
     described_class.new(framework, payload, reqs)
@@ -53,7 +53,7 @@ RSpec.describe Msf::EncodedPayload do
 
   describe '.create' do
     subject(:encoded_payload) do
-      described_class.create(payload, { 'BadChars' => badchars } )
+      described_class.create(payload, { 'BadChars' => badchars })
     end
 
     specify { expect(encoded_payload).to respond_to(:encoded) }
@@ -71,20 +71,18 @@ RSpec.describe Msf::EncodedPayload do
       it 'returns an Msf::EncodedPayload instance' do
         expect(encoded_payload).to be_a(described_class)
       end
-
     end
-
   end
 
   describe '#arch' do
     context 'when payload is linux/x86 reverse tcp' do
-      let(:ancestor_reference_names) {
-        %w{singles/linux/x86/shell_reverse_tcp}
-      }
+      let(:ancestor_reference_names) do
+        %w[singles/linux/x86/shell_reverse_tcp]
+      end
 
-      let(:reference_name) {
+      let(:reference_name) do
         'linux/x86/shell_reverse_tcp'
-      }
+      end
 
       it 'returns ["X86"]' do
         expect(encoded_payload.arch).to eq [ARCH_X86]
@@ -92,13 +90,13 @@ RSpec.describe Msf::EncodedPayload do
     end
 
     context 'when payload is linux/x64 reverse tcp' do
-      let(:ancestor_reference_names) {
-        %w{singles/linux/x64/shell_reverse_tcp}
-      }
+      let(:ancestor_reference_names) do
+        %w[singles/linux/x64/shell_reverse_tcp]
+      end
 
-      let(:reference_name) {
+      let(:reference_name) do
         'linux/x64/shell_reverse_tcp'
-      }
+      end
 
       it 'returns ["X86_64"]' do
         expect(encoded_payload.arch).to eq [ARCH_X64]
@@ -115,7 +113,6 @@ RSpec.describe Msf::EncodedPayload do
       specify 'returns the raw value' do
         expect(encoded_payload.generate("RAW")).to eql("RAW")
       end
-
     end
 
     context 'with bad characters: "\\0"' do
@@ -128,7 +125,6 @@ RSpec.describe Msf::EncodedPayload do
       specify do
         expect(encoded_payload.encoded).not_to include(badchars)
       end
-
     end
     context 'with bad characters: "\\xD9\\x00"' do
       let(:badchars) { "\xD9\x00".force_encoding('binary') }
@@ -140,17 +136,16 @@ RSpec.describe Msf::EncodedPayload do
       specify do
         expect(encoded_payload.encoded).not_to include(badchars)
       end
-
     end
     context 'with windows/meterpreter_bind_tcp and bad characters: "\\x00\\x0a\\x0d"' do
       let(:badchars) { "\x00\x0a\x0d".force_encoding('binary') }
-      let(:ancestor_reference_names) {
-        %w{singles/windows/meterpreter_bind_tcp}
-      }
+      let(:ancestor_reference_names) do
+        %w[singles/windows/meterpreter_bind_tcp]
+      end
 
-      let(:reference_name) {
+      let(:reference_name) do
         'windows/meterpreter_bind_tcp'
-      }
+      end
 
       specify 'chooses x86/xor_dynamic' do
         expect(encoded_payload.encoder.refname).to eq("x86/xor_dynamic")
@@ -159,9 +154,6 @@ RSpec.describe Msf::EncodedPayload do
       specify do
         expect(encoded_payload.encoded).not_to include(badchars)
       end
-
     end
-
   end
-
 end

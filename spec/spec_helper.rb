@@ -1,10 +1,11 @@
 # -*- coding: binary -*-
+
 require 'stringio'
 require 'factory_bot'
 
 ENV['RAILS_ENV'] = 'test'
 
-require File.expand_path('../../config/rails_bigdecimal_fix', __FILE__)
+require File.expand_path('../config/rails_bigdecimal_fix', __dir__)
 
 # @note must be before loading config/environment because railtie needs to be loaded before
 #   `Metasploit::Framework::Application.initialize!` is called.
@@ -15,17 +16,17 @@ require 'active_record/railtie'
 require 'metasploit/framework/database'
 # check if database.yml is present
 unless Metasploit::Framework::Database.configurations_pathname.try(:to_path)
-  fail 'RSPEC currently needs a configured database'
+  raise 'RSPEC currently needs a configured database'
 end
 
-require File.expand_path('../../config/environment', __FILE__)
+require File.expand_path('../config/environment', __dir__)
 
 # Don't `require 'rspec/rails'` as it includes support for pieces of rails that metasploit-framework doesn't use
 require 'rspec/rails'
 
 require 'metasploit/framework/spec'
 
-FILE_FIXTURES_PATH = File.expand_path(File.dirname(__FILE__)) + '/file_fixtures/'
+FILE_FIXTURES_PATH = __dir__ + '/file_fixtures/'
 
 # Load the shared examples from the following engines
 engines = [
@@ -37,9 +38,9 @@ engines = [
 # in spec/support/ and its subdirectories.
 engines.each do |engine|
   support_glob = engine.root.join('spec', 'support', '**', '*.rb')
-  Dir[support_glob].each { |f|
+  Dir[support_glob].sort.each do |f|
     require f
-  }
+  end
 end
 
 RSpec.configure do |config|
@@ -127,13 +128,12 @@ RSpec.configure do |config|
       Metasploit::Framework::DataService::ManagedRemoteDataService.instance.stop
     end
   end
-
 end
 
 Metasploit::Framework::Spec::Constants::Suite.configure!
 Metasploit::Framework::Spec::Threads::Suite.configure!
 
-def get_stdout(&block)
+def get_stdout
   out = $stdout
   $stdout = tmp = StringIO.new
   begin
@@ -144,7 +144,7 @@ def get_stdout(&block)
   tmp.string
 end
 
-def get_stderr(&block)
+def get_stderr
   out = $stderr
   $stderr = tmp = StringIO.new
   begin

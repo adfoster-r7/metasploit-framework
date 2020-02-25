@@ -4,37 +4,36 @@ require 'metasploit/framework/login_scanner/mysql'
 RSpec.describe Metasploit::Framework::LoginScanner::MySQL do
   let(:public) { 'root' }
   let(:private) { 'toor' }
-  let(:pub_blank) {
+  let(:pub_blank) do
     Metasploit::Framework::Credential.new(
-        paired: true,
-        public: public,
-        private: ''
+      paired: true,
+      public: public,
+      private: ''
     )
-  }
+  end
 
-  let(:pub_pub) {
+  let(:pub_pub) do
     Metasploit::Framework::Credential.new(
-        paired: true,
-        public: public,
-        private: public
+      paired: true,
+      public: public,
+      private: public
     )
-  }
+  end
 
-  let(:pub_pri) {
+  let(:pub_pri) do
     Metasploit::Framework::Credential.new(
-        paired: true,
-        public: public,
-        private: private
+      paired: true,
+      public: public,
+      private: private
     )
-  }
+  end
 
   subject(:login_scanner) { described_class.new }
 
-  it_behaves_like 'Metasploit::Framework::LoginScanner::Base',  has_realm_key: false, has_default_realm: false
+  it_behaves_like 'Metasploit::Framework::LoginScanner::Base', has_realm_key: false, has_default_realm: false
   it_behaves_like 'Metasploit::Framework::LoginScanner::RexSocket'
 
   context '#attempt_login' do
-
     context 'when the attempt is successful' do
       it 'returns a result object with a status of Metasploit::Model::Login::Status::SUCCESSFUL' do
         expect(::RbMysql).to receive(:connect).and_return "fake mysql handle"
@@ -104,5 +103,4 @@ RSpec.describe Metasploit::Framework::LoginScanner::MySQL do
       end
     end
   end
-
 end

@@ -22,11 +22,11 @@ RSpec.shared_examples_for 'Msf::DBManager#search_modules Mdm::Module::Platform#n
         expect(module_details.count).to be > 0
 
         expect(
-          module_details.all? { |module_detail|
-            module_detail.platforms.any? { |module_platform|
+          module_details.all? do |module_detail|
+            module_detail.platforms.any? do |module_platform|
               module_platform.name == self.module_platform.name
-            }
-          }
+            end
+          end
         ).to eq true
       end
     end
@@ -41,11 +41,11 @@ RSpec.shared_examples_for 'Msf::DBManager#search_modules Mdm::Module::Platform#n
         expect(module_details.count).to be > 0
 
         expect(
-          module_details.all? { |module_detail|
-            module_detail.targets.any? { |module_target|
+          module_details.all? do |module_detail|
+            module_detail.targets.any? do |module_target|
               module_target.name == self.module_target.name
-            }
-          }
+            end
+          end
         ).to eq true
       end
     end

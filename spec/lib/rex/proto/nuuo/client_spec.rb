@@ -1,19 +1,20 @@
 # -*- coding:binary -*-
+
 require 'rex/proto/nuuo/client'
 
 RSpec.describe Rex::Proto::Nuuo::Client do
-  subject(:client) {
+  subject(:client) do
     described_class.new({
-      protocol: protocol,
+                          protocol: protocol,
       user_session: client_user_session,
       username: client_username,
       password: client_password
-    })
-  }
-  let(:protocol) {'tcp'}
-  let(:client_user_session) {nil}
-  let(:client_username) {nil}
-  let(:client_password) {nil}
+                        })
+  end
+  let(:protocol) { 'tcp' }
+  let(:client_user_session) { nil }
+  let(:client_username) { nil }
+  let(:client_password) { nil }
 
   describe '#connect' do
     context 'given temp is false' do
@@ -83,16 +84,15 @@ RSpec.describe Rex::Proto::Nuuo::Client do
         end
       end
     end
-
   end
 
   describe '#close' do
     context 'given there is a connection' do
       it 'calls shutdown on the connection' do
         tcp_connection = double('tcp_connection')
-        allow(tcp_connection).to receive(:shutdown) {true}
-        allow(tcp_connection).to receive(:closed?) {false}
-        allow(tcp_connection).to receive(:close) {true}
+        allow(tcp_connection).to receive(:shutdown) { true }
+        allow(tcp_connection).to receive(:closed?) { false }
+        allow(tcp_connection).to receive(:close) { true }
         client.connection = tcp_connection
 
         expect(tcp_connection).to receive(:shutdown)
@@ -101,9 +101,9 @@ RSpec.describe Rex::Proto::Nuuo::Client do
 
       it 'calls closed on the connection' do
         tcp_connection = double('tcp_connection')
-        allow(tcp_connection).to receive(:shutdown) {true}
-        allow(tcp_connection).to receive(:closed?) {false}
-        allow(tcp_connection).to receive(:close) {true}
+        allow(tcp_connection).to receive(:shutdown) { true }
+        allow(tcp_connection).to receive(:closed?) { false }
+        allow(tcp_connection).to receive(:close) { true }
         client.connection = tcp_connection
 
         expect(tcp_connection).to receive(:close)
@@ -149,11 +149,11 @@ RSpec.describe Rex::Proto::Nuuo::Client do
   end
 
   describe '#read_response' do
-    let(:res) {"NUCM/1.0 200\r\nTest:test\r\nContent-Length:1\r\n\r\na"}
+    let(:res) { "NUCM/1.0 200\r\nTest:test\r\nContent-Length:1\r\n\r\na" }
     it 'returns a Response object' do
       tcp_connection = double('tcp_connection')
-      allow(tcp_connection).to receive('closed?') {false}
-      allow(tcp_connection).to receive('get_once') {res}
+      allow(tcp_connection).to receive('closed?') { false }
+      allow(tcp_connection).to receive('get_once') { res }
       client.connection = tcp_connection
 
       expect(client.read_response).to be_a_kind_of(Rex::Proto::Nuuo::Response)
@@ -161,18 +161,18 @@ RSpec.describe Rex::Proto::Nuuo::Client do
   end
 
   describe '#request_ping' do
-    subject(:ping_request) {
-      opts = {'user_session' => user_session}
+    subject(:ping_request) do
+      opts = { 'user_session' => user_session }
       client.request_ping(opts)
-    }
-    let(:user_session) {nil}
+    end
+    let(:user_session) { nil }
 
     it 'returns a PING client request' do
       expect(ping_request.to_s).to start_with('PING')
     end
 
     context 'given a user_session option' do
-      let(:user_session) {'test'}
+      let(:user_session) { 'test' }
 
       context 'when the client does not have a session' do
         it 'uses the user_session option' do
@@ -181,7 +181,7 @@ RSpec.describe Rex::Proto::Nuuo::Client do
       end
 
       context 'when the client has a session' do
-        let(:client_user_session) {'client'}
+        let(:client_user_session) { 'client' }
 
         it 'overrides the client session value' do
           expect(ping_request.to_s).to match('User-Session-No: test')
@@ -198,26 +198,25 @@ RSpec.describe Rex::Proto::Nuuo::Client do
       end
 
       context 'when the client has a session' do
-        let(:client_user_session) {'client'}
+        let(:client_user_session) { 'client' }
 
         it 'uses the client session' do
           expect(ping_request.to_s).to match('User-Session-No: client')
         end
       end
     end
-
   end
 
   describe '#request_sendlicfile' do
-    subject(:sendlicfile_request) {
+    subject(:sendlicfile_request) do
       opts = {
         'file_name' => filename,
         'data' => data
       }
       client.request_sendlicfile(opts).to_s
-    }
-    let(:filename) {'TestFile'}
-    let(:data) {'testdata'}
+    end
+    let(:filename) { 'TestFile' }
+    let(:data) { 'testdata' }
 
     it 'returns a SENDLICFILE client request' do
       expect(sendlicfile_request).to start_with('SENDLICFILE')
@@ -230,7 +229,7 @@ RSpec.describe Rex::Proto::Nuuo::Client do
     end
 
     context 'given no file_name' do
-      let(:filename) {nil}
+      let(:filename) { nil }
 
       it 'creates an empty FileName header' do
         expect(sendlicfile_request).to match("[^\r\n]\r\nFileName: \r\n")
@@ -248,7 +247,7 @@ RSpec.describe Rex::Proto::Nuuo::Client do
     end
 
     context 'given no data' do
-      let(:data) {nil}
+      let(:data) { nil }
       it 'creates an empty body' do
         expect(sendlicfile_request).to end_with("\r\n\r\n")
       end
@@ -260,15 +259,15 @@ RSpec.describe Rex::Proto::Nuuo::Client do
   end
 
   describe '#request_getconfig' do
-    subject(:getconfig_request) {
+    subject(:getconfig_request) do
       opts = {
         'file_name' => filename,
         'file_type' => filetype
       }
       client.request_getconfig(opts).to_s
-    }
-    let(:filename) {'TestName'}
-    let(:filetype) {2}
+    end
+    let(:filename) { 'TestName' }
+    let(:filetype) { 2 }
 
     it 'returns a GETCONFIG client request' do
       expect(getconfig_request).to start_with('GETCONFIG')
@@ -281,7 +280,7 @@ RSpec.describe Rex::Proto::Nuuo::Client do
     end
 
     context 'given no file_name' do
-      let(:filename) {nil}
+      let(:filename) { nil }
       it 'creates an empty FileName header' do
         expect(getconfig_request).to match("[^\r\n]\r\nFileName: \r\n")
       end
@@ -294,7 +293,7 @@ RSpec.describe Rex::Proto::Nuuo::Client do
     end
 
     context 'given no file_type' do
-      let(:filetype) {nil}
+      let(:filetype) { nil }
       it 'defaults to 1' do
         expect(getconfig_request).to match("[^\r\n]\r\nFileType: 1\r\n")
       end
@@ -302,17 +301,17 @@ RSpec.describe Rex::Proto::Nuuo::Client do
   end
 
   describe '#request_commitconfig' do
-    subject(:commitconfig_request) {
+    subject(:commitconfig_request) do
       opts = {
         'file_name' => filename,
         'file_type' => filetype,
         'data' => data
       }
       client.request_commitconfig(opts).to_s
-    }
-    let(:filename) {'TestName'}
-    let(:filetype) {2}
-    let(:data) {'testdata'}
+    end
+    let(:filename) { 'TestName' }
+    let(:filetype) { 2 }
+    let(:data) { 'testdata' }
 
     it 'returns a COMMITCONFIG client request' do
       expect(commitconfig_request).to start_with('COMMITCONFIG')
@@ -323,9 +322,9 @@ RSpec.describe Rex::Proto::Nuuo::Client do
         expect(commitconfig_request).to match("[^\r\n]\r\nFileName: TestName\r\n")
       end
     end
-    
+
     context 'given no file_name' do
-      let(:filename) {nil}
+      let(:filename) { nil }
 
       it 'creates an empty FileName header' do
         expect(commitconfig_request).to match("[^\r\n]\r\nFileName: \r\n")
@@ -339,7 +338,7 @@ RSpec.describe Rex::Proto::Nuuo::Client do
     end
 
     context 'given no file_type' do
-      let(:filetype) {nil}
+      let(:filetype) { nil }
 
       it 'creates an empty FileType header' do
         expect(commitconfig_request).to match("[^\r\n]\r\nFileType: 1\r\n")
@@ -357,7 +356,7 @@ RSpec.describe Rex::Proto::Nuuo::Client do
     end
 
     context 'given no data' do
-      let(:data) {nil}
+      let(:data) { nil }
 
       it 'creates an empty request body' do
         expect(commitconfig_request).to end_with("\r\n\r\n")
@@ -370,17 +369,17 @@ RSpec.describe Rex::Proto::Nuuo::Client do
   end
 
   describe '#request_userlogin' do
-    subject(:userlogin_request) {
+    subject(:userlogin_request) do
       opts = {
         'server_version' => server_version,
         'username' => username,
         'password' => password
       }
       client.request_userlogin(opts).to_s
-    }
-    let(:server_version) {'1.1.1'}
-    let(:username) {'user'}
-    let(:password) {'pass'}
+    end
+    let(:server_version) { '1.1.1' }
+    let(:username) { 'user' }
+    let(:password) { 'pass' }
 
     it 'returns a USERLOGIN client request' do
       expect(userlogin_request).to start_with('USERLOGIN')
@@ -393,7 +392,7 @@ RSpec.describe Rex::Proto::Nuuo::Client do
     end
 
     context 'given no server_version' do
-      let(:server_version) {nil}
+      let(:server_version) { nil }
 
       it 'creates an empty Version header' do
         expect(userlogin_request).to match("[^\r\n]\r\nVersion: \r\n")
@@ -401,7 +400,7 @@ RSpec.describe Rex::Proto::Nuuo::Client do
     end
 
     context 'when client has username' do
-      let(:client_username) {'client_user'}
+      let(:client_username) { 'client_user' }
 
       context 'given username' do
         it 'sets the Username header with opts username' do
@@ -410,7 +409,7 @@ RSpec.describe Rex::Proto::Nuuo::Client do
       end
 
       context 'given no username' do
-        let(:username) {nil}
+        let(:username) { nil }
 
         it 'creates an Username header with client username' do
           expect(userlogin_request).to match("[^\r\n]\r\nUsername: client_user\r\n")
@@ -426,7 +425,7 @@ RSpec.describe Rex::Proto::Nuuo::Client do
       end
 
       context 'given no username' do
-        let(:username) {nil}
+        let(:username) { nil }
 
         it 'creates an empty Username header' do
           expect(userlogin_request).to match("[^\r\n]\r\nUsername: \r\n")
@@ -435,7 +434,7 @@ RSpec.describe Rex::Proto::Nuuo::Client do
     end
 
     context 'when client has password' do
-      let(:client_password) {'client_pass'}
+      let(:client_password) { 'client_pass' }
 
       context 'given password' do
         it 'sets body with password' do
@@ -448,7 +447,7 @@ RSpec.describe Rex::Proto::Nuuo::Client do
       end
 
       context 'given no password' do
-        let(:password) {nil}
+        let(:password) { nil }
 
         it 'sets body to client password' do
           expect(userlogin_request).to end_with("\r\n\r\nclient_pass")
@@ -472,7 +471,7 @@ RSpec.describe Rex::Proto::Nuuo::Client do
       end
 
       context 'given no password' do
-        let(:password) {nil}
+        let(:password) { nil }
 
         it 'sets empty body' do
           expect(userlogin_request).to end_with("\r\n\r\n")
@@ -483,28 +482,27 @@ RSpec.describe Rex::Proto::Nuuo::Client do
         end
       end
     end
-
   end
 
   describe '#request_getopenalarm' do
-    subject(:getopenalarm_request) {
+    subject(:getopenalarm_request) do
       opts = {
         'device_id' => device_id,
         'source_server' => source_server,
         'last_one' => last_one
       }
       client.request_getopenalarm(opts).to_s
-    }
-    let(:device_id) {nil}
-    let(:source_server) {nil}
-    let(:last_one) {nil}
+    end
+    let(:device_id) { nil }
+    let(:source_server) { nil }
+    let(:last_one) { nil }
 
     it 'returns a GETOPENALARM client request' do
       expect(getopenalarm_request).to start_with('GETOPENALARM')
     end
 
     context 'given device_id' do
-      let(:device_id) {2}
+      let(:device_id) { 2 }
 
       it 'sets DeviceID header with value' do
         expect(getopenalarm_request).to match("[^\r\n]\r\nDeviceID: 2\r\n")
@@ -518,7 +516,7 @@ RSpec.describe Rex::Proto::Nuuo::Client do
     end
 
     context 'given source_server' do
-      let(:source_server) {2}
+      let(:source_server) { 2 }
 
       it 'sets SourceServer header with value' do
         expect(getopenalarm_request).to match("[^\r\n]\r\nSourceServer: 2\r\n")
@@ -532,7 +530,7 @@ RSpec.describe Rex::Proto::Nuuo::Client do
     end
 
     context 'given last_one' do
-      let(:last_one) {2}
+      let(:last_one) { 2 }
 
       it 'sets LastOne header with value' do
         expect(getopenalarm_request).to match("[^\r\n]\r\nLastOne: 2\r\n")

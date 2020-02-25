@@ -5,7 +5,7 @@ RSpec.describe Metasploit::Framework::Obfuscation::CRandomizer::Modifier do
   subject(:modifier) do
     weight = 80
 
-    source_code = %Q|
+    source_code = %|
     int main() {
       int x = 0;
       return 0;

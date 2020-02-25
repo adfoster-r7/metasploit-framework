@@ -2,24 +2,21 @@ require 'spec_helper'
 require 'metasploit/framework/hashes/identify'
 require 'bcrypt'
 
-=begin
-#!/usr/bin/python
+# #!/usr/bin/python
 # bcrypts generated with python's passlib
-from passlib import hash
-print("MD5: %s") %(hash.md5_crypt.hash("password"))
-print("BCrypt 2: %s") %(hash.bcrypt.using(ident="2").hash("password"))
-print("BCrypt 2a: %s") %(hash.bcrypt.using(ident="2a").hash("password"))
-print("BCrypt 2b: %s") %(hash.bcrypt.using(ident="2b").hash("password"))
-print("BCrypt 2y: %s") %(hash.bcrypt.using(ident="2y").hash("password"))
+# from passlib import hash
+# print("MD5: %s") %(hash.md5_crypt.hash("password"))
+# print("BCrypt 2: %s") %(hash.bcrypt.using(ident="2").hash("password"))
+# print("BCrypt 2a: %s") %(hash.bcrypt.using(ident="2a").hash("password"))
+# print("BCrypt 2b: %s") %(hash.bcrypt.using(ident="2b").hash("password"))
+# print("BCrypt 2y: %s") %(hash.bcrypt.using(ident="2y").hash("password"))
 # bcrypt.using(ident="2x").hash("password")
-print("SHA256: %s") %(hash.sha256_crypt.hash("password"))
-print("SHA512: %s") %(hash.sha512_crypt.hash("password"))
-print("BSDi: %s") %(hash.bsdi_crypt.hash("password"))
-print("DES: %s") %(hash.des_crypt.hash("password"))
-=end
+# print("SHA256: %s") %(hash.sha256_crypt.hash("password"))
+# print("SHA512: %s") %(hash.sha512_crypt.hash("password"))
+# print("BSDi: %s") %(hash.bsdi_crypt.hash("password"))
+# print("DES: %s") %(hash.des_crypt.hash("password"))
 
 RSpec.describe 'hashes/identify' do
-
   describe 'identify_md5' do
     it 'returns md5' do
       hash = identify_hash('$1$IEHUWAxH$nMC1edxSFa4SaKH7hi2.P1')
@@ -122,14 +119,14 @@ RSpec.describe 'hashes/identify' do
   describe 'identify_pbkdf2_osx' do
     it 'returns pbkdf2-hmac-sha512,osx' do
       hash = identify_hash('$ml$49504$0dba6246bd38266b2e827ff7e7271380757c71d653893aa361d5902398302369$c5f198639915a101c99af326dffe13e8f14456be8fd2312a39a777b92178804e204ca4fee12a8667871440eff4288e811d86d746c6d96a60c919c3418dfebba42f329f5d73c0372d636d61d5dfda1add61af36c70e4acd771276107209e643ae92a0f43e95a452744e50fb4540d9bdf4e0b701725d7db488fbe18c1ab7737c6b')
-      expect(hash).to match ('pbkdf2-hmac-sha512,osx')
+      expect(hash).to match 'pbkdf2-hmac-sha512,osx'
     end
   end
 
   describe 'identify_sha_osx' do
     it 'returns xsha,osx' do
       hash = identify_hash('1430823483d07626ef8be3fda2ff056d0dfd818dbfe47683')
-      expect(hash).to match ('xsha,osx')
+      expect(hash).to match 'xsha,osx'
     end
   end
 
@@ -255,7 +252,7 @@ RSpec.describe 'hashes/identify' do
   describe 'identify_android_sha1' do
     it 'returns android-sha1' do
       hash = identify_hash('EA8457DE97836C955082AE77DBE2CD86A4E8BC0E:4aafc54dc502e88b')
-      expect(hash).to match ('android-sha1')
+      expect(hash).to match 'android-sha1'
     end
   end
 
@@ -293,5 +290,4 @@ RSpec.describe 'hashes/identify' do
       expect(hash).to match('')
     end
   end
-
 end

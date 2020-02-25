@@ -2,9 +2,8 @@ require 'metasploit/framework/obfuscation/crandomizer/random_statements'
 require 'metasploit/framework/obfuscation/crandomizer/code_factory'
 
 RSpec.describe Metasploit::Framework::Obfuscation::CRandomizer::RandomStatements do
-
   let(:c_source_code) do
-    %Q|
+    %|
     int main() {
       const char* s = "hello world";
       return 0;

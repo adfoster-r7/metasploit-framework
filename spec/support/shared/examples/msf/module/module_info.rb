@@ -1,11 +1,11 @@
 RSpec.shared_examples_for 'Msf::Module::ModuleInfo' do
   context 'CONSTANTS' do
     context 'UpdateableOptions' do
-      subject(:updateable_options) {
+      subject(:updateable_options) do
         described_class::UpdateableOptions
-      }
+      end
 
-      it { is_expected.to match_array(%w{Name Description Alias PayloadCompat})}
+      it { is_expected.to match_array(%w[Name Description Alias PayloadCompat]) }
     end
   end
 

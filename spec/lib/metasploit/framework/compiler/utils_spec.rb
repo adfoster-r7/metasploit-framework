@@ -4,14 +4,14 @@ require 'metasploit/framework/compiler/windows'
 
 RSpec.describe Metasploit::Framework::Compiler::Utils do
   describe '#self.normalize_code' do
-    let(:c_template) {
-      %Q|#include <Windows.h>
+    let(:c_template) do
+      %|#include <Windows.h>
       int main(void) {
         MessageBox(NULL, "Hello World", "Test", MB_OK);
         return 0;
       }
       |
-    }
+    end
 
     it 'returns the raw source code' do
       headers = Metasploit::Framework::Compiler::Headers::Windows.new

@@ -3,16 +3,14 @@ require 'securerandom'
 
 
 RSpec.describe Rex::Crypto do
-
   describe '#rc4' do
-
-    let(:key) {
+    let(:key) do
       SecureRandom.random_bytes(32)
-    }
+    end
 
-    let(:value) {
+    let(:value) do
       'Hello World'
-    }
+    end
 
     it 'encrypts a string' do
       expect(Rex::Crypto.rc4(key, value)).not_to eq(value)
@@ -23,6 +21,5 @@ RSpec.describe Rex::Crypto do
       decrypted_str = Rex::Crypto.rc4(key, encrypted_str)
       expect(decrypted_str).to eq(value)
     end
-
   end
 end

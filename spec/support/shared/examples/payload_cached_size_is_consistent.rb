@@ -70,7 +70,6 @@
 #   `:ancestor_reference_names`.
 # @return [void]
 RSpec.shared_examples_for 'payload cached size is consistent' do |options|
-
   options.assert_valid_keys(:ancestor_reference_names, :modules_pathname, :reference_name, :dynamic_size)
 
   ancestor_reference_names = options.fetch(:ancestor_reference_names)
@@ -109,9 +108,9 @@ RSpec.shared_examples_for 'payload cached size is consistent' do |options|
   }
 
   opts6 = {
-      'Format'      => 'raw',
-      'Options'     => {
-          'CPORT' => 4444,
+    'Format'      => 'raw',
+      'Options' => {
+        'CPORT' => 4444,
           'LPORT' => 4444,
           'LHOST' => 'ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff',
           'KHOST' => 'ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff',
@@ -135,25 +134,25 @@ RSpec.shared_examples_for 'payload cached size is consistent' do |options|
   # lets
   #
 
-  context reference_name  do
+  context reference_name do
     ancestor_reference_names.each do |ancestor_reference_name|
       it "can load '#{module_type}/#{ancestor_reference_name}'" do
         @actual_ancestor_reference_name_set.add(ancestor_reference_name)
 
         expect_to_load_module_ancestor(
-            ancestor_reference_name: ancestor_reference_name,
-            module_type: module_type,
-            modules_path: modules_path
+          ancestor_reference_name: ancestor_reference_name,
+          module_type: module_type,
+          modules_path: modules_path
         )
       end
     end
 
     it 'can be instantiated' do
       load_and_create_module(
-          ancestor_reference_names: ancestor_reference_names,
-          module_type: module_type,
-          modules_path: modules_path,
-          reference_name: reference_name
+        ancestor_reference_names: ancestor_reference_names,
+        module_type: module_type,
+        modules_path: modules_path,
+        reference_name: reference_name
       )
     end
 
@@ -162,10 +161,10 @@ RSpec.shared_examples_for 'payload cached size is consistent' do |options|
     if dynamic_size
       it 'is dynamic_size?' do
         pinst = load_and_create_module(
-              ancestor_reference_names: ancestor_reference_names,
-              module_type: module_type,
-              modules_path: modules_path,
-              reference_name: reference_name
+          ancestor_reference_names: ancestor_reference_names,
+          module_type: module_type,
+          modules_path: modules_path,
+          reference_name: reference_name
         )
         expect(pinst.cached_size).to(be_nil)
         expect(pinst.dynamic_size?).to be(true)
@@ -173,10 +172,10 @@ RSpec.shared_examples_for 'payload cached size is consistent' do |options|
     else
       it 'has a valid cached_size' do
         pinst = load_and_create_module(
-              ancestor_reference_names: ancestor_reference_names,
-              module_type: module_type,
-              modules_path: modules_path,
-              reference_name: reference_name
+          ancestor_reference_names: ancestor_reference_names,
+          module_type: module_type,
+          modules_path: modules_path,
+          reference_name: reference_name
         )
         expect(pinst.cached_size).to_not(be_nil)
         expect(pinst.dynamic_size?).to be(false)

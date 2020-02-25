@@ -1,9 +1,9 @@
 # -*- coding: binary -*-
+
 require 'spec_helper'
 require 'rex/proto/mms/model'
 
 RSpec.describe Rex::Proto::Mms::Client do
-
   let(:phone_numbers) { ['1112223333'] }
 
   let(:message) { 'message' }
@@ -18,14 +18,14 @@ RSpec.describe Rex::Proto::Mms::Client do
 
   let(:carrier) { :verizon }
 
-  let(:smtp_server) {
+  let(:smtp_server) do
     Rex::Proto::Mms::Model::Smtp.new(
       address: 'example.com',
       port: 25,
       username: 'username',
       password: 'password'
     )
-  }
+  end
 
   subject do
     Rex::Proto::Mms::Client.new(
@@ -58,5 +58,4 @@ RSpec.describe Rex::Proto::Mms::Client do
       expect(@sent_message).to include('MIME-Version: 1.0')
     end
   end
-
 end

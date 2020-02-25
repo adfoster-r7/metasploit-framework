@@ -5,47 +5,47 @@ RSpec.describe Metasploit::Framework::LoginScanner::FTP do
   let(:public) { 'root' }
   let(:private) { 'toor' }
 
-  let(:pub_blank) {
+  let(:pub_blank) do
     Metasploit::Framework::Credential.new(
-        paired: true,
-        public: public,
-        private: ''
+      paired: true,
+      public: public,
+      private: ''
     )
-  }
+  end
 
-  let(:pub_pub) {
+  let(:pub_pub) do
     Metasploit::Framework::Credential.new(
-        paired: true,
-        public: public,
-        private: public
+      paired: true,
+      public: public,
+      private: public
     )
-  }
+  end
 
-  let(:pub_pri) {
+  let(:pub_pri) do
     Metasploit::Framework::Credential.new(
-        paired: true,
-        public: public,
-        private: private
+      paired: true,
+      public: public,
+      private: private
     )
-  }
+  end
 
-  let(:invalid_detail) {
+  let(:invalid_detail) do
     Metasploit::Framework::Credential.new(
-        paired: true,
-        public: nil,
-        private: nil
+      paired: true,
+      public: nil,
+      private: nil
     )
-  }
+  end
 
-  let(:detail_group) {
+  let(:detail_group) do
     [ pub_blank, pub_pub, pub_pri]
-  }
+  end
 
-  subject(:ftp_scanner) {
+  subject(:ftp_scanner) do
     described_class.new
-  }
+  end
 
-  it_behaves_like 'Metasploit::Framework::LoginScanner::Base',  has_realm_key: false, has_default_realm: false
+  it_behaves_like 'Metasploit::Framework::LoginScanner::Base', has_realm_key: false, has_default_realm: false
   it_behaves_like 'Metasploit::Framework::LoginScanner::RexSocket'
   it_behaves_like 'Metasploit::Framework::Tcp::Client'
 
@@ -66,7 +66,6 @@ RSpec.describe Metasploit::Framework::LoginScanner::FTP do
 
   context 'validations' do
     context 'ftp_timeout' do
-
       it 'defaults to 16' do
         expect(ftp_scanner.ftp_timeout).to eq 16
       end
@@ -96,12 +95,10 @@ RSpec.describe Metasploit::Framework::LoginScanner::FTP do
       end
 
       it 'is valid for a legitimate  number' do
-        ftp_scanner.ftp_timeout = rand(1000) + 1
+        ftp_scanner.ftp_timeout = rand(1..1000)
         expect(ftp_scanner.errors[:ftp_timeout]).to be_empty
       end
     end
-
-
   end
 
   context '#attempt_login' do
@@ -116,7 +113,6 @@ RSpec.describe Metasploit::Framework::LoginScanner::FTP do
 
 
     context 'when it fails' do
-
       it 'returns Metasploit::Model::Login::Status::UNABLE_TO_CONNECT for a Rex::ConnectionError' do
         expect(Rex::Socket::Tcp).to receive(:create) { raise Rex::ConnectionError }
         expect(ftp_scanner.attempt_login(pub_pri).status).to eq Metasploit::Model::Login::Status::UNABLE_TO_CONNECT
@@ -136,13 +132,9 @@ RSpec.describe Metasploit::Framework::LoginScanner::FTP do
         expect(Rex::Socket::Tcp).to receive(:create) { raise ::Timeout::Error }
         expect(ftp_scanner.attempt_login(pub_pri).status).to eq Metasploit::Model::Login::Status::UNABLE_TO_CONNECT
       end
-
     end
 
     context 'when it succeeds' do
-
-
     end
   end
-
 end

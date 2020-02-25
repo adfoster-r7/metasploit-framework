@@ -2,8 +2,8 @@ RSpec.shared_context 'Msf::UIDriver' do
   let(:driver) do
     double(
       'Driver',
-      :framework => framework
-    ).tap { |driver|
+      framework: framework
+    ).tap do |driver|
       allow(driver).to receive(:on_command_proc=).with(kind_of(Proc))
       allow(driver).to receive(:print_line).with(kind_of(String)) do |string|
         @output ||= []
@@ -21,6 +21,6 @@ RSpec.shared_context 'Msf::UIDriver' do
         @error ||= []
         @error.concat string.split("\n")
       end
-    }
+    end
   end
 end

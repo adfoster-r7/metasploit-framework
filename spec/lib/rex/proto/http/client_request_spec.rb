@@ -1,4 +1,5 @@
 # -*- coding:binary -*-
+
 require 'spec_helper'
 
 require 'rex/proto/http/client_request'
@@ -38,12 +39,10 @@ RSpec.shared_context "with 'uri_dir_fake_relative'" do
     expect(client_request.send(:set_uri)).to include("../")
     expect(client_request.to_s).to include("../")
   end
-
 end
 
 
 RSpec.shared_context "with 'uri_full_url'" do
-
   before(:example) do
     client_request.opts['uri_full_url'] = true
   end
@@ -69,20 +68,16 @@ RSpec.shared_context "with 'uri_full_url'" do
 
     it_behaves_like "uri_full_url"
   end
-
 end
 
 RSpec.shared_examples "uri_full_url" do
-
   it "#set_uri should have the host in the URI" do
     expect(client_request.send(:set_uri)).to start_with("http://#{host}/")
   end
-
 end
 
 
 RSpec.describe Rex::Proto::Http::ClientRequest do
-
   default_options = {
     # All of these should be what you get when you pass in empty
     # options, but of course that would make it too easy
@@ -91,69 +86,65 @@ RSpec.describe Rex::Proto::Http::ClientRequest do
     'proto' => "HTTP",
     'connection' => "close",
     'version' => "1.1",
-    'port' => 80,
+    'port' => 80
   }
 
   [
     [ "with reasonable default options",
       default_options.merge({
-        'agent' => "Mozilla/4.0 (compatible; Metasploit RSPEC)",
-        'vhost' => 'www.example.com',
-      }),
+                              'agent' => "Mozilla/4.0 (compatible; Metasploit RSPEC)",
+        'vhost' => 'www.example.com'
+                            }),
       {
-        :set_uri               => { :result => "/" },
-        :set_method            => { :result => "GET" },
-        :set_version           => { :result => "HTTP/1.1\r\n" },
-        :set_uri_prepend       => { :result => "" },
-        :set_uri_append        => { :result => "" },
-        :set_agent_header      => { :result => "User-Agent: Mozilla/4.0 (compatible; Metasploit RSPEC)\r\n" },
-        :set_host_header       => { :result => "Host: www.example.com\r\n" },
-        :set_formatted_header  => { :args => ["Foo\twith\tabs", "Bar"], :result => "Foo\twith\tabs: Bar\r\n" },
-      }
-    ],
+        set_uri: { result: "/" },
+        set_method: { result: "GET" },
+        set_version: { result: "HTTP/1.1\r\n" },
+        set_uri_prepend: { result: "" },
+        set_uri_append: { result: "" },
+        set_agent_header: { result: "User-Agent: Mozilla/4.0 (compatible; Metasploit RSPEC)\r\n" },
+        set_host_header: { result: "Host: www.example.com\r\n" },
+        set_formatted_header: { args: ["Foo\twith\tabs", "Bar"], result: "Foo\twith\tabs: Bar\r\n" }
+      }],
 
     [ "with header folding",
       default_options.merge({
-        'agent' => "Mozilla/4.0 (compatible; Metasploit RSPEC)",
-        'header_folding' => true,
-      }),
+                              'agent' => "Mozilla/4.0 (compatible; Metasploit RSPEC)",
+        'header_folding' => true
+                            }),
       {
-        :set_uri               => { :result => "/" },
-        :set_method            => { :result => "GET" },
-        :set_version           => { :result => "HTTP/1.1\r\n" },
-        :set_agent_header      => { :result => "User-Agent:\r\n\tMozilla/4.0 (compatible; Metasploit RSPEC)\r\n" },
-        :set_cookie_header     => { :result => "" },
-        :set_connection_header => { :result => "Connection:\r\n\tclose\r\n" },
-        :set_formatted_header  => { :args => ["Foo\twith\tabs", "Bar"], :result => "Foo\twith\tabs:\r\n\tBar\r\n" },
-      }
-    ],
+        set_uri: { result: "/" },
+        set_method: { result: "GET" },
+        set_version: { result: "HTTP/1.1\r\n" },
+        set_agent_header: { result: "User-Agent:\r\n\tMozilla/4.0 (compatible; Metasploit RSPEC)\r\n" },
+        set_cookie_header: { result: "" },
+        set_connection_header: { result: "Connection:\r\n\tclose\r\n" },
+        set_formatted_header: { args: ["Foo\twith\tabs", "Bar"], result: "Foo\twith\tabs:\r\n\tBar\r\n" }
+      }],
 
     [ "with ipv6 host",
       default_options.merge({
-        'vhost' => "2001:DB8::1",
-      }),
+                              'vhost' => "2001:DB8::1"
+                            }),
       {
-        :set_host_header       => { :result => "Host: [2001:DB8::1]\r\n" },
-      }
-    ],
+        set_host_header: { result: "Host: [2001:DB8::1]\r\n" }
+      }],
 
     [ "with ipv6 host and non-default port",
       default_options.merge({
-        'port' => 1234,
-        'vhost' => "2001:DB8::1",
-      }),
+                              'port' => 1234,
+        'vhost' => "2001:DB8::1"
+                            }),
       {
-        :set_host_header       => { :result => "Host: [2001:DB8::1]:1234\r\n" },
-      }
-    ],
+        set_host_header: { result: "Host: [2001:DB8::1]:1234\r\n" }
+      }],
 
     [
       "with modified Content-Length header",
       default_options.merge({
-        'headers' => { 'Content-Length' => 1337 }
-      }),
+                              'headers' => { 'Content-Length' => 1337 }
+                            }),
       {
-        :set_content_len_header => { args: 0, result: ''}
+        set_content_len_header: { args: 0, result: '' }
       }
     ],
 
@@ -161,17 +152,17 @@ RSpec.describe Rex::Proto::Http::ClientRequest do
       "with 1024 bytes of Content-Length",
       default_options,
       {
-        :set_content_len_header => { args: 1024, result: "Content-Length: 1024\r\n"}
+        set_content_len_header: { args: 1024, result: "Content-Length: 1024\r\n" }
       }
     ],
 
     [
       "with a POST request and no payload body",
       default_options.merge({
-        'method' => 'POST'
-      }),
+                              'method' => 'POST'
+                            }),
       {
-        :set_content_len_header => { args: 0, result: "Content-Length: 0\r\n"}
+        set_content_len_header: { args: 0, result: "Content-Length: 0\r\n" }
       }
     ],
 
@@ -188,22 +179,21 @@ RSpec.describe Rex::Proto::Http::ClientRequest do
           end
         end
       end
-
     end
   end
 
   subject(:client_request) { Rex::Proto::Http::ClientRequest.new(default_options) }
 
   context "with GET paramaters" do
-    subject(:client_request) {
+    subject(:client_request) do
       options_with_params = default_options.merge({
-        'uri_encode_mode' => encode_mode,
+                                                    'uri_encode_mode' => encode_mode,
         'encode_params' => encode_params,
         'encode' => false,
-        'vars_get' => vars_get,
-      })
+        'vars_get' => vars_get
+                                                  })
       Rex::Proto::Http::ClientRequest.new(options_with_params)
-    }
+    end
     # default
     let(:encode_mode) { 'hex-normal' }
 
@@ -288,9 +278,7 @@ RSpec.describe Rex::Proto::Http::ClientRequest do
           expect(client_request.to_s).to eq client_request.to_s
         end
       end
-
     end
-
   end
 
   describe "#set_uri" do
@@ -299,5 +287,4 @@ RSpec.describe Rex::Proto::Http::ClientRequest do
     it_behaves_like "with 'uri_dir_fake_relative'"
     it_behaves_like "with no evasions"
   end
-
 end

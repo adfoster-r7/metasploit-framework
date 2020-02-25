@@ -46,7 +46,6 @@ RSpec.describe Msf::Opt do
       subject { described_class::RPORT }
       it { is_expected.to be_a(Msf::OptPort) }
     end
-
   end
 
   context 'class methods' do
@@ -106,8 +105,5 @@ RSpec.describe Msf::Opt do
         expect(subject.default).to eq(default)
       end
     end
-
   end
-
 end
-

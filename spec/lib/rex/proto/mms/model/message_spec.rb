@@ -2,7 +2,6 @@ require 'spec_helper'
 require 'rex/proto/mms/model'
 
 RSpec.describe Rex::Proto::Mms::Model::Message do
-
   let(:message)      { 'message' }
   let(:content_type) { 'ctype' }
   let(:attachment)   { 'filepath.jpg' }
@@ -55,8 +54,6 @@ RSpec.describe Rex::Proto::Mms::Model::Message do
   describe '#to_s' do
     it 'returns the mms message' do
       expect(subject.to_s).to include('MIME-Version: 1.0')
-
     end
   end
-
 end

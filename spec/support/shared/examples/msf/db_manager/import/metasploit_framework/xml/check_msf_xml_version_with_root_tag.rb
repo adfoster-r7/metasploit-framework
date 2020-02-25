@@ -1,5 +1,6 @@
 # -*- coding:binary -*-
-RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML#check_msf_xml_version! with root tag' do |root_tag, options={}|
+
+RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML#check_msf_xml_version! with root tag' do |root_tag, options = {}|
   options.assert_valid_keys(:allow_yaml)
   allow_yaml = options.fetch(:allow_yaml)
 
@@ -9,7 +10,7 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML#chec
     end
 
     should_label_by_allow_yaml = {
-        true => 'should',
+      true => 'should',
         false => 'should not'
     }
     should_label = should_label_by_allow_yaml[allow_yaml]

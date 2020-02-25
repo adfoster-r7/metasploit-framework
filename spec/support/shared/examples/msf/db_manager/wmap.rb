@@ -1,7 +1,6 @@
 RSpec.shared_examples_for 'Msf::DBManager::WMAP' do
-
   if ENV['REMOTE_DB']
-    before {skip("Awaiting wmap port")}
+    before { skip("Awaiting wmap port") }
   end
 
   it { is_expected.to respond_to :create_request }

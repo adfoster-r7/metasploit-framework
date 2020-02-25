@@ -2,7 +2,7 @@ require 'spec_helper'
 require 'metasploit/framework/login_scanner/phpmyadmin'
 
 RSpec.describe Metasploit::Framework::LoginScanner::PhpMyAdmin do
-  it_behaves_like 'Metasploit::Framework::LoginScanner::Base',  has_realm_key: true, has_default_realm: false
+  it_behaves_like 'Metasploit::Framework::LoginScanner::Base', has_realm_key: true, has_default_realm: false
   it_behaves_like 'Metasploit::Framework::LoginScanner::RexSocket'
 
   subject do
@@ -28,14 +28,14 @@ RSpec.describe Metasploit::Framework::LoginScanner::PhpMyAdmin do
   let(:successful_res) do
     res = Rex::Proto::Http::Response.new(302, 'OK')
     res.headers['Location'] = 'index.php'
-    res.headers['Set-Cookie'] = 'phpMyAdmin=e6d3qlut3i67uuab10m1n6sj4b; phpMyAdmin=e6d3qlut3i67uuab10m1n6sj4b; pma_lang=en; phpMyAdmin=7e1hg9scaugr23p8c6ki8gotbd;' 
+    res.headers['Set-Cookie'] = 'phpMyAdmin=e6d3qlut3i67uuab10m1n6sj4b; phpMyAdmin=e6d3qlut3i67uuab10m1n6sj4b; pma_lang=en; phpMyAdmin=7e1hg9scaugr23p8c6ki8gotbd;'
     res.body = "phpMyAdmin=e6d3qlut3i67uuab10m1n6sj4b; name=\"token\" value=\"4_0'xIB=m@&z%m%#\""
     res
   end
 
   let(:failed_res) do
     res = Rex::Proto::Http::Response.new(200, 'OK')
-    res.headers['Set-Cookie'] = 'phpMyAdmin=e6d3qlut3i67uuab10m1n6sj4b; phpMyAdmin=e6d3qlut3i67uuab10m1n6sj4b; pma_lang=en; phpMyAdmin=7e1hg9scaugr23p8c6ki8gotbd;' 
+    res.headers['Set-Cookie'] = 'phpMyAdmin=e6d3qlut3i67uuab10m1n6sj4b; phpMyAdmin=e6d3qlut3i67uuab10m1n6sj4b; pma_lang=en; phpMyAdmin=7e1hg9scaugr23p8c6ki8gotbd;'
     res.body = "phpMyAdmin=e6d3qlut3i67uuab10m1n6sj4b; name=\"token\" value=\"4_0'xIB=m@&z%m%#\""
     res
   end
@@ -108,14 +108,14 @@ RSpec.describe Metasploit::Framework::LoginScanner::PhpMyAdmin do
     context 'when a successful login is made' do
       let(:response) { successful_res }
       it 'should return a successful login status' do
-        expect(subject.do_login(username, password)).to eql({ :status => Metasploit::Model::Login::Status::SUCCESSFUL, :proof => response.to_s })
+        expect(subject.do_login(username, password)).to eql({ status: Metasploit::Model::Login::Status::SUCCESSFUL, proof: response.to_s })
       end
     end
 
     context 'when a login is unsuccessful' do
       let(:response) { failed_res }
       it 'should return an incorrect login status' do
-        expect(subject.do_login(username, password)).to eql({ :status => Metasploit::Model::Login::Status::INCORRECT, :proof => response.to_s })
+        expect(subject.do_login(username, password)).to eql({ status: Metasploit::Model::Login::Status::INCORRECT, proof: response.to_s })
       end
     end
   end

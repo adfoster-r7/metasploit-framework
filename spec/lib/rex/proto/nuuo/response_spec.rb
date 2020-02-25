@@ -1,12 +1,13 @@
 # -*- coding:binary -*-
+
 require 'rex/proto/nuuo/response'
 
 RSpec.describe Rex::Proto::Nuuo::Response do
-  subject(:response) {described_class.new}
-  let(:header) {'Header'}
-  let(:hvalue) {'Value'}
-  let(:body) {'test'}
-  let(:data) {"NUCM/1.0 200\r\n#{header}:#{hvalue}\r\nContent-Length:4\r\n\r\n#{body}"}
+  subject(:response) { described_class.new }
+  let(:header) { 'Header' }
+  let(:hvalue) { 'Value' }
+  let(:body) { 'test' }
+  let(:data) { "NUCM/1.0 200\r\n#{header}:#{hvalue}\r\nContent-Length:4\r\n\r\n#{body}" }
 
   describe '#parse' do
     it 'returns a ParseCode' do

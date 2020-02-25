@@ -1,4 +1,5 @@
 # -*- coding: binary -*-
+
 require 'spec_helper'
 
 require 'msf/core/post/linux/busy_box'
@@ -174,12 +175,11 @@ RSpec.describe Msf::Post::Linux::BusyBox do
             nil
           end
         end
-        
+
         it "returns false" do
           expect(subject.busy_box_write_file('/tmp/test', 'test', true)).to be_falsey
         end
       end
     end
   end
-
 end

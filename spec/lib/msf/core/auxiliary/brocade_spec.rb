@@ -1,4 +1,5 @@
 # -*- coding: binary -*-
+
 require 'spec_helper'
 
 require 'msf/core/auxiliary/brocade'
@@ -8,28 +9,34 @@ RSpec.describe Msf::Auxiliary::Brocade do
     include Msf::Auxiliary::Brocade
     def framework
       Msf::Simple::Framework.create(
-          'ConfigDirectory' => Rails.root.join('spec', 'dummy', 'framework', 'config').to_s,
-          # don't load any module paths so we can just load the module under test and save time
-          'DeferModuleLoads' => true
+        'ConfigDirectory' => Rails.root.join('spec', 'dummy', 'framework', 'config').to_s,
+        # don't load any module paths so we can just load the module under test and save time
+        'DeferModuleLoads' => true
       )
     end
+
     def active_db?
       true
     end
-    def print_good(str=nil)
-      raise StandardError.new("This method needs to be stubbed.")
+
+    def print_good(_str = nil)
+      raise StandardError, "This method needs to be stubbed."
     end
-    def print_bad(str=nil)
-      raise StandardError.new("This method needs to be stubbed.")
+
+    def print_bad(_str = nil)
+      raise StandardError, "This method needs to be stubbed."
     end
-    def store_cred(hsh=nil)
-      raise StandardError.new("This method needs to be stubbed.")
+
+    def store_cred(_hsh = nil)
+      raise StandardError, "This method needs to be stubbed."
     end
+
     def fullname
       "auxiliary/scanner/snmp/brocade_dummy"
     end
+
     def myworkspace
-      raise StandardError.new("This method needs to be stubbed.")
+      raise StandardError, "This method needs to be stubbed."
     end
   end
 
@@ -38,12 +45,11 @@ RSpec.describe Msf::Auxiliary::Brocade do
   let!(:workspace) { FactoryBot.create(:mdm_workspace) }
 
   context '#create_credential_and_login' do
-
     let(:session) { FactoryBot.create(:mdm_session) }
 
-    let(:task) { FactoryBot.create(:mdm_task, workspace: workspace)}
+    let(:task) { FactoryBot.create(:mdm_task, workspace: workspace) }
 
-    let(:user) { FactoryBot.create(:mdm_user)}
+    let(:user) { FactoryBot.create(:mdm_user) }
 
     subject(:test_object) { DummyBrocadeClass.new }
 
@@ -51,7 +57,7 @@ RSpec.describe Msf::Auxiliary::Brocade do
     let(:service) { FactoryBot.create(:mdm_service, host: FactoryBot.create(:mdm_host, workspace: workspace)) }
     let(:task) { FactoryBot.create(:mdm_task, workspace: workspace) }
 
-    let(:login_data) {
+    let(:login_data) do
       {
         address: service.host.address,
         port: service.port,
@@ -67,10 +73,10 @@ RSpec.describe Msf::Auxiliary::Brocade do
         private_type: :password,
         status: Metasploit::Model::Login::Status::UNTRIED
       }
-    }
+    end
 
     it 'creates a Metasploit::Credential::Login' do
-      expect{test_object.create_credential_and_login(login_data)}.to change{Metasploit::Credential::Login.count}.by(1)
+      expect { test_object.create_credential_and_login(login_data) }.to change { Metasploit::Credential::Login.count }.by(1)
     end
     it "associates the Metasploit::Credential::Core with a task if passed" do
       login = test_object.create_credential_and_login(login_data.merge(task_id: task.id))
@@ -104,7 +110,7 @@ RSpec.describe Msf::Auxiliary::Brocade do
           status: Metasploit::Model::Login::Status::UNTRIED
         }
       )
-      aux_brocade.brocade_config_eater('127.0.0.1',161,'enable super-user-password 8 $1$QP3H93Wm$uxYAs2HmAK01QiP3ig5tm.')
+      aux_brocade.brocade_config_eater('127.0.0.1', 161, 'enable super-user-password 8 $1$QP3H93Wm$uxYAs2HmAK01QiP3ig5tm.')
     end
 
     it 'deals with user passwords' do
@@ -128,7 +134,7 @@ RSpec.describe Msf::Auxiliary::Brocade do
           status: Metasploit::Model::Login::Status::UNTRIED
         }
       )
-      aux_brocade.brocade_config_eater('127.0.0.1',161,'username brocade password 8 $1$YBaHUWpr$PzeUrP0XmVOyVNM5rYy99/')
+      aux_brocade.brocade_config_eater('127.0.0.1', 161, 'username brocade password 8 $1$YBaHUWpr$PzeUrP0XmVOyVNM5rYy99/')
     end
 
     it 'deals with snmp communities' do
@@ -151,14 +157,14 @@ RSpec.describe Msf::Auxiliary::Brocade do
           status: Metasploit::Model::Login::Status::UNTRIED
         }
       )
-      aux_brocade.brocade_config_eater('127.0.0.1',161,'snmp-server community 1 $Si2^=d rw')
+      aux_brocade.brocade_config_eater('127.0.0.1', 161, 'snmp-server community 1 $Si2^=d rw')
     end
     it 'deals with enable hidden passwords' do
       expect(aux_brocade).to receive(:print_bad).with('password-display is disabled, no password hashes displayed in config')
       expect(aux_brocade).to receive(:store_loot).with(
         "brocade.config", "text/plain", "127.0.0.1", "enable super-user-password 8 .....", "config.txt", "Brocade Configuration"
       )
-      aux_brocade.brocade_config_eater('127.0.0.1',161,'enable super-user-password 8 .....')
+      aux_brocade.brocade_config_eater('127.0.0.1', 161, 'enable super-user-password 8 .....')
     end
 
     it 'deals with user hidden passwords' do
@@ -166,7 +172,7 @@ RSpec.describe Msf::Auxiliary::Brocade do
       expect(aux_brocade).to receive(:store_loot).with(
         "brocade.config", "text/plain", "127.0.0.1", "username brocade password 8 .....", "config.txt", "Brocade Configuration"
       )
-      aux_brocade.brocade_config_eater('127.0.0.1',161,'username brocade password 8 .....')
+      aux_brocade.brocade_config_eater('127.0.0.1', 161, 'username brocade password 8 .....')
     end
 
     it 'deals with snmp communities' do
@@ -174,8 +180,7 @@ RSpec.describe Msf::Auxiliary::Brocade do
       expect(aux_brocade).to receive(:store_loot).with(
         "brocade.config", "text/plain", "127.0.0.1", "snmp-server community 1 ..... rw", "config.txt", "Brocade Configuration"
       )
-      aux_brocade.brocade_config_eater('127.0.0.1',161,'snmp-server community 1 ..... rw')
+      aux_brocade.brocade_config_eater('127.0.0.1', 161, 'snmp-server community 1 ..... rw')
     end
   end
-
 end

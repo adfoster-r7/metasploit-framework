@@ -36,7 +36,7 @@
 # @param options [Hash{Symbol => Pathname}]
 # @option options [Pathname] :modules_pathname Pathname of `modules` directory underwhich payloads are defined on the
 #   file system.
-RSpec.shared_context 'untested payloads' do |options={}|
+RSpec.shared_context 'untested payloads' do |options = {}|
   options.assert_valid_keys(:modules_pathname)
 
   modules_pathname = options.fetch(:modules_pathname)
@@ -72,7 +72,7 @@ RSpec.shared_context 'untested payloads' do |options={}|
         end
       end
 
-      $stderr.puts "Some payloads are untested.  See log/untested-payload.log for details."
+      warn "Some payloads are untested.  See log/untested-payload.log for details."
     end
   end
 end

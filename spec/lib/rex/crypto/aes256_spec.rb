@@ -3,18 +3,17 @@ require 'securerandom'
 
 
 RSpec.describe Rex::Crypto do
+  let(:iv) do
+    SecureRandom.random_bytes(16)
+  end
 
-    let(:iv) {
-      SecureRandom.random_bytes(16)
-    }
+  let(:key) do
+    SecureRandom.random_bytes(32)
+  end
 
-    let(:key) {
-      SecureRandom.random_bytes(32)
-    }
-
-    let(:value) {
-      'Hello World'
-    }
+  let(:value) do
+    'Hello World'
+  end
 
   describe '#encrypt_aes256' do
     it 'raises an exception due to a short IV' do
@@ -58,5 +57,4 @@ RSpec.describe Rex::Crypto do
       expect(decrypted_str).to eq(value)
     end
   end
-
 end

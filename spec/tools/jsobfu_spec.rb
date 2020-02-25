@@ -5,25 +5,23 @@ load Metasploit::Framework.root.join('tools/exploit/jsobfu.rb').to_path
 require 'stringio'
 
 RSpec.describe Jsobfu do
-
-  let(:fname) {
+  let(:fname) do
     'test.js'
-  }
+  end
 
-  let(:js) {
-    %Q|alert("test");|
-  }
+  let(:js) do
+    %|alert("test");|
+  end
 
   describe Jsobfu::Driver do
-
     subject do
       Jsobfu::Driver.new
     end
 
     describe '#run' do
-      let(:default_opts) {
-        { :input => fname, :iteration => 1 }
-      }
+      let(:default_opts) do
+        { input: fname, iteration: 1 }
+      end
 
       before(:example) do
         allow(Jsobfu::OptsConsole).to receive(:parse).with(any_args).and_return(default_opts)
@@ -64,16 +62,15 @@ RSpec.describe Jsobfu do
 
     context 'when no options are given' do
       it 'raises OptionParser::MissingArgument' do
-        expect{subject.parse([])}.to raise_error(OptionParser::MissingArgument)
+        expect { subject.parse([]) }.to raise_error(OptionParser::MissingArgument)
       end
     end
 
     context 'when -t isn\'t a number' do
       it 'raises OptionParser::MissingArgument' do
         args = "-i #{fname} -t NaN".split
-        expect{subject.parse(args)}.to raise_error(OptionParser::InvalidOption)
+        expect { subject.parse(args) }.to raise_error(OptionParser::InvalidOption)
       end
     end
   end
-
 end

@@ -1,10 +1,10 @@
 # -*- coding:binary -*-
+
 require 'spec_helper'
 
 require 'rex/image_source/disk'
 
 RSpec.describe Rex::ImageSource::Disk do
-
   let(:path) do
     File.join(Msf::Config.data_directory, "templates", "template_x86_windows_old.exe")
   end
@@ -116,7 +116,7 @@ RSpec.describe Rex::ImageSource::Disk do
       context "when searching offset after the real file length" do
         let(:offset) { 5000 }
         it "raises NoMethodError" do
-          expect{ tampered.index(search, offset) }.to raise_error(NoMethodError)
+          expect { tampered.index(search, offset) }.to raise_error(NoMethodError)
         end
       end
     end

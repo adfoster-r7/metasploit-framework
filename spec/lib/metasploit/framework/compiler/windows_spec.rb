@@ -3,15 +3,15 @@ require 'metasploit/framework/compiler/windows'
 
 RSpec.describe Metasploit::Framework::Compiler::Windows do
   describe '#self.compile_c' do
-    let(:c_template) {
-      %Q|#include <Windows.h>
+    let(:c_template) do
+      %|#include <Windows.h>
 
       int main(void) {
         MessageBox(NULL, "Hello World", "Test", MB_OK);
         return 0;
       }
       |
-    }
+    end
 
     it 'returns an EXE binary' do
       bin = Metasploit::Framework::Compiler::Windows.compile_c(c_template)

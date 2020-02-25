@@ -1,7 +1,6 @@
 module Shoulda # :nodoc:
   module Matchers
     module ActiveRecord # :nodoc:
-
       # Ensures that the number of database queries is known. Rails 3.1 or greater is required.
       #
       # Options:
@@ -46,7 +45,7 @@ module Shoulda # :nodoc:
         end
 
         def matches?(subject)
-          subscriber = ActiveSupport::Notifications.subscribe('sql.active_record') do |name, started, finished, id, payload|
+          subscriber = ActiveSupport::Notifications.subscribe('sql.active_record') do |_name, _started, _finished, _id, payload|
             @queries << payload unless filter_query(payload)
           end
 
@@ -63,7 +62,7 @@ module Shoulda # :nodoc:
           elsif @options[:expected_query_count].present?
             @queries.length == @options[:expected_query_count]
           else
-            @queries.length > 0
+            !@queries.empty?
           end
         end
 

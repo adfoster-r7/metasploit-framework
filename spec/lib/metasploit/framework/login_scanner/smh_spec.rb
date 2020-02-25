@@ -1,16 +1,13 @@
-
 require 'spec_helper'
 require 'metasploit/framework/login_scanner/smh'
 
 RSpec.describe Metasploit::Framework::LoginScanner::Smh do
-
   subject(:smh_cli) { described_class.new }
 
-  it_behaves_like 'Metasploit::Framework::LoginScanner::Base',  has_realm_key: true, has_default_realm: false
+  it_behaves_like 'Metasploit::Framework::LoginScanner::Base', has_realm_key: true, has_default_realm: false
   it_behaves_like 'Metasploit::Framework::LoginScanner::RexSocket'
 
   context "#attempt_login" do
-
     let(:username) { 'admin' }
     let(:password) { 'password' }
 
@@ -53,14 +50,13 @@ RSpec.describe Metasploit::Framework::LoginScanner::Smh do
 
     context "when valid HP System Management application" do
       before :example do
-        allow_any_instance_of(Rex::Proto::Http::Client).to receive(:send_recv) do |cli, req|
-
+        allow_any_instance_of(Rex::Proto::Http::Client).to receive(:send_recv) do |_cli, req|
           if req.opts['uri'] &&
-              req.opts['vars_post'] &&
-              req.opts['vars_post']['user'] &&
-              req.opts['vars_post']['user'] == username &&
-              req.opts['vars_post']['password'] &&
-              req.opts['vars_post']['password'] == password
+             req.opts['vars_post'] &&
+             req.opts['vars_post']['user'] &&
+             req.opts['vars_post']['user'] == username &&
+             req.opts['vars_post']['password'] &&
+             req.opts['vars_post']['password'] == password
             res = Rex::Proto::Http::Response.new(200)
             res.headers['CpqElm-Login'] = 'success'
             res
@@ -83,8 +79,6 @@ RSpec.describe Metasploit::Framework::LoginScanner::Smh do
           expect(smh_cli.attempt_login(invalid_cred).status).to eq(Metasploit::Model::Login::Status::INCORRECT)
         end
       end
-
     end
   end
-
 end

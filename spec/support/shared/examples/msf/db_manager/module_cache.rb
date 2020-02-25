@@ -1,7 +1,6 @@
 RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
-
   if ENV['REMOTE_DB']
-    before {skip("Module Cache methods will not be ported, instead the newer module metadata cache should be used")}
+    before { skip("Module Cache methods will not be ported, instead the newer module metadata cache should be used") }
   end
 
   it { is_expected.to respond_to :match_values }
@@ -26,8 +25,8 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
 
     let!(:module_details) do
       FactoryBot.create_list(
-          :mdm_module_detail,
-          module_detail_count
+        :mdm_module_detail,
+        module_detail_count
       )
     end
 
@@ -54,26 +53,26 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
         end
 
         it 'should not destroy Mdm::Module::Details' do
-          expect {
+          expect do
             purge_all_module_details
-          }.to_not change(Mdm::Module::Detail, :count)
+          end.to_not change(Mdm::Module::Detail, :count)
         end
       end
 
       context 'without modules_caching' do
         it 'should destroy all Mdm::Module::Details' do
-          expect {
+          expect do
             purge_all_module_details
-          }.to change(Mdm::Module::Detail, :count).by(-module_detail_count)
+          end.to change(Mdm::Module::Detail, :count).by(-module_detail_count)
         end
       end
     end
 
     context 'without migrated' do
       it 'should not destroy Mdm::Module::Details' do
-        expect {
+        expect do
           purge_all_module_details
-        }.to_not change(Mdm::Module::Detail, :count)
+        end.to_not change(Mdm::Module::Detail, :count)
       end
     end
   end
@@ -97,7 +96,7 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
 
     let!(:module_detail) do
       FactoryBot.create(
-          :mdm_module_detail
+        :mdm_module_detail
       )
     end
 
@@ -124,26 +123,26 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
         end
 
         it 'should destroy Mdm::Module::Detail' do
-          expect {
+          expect do
             remove_module_details
-          }.to change(Mdm::Module::Detail, :count).by(-1)
+          end.to change(Mdm::Module::Detail, :count).by(-1)
         end
       end
 
       context 'without matching Mdm::Module::Detail' do
         it 'should not destroy Mdm::Module::Detail' do
-          expect {
+          expect do
             remove_module_details
-          }.to_not change(Mdm::Module::Detail, :count)
+          end.to_not change(Mdm::Module::Detail, :count)
         end
       end
     end
 
     context 'without migrated' do
       it 'should not destroy Mdm::Module::Detail' do
-        expect {
+        expect do
           remove_module_details
-        }.to_not change(Mdm::Module::Detail, :count)
+        end.to_not change(Mdm::Module::Detail, :count)
       end
     end
   end
@@ -180,11 +179,11 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
           expect(module_details.count).to be > 0
 
           expect(
-            module_details.all? { |module_detail|
-              module_detail.authors.any? { |module_author|
+            module_details.all? do |module_detail|
+              module_detail.authors.any? do |module_author|
                 module_author.email == target_module_author.email
-              }
-            }
+              end
+            end
           ).to eq true
         end
       end
@@ -199,11 +198,11 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
           expect(module_details.count).to be > 0
 
           expect(
-            module_details.all? { |module_detail|
-              module_detail.authors.any? { |module_author|
+            module_details.all? do |module_detail|
+              module_detail.authors.any? do |module_author|
                 module_author.name == target_module_author.name
-              }
-            }
+              end
+            end
           ).to eq true
         end
       end
@@ -235,9 +234,9 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
           expect(module_details.count).to be > 0
 
           expect(
-            module_details.all? { |module_detail|
+            module_details.all? do |module_detail|
               module_detail.fullname == target_module_detail.fullname
-            }
+            end
           ).to eq true
         end
       end
@@ -252,9 +251,9 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
           expect(module_details.count).to be > 0
 
           expect(
-            module_details.all? { |module_detail|
+            module_details.all? do |module_detail|
               module_detail.name == target_module_detail.name
-            }
+            end
           ).to eq true
         end
       end
@@ -287,11 +286,11 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
           expect(module_details.count).to be > 0
 
           expect(
-            module_details.all? { |module_detail|
-              module_detail.refs.any? { |module_ref|
+            module_details.all? do |module_detail|
+              module_detail.refs.any? do |module_ref|
                 module_ref.name == ref
-              }
-            }
+              end
+            end
           ).to eq true
         end
       end
@@ -329,9 +328,9 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
           expect(module_details.count).to be > 0
 
           expect(
-            module_details.all? { |module_detail|
+            module_details.all? do |module_detail|
               module_detail.mtype == type
-            }
+            end
           ).to eq true
         end
       end
@@ -357,11 +356,11 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
           expect(module_details.count).to be > 0
 
           expect(
-            module_details.all? { |module_detail|
-              module_detail.actions.any? { |module_action|
+            module_details.all? do |module_detail|
+              module_detail.actions.any? do |module_action|
                 module_action.name == search_string
-              }
-            }
+              end
+            end
           ).to eq true
         end
       end
@@ -379,11 +378,11 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
           expect(module_details.count).to be > 0
 
           expect(
-            module_details.all? { |module_detail|
-              module_detail.archs.any? { |module_arch|
+            module_details.all? do |module_detail|
+              module_detail.archs.any? do |module_arch|
                 module_arch.name == search_string
-              }
-            }
+              end
+            end
           ).to eq true
         end
       end
@@ -401,11 +400,11 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
           expect(module_details.count).to be > 0
 
           expect(
-            module_details.all? { |module_detail|
-              module_detail.authors.any? { |module_author|
+            module_details.all? do |module_detail|
+              module_detail.authors.any? do |module_author|
                 module_author.name == search_string
-              }
-            }
+              end
+            end
           ).to eq true
         end
       end
@@ -429,9 +428,9 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
             expect(module_details.count).to eq 1
 
             expect(
-              module_details.all? { |module_detail|
+              module_details.all? do |module_detail|
                 module_detail.description == target_module_detail.description
-              }
+              end
             ).to eq true
           end
         end
@@ -445,9 +444,9 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
             expect(module_details.count).to eq 1
 
             expect(
-              module_details.all? { |module_detail|
+              module_details.all? do |module_detail|
                 module_detail.fullname == search_string
-              }
+              end
             ).to eq true
           end
         end
@@ -462,9 +461,9 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
             expect(module_details.count).to eq 1
 
             expect(
-              module_details.all? { |module_detail|
+              module_details.all? do |module_detail|
                 module_detail.name == target_module_detail.name
-              }
+              end
             ).to eq true
           end
         end
@@ -483,11 +482,11 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
           expect(module_details.count).to be > 0
 
           expect(
-            module_details.all? { |module_detail|
-              module_detail.platforms.any? { |module_platform|
+            module_details.all? do |module_detail|
+              module_detail.platforms.any? do |module_platform|
                 module_platform.name == search_string
-              }
-            }
+              end
+            end
           ).to eq true
         end
       end
@@ -505,11 +504,11 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
           expect(module_details.count).to be > 0
 
           expect(
-            module_details.all? { |module_detail|
-              module_detail.refs.any? { |module_ref|
+            module_details.all? do |module_detail|
+              module_detail.refs.any? do |module_ref|
                 module_ref.name == search_string
-              }
-            }
+              end
+            end
           ).to eq true
         end
       end
@@ -527,11 +526,11 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
           expect(module_details.count).to be > 0
 
           expect(
-            module_details.all? { |module_detail|
-              module_detail.targets.any? { |module_target|
+            module_details.all? do |module_detail|
+              module_detail.targets.any? do |module_target|
                 module_target.name == search_string
-              }
-            }
+              end
+            end
           ).to eq true
         end
       end
@@ -601,8 +600,8 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
         context 'with Mdm::Module::Details' do
           let(:module_pathname) do
             parent_pathname.join(
-                'exploits',
-                "#{reference_name}.rb"
+              'exploits',
+              "#{reference_name}.rb"
             )
           end
 
@@ -625,12 +624,12 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
           let!(:module_detail) do
             # needs to reference a real module so that it can be loaded
             FactoryBot.create(
-                :mdm_module_detail,
-                :file => module_pathname.to_path,
-                :mtime => modification_time,
-                :mtype => type,
-                :ready => ready,
-                :refname => reference_name
+              :mdm_module_detail,
+              file: module_pathname.to_path,
+              mtime: modification_time,
+              mtype: type,
+              ready: ready,
+              refname: reference_name
             )
           end
 
@@ -710,12 +709,12 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
     end
 
     let(:loader) do
-      loader = framework.modules.send(:loaders).find { |loader|
+      loader = framework.modules.send(:loaders).find do |loader|
         loader.loadable?(parent_path)
-      }
+      end
 
       # Override load_error so that rspec will print it instead of going to framework log
-      def loader.load_error(module_path, error)
+      def loader.load_error(_module_path, error)
         raise error
       end
 
@@ -733,7 +732,7 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
       unless loaded
         module_path = loader.module_path(parent_path, type, module_reference_name)
 
-        fail "#{description} failed to load: #{module_path}"
+        raise "#{description} failed to load: #{module_path}"
       end
 
       module_set.create(module_reference_name)
@@ -779,20 +778,20 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
       end
 
       it 'should create an Mdm::Module::Detail' do
-        expect {
+        expect do
           update_module_details
-        }.to change(Mdm::Module::Detail, :count).by(1)
+        end.to change(Mdm::Module::Detail, :count).by(1)
       end
 
 
       context 'module_to_details_hash' do
         let(:module_to_details_hash) do
           {
-              :mtype => module_type,
-              :privileged => privileged,
-              :rank => rank,
-              :refname => module_reference_name,
-              :stance => stance
+            mtype: module_type,
+              privileged: privileged,
+              rank: rank,
+              refname: module_reference_name,
+              stance: stance
           }
         end
 
@@ -810,11 +809,11 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
 
         before(:example) do
           allow(db_manager).to receive(
-              :module_to_details_hash
+            :module_to_details_hash
           ).with(
-              module_instance
+            module_instance
           ).and_return(
-              module_to_details_hash
+            module_to_details_hash
           )
         end
 
@@ -851,17 +850,17 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
 
             let(:bits) do
               super() << [
-                  :action,
-                  {
-                      :name => name
-                  }
+                :action,
+                {
+                  name: name
+                }
               ]
             end
 
             it 'should create an Mdm::Module::Action' do
-              expect {
+              expect do
                 update_module_details
-              }.to change(Mdm::Module::Action, :count).by(1)
+              end.to change(Mdm::Module::Action, :count).by(1)
             end
 
             context 'Mdm::Module::Action' do
@@ -888,17 +887,17 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
 
             let(:bits) do
               super() << [
-                  :arch,
-                  {
-                      :name => name
-                  }
+                :arch,
+                {
+                  name: name
+                }
               ]
             end
 
             it 'should create an Mdm::Module::Arch' do
-              expect {
+              expect do
                 update_module_details
-              }.to change(Mdm::Module::Arch, :count).by(1)
+              end.to change(Mdm::Module::Arch, :count).by(1)
             end
 
             context 'Mdm::Module::Arch' do
@@ -929,18 +928,18 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
 
             let(:bits) do
               super() << [
-                  :author,
-                  {
-                      :email => email,
-                      :name => name
-                  }
+                :author,
+                {
+                  email: email,
+                    name: name
+                }
               ]
             end
 
             it 'should create an Mdm::Module::Author' do
-              expect {
+              expect do
                 update_module_details
-              }.to change(Mdm::Module::Author, :count).by(1)
+              end.to change(Mdm::Module::Author, :count).by(1)
             end
 
             context 'Mdm::Module::Author' do
@@ -964,10 +963,10 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
           context 'with :platform' do
             let(:bits) do
               super() << [
-                  :platform,
-                  {
-                      :name => name
-                  }
+                :platform,
+                {
+                  name: name
+                }
               ]
             end
 
@@ -976,9 +975,9 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
             end
 
             it 'should create an Mdm::Module::Platform' do
-              expect {
+              expect do
                 update_module_details
-              }.to change(Mdm::Module::Platform, :count).by(1)
+              end.to change(Mdm::Module::Platform, :count).by(1)
             end
 
             context 'Mdm::Module::Platform' do
@@ -1001,10 +1000,10 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
           context 'with :ref' do
             let(:bits) do
               super() << [
-                  :ref,
-                  {
-                      :name => name
-                  }
+                :ref,
+                {
+                  name: name
+                }
               ]
             end
 
@@ -1013,9 +1012,9 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
             end
 
             it 'should create an Mdm::Module::Ref' do
-              expect {
+              expect do
                 update_module_details
-              }.to change(Mdm::Module::Ref, :count).by(1)
+              end.to change(Mdm::Module::Ref, :count).by(1)
             end
 
             context 'Mdm::Module::Ref' do
@@ -1038,11 +1037,11 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
           context 'with :target' do
             let(:bits) do
               super() << [
-                  :target,
-                  {
-                      :index => index,
-                      :name => name
-                  }
+                :target,
+                {
+                  index: index,
+                    name: name
+                }
               ]
             end
 
@@ -1055,9 +1054,9 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
             end
 
             it 'should create an Mdm::Module::Target' do
-              expect {
+              expect do
                 update_module_details
-              }.to change(Mdm::Module::Target, :count).by(1)
+              end.to change(Mdm::Module::Target, :count).by(1)
             end
 
             context 'Mdm::Module::Target' do
@@ -1081,33 +1080,33 @@ RSpec.shared_examples_for 'Msf::DBManager::ModuleCache' do
       end
 
       it_should_behave_like 'Msf::DBManager#update_module_details with module',
-                            :reference_name => 'admin/2wire/xslt_password_reset',
-                            :type => 'auxiliary'
+                            reference_name: 'admin/2wire/xslt_password_reset',
+                            type: 'auxiliary'
 
       it_should_behave_like 'Msf::DBManager#update_module_details with module',
-                            :reference_name => 'generic/none',
-                            :type => 'encoder'
+                            reference_name: 'generic/none',
+                            type: 'encoder'
 
       it_should_behave_like 'Msf::DBManager#update_module_details with module',
-                            :reference_name => 'windows/smb/ms08_067_netapi',
-                            :type => 'exploit'
+                            reference_name: 'windows/smb/ms08_067_netapi',
+                            type: 'exploit'
 
       it_should_behave_like 'Msf::DBManager#update_module_details with module',
-                            :reference_name => 'x64/simple',
-                            :type => 'nop'
+                            reference_name: 'x64/simple',
+                            type: 'nop'
 
       # @todo determine how to load a single payload to test payload type outside of msfconsole
 
       it_should_behave_like 'Msf::DBManager#update_module_details with module',
-                            :reference_name => 'windows/escalate/screen_unlock',
-                            :type => 'post'
+                            reference_name: 'windows/escalate/screen_unlock',
+                            type: 'post'
     end
 
     context 'without migrated' do
       it 'should not create an Mdm::Module::Detail' do
-        expect {
+        expect do
           update_module_details
-        }.to_not change(Mdm::Module::Detail, :count)
+        end.to_not change(Mdm::Module::Detail, :count)
       end
     end
   end

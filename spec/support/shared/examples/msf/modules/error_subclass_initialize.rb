@@ -1,4 +1,5 @@
 # -*- coding:binary -*-
+
 RSpec.shared_examples_for 'Msf::Modules::Error subclass #initialize' do
   context 'instance methods' do
     context '#initialize' do
@@ -6,8 +7,8 @@ RSpec.shared_examples_for 'Msf::Modules::Error subclass #initialize' do
 
       subject do
         described_class.new(
-            :module_path => module_path,
-            :module_reference_name => module_reference_name
+          module_path: module_path,
+          module_reference_name: module_reference_name
         )
       end
 

@@ -54,5 +54,4 @@ RSpec.describe Msf::DBManager do
     it { is_expected.to respond_to :error }
     it { is_expected.to respond_to :service_name_map }
   end
-
 end

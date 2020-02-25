@@ -19,10 +19,10 @@ RSpec.shared_examples_for 'Msf::ModuleManager::Loading' do
         modification_time = File.mtime(module_path)
 
         subject.send(:module_info_by_path)[module_path] = {
-            # :modification_time must match so that it is the :type that is causing the `true` and not the
-            # :modification_time causing the `true`.
-            :modification_time => modification_time,
-            :type => Msf::MODULE_PAYLOAD
+          # :modification_time must match so that it is the :type that is causing the `true` and not the
+          # :modification_time causing the `true`.
+          modification_time: modification_time,
+            type: Msf::MODULE_PAYLOAD
         }
 
         expect(subject.file_changed?(module_path)).to be_truthy
@@ -36,7 +36,7 @@ RSpec.shared_examples_for 'Msf::ModuleManager::Loading' do
         modification_time = File.mtime(module_path).to_i
 
         subject.send(:module_info_by_path)[module_path] = {
-            :modification_time => modification_time
+          modification_time: modification_time
         }
 
         tempfile.unlink
@@ -52,7 +52,7 @@ RSpec.shared_examples_for 'Msf::ModuleManager::Loading' do
           cached_modification_time = (modification_time * rand).to_i
 
           subject.send(:module_info_by_path)[module_path] = {
-              :modification_time => cached_modification_time
+            modification_time: cached_modification_time
           }
 
           expect(cached_modification_time).not_to eq modification_time
@@ -67,7 +67,7 @@ RSpec.shared_examples_for 'Msf::ModuleManager::Loading' do
           cached_modification_time = modification_time
 
           subject.send(:module_info_by_path)[module_path] = {
-              :modification_time => cached_modification_time
+            modification_time: cached_modification_time
           }
 
           expect(cached_modification_time).to eq modification_time
@@ -91,16 +91,16 @@ RSpec.shared_examples_for 'Msf::ModuleManager::Loading' do
     end
 
     let(:namespace_module) do
-      double('Namespace Module', :parent_path => parent_path)
+      double('Namespace Module', parent_path: parent_path)
     end
 
     let(:options) do
       {
-          'files' => [
-              path
-          ],
+        'files' => [
+          path
+        ],
           'paths' => [
-              reference_name
+            reference_name
           ],
           'type' => type
       }
@@ -130,9 +130,9 @@ RSpec.shared_examples_for 'Msf::ModuleManager::Loading' do
 
     it "should add module to type's module_set" do
       expect(module_set).to receive(:add_module).with(
-          klass,
-          reference_name,
-          options
+        klass,
+        reference_name,
+        options
       )
 
       on_module_load
@@ -152,8 +152,8 @@ RSpec.shared_examples_for 'Msf::ModuleManager::Loading' do
 
     it 'should fire on_module_load event with class' do
       expect(framework.events).to receive(:on_module_load).with(
-          reference_name,
-          klass
+        reference_name,
+        klass
       )
 
       on_module_load

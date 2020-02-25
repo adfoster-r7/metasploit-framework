@@ -14,14 +14,12 @@ RSpec.describe Msf::RPC::JSON::Dispatcher do
   end
 
   describe '#process' do
-
     before(:each) do
       # prepare a dispatcher for all of the tests
       @dispatcher = Msf::RPC::JSON::Dispatcher.new(framework)
     end
 
     context 'invalid JSON-RPC request' do
-
       before(:each) do
         # mock RpcCommand behavior as it isn't relevant for JSON-RPC validation
         cmd = instance_double('RpcCommand')
@@ -34,9 +32,9 @@ RSpec.describe Msf::RPC::JSON::Dispatcher do
       context 'is not valid JSON' do
         it 'contains only a string' do
           expected_response = {
-              jsonrpc: '2.0',
+            jsonrpc: '2.0',
               error: {
-                  code: -32700,
+                code: -32700,
                   message: 'Invalid JSON was received by the server. An error occurred on the server while parsing the JSON text.'
               },
               id: nil
@@ -47,9 +45,9 @@ RSpec.describe Msf::RPC::JSON::Dispatcher do
 
       context 'is not a valid request object' do
         expected_response = {
-            jsonrpc: '2.0',
+          jsonrpc: '2.0',
             error: {
-                code: -32600,
+              code: -32600,
                 message: 'The JSON sent is not a valid Request object.'
             },
             id: nil
@@ -220,10 +218,10 @@ RSpec.describe Msf::RPC::JSON::Dispatcher do
         @dispatcher.set_command(cmd)
 
         expected_response = {
-            jsonrpc: '2.0',
+          jsonrpc: '2.0',
             error: {
-                code: -32601,
-                message: 'The method %<name>s does not exist.' % { name: method_name }
+              code: -32601,
+                message: format('The method %<name>s does not exist.', name: method_name)
             },
             id: 1
         }
@@ -240,9 +238,9 @@ RSpec.describe Msf::RPC::JSON::Dispatcher do
         @dispatcher.set_command(cmd)
 
         expected_response = {
-            jsonrpc: '2.0',
+          jsonrpc: '2.0',
             error: {
-                code: -32602,
+              code: -32602,
                 message: 'Invalid method parameter(s).'
             },
             id: 1
@@ -262,12 +260,12 @@ RSpec.describe Msf::RPC::JSON::Dispatcher do
         @dispatcher.set_command(cmd)
 
         expected_response = {
-            jsonrpc: '2.0',
+          jsonrpc: '2.0',
             error: {
-                code: -32000,
-                message: 'Application server error: %<msg>s' % { msg: error_msg },
+              code: -32000,
+                message: format('Application server error: %<msg>s', msg: error_msg),
                 data: {
-                    code: error_code
+                  code: error_code
                 }
             },
             id: 1
@@ -286,10 +284,10 @@ RSpec.describe Msf::RPC::JSON::Dispatcher do
         @dispatcher.set_command(cmd)
 
         expected_response = {
-            jsonrpc: '2.0',
+          jsonrpc: '2.0',
             error: {
-                code: -32000,
-                message: 'Application server error: %<msg>s' % { msg: error_msg }
+              code: -32000,
+                message: format('Application server error: %<msg>s', msg: error_msg)
             },
             id: 1
         }

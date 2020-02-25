@@ -1,10 +1,10 @@
 # -*- coding:binary -*-
+
 require 'spec_helper'
 
 require 'rex/post/meterpreter/ui/console'
 
 RSpec.describe Rex::Post::Meterpreter::Ui::Console do
-
   subject(:console) do
     Rex::Post::Meterpreter::Ui::Console.new(nil)
   end
@@ -23,5 +23,4 @@ RSpec.describe Rex::Post::Meterpreter::Ui::Console do
       subject.run_command(dispatcher, "address_in_use", nil)
     end
   end
-
 end

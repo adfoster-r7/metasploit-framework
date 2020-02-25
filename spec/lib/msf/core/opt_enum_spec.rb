@@ -4,11 +4,10 @@ require 'spec_helper'
 require 'msf/core/option_container'
 
 RSpec.describe Msf::OptEnum do
-
   it_behaves_like "an option", [], [], 'enum'
 
   subject do
-    Msf::OptEnum.new('name',[true, 'A Boolean Value', 'Foo', ['Foo', 'Bar', 'Baz']])
+    Msf::OptEnum.new('name', [true, 'A Boolean Value', 'Foo', ['Foo', 'Bar', 'Baz']])
   end
 
   context 'the validator' do

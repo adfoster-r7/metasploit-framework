@@ -1,4 +1,5 @@
 # -*- coding:binary -*-
+
 require 'rex/proto/proxy/socks5/packet'
 
 RSpec.describe Rex::Proto::Proxy::Socks5::Packet do
@@ -88,5 +89,4 @@ RSpec.describe Rex::Proto::Proxy::Socks5::Packet do
       packet.version = Socks5::SOCKS_VERSION
     end
   end
-
 end

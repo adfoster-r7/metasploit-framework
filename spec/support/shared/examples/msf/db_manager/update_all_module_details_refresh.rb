@@ -1,9 +1,8 @@
 RSpec.shared_examples_for 'Msf::DBManager#update_all_module_details refresh' do
-
   it 'should destroy Mdm::Module::Detail' do
-    expect {
+    expect do
       update_all_module_details
-    }.to change(Mdm::Module::Detail, :count).by(-1)
+    end.to change(Mdm::Module::Detail, :count).by(-1)
   end
 
   context 'with cached module in Msf::ModuleSet' do
@@ -17,9 +16,9 @@ RSpec.shared_examples_for 'Msf::DBManager#update_all_module_details refresh' do
       module_set[module_detail.refname] = Msf::SymbolicModule
 
       framework.modules.send(:module_info_by_path)[module_detail.file] = {
-          :parent_path => Metasploit::Framework.root.join('modules').to_path,
-          :reference_name => module_detail.refname,
-          :type => type
+        parent_path: Metasploit::Framework.root.join('modules').to_path,
+          reference_name: module_detail.refname,
+          type: type
       }
     end
 

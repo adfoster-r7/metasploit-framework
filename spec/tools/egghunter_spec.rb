@@ -2,22 +2,19 @@ load Metasploit::Framework.root.join('tools/exploit/egghunter.rb').to_path
 require 'spec_helper'
 
 RSpec.describe Egghunter do
-
   describe Egghunter::Driver do
-
     subject do
       Egghunter::Driver.new
     end
 
-    let(:egg) {
+    let(:egg) do
       'W00T'
-    }
+    end
 
     describe '#run' do
-
-      let(:default_opts) {
-        { :platform => 'windows', :format => 'c', :eggtag => egg, :arch => 'x86' }
-      }
+      let(:default_opts) do
+        { platform: 'windows', format: 'c', eggtag: egg, arch: 'x86' }
+      end
 
       before(:example) do
         allow(Egghunter::OptsConsole).to receive(:parse).with(any_args).and_return(options)
@@ -34,7 +31,7 @@ RSpec.describe Egghunter do
 
       context 'when the platform is linux' do
         let(:options) do
-          { :platform => 'linux', :format => 'c', :eggtag => egg, :arch => 'x86' }
+          { platform: 'linux', format: 'c', eggtag: egg, arch: 'x86' }
         end
 
         it 'returns a linux egghunter' do
@@ -62,30 +59,29 @@ RSpec.describe Egghunter do
 
     context 'when no options are given' do
       it 'raises OptionParser::MissingArgument' do
-        expect{subject.parse([])}.to raise_error(OptionParser::MissingArgument)
+        expect { subject.parse([]) }.to raise_error(OptionParser::MissingArgument)
       end
     end
 
     context 'when no format is specified and --list-formats isn\'t used' do
       it 'raises OptionParser::MissingArgument' do
         args = '-e AAAA'.split
-        expect{subject.parse(args)}.to raise_error(OptionParser::MissingArgument)
+        expect { subject.parse(args) }.to raise_error(OptionParser::MissingArgument)
       end
     end
 
     context 'when no egg is specified and --list-formats isn\'t used' do
       it 'raises OptionParser::MissingArgument' do
         args = '-f python'.split
-        expect{subject.parse(args)}.to raise_error(OptionParser::MissingArgument)
+        expect { subject.parse(args) }.to raise_error(OptionParser::MissingArgument)
       end
     end
 
     context 'when :depsize is a string' do
       it 'raises OptionParser::InvalidOption' do
         args = '-e AAAA -f c --depsize STRING'.split
-        expect{subject.parse(args)}.to raise_error(OptionParser::InvalidOption)
+        expect { subject.parse(args) }.to raise_error(OptionParser::InvalidOption)
       end
     end
   end
-
 end

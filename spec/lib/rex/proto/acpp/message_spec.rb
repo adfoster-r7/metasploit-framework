@@ -1,10 +1,10 @@
 # -*- coding:binary -*-
+
 require 'spec_helper'
 
 require 'rex/proto/acpp'
 
 RSpec.describe Rex::Proto::ACPP::Message do
-
   subject(:message) do
     described_class.new
   end
@@ -50,7 +50,7 @@ RSpec.describe Rex::Proto::ACPP::Message do
       expect { described_class.decode(large) }.to raise_error(/size #{large.size}/i)
     end
     it 'fails to decode if the required header is incorrect' do
-      retrieve_public_bin[0,4] = 'blah'
+      retrieve_public_bin[0, 4] = 'blah'
       expect { described_class.decode(retrieve_public_bin) }.to raise_error(/header/i)
     end
     it 'decodes properly when the required checksum is correct' do
@@ -61,7 +61,7 @@ RSpec.describe Rex::Proto::ACPP::Message do
       expect(retrieve_public_message).to eq(described_class.decode(retrieve_public_bin, false))
     end
     it 'decodes properly when the message checksum is incorrect' do
-      retrieve_public_bin[7,4] = "\x01\x02\x03\x04"
+      retrieve_public_bin[7, 4] = "\x01\x02\x03\x04"
       expect { described_class.decode(retrieve_public_bin) }.to raise_error(/message checksum/i)
       expect { described_class.decode(retrieve_public_bin, true) }.to raise_error(/message checksum/i)
       expect(retrieve_public_message).to eq(described_class.decode(retrieve_public_bin, false))

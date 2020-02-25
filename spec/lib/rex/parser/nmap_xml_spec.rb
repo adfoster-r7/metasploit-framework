@@ -26,7 +26,7 @@ xml = '
 RSpec.describe Rex::Parser::NmapXMLStreamParser do
   parser = Rex::Parser::NmapXMLStreamParser.new
   total_hosts = 0
-  parser.on_found_host = Proc.new { |host|
+  parser.on_found_host = proc do |host|
     total_hosts += 1
     it "should yield a host" do
       expect(host).not_to be_nil
@@ -43,10 +43,9 @@ RSpec.describe Rex::Parser::NmapXMLStreamParser do
       expect(host["addrs"]).to have_key("ipv4")
       expect(host["addrs"]["ipv4"]).to eq "192.168.0.1"
     end
-  }
+  end
   REXML::Document.parse_stream(StringIO.new(xml), parser)
   it "should have found exactly one host" do
     expect(total_hosts).to eq 1
   end
 end
-

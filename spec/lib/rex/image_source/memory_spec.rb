@@ -1,10 +1,10 @@
 # -*- coding:binary -*-
+
 require 'spec_helper'
 
 require 'rex/image_source/memory'
 
 RSpec.describe Rex::ImageSource::Memory do
-
   let(:raw_data) { 'ABCDEFGHIJKLMNOP' }
 
   subject do
@@ -187,5 +187,4 @@ RSpec.describe Rex::ImageSource::Memory do
       end
     end
   end
-
 end

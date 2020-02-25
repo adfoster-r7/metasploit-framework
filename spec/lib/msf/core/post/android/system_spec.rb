@@ -3,7 +3,6 @@
 require 'msf/core/post/android/system'
 
 RSpec.describe Msf::Post::Android::System do
-
   subject do
     mod = Module.new
     mod.extend(described_class)
@@ -11,9 +10,9 @@ RSpec.describe Msf::Post::Android::System do
   end
 
   let(:build_prop_output) do
-    %Q|ro.build.version.sdk=16
+    %(ro.build.version.sdk=16
 ro.build.version.release=4.1.1
-|
+)
   end
 
   describe '#get_sysinfo' do
@@ -26,5 +25,4 @@ ro.build.version.release=4.1.1
       expect(subject.get_build_prop['ro.build.version.release']).to eq(expected_android_version)
     end
   end
-
 end

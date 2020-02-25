@@ -1,10 +1,9 @@
 # -*- coding: binary -*-
-#
+
 require 'spec_helper'
 require 'rex/proto/kademlia/util'
 
 RSpec.describe Rex::Proto::Kademlia do
-
   describe '#decode_peer_id' do
     subject(:kad) { described_class.decode_peer_id(bytes) }
     let(:bytes) { "\x00\x60\x89\x9B\x0A\x0B\xBE\xAE\x45\x35\xCB\x0E\x07\xA1\x77\x71" }

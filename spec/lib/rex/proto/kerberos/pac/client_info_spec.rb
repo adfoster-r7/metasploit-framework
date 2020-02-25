@@ -1,10 +1,10 @@
 # -*- coding:binary -*-
+
 require 'spec_helper'
 
 require 'rex/proto/kerberos'
 
 RSpec.describe Rex::Proto::Kerberos::Pac::ClientInfo do
-
   subject(:client_info) do
     described_class.new
   end

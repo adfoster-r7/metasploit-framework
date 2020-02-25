@@ -1,9 +1,9 @@
 # -*- coding: binary -*-
+
 require 'spec_helper'
 require 'rex/proto/sms/model'
 
 RSpec.describe Rex::Proto::Sms::Client do
-
   let(:phone_numbers) { ['1112223333'] }
 
   let(:sms_subject) { 'subject' }
@@ -12,14 +12,14 @@ RSpec.describe Rex::Proto::Sms::Client do
 
   let(:carrier) { :verizon }
 
-  let(:smtp_server) {
+  let(:smtp_server) do
     Rex::Proto::Sms::Model::Smtp.new(
       address: 'example.com',
       port: 25,
       username: 'username',
       password: 'password'
     )
-  }
+  end
 
   subject do
     Rex::Proto::Sms::Client.new(
@@ -51,5 +51,4 @@ RSpec.describe Rex::Proto::Sms::Client do
       expect(@sent_message).to include(message)
     end
   end
-
 end

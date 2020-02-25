@@ -2,7 +2,6 @@ require 'spec_helper'
 require 'metasploit/framework/obfuscation/crandomizer/utility'
 
 RSpec.describe Metasploit::Framework::Obfuscation::CRandomizer::Utility do
-
   describe '#self.rand_int' do
     it 'returns an integer' do
       int = Metasploit::Framework::Obfuscation::CRandomizer::Utility.rand_int
@@ -32,18 +31,17 @@ RSpec.describe Metasploit::Framework::Obfuscation::CRandomizer::Utility do
   end
 
   describe '#self.parse' do
-    let(:c_code) {
-      %Q|
+    let(:c_code) do
+      %|
       int main() {
         const char* s = "This is a test";
         return 0;
       }|
-    }
+    end
 
     it 'returns a Metasploit::C::Parser object' do
       p = Metasploit::Framework::Obfuscation::CRandomizer::Utility.parse(c_code)
       expect(p.class).to eq(Metasm::C::Parser)
     end
   end
-
 end

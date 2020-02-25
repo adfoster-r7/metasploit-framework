@@ -1,20 +1,20 @@
 require 'rex/parser/winscp'
 
-INI_SECURITY = "[Configuration\\Security]\nUseMasterPassword=1\nMasterPasswordVerifier=\n"
+INI_SECURITY = "[Configuration\\Security]\nUseMasterPassword=1\nMasterPasswordVerifier=\n".freeze
 
-USERNAME = 'username'
-HOST = 'server.feralhosting.com'
-PASSWORD='A35C7659654B2AB83C292F392E323D31392F392E2A392E723A392E3D3034332F2835323B723F33312F383A2F383A3B2F3B3B3B'
-SAMPLE_INI = <<-END
-[Sessions\\username@server.feralhosting.com]
-HostName=#{HOST}
-Timeout=6000
-SshProt=3
-UserName=#{USERNAME}
-UpdateDirectories=0
-Utf=1
-Password=#{PASSWORD}
-Shell=/bin/bash}
+USERNAME = 'username'.freeze
+HOST = 'server.feralhosting.com'.freeze
+PASSWORD = 'A35C7659654B2AB83C292F392E323D31392F392E2A392E723A392E3D3034332F2835323B723F33312F383A2F383A3B2F3B3B3B'.freeze
+SAMPLE_INI = <<~END.freeze
+  [Sessions\\username@server.feralhosting.com]
+  HostName=#{HOST}
+  Timeout=6000
+  SshProt=3
+  UserName=#{USERNAME}
+  UpdateDirectories=0
+  Utf=1
+  Password=#{PASSWORD}
+  Shell=/bin/bash}
 END
 
 RSpec.describe Rex::Parser::WinSCP do
@@ -52,7 +52,7 @@ RSpec.describe Rex::Parser::WinSCP do
     end
 
     it "returns 255 for 'A3'" do
-      r, _ = target.decrypt_next_char('A3')
+      r, = target.decrypt_next_char('A3')
       expect(r).to eq(Rex::Parser::WinSCP::PWDALG_SIMPLE_FLAG)
     end
   end
@@ -95,4 +95,3 @@ RSpec.describe Rex::Parser::WinSCP do
     end
   end
 end
-

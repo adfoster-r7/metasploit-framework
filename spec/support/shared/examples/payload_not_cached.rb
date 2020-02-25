@@ -13,6 +13,5 @@ RSpec.shared_examples_for 'payload is not cached' do |options|
         @actual_ancestor_reference_name_set.add(ancestor_reference_name)
       end
     end
-  
   end
 end

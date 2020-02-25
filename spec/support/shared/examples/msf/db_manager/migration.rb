@@ -1,7 +1,6 @@
 RSpec.shared_examples_for 'Msf::DBManager::Migration' do
-
   if ENV['REMOTE_DB']
-    before {skip("Migration is not tested for a remoted DB")}
+    before { skip("Migration is not tested for a remoted DB") }
   end
 
   it { is_expected.to be_a Msf::DBManager::Migration }
@@ -15,9 +14,9 @@ RSpec.shared_examples_for 'Msf::DBManager::Migration' do
     it 'should not add duplicate paths to ActiveRecord::Migrator.migrations_paths' do
       add_rails_engine_migration_paths
 
-      expect {
+      expect do
         add_rails_engine_migration_paths
-      }.to_not change {
+      end.to_not change {
         ActiveRecord::Migrator.migrations_paths.length
       }
 
@@ -32,7 +31,7 @@ RSpec.shared_examples_for 'Msf::DBManager::Migration' do
 
     it 'should call ActiveRecord::Migrator.migrate' do
       expect(ActiveRecord::Migrator).to receive(:migrate).with(
-          ActiveRecord::Migrator.migrations_paths
+        ActiveRecord::Migrator.migrations_paths
       )
 
       migrate

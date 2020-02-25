@@ -1,12 +1,10 @@
-
 require 'spec_helper'
 require 'metasploit/framework/login_scanner/glassfish'
 
 RSpec.describe Metasploit::Framework::LoginScanner::Glassfish do
-
   subject(:http_scanner) { described_class.new }
 
-  it_behaves_like 'Metasploit::Framework::LoginScanner::Base',  has_realm_key: true, has_default_realm: false
+  it_behaves_like 'Metasploit::Framework::LoginScanner::Base', has_realm_key: true, has_default_realm: false
   it_behaves_like 'Metasploit::Framework::LoginScanner::RexSocket'
 
 
@@ -52,9 +50,9 @@ RSpec.describe Metasploit::Framework::LoginScanner::Glassfish do
 
   let(:disabled_cred) do
     Metasploit::Framework::Credential.new(
-        paired: true,
-        public: username_disabled,
-        private: password_disabled
+      paired: true,
+      public: username_disabled,
+      private: password_disabled
     )
   end
 
@@ -68,7 +66,7 @@ RSpec.describe Metasploit::Framework::LoginScanner::Glassfish do
 
   context '#send_request' do
     let(:req_opts) do
-      {'uri'=>'/', 'method'=>'GET'}
+      { 'uri' => '/', 'method' => 'GET' }
     end
 
     it 'returns a Rex::Proto::Http::Response object' do
@@ -102,37 +100,35 @@ RSpec.describe Metasploit::Framework::LoginScanner::Glassfish do
 
   context '#try_login' do
     it 'sends a login request to /j_security_check' do
-      expect(http_scanner).to receive(:send_request).with(hash_including('uri'=>'/j_security_check'))
+      expect(http_scanner).to receive(:send_request).with(hash_including('uri' => '/j_security_check'))
       http_scanner.try_login(cred)
     end
 
     it 'sends a login request containing the username and password' do
-      expect(http_scanner).to receive(:send_request).with(hash_including('data'=>"j_username=#{username}&j_password=#{password}&loginButton=Login"))
+      expect(http_scanner).to receive(:send_request).with(hash_including('data' => "j_username=#{username}&j_password=#{password}&loginButton=Login"))
       http_scanner.try_login(cred)
     end
   end
 
   context '#try_glassfish_2' do
-
     let(:login_ok_message) do
       '<title>Deploy Enterprise Applications/Modules</title>'
     end
 
     before :example do
-      allow_any_instance_of(Rex::Proto::Http::Client).to receive(:send_recv) do |cli, req|
-        if req.opts['uri'] && req.opts['uri'].include?('j_security_check') &&
-            req.opts['data'] &&
-            req.opts['data'].include?("j_username=#{username}") &&
-            req. opts['data'].include?("j_password=#{password}")
+      allow_any_instance_of(Rex::Proto::Http::Client).to receive(:send_recv) do |_cli, req|
+        if req.opts['uri']&.include?('j_security_check') &&
+           req.opts['data'] &&
+           req.opts['data'].include?("j_username=#{username}") &&
+           req. opts['data'].include?("j_password=#{password}")
           res = Rex::Proto::Http::Response.new(302)
           res.headers['Location'] = '/applications/upload.jsf'
           res.headers['Set-Cookie'] = 'JSESSIONID=GOODSESSIONID'
           res
-        elsif req.opts['uri'] && req.opts['uri'].include?('j_security_check')
+        elsif req.opts['uri']&.include?('j_security_check')
           res = Rex::Proto::Http::Response.new(200)
           res.body = 'bad login'
-        elsif req.opts['uri'] &&
-            req.opts['uri'].include?('/applications/upload.jsf')
+        elsif   req.opts['uri']&.include?('/applications/upload.jsf')
           res = Rex::Proto::Http::Response.new(200)
           res.body = '<title>Deploy Enterprise Applications/Modules</title>'
         else
@@ -153,32 +149,30 @@ RSpec.describe Metasploit::Framework::LoginScanner::Glassfish do
   end
 
   context '#try_glassfish_3' do
-
     let(:login_ok_message) do
       '<title>Deploy Enterprise Applications/Modules</title>'
     end
 
     before :example do
-      allow_any_instance_of(Rex::Proto::Http::Client).to receive(:send_recv) do |cli, req|
-        if req.opts['uri'] && req.opts['uri'].include?('j_security_check') &&
-            req.opts['data'] &&
-            req.opts['data'].include?("j_username=#{username}") &&
-            req. opts['data'].include?("j_password=#{password}")
+      allow_any_instance_of(Rex::Proto::Http::Client).to receive(:send_recv) do |_cli, req|
+        if req.opts['uri']&.include?('j_security_check') &&
+           req.opts['data'] &&
+           req.opts['data'].include?("j_username=#{username}") &&
+           req. opts['data'].include?("j_password=#{password}")
           res = Rex::Proto::Http::Response.new(302)
           res.headers['Location'] = '/common/applications/uploadFrame.jsf'
           res.headers['Set-Cookie'] = 'JSESSIONID=GOODSESSIONID'
           res
-        elsif req.opts['uri'] && req.opts['uri'].include?('j_security_check') &&
-            req.opts['data'] &&
-            req.opts['data'].include?("j_username=#{username_disabled}") &&
-            req. opts['data'].include?("j_password=#{password_disabled}")
+        elsif req.opts['uri']&.include?('j_security_check') &&
+              req.opts['data'] &&
+              req.opts['data'].include?("j_username=#{username_disabled}") &&
+              req. opts['data'].include?("j_password=#{password_disabled}")
           res = Rex::Proto::Http::Response.new(200)
           res.body = 'Secure Admin must be enabled'
-        elsif req.opts['uri'] && req.opts['uri'].include?('j_security_check')
+        elsif req.opts['uri']&.include?('j_security_check')
           res = Rex::Proto::Http::Response.new(200)
           res.body = 'bad login'
-        elsif req.opts['uri'] &&
-            req.opts['uri'].include?('/common/applications/uploadFrame.jsf')
+        elsif   req.opts['uri']&.include?('/common/applications/uploadFrame.jsf')
           res = Rex::Proto::Http::Response.new(200)
           res.body = '<title>Deploy Applications or Modules'
         else
@@ -230,20 +224,19 @@ RSpec.describe Metasploit::Framework::LoginScanner::Glassfish do
       end
 
       it 'returns a Metasploit::Framework::LoginScanner::Result' do
-        allow_any_instance_of(Rex::Proto::Http::Client).to receive(:send_recv) do |cli, req|
-          if req.opts['uri'] && req.opts['uri'].include?('j_security_check') &&
-              req.opts['data'] &&
-              req.opts['data'].include?("j_username=#{username}") &&
-              req. opts['data'].include?("j_password=#{password}")
+        allow_any_instance_of(Rex::Proto::Http::Client).to receive(:send_recv) do |_cli, req|
+          if req.opts['uri']&.include?('j_security_check') &&
+             req.opts['data'] &&
+             req.opts['data'].include?("j_username=#{username}") &&
+             req. opts['data'].include?("j_password=#{password}")
             res = Rex::Proto::Http::Response.new(302)
             res.headers['Location'] = '/applications/upload.jsf'
             res.headers['Set-Cookie'] = 'JSESSIONID=GOODSESSIONID'
             res
-          elsif req.opts['uri'] && req.opts['uri'].include?('j_security_check')
+          elsif req.opts['uri']&.include?('j_security_check')
             res = Rex::Proto::Http::Response.new(200)
             res.body = 'bad login'
-          elsif req.opts['uri'] &&
-              req.opts['uri'].include?('/applications/upload.jsf')
+          elsif   req.opts['uri']&.include?('/applications/upload.jsf')
             res = Rex::Proto::Http::Response.new(200)
             res.body = '<title>Deploy Enterprise Applications/Modules</title>'
           else
@@ -264,26 +257,25 @@ RSpec.describe Metasploit::Framework::LoginScanner::Glassfish do
 
 
       it 'returns a Metasploit::Framework::LoginScanner::Result' do
-        allow_any_instance_of(Rex::Proto::Http::Client).to receive(:send_recv) do |cli, req|
-          if req.opts['uri'] && req.opts['uri'].include?('j_security_check') &&
-              req.opts['data'] &&
-              req.opts['data'].include?("j_username=#{username}") &&
-              req. opts['data'].include?("j_password=#{password}")
+        allow_any_instance_of(Rex::Proto::Http::Client).to receive(:send_recv) do |_cli, req|
+          if req.opts['uri']&.include?('j_security_check') &&
+             req.opts['data'] &&
+             req.opts['data'].include?("j_username=#{username}") &&
+             req. opts['data'].include?("j_password=#{password}")
             res = Rex::Proto::Http::Response.new(302)
             res.headers['Location'] = '/common/applications/uploadFrame.jsf'
             res.headers['Set-Cookie'] = 'JSESSIONID=GOODSESSIONID'
             res
-          elsif req.opts['uri'] && req.opts['uri'].include?('j_security_check') &&
-              req.opts['data'] &&
-              req.opts['data'].include?("j_username=#{username_disabled}") &&
-              req. opts['data'].include?("j_password=#{password_disabled}")
+          elsif req.opts['uri']&.include?('j_security_check') &&
+                req.opts['data'] &&
+                req.opts['data'].include?("j_username=#{username_disabled}") &&
+                req. opts['data'].include?("j_password=#{password_disabled}")
             res = Rex::Proto::Http::Response.new(200)
             res.body = 'Secure Admin must be enabled'
-          elsif req.opts['uri'] && req.opts['uri'].include?('j_security_check')
+          elsif req.opts['uri']&.include?('j_security_check')
             res = Rex::Proto::Http::Response.new(200)
             res.body = 'bad login'
-          elsif req.opts['uri'] &&
-              req.opts['uri'].include?('/common/applications/uploadFrame.jsf')
+          elsif   req.opts['uri']&.include?('/common/applications/uploadFrame.jsf')
             res = Rex::Proto::Http::Response.new(200)
             res.body = '<title>Deploy Applications or Modules'
           else
@@ -331,9 +323,5 @@ RSpec.describe Metasploit::Framework::LoginScanner::Glassfish do
       let(:server_header) { "Apache-Coyote/1.1" }
       it { is_expected.to be_nil }
     end
-
-
   end
-
 end
-

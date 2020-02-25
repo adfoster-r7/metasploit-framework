@@ -5,14 +5,14 @@ require 'msf/core/framework'
 
 RSpec.describe Msf::Framework do
   context '#initialize' do
-    subject(:framework) {
+    subject(:framework) do
       described_class.new
-    }
+    end
 
     it 'creates no threads' do
-      expect {
+      expect do
         framework
-      }.not_to change { Thread.list.count }
+      end.not_to change { Thread.list.count }
     end
   end
 
@@ -26,7 +26,7 @@ RSpec.describe Msf::Framework do
     end
 
     it "should return the concatenation of Major.Minor.Point-Release" do
-      major,minor,point,release = framework.version.split(/[.-]/)
+      major, minor, point, release = framework.version.split(/[.-]/)
       expect(major.to_i).to eq described_class::Major
       expect(minor.to_i).to eq described_class::Minor
       expect(point.to_i).to eq described_class::Point
@@ -35,14 +35,12 @@ RSpec.describe Msf::Framework do
 
     skip "conform to SemVer 2.0 syntax: http://semver.org/" do
       it "should have constants that correspond to SemVer standards" do
-        major,minor,patch,label = framework.version.split(/[.-]/)
+        major, minor, patch, label = framework.version.split(/[.-]/)
         expect(major.to_i).to eq described_class::VERSION::MAJOR
         expect(minor.to_i).to eq described_class::VERSION::MINOR
         expect(point.to_i).to eq described_class::VERSION::POINT
         expect(label.to_s).to eq described_class::VERSION::LABEL
       end
     end
-
   end
-
 end

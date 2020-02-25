@@ -53,7 +53,7 @@ RSpec.describe Net::DNS::Names do
   describe '#pack_name' do
     context 'when name data size is larger than 255 bytes' do
       let(:name) do
-        'A' * (255+1)
+        'A' * (255 + 1)
       end
 
       it 'raises an ArgumentError exception' do
@@ -63,12 +63,12 @@ RSpec.describe Net::DNS::Names do
 
     context 'when label data is larger than 63 bytes' do
       let(:name) do
-        'A' * (63+1) + '.'
+        'A' * (63 + 1) + '.'
       end
 
       it 'raises an ArgumentError exception' do
         expect { subject.pack_name(name) }.to raise_exception(ArgumentError)
-      end 
+      end
     end
   end
 
@@ -113,7 +113,6 @@ RSpec.describe Net::DNS::Names do
       it 'returns the FQDN' do
         expect(subject.valid?(fqdn)).to eq(fqdn)
       end
-
     end
 
     context 'when FQDN is not valid' do

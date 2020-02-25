@@ -1,15 +1,14 @@
 require 'spec_helper'
 
 RSpec.describe Msf::Author do
-
   context 'KNOWN' do
-    subject(:known) {
+    subject(:known) do
       described_class::KNOWN
-    }
-    
+    end
+
     it { is_expected.to be_a Hash }
   end
-  
+
   it { is_expected.to respond_to :== }
   it { is_expected.to respond_to :email }
   it { is_expected.to respond_to :email= }
@@ -17,11 +16,11 @@ RSpec.describe Msf::Author do
   it { is_expected.to respond_to :name }
   it { is_expected.to respond_to :name= }
   it { is_expected.to respond_to :to_s }
-  
+
   describe 'class methods' do
-    subject {
+    subject do
       described_class
-    }
+    end
 
     it { is_expected.to respond_to :from_s }
     it { is_expected.to respond_to :transform }
@@ -74,8 +73,6 @@ RSpec.describe Msf::Author do
           end
         end
       end
-
-
     end
   end
 

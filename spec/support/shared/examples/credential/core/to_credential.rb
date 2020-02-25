@@ -3,7 +3,6 @@ require 'metasploit/framework/credential'
 RSpec.shared_examples_for 'Metasploit::Credential::Core::ToCredential' do
   context "methods" do
     context ".to_credential" do
-
       subject(:crednetial_core) do
         FactoryBot.create(:metasploit_credential_core)
       end

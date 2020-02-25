@@ -2,7 +2,6 @@ require 'spec_helper'
 require 'rex/proto/sms/model'
 
 RSpec.describe Rex::Proto::Sms::Model::Message do
-
   let(:message)      { 'message' }
   let(:from)         { 'sender@example.com' }
   let(:to)           { 'receiver@example.com' }
@@ -13,7 +12,7 @@ RSpec.describe Rex::Proto::Sms::Model::Message do
       from: from,
       to: to,
       subject: sms_subject,
-      message: message,
+      message: message
     )
   end
 
@@ -40,5 +39,4 @@ RSpec.describe Rex::Proto::Sms::Model::Message do
       expect(subject.to_s).to include(message)
     end
   end
-
 end

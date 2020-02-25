@@ -6,26 +6,26 @@ RSpec.describe Metasploit::Framework::LoginScanner::Postgres do
   let(:private) { 'toor' }
   let(:realm) { 'template1' }
 
-  let(:full_cred) {
+  let(:full_cred) do
     Metasploit::Framework::Credential.new(
-        paired: true,
-        public: public,
-        private: private,
-        realm: realm
+      paired: true,
+      public: public,
+      private: private,
+      realm: realm
     )
-  }
+  end
 
-  let(:cred_no_realm) {
+  let(:cred_no_realm) do
     Metasploit::Framework::Credential.new(
-        paired: true,
-        public: public,
-        private: private
+      paired: true,
+      public: public,
+      private: private
     )
-  }
+  end
 
   subject(:login_scanner) { described_class.new }
 
-  it_behaves_like 'Metasploit::Framework::LoginScanner::Base',  has_realm_key: true, has_default_realm: true
+  it_behaves_like 'Metasploit::Framework::LoginScanner::Base', has_realm_key: true, has_default_realm: true
 
   context '#attempt_login' do
     context 'when the login is successful' do
@@ -72,5 +72,4 @@ RSpec.describe Metasploit::Framework::LoginScanner::Postgres do
       end
     end
   end
-
 end

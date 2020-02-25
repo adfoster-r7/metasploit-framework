@@ -1,4 +1,3 @@
-
 RSpec.shared_examples_for 'Metasploit::Framework::Tcp::Client' do
   subject(:login_scanner) { described_class.new }
 
@@ -39,7 +38,7 @@ RSpec.shared_examples_for 'Metasploit::Framework::Tcp::Client' do
     end
 
     it 'is valid for a legitimate  number' do
-      login_scanner.send_delay = rand(1000) + 1
+      login_scanner.send_delay = rand(1..1000)
       expect(login_scanner.errors[:send_delay]).to be_empty
     end
   end
@@ -64,9 +63,8 @@ RSpec.shared_examples_for 'Metasploit::Framework::Tcp::Client' do
     end
 
     it 'is valid for a legitimate  number' do
-      login_scanner.max_send_size = rand(1000) + 1
+      login_scanner.max_send_size = rand(1..1000)
       expect(login_scanner.errors[:max_send_size]).to be_empty
     end
   end
-
 end

@@ -63,9 +63,9 @@ RSpec.shared_examples_for 'Mdm::Workspace::Boundary' do
           end
 
           it 'should not raise error' do
-            expect {
+            expect do
               workspace.valid?
-            }.to_not raise_error
+            end.to_not raise_error
           end
 
           it 'should not record an error' do
@@ -114,7 +114,7 @@ RSpec.shared_examples_for 'Mdm::Workspace::Boundary' do
               ]
             end
 
-            it 'should record error', :skip => 'https://www.pivotaltracker.com/story/show/43171927' do
+            it 'should record error', skip: 'https://www.pivotaltracker.com/story/show/43171927' do
               expect(workspace).not_to be_valid
               expect(workspace.errors[:boundary]).to include(error)
             end

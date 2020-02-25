@@ -4,12 +4,11 @@ require 'metasploit/framework/login_scanner/vmauthd'
 RSpec.describe Metasploit::Framework::LoginScanner::VMAUTHD do
   subject(:scanner) { described_class.new }
 
-  it_behaves_like 'Metasploit::Framework::LoginScanner::Base',  has_realm_key: false, has_default_realm: false
+  it_behaves_like 'Metasploit::Framework::LoginScanner::Base', has_realm_key: false, has_default_realm: false
   it_behaves_like 'Metasploit::Framework::LoginScanner::RexSocket'
   it_behaves_like 'Metasploit::Framework::Tcp::Client'
 
   context "#attempt_login" do
-
     let(:pub_blank) do
       Metasploit::Framework::Credential.new(
         paired: true,
@@ -42,6 +41,5 @@ RSpec.describe Metasploit::Framework::LoginScanner::VMAUTHD do
         expect(result.status).to eq(Metasploit::Model::Login::Status::UNABLE_TO_CONNECT)
       end
     end
-
   end
 end

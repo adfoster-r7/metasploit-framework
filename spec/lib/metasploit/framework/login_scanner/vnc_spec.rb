@@ -4,15 +4,15 @@ require 'metasploit/framework/login_scanner/vnc'
 RSpec.describe Metasploit::Framework::LoginScanner::VNC do
   let(:private) { 'password' }
   let(:blank) { '' }
-  let(:test_cred) {
-    Metasploit::Framework::Credential.new( paired: false, private: private )
-  }
-  let(:blank_cred) {
-    Metasploit::Framework::Credential.new( paired: false, private: blank )
-  }
+  let(:test_cred) do
+    Metasploit::Framework::Credential.new(paired: false, private: private)
+  end
+  let(:blank_cred) do
+    Metasploit::Framework::Credential.new(paired: false, private: blank)
+  end
   subject(:login_scanner) { described_class.new }
 
-  it_behaves_like 'Metasploit::Framework::LoginScanner::Base',  has_realm_key: false, has_default_realm: false
+  it_behaves_like 'Metasploit::Framework::LoginScanner::Base', has_realm_key: false, has_default_realm: false
   it_behaves_like 'Metasploit::Framework::LoginScanner::RexSocket'
   it_behaves_like 'Metasploit::Framework::Tcp::Client'
 
@@ -32,7 +32,7 @@ RSpec.describe Metasploit::Framework::LoginScanner::VNC do
     it 'returns a failed result when authentication fails' do
       expect_any_instance_of(Rex::Proto::RFB::Client).to receive(:handshake).and_return true
       expect_any_instance_of(Rex::Proto::RFB::Client).to receive(:negotiate_authentication).and_return Rex::Proto::RFB::AuthType::VNC
-      expect_any_instance_of(Rex::Proto::RFB::Client).to receive(:authenticate_with_type).with(Rex::Proto::RFB::AuthType::VNC,nil,private).and_return false
+      expect_any_instance_of(Rex::Proto::RFB::Client).to receive(:authenticate_with_type).with(Rex::Proto::RFB::AuthType::VNC, nil, private).and_return false
       result = login_scanner.attempt_login(test_cred)
       expect(result.status).to eq Metasploit::Model::Login::Status::INCORRECT
     end
@@ -78,9 +78,5 @@ RSpec.describe Metasploit::Framework::LoginScanner::VNC do
         expect(result.proof).to eq ::Timeout::Error.new.to_s
       end
     end
-
-
-
   end
-
 end

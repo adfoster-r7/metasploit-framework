@@ -159,7 +159,6 @@ RSpec.describe Msf::Ui::Console::CommandDispatcher::Db do
         ]
       end
     end
-
   end
 
   describe "#cmd_notes" do
@@ -182,10 +181,8 @@ RSpec.describe Msf::Ui::Console::CommandDispatcher::Db do
           "  notes -t smb.fingerprint 10.1.1.34 10.1.20.41",
           "  notes -S 'nmap.nse.(http|rtsp)'"
         ]
-
       end
     end
-
   end
 
   describe "#cmd_services" do
@@ -214,18 +211,18 @@ RSpec.describe Msf::Ui::Console::CommandDispatcher::Db do
     describe "-p" do
       before(:example) do
         @services = []
-        @services << framework.db.report_service({host: '192.168.0.1', port: 1024, name: 'service1', proto: 'udp'})
-        @services << framework.db.report_service({host: '192.168.0.1', port: 1025, name: 'service2', proto: 'tcp'})
-        @services << framework.db.report_service({host: '192.168.0.1', port: 1026, name: 'service3', proto: 'udp'})
+        @services << framework.db.report_service({ host: '192.168.0.1', port: 1024, name: 'service1', proto: 'udp' })
+        @services << framework.db.report_service({ host: '192.168.0.1', port: 1025, name: 'service2', proto: 'tcp' })
+        @services << framework.db.report_service({ host: '192.168.0.1', port: 1026, name: 'service3', proto: 'udp' })
       end
 
       after(:example) do
         ids = []
-        @services.each{|service|
+        @services.each do |service|
           ids << service.id
-        }
+        end
 
-        framework.db.delete_service({ids: ids})
+        framework.db.delete_service({ ids: ids })
       end
 
       it "should list services that are on a given port" do
@@ -245,22 +242,22 @@ RSpec.describe Msf::Ui::Console::CommandDispatcher::Db do
     describe "-np" do
       before(:example) do
         @services = []
-        @services << framework.db.report_service({host: '192.168.0.2', port: 1024})
-        @services << framework.db.report_service({host: '192.168.0.2', port: 1025})
-        @services << framework.db.report_service({host: '192.168.0.2', port: 1026})
+        @services << framework.db.report_service({ host: '192.168.0.2', port: 1024 })
+        @services << framework.db.report_service({ host: '192.168.0.2', port: 1025 })
+        @services << framework.db.report_service({ host: '192.168.0.2', port: 1026 })
       end
 
       after(:example) do
         ids = []
-        @services.each{|service|
+        @services.each do |service|
           ids << service.id
-        }
+        end
 
-        framework.db.delete_service({ids: ids})
+        framework.db.delete_service({ ids: ids })
       end
 
       it "should list services that are not on a given port" do
-        skip {
+        skip do
           db.cmd_services "-np", "1024"
 
           expect(@output).to =~ [
@@ -272,7 +269,7 @@ RSpec.describe Msf::Ui::Console::CommandDispatcher::Db do
             "192.168.0.2  1025  snmp         open   ",
             "192.168.0.2  1026  snmp         open   "
           ]
-        }
+        end
       end
     end
   end
@@ -297,7 +294,6 @@ RSpec.describe Msf::Ui::Console::CommandDispatcher::Db do
         ]
       end
     end
-
   end
 
   describe "#cmd_workspace" do

@@ -1,7 +1,6 @@
 RSpec.shared_examples_for 'Msf::DBManager::Import' do
-
   if ENV['REMOTE_DB']
-    before {skip("Awaiting import ticket")}
+    before { skip("Awaiting import ticket") }
   end
 
   it { is_expected.to respond_to :dehex }

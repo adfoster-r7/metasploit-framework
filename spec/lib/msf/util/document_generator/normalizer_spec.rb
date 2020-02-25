@@ -4,7 +4,6 @@ require 'msf/util/document_generator'
 require 'msf/util/document_generator/pull_request_finder'
 
 RSpec.describe Msf::Util::DocumentGenerator::DocumentNormalizer do
-
   let(:mod_description)   { 'MS08-067 netapi double' }
   let(:mod_authors)       { [ 'sinn3r' ] }
   let(:mod_fullname)      { 'exploit/windows/smb/ms08_067_netapi' }
@@ -105,7 +104,7 @@ RSpec.describe Msf::Util::DocumentGenerator::DocumentNormalizer do
 
   describe '#md_to_html' do
     let(:md) do
-      %Q|# Hello world!|
+      %(# Hello world!)
     end
 
     context 'when a markdown file is given' do
@@ -261,5 +260,4 @@ RSpec.describe Msf::Util::DocumentGenerator::DocumentNormalizer do
       end
     end
   end
-
 end

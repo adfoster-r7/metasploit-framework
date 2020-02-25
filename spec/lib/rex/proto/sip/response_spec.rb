@@ -21,8 +21,8 @@ RSpec.describe 'Rex::Proto::SIP::Response parsing' do
       expect(r.version).to eq('2.0')
       expect(r.code).to eq('200')
       expect(r.message).to eq('OK')
-      expect(r.headers).to eq('Foo' => %w(bar), 'Blah' => %w(0), 'FoO' => %w(blaf))
-      expect(r.header('Foo')).to eq %w(bar blaf)
+      expect(r.headers).to eq('Foo' => %w[bar], 'Blah' => %w[0], 'FoO' => %w[blaf])
+      expect(r.header('Foo')).to eq %w[bar blaf]
     end
   end
 

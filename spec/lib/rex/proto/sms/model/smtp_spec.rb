@@ -1,16 +1,16 @@
 # -*- coding: binary -*-
+
 require 'spec_helper'
 require 'rex/proto/sms/model'
 
 RSpec.describe Rex::Proto::Sms::Model::Smtp do
-
   let(:address)     { 'example.com' }
   let(:port)        { 25 }
   let(:username)    { 'username' }
   let(:password)    { 'password' }
   let(:login_type)  { :login }
   let(:from)        { 'from' }
-  let(:helo_domain) { 'example.com'}
+  let(:helo_domain) { 'example.com' }
 
   subject do
     Rex::Proto::Sms::Model::Smtp.new(
@@ -53,5 +53,4 @@ RSpec.describe Rex::Proto::Sms::Model::Smtp do
       expect(subject.helo_domain).to eq(helo_domain)
     end
   end
-
 end

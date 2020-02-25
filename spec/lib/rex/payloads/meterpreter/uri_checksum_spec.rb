@@ -2,26 +2,26 @@ require 'spec_helper'
 require 'rex/payloads/meterpreter/uri_checksum'
 
 RSpec.describe Rex::Payloads::Meterpreter::UriChecksum do
-   class DummyClass
-     include Rex::Payloads::Meterpreter::UriChecksum
-   end
+  class DummyClass
+    include Rex::Payloads::Meterpreter::UriChecksum
+  end
 
   subject(:dummy_object) { DummyClass.new }
 
-  it { is_expected.to respond_to :generate_uri_checksum}
-  it { is_expected.to respond_to :process_uri_resource}
-  it { is_expected.to respond_to :uri_checksum_lookup}
+  it { is_expected.to respond_to :generate_uri_checksum }
+  it { is_expected.to respond_to :process_uri_resource }
+  it { is_expected.to respond_to :uri_checksum_lookup }
 
   describe '#process_uri_resource' do
     context 'when passed a value for INITW' do
-      let(:uri) { "/7E37v"}
+      let(:uri) { "/7E37v" }
 
       it 'returns a static value of /INITM' do
         expect(dummy_object.process_uri_resource(uri)[:mode]).to eq :init_native
       end
 
       context 'with junk appended at the end' do
-        let(:uri) { "/7E37v_foobar"}
+        let(:uri) { "/7E37v_foobar" }
 
         it 'returns a static value of /INITM' do
           expect(dummy_object.process_uri_resource(uri)[:mode]).to eq nil
@@ -30,14 +30,14 @@ RSpec.describe Rex::Payloads::Meterpreter::UriChecksum do
     end
 
     context 'when passed a value for INITJ' do
-      let(:uri) { "/a6BF9"}
+      let(:uri) { "/a6BF9" }
 
       it 'returns a static value of /INITJM' do
         expect(dummy_object.process_uri_resource(uri)[:mode]).to eq :init_java
       end
 
       context 'with junk appended at the end' do
-        let(:uri) { "/a6BF9_foobar"}
+        let(:uri) { "/a6BF9_foobar" }
 
         it 'returns a static value of /INITJM' do
           expect(dummy_object.process_uri_resource(uri)[:mode]).to eq nil
@@ -46,14 +46,14 @@ RSpec.describe Rex::Payloads::Meterpreter::UriChecksum do
     end
 
     context 'when passed a value for CONN' do
-      let(:uri) { "/39ab3"}
+      let(:uri) { "/39ab3" }
 
       it 'returns /CONN plus random junk' do
         expect(dummy_object.process_uri_resource(uri)[:mode]).to eq :connect
       end
 
       context 'with junk appended at the end' do
-        let(:uri) { "/39ab3_foobar"}
+        let(:uri) { "/39ab3_foobar" }
 
         it 'returns /CONN plus the junk' do
           expect(dummy_object.process_uri_resource(uri)[:mode]).to eq nil
@@ -62,7 +62,7 @@ RSpec.describe Rex::Payloads::Meterpreter::UriChecksum do
     end
 
     context 'when passed a junk value' do
-      let(:uri) { "/lolz"}
+      let(:uri) { "/lolz" }
 
       it 'returns the original uri string' do
         expect(dummy_object.process_uri_resource(uri)[:mode]).to eq nil
@@ -72,7 +72,7 @@ RSpec.describe Rex::Payloads::Meterpreter::UriChecksum do
 
   describe '#generate_uri_checksum' do
     [0, 80, 88, 90, 92, 98, 255, 127].each do |checksum_value|
-      [5,30,50,100,127].each do |uri_length|
+      [5, 30, 50, 100, 127].each do |uri_length|
         ["", "/boom", "/___AAAAAAAAAAAAA"].each do |prefix|
           it "generates a #{uri_length} byte string that checksums back to the original value (#{checksum_value}) with prefix #{prefix}" do
             uri_string = dummy_object.generate_uri_checksum(checksum_value, uri_length + prefix.to_s.length, prefix)
@@ -84,7 +84,6 @@ RSpec.describe Rex::Payloads::Meterpreter::UriChecksum do
   end
 
   describe '#uri_checksum_lookup' do
-
     context 'when passed a value for :connect' do
       let(:mode) { :connect }
       it 'returns a URI_CHECKSUM_CONN' do
@@ -112,7 +111,5 @@ RSpec.describe Rex::Payloads::Meterpreter::UriChecksum do
         expect(dummy_object.uri_checksum_lookup(mode)).to eq Rex::Payloads::Meterpreter::UriChecksum::URI_CHECKSUM_INITP
       end
     end
-
   end
-
 end

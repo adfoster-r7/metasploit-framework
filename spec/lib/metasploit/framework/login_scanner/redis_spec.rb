@@ -2,7 +2,6 @@ require 'spec_helper'
 require 'metasploit/framework/login_scanner/redis'
 
 RSpec.describe Metasploit::Framework::LoginScanner::Redis do
-
   def update_socket_res(res)
     socket = double('Socket')
     allow(socket).to receive(:put)
@@ -105,5 +104,4 @@ RSpec.describe Metasploit::Framework::LoginScanner::Redis do
       end
     end
   end
-
 end

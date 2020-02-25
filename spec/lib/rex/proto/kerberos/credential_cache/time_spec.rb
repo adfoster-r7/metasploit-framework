@@ -1,17 +1,17 @@
 # -*- coding:binary -*-
+
 require 'spec_helper'
 
 require 'rex/proto/kerberos'
 
 RSpec.describe Rex::Proto::Kerberos::CredentialCache::Time do
-
   subject(:time) do
     described_class.new
   end
 
   let(:sample) do
-    "\x00\x00\x00\x00\x00\x00\x00\x01" +
-    "\x00\x00\x00\x02\x00\x00\x00\x03"
+    "\x00\x00\x00\x00\x00\x00\x00\x01" \
+      "\x00\x00\x00\x02\x00\x00\x00\x03"
   end
 
   describe "#encode" do

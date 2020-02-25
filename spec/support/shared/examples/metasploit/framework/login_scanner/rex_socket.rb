@@ -3,5 +3,4 @@ RSpec.shared_examples_for 'Metasploit::Framework::LoginScanner::RexSocket' do
 
   it { is_expected.to respond_to :ssl }
   it { is_expected.to respond_to :ssl_version }
-
 end

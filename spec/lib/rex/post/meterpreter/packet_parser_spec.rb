@@ -1,12 +1,13 @@
 # -*- coding:binary -*-
+
 require 'rex/post/meterpreter/packet'
 require 'rex/post/meterpreter/packet_parser'
 require 'stringio'
 
 RSpec.describe Rex::Post::Meterpreter::PacketParser do
-  subject(:parser){
+  subject(:parser) do
     Rex::Post::Meterpreter::PacketParser.new
-  }
+  end
   before(:example) do
     @request_packet = Rex::Post::Meterpreter::Packet.create_request("test_method")
     @sock = StringIO.new(@request_packet.to_r)
@@ -21,5 +22,4 @@ RSpec.describe Rex::Post::Meterpreter::PacketParser do
     expect(parsed_packet.type).to eq Rex::Post::Meterpreter::PACKET_TYPE_REQUEST
     expect(parsed_packet.method?("test_method")).to eq true
   end
-
 end

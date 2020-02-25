@@ -1,4 +1,5 @@
 # -*- coding:binary -*-
+
 require 'spec_helper'
 
 RSpec.describe Msf::Modules::Error do
@@ -8,7 +9,7 @@ RSpec.describe Msf::Modules::Error do
 
       context 'with :causal_message' do
         subject do
-          described_class.new(:causal_message => causal_message)
+          described_class.new(causal_message: causal_message)
         end
 
         it 'should include causal_message in error' do
@@ -19,8 +20,8 @@ RSpec.describe Msf::Modules::Error do
       context 'with :causal_message and :module_path' do
         subject do
           described_class.new(
-              :causal_message => causal_message,
-              :module_path => module_path
+            causal_message: causal_message,
+            module_path: module_path
           )
         end
 
@@ -32,8 +33,8 @@ RSpec.describe Msf::Modules::Error do
       context 'with :causal_message and :module_reference_name' do
         subject do
           described_class.new(
-              :causal_message => causal_message,
-              :module_reference_name => module_reference_name
+            causal_message: causal_message,
+            module_reference_name: module_reference_name
           )
         end
 
@@ -45,9 +46,9 @@ RSpec.describe Msf::Modules::Error do
       context 'with :causal_message, :module_path, and :module_reference_nam' do
         subject do
           described_class.new(
-              :causal_message => causal_message,
-              :module_path => module_path,
-              :module_reference_name => module_reference_name
+            causal_message: causal_message,
+            module_path: module_path,
+            module_reference_name: module_reference_name
           )
         end
 
@@ -58,7 +59,7 @@ RSpec.describe Msf::Modules::Error do
 
       context 'with :module_path' do
         subject do
-          described_class.new(:module_path => module_path)
+          described_class.new(module_path: module_path)
         end
 
         it 'should use :module_path for module_path' do
@@ -73,8 +74,8 @@ RSpec.describe Msf::Modules::Error do
       context 'with :module_path and :module_reference_name' do
         subject do
           described_class.new(
-              :module_path => module_path,
-              :module_reference_name => module_reference_name
+            module_path: module_path,
+            module_reference_name: module_reference_name
           )
         end
 
@@ -85,7 +86,7 @@ RSpec.describe Msf::Modules::Error do
 
       context 'with :module_reference_name' do
         subject do
-          described_class.new(:module_reference_name => module_reference_name)
+          described_class.new(module_reference_name: module_reference_name)
         end
 
         it 'should use :module_reference_name for module_reference_name' do
@@ -96,7 +97,6 @@ RSpec.describe Msf::Modules::Error do
           expect(subject.to_s).to eq "Failed to load module (#{module_reference_name})"
         end
       end
-
     end
   end
 end

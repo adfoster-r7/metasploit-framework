@@ -44,5 +44,4 @@ RSpec.describe Metasploit::Framework::Obfuscation::CRandomizer::CodeFactory::Fak
       expect(subject.has_function_name?(bad_function_name)).to be_falsy
     end
   end
-
 end

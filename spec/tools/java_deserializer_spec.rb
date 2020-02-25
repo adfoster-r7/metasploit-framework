@@ -4,7 +4,6 @@ require 'stringio'
 load Metasploit::Framework.root.join('tools/exploit/java_deserializer.rb').to_path
 
 RSpec.describe JavaDeserializer do
-
   before(:context) do
     @out = $stdout
     @err = $stderr
@@ -23,10 +22,10 @@ RSpec.describe JavaDeserializer do
   end
 
   let(:valid_stream) do
-    "\xac\xed\x00\x05\x75\x72\x00\x02" +
-    "\x5b\x43\xb0\x26\x66\xb0\xe2\x5d" +
-    "\x84\xac\x02\x00\x00\x78\x70\x00" +
-    "\x00\x00\x02\x00\x61\x00\x62"
+    "\xac\xed\x00\x05\x75\x72\x00\x02" \
+      "\x5b\x43\xb0\x26\x66\xb0\xe2\x5d" \
+      "\x84\xac\x02\x00\x00\x78\x70\x00" \
+      "\x00\x00\x02\x00\x61\x00\x62"
   end
 
   describe ".new" do
@@ -70,7 +69,7 @@ RSpec.describe JavaDeserializer do
             StringIO.new(contents)
           end
           deserializer.file = 'sample'
-          deserializer.run({:array => '0'})
+          deserializer.run({ array: '0' })
           expect($stdout.string).to include('Array Type: char')
         end
       end

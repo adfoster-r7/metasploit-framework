@@ -1,7 +1,6 @@
 require 'rex/post/meterpreter/extensions/stdapi/sys/registry'
 
 RSpec.describe Rex::Post::Meterpreter::Extensions::Stdapi::Sys::Registry do
-
   describe '.type2str' do
     subject { described_class.type2str(type) }
 
@@ -30,5 +29,4 @@ RSpec.describe Rex::Post::Meterpreter::Extensions::Stdapi::Sys::Registry do
       it { is_expected.to eq(1) }
     end
   end
-
 end

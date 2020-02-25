@@ -1,4 +1,5 @@
 # -*- coding:binary -*-
+
 require 'spec_helper'
 
 require 'stringio'
@@ -6,7 +7,6 @@ require 'rex/proto/rmi'
 require 'rex/java'
 
 RSpec.describe Rex::Proto::Rmi::Model::UniqueIdentifier do
-
   subject(:uid) do
     described_class.new
   end

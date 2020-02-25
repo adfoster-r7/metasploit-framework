@@ -2,23 +2,22 @@ require 'spec_helper'
 require 'metasploit/framework/login_scanner'
 
 RSpec.describe Metasploit::Framework::LoginScanner::Result do
-
   let(:private) { 'toor' }
   let(:proof) { 'foobar' }
   let(:public) { 'root' }
   let(:realm) { nil }
   let(:status) { Metasploit::Model::Login::Status::SUCCESSFUL }
-  let(:cred) {
+  let(:cred) do
     Metasploit::Framework::Credential.new(public: public, private: private, realm: realm, paired: true)
-  }
+  end
 
-  subject(:login_result) {
+  subject(:login_result) do
     described_class.new(
-        credential: cred,
-        proof: proof,
-        status: status
+      credential: cred,
+      proof: proof,
+      status: status
     )
-  }
+  end
 
   it { is_expected.to respond_to :access_level }
   it { is_expected.to respond_to :credential }
@@ -28,9 +27,9 @@ RSpec.describe Metasploit::Framework::LoginScanner::Result do
 
   context '#success?' do
     context 'when the status code is success' do
-        it 'returns true' do
-          expect(login_result.success?).to be_truthy
-        end
+      it 'returns true' do
+        expect(login_result.success?).to be_truthy
+      end
     end
 
     context 'when the status code is anything else' do
@@ -40,6 +39,4 @@ RSpec.describe Metasploit::Framework::LoginScanner::Result do
       end
     end
   end
-
-
 end

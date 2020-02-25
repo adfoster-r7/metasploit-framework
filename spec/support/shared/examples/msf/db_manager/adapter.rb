@@ -1,14 +1,13 @@
 RSpec.shared_examples_for 'Msf::DBManager::Adapter' do
-
   if ENV['REMOTE_DB']
-    before {skip("Not used for remote data service")}
+    before { skip("Not used for remote data service") }
   end
 
   context 'CONSTANTS' do
     context 'ADAPTER' do
-      subject(:adapter) {
+      subject(:adapter) do
         described_class::ADAPTER
-      }
+      end
 
       it { is_expected.to eq('postgresql') }
     end

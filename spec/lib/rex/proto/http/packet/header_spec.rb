@@ -1,9 +1,7 @@
-
 require 'spec_helper'
 require 'rex/proto/http/packet/header'
 
 RSpec.describe Rex::Proto::Http::Packet::Header do
-
   it_behaves_like "hash with insensitive keys"
 
   let :original_str do
@@ -48,7 +46,6 @@ RSpec.describe Rex::Proto::Http::Packet::Header do
         expect(headers['Tabs']).to eq "Bar"
       end
     end
-
   end
 
   describe "#to_s" do
@@ -79,11 +76,10 @@ RSpec.describe Rex::Proto::Http::Packet::Header do
         "\r\n"
       end
       it "should produce an equivalent string" do
-        #pending "who knows"
+        # pending "who knows"
         combined = "Foo: Bar, Baz, Bab\r\n\r\n"
         expect(header_string).to eq combined
       end
     end
   end
-
 end

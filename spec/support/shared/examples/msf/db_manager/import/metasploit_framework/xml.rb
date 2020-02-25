@@ -1,15 +1,15 @@
 # -*- coding:binary -*-
+
 require 'builder'
 
 RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
-
   if ENV['REMOTE_DB']
-    before {skip("Awaiting a port of all components")}
+    before { skip("Awaiting a port of all components") }
   end
 
   # Serialized format from pro/modules/auxiliary/pro/report.rb
   def serialize(object)
-    # FIXME https://www.pivotaltracker.com/story/show/46578647
+    # FIXME: https://www.pivotaltracker.com/story/show/46578647
     marshalled = Marshal.dump(object)
     base64_encoded = [marshalled].pack('m')
     compact = base64_encoded.gsub(/\s+/, '')
@@ -18,7 +18,7 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
   end
 
   def with_info
-    expect(db_manager).to receive(:import_msf_web_element) do |*args, &specialization|
+    expect(db_manager).to receive(:import_msf_web_element) do |*_args, &specialization|
       info = specialization.call(element, options)
 
       yield info
@@ -45,27 +45,26 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
 
   let(:msf_web_text_element_names) do
     [
-        'created-at',
-        'host',
-        'path',
-        'port',
-        'query',
-        'ssl',
-        'updated-at',
-        'vhost'
+      'created-at',
+      'host',
+      'path',
+      'port',
+      'query',
+      'ssl',
+      'updated-at',
+      'vhost'
     ]
   end
 
   let(:notifier) do
     lambda do |event, data|
-
     end
   end
 
   let(:options) do
     {
-        :allow_yaml => allow_yaml,
-        :workspace => workspace
+      allow_yaml: allow_yaml,
+        workspace: workspace
     }
   end
 
@@ -86,7 +85,7 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
   end
 
   let(:xml) do
-    Builder::XmlMarkup.new(:indent => 2)
+    Builder::XmlMarkup.new(indent: 2)
   end
 
   it 'should include methods from module so method can be overridden easier in pro' do
@@ -96,13 +95,13 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
   context 'CONSTANTS' do
     it 'should define MSF_WEB_PAGE_TEXT_ELEMENT_NAMES in any order' do
       described_class::MSF_WEB_PAGE_TEXT_ELEMENT_NAMES =~ [
-          'auth',
-          'body',
-          'code',
-          'cookie',
-          'ctype',
-          'location',
-          'mtime'
+        'auth',
+        'body',
+        'code',
+        'cookie',
+        'ctype',
+        'location',
+        'mtime'
       ]
     end
 
@@ -112,15 +111,15 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
 
     it 'should define MSF_WEB_VULN_TEXT_ELEMENT_NAMES in any order' do
       described_class::MSF_WEB_VULN_TEXT_ELEMENT_NAMES =~ [
-          'blame',
-          'category',
-          'confidence',
-          'description',
-          'method',
-          'name',
-          'pname',
-          'proof',
-          'risk'
+        'blame',
+        'category',
+        'confidence',
+        'description',
+        'method',
+        'name',
+        'pname',
+        'proof',
+        'risk'
       ]
     end
   end
@@ -141,37 +140,37 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
     end
 
     it_should_behave_like(
-        'Msf::DBManager::Import::MetasploitFramework::XML#check_msf_xml_version! with root tag',
-        'MetasploitExpressV1',
-        :allow_yaml => true
+      'Msf::DBManager::Import::MetasploitFramework::XML#check_msf_xml_version! with root tag',
+      'MetasploitExpressV1',
+      allow_yaml: true
     )
 
     it_should_behave_like(
-        'Msf::DBManager::Import::MetasploitFramework::XML#check_msf_xml_version! with root tag',
-        'MetasploitExpressV2',
-        :allow_yaml => true
+      'Msf::DBManager::Import::MetasploitFramework::XML#check_msf_xml_version! with root tag',
+      'MetasploitExpressV2',
+      allow_yaml: true
     )
 
     it_should_behave_like(
-        'Msf::DBManager::Import::MetasploitFramework::XML#check_msf_xml_version! with root tag',
-        'MetasploitExpressV3',
-        :allow_yaml => false
+      'Msf::DBManager::Import::MetasploitFramework::XML#check_msf_xml_version! with root tag',
+      'MetasploitExpressV3',
+      allow_yaml: false
     )
 
     it_should_behave_like(
-        'Msf::DBManager::Import::MetasploitFramework::XML#check_msf_xml_version! with root tag',
-        'MetasploitExpressV4',
-        :allow_yaml => false
+      'Msf::DBManager::Import::MetasploitFramework::XML#check_msf_xml_version! with root tag',
+      'MetasploitExpressV4',
+      allow_yaml: false
     )
 
     context 'with other' do
       it 'should raise Msf::DBImportError' do
-        expect {
+        expect do
           metadata
-        }.to raise_error(
-                 Msf::DBImportError,
-                 'Unsupported Metasploit XML document format'
-             )
+        end.to raise_error(
+          Msf::DBImportError,
+          'Unsupported Metasploit XML document format'
+        )
       end
     end
   end
@@ -265,17 +264,17 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
     end
 
     let(:specialization) do
-      lambda { |element, options|
+      lambda { |_element, _options|
         {}
       }
     end
 
     subject(:import_msf_web_element) do
       db_manager.send(
-          :import_msf_web_element,
-          element,
-          options,
-          &specialization
+        :import_msf_web_element,
+        element,
+        options,
+        &specialization
       )
     end
 
@@ -314,9 +313,9 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
 
       before(:example) do
         allow(db_manager).to receive(
-            :report_web_vuln
+          :report_web_vuln
         ).with(
-            an_instance_of(Hash)
+          an_instance_of(Hash)
         )
 
         options[:type] = type
@@ -339,9 +338,9 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
 
         it 'should pass :workspace to report_web_<:type>' do
           expect(db_manager).to receive(
-              "report_web_#{type}"
+            "report_web_#{type}"
           ).with(
-              hash_including(:workspace => workspace)
+            hash_including(workspace: workspace)
           )
 
           import_msf_web_element
@@ -365,9 +364,9 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
 
         it 'should pass Msf::DBManager#workspace to report_web_<:type>' do
           expect(db_manager).to receive(
-              "report_web_#{type}"
+            "report_web_#{type}"
           ).with(
-              hash_including(:workspace => workspace)
+            hash_including(workspace: workspace)
           )
 
           import_msf_web_element
@@ -377,10 +376,10 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
       it 'should import all elements in MSF_WEB_TEXT_ELEMENT_NAMES with #import_msf_text_element' do
         msf_web_text_element_names.each do |name|
           expect(db_manager).to receive(
-              :import_msf_text_element
+            :import_msf_text_element
           ).with(
-              element,
-              name
+            element,
+            name
           ).and_call_original
         end
 
@@ -390,7 +389,7 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
       context 'with non-empty Hash from #import_msf_text_element' do
         let(:returned_hash) do
           {
-              :host => '192.168.0.1'
+            host: '192.168.0.1'
           }
         end
 
@@ -400,9 +399,9 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
 
         it 'should pass returned Hash as part of Hash passed to report_web_<:type' do
           expect(db_manager).to receive(
-              "report_web_#{type}"
+            "report_web_#{type}"
           ).with(
-              hash_including(returned_hash)
+            hash_including(returned_hash)
           )
 
           import_msf_web_element
@@ -419,9 +418,9 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
 
           it 'should pass false for :ssl to report_web_<:type>' do
             expect(db_manager).to receive(
-                "report_web_#{type}"
+              "report_web_#{type}"
             ).with(
-                hash_including(:ssl => false)
+              hash_including(ssl: false)
             )
 
             import_msf_web_element
@@ -444,9 +443,9 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
 
             it 'should pass true for :ssl to report_web_<:type>' do
               expect(db_manager).to receive(
-                  "report_web_#{type}"
+                "report_web_#{type}"
               ).with(
-                  hash_including(:ssl => true)
+                hash_including(ssl: true)
               )
 
               import_msf_web_element
@@ -460,9 +459,9 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
 
             it 'should pass false for :ssl to report_web_<:type>' do
               expect(db_manager).to receive(
-                  "report_web_#{type}"
+                "report_web_#{type}"
               ).with(
-                  hash_including(:ssl => false)
+                hash_including(ssl: false)
               )
 
               import_msf_web_element
@@ -474,12 +473,12 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
       context 'specialization block' do
         let(:returned_hash) do
           {
-              :specialized => double('Value')
+            specialized: double('Value')
           }
         end
 
         let(:specialization) do
-          lambda { |element, option|
+          lambda { |_element, _option|
             returned_hash
           }
         end
@@ -488,9 +487,10 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
           actual_args = []
 
           db_manager.send(
-              :import_msf_web_element,
-              element,
-              options) do |*args|
+            :import_msf_web_element,
+            element,
+            options
+          ) do |*args|
             actual_args = args
 
             returned_hash
@@ -501,9 +501,9 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
 
         it 'should pass return Hash to report_web_<:type>' do
           expect(db_manager).to receive(
-              "report_web_#{type}"
+            "report_web_#{type}"
           ).with(
-              hash_including(returned_hash)
+            hash_including(returned_hash)
           )
 
           import_msf_web_element
@@ -545,9 +545,9 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
 
         context 'without :notifier' do
           it 'should not raise an error' do
-            expect {
+            expect do
               import_msf_web_element
-            }.to_not raise_error
+            end.to_not raise_error
           end
         end
       end
@@ -559,9 +559,9 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
       end
 
       it 'should raise KeyError' do
-        expect {
+        expect do
           import_msf_web_element
-        }.to raise_error(KeyError, 'key not found: :type')
+        end.to raise_error(KeyError, 'key not found: :type')
       end
     end
   end
@@ -573,14 +573,13 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
 
     subject(:import_msf_web_form_element) do
       db_manager.import_msf_web_form_element(
-          element,
-          options,
-          &notifier
+        element,
+        options,
+        &notifier
       )
     end
 
     context 'call to #import_msf_web_element' do
-
       it_should_behave_like 'Msf::DBManager::Import::MetasploitFramework::XML#import_msf_web_element specialization'
 
       context 'specialization return' do
@@ -591,11 +590,11 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
         let(:source) do
           xml.web_form do
             xml.method(
-                web_form_attributes.fetch(:method)
+              web_form_attributes.fetch(:method)
             )
 
             serialized_params = serialize(
-                web_form_attributes.fetch(:params)
+              web_form_attributes.fetch(:params)
             )
             xml.params(serialized_params)
           end
@@ -631,16 +630,16 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
       let(:source) do
         xml.web_form do
           xml.host(
-              host_attributes.fetch(:address)
+            host_attributes.fetch(:address)
           )
           xml.method(
-              web_form_attributes.fetch(:method)
+            web_form_attributes.fetch(:method)
           )
           xml.path(
-              web_form_attributes.fetch(:path)
+            web_form_attributes.fetch(:path)
           )
           xml.port(
-              service_attributes.fetch(:port)
+            service_attributes.fetch(:port)
           )
 
           ssl = false
@@ -656,9 +655,9 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
       end
 
       it 'should create an Mdm::WebForm' do
-        expect {
+        expect do
           import_msf_web_form_element
-        }.to change(Mdm::WebForm, :count).by(1)
+        end.to change(Mdm::WebForm, :count).by(1)
       end
     end
   end
@@ -670,9 +669,9 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
 
     subject(:import_msf_web_page_element) do
       db_manager.import_msf_web_page_element(
-          element,
-          options,
-          &notifier
+        element,
+        options,
+        &notifier
       )
     end
 
@@ -687,31 +686,31 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
         let(:source) do
           xml.web_page do
             xml.auth(
-                web_page_attributes.fetch(:auth)
+              web_page_attributes.fetch(:auth)
             )
             xml.body(
-                web_page_attributes.fetch(:body)
+              web_page_attributes.fetch(:body)
             )
             xml.code(
-                web_page_attributes.fetch(:code)
+              web_page_attributes.fetch(:code)
             )
             xml.cookie(
-                web_page_attributes.fetch(:cookie)
+              web_page_attributes.fetch(:cookie)
             )
             xml.ctype(
-                web_page_attributes.fetch(:ctype)
+              web_page_attributes.fetch(:ctype)
             )
 
             serialized_headers = serialize(
-                web_page_attributes.fetch(:headers)
+              web_page_attributes.fetch(:headers)
             )
             xml.headers(serialized_headers)
 
             xml.location(
-                web_page_attributes.fetch(:location)
+              web_page_attributes.fetch(:location)
             )
             xml.mtime(
-                web_page_attributes.fetch(:mtime)
+              web_page_attributes.fetch(:mtime)
             )
           end
 
@@ -719,7 +718,7 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
         end
 
         it 'should be a Hash' do
-          expect(db_manager).to receive(:import_msf_web_element) do |*args, &specialization|
+          expect(db_manager).to receive(:import_msf_web_element) do |*_args, &specialization|
             info = specialization.call(element, options)
 
             expect(info).to be_a Hash
@@ -786,28 +785,28 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
       let(:source) do
         xml.web_page do
           xml.body(
-              web_page_attributes.fetch(:body)
+            web_page_attributes.fetch(:body)
           )
           xml.code(
-              web_page_attributes.fetch(:code)
+            web_page_attributes.fetch(:code)
           )
 
           serialized_headers = serialize(
-              web_page_attributes.fetch(:headers)
+            web_page_attributes.fetch(:headers)
           )
           xml.headers(serialized_headers)
 
           xml.host(
-              host_attributes.fetch(:address)
+            host_attributes.fetch(:address)
           )
           xml.path(
-              web_page_attributes.fetch(:headers)
+            web_page_attributes.fetch(:headers)
           )
           xml.port(
-              service_attributes.fetch(:port)
+            service_attributes.fetch(:port)
           )
           xml.query(
-              web_page_attributes.fetch(:query)
+            web_page_attributes.fetch(:query)
           )
 
           ssl = false
@@ -823,9 +822,9 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
       end
 
       it 'should create an Mdm::WebPage' do
-        expect {
+        expect do
           import_msf_web_page_element
-        }.to change(Mdm::WebPage, :count).by(1)
+        end.to change(Mdm::WebPage, :count).by(1)
       end
     end
   end
@@ -841,9 +840,9 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
 
     subject(:import_msf_web_vuln_element) do
       db_manager.import_msf_web_vuln_element(
-          element,
-          options,
-          &notifier
+        element,
+        options,
+        &notifier
       )
     end
 
@@ -858,31 +857,31 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
         let(:source) do
           xml.web_vuln do
             xml.blame(
-                web_vuln_attributes.fetch(:blame)
+              web_vuln_attributes.fetch(:blame)
             )
             xml.category(
-                web_vuln_attributes.fetch(:category)
+              web_vuln_attributes.fetch(:category)
             )
             xml.confidence(
-                web_vuln_attributes.fetch(:confidence)
+              web_vuln_attributes.fetch(:confidence)
             )
             xml.description(
-                web_vuln_attributes.fetch(:description)
+              web_vuln_attributes.fetch(:description)
             )
             xml.method(
-                web_vuln_attributes.fetch(:method)
+              web_vuln_attributes.fetch(:method)
             )
             xml.name(
-                web_vuln_attributes.fetch(:name)
+              web_vuln_attributes.fetch(:name)
             )
             xml.pname(
-                web_vuln_attributes.fetch(:pname)
+              web_vuln_attributes.fetch(:pname)
             )
             xml.proof(
-                web_vuln_attributes.fetch(:proof)
+              web_vuln_attributes.fetch(:proof)
             )
             xml.risk(
-                web_vuln_attributes.fetch(:risk)
+              web_vuln_attributes.fetch(:risk)
             )
           end
 
@@ -961,37 +960,37 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
       let(:source) do
         xml.web_vuln do
           xml.category(
-              web_vuln_attributes.fetch(:category)
+            web_vuln_attributes.fetch(:category)
           )
           xml.host(
-              host_attributes.fetch(:address)
+            host_attributes.fetch(:address)
           )
           xml.method(
-              web_vuln_attributes.fetch(:method)
+            web_vuln_attributes.fetch(:method)
           )
           xml.name(
-              web_vuln_attributes.fetch(:name)
+            web_vuln_attributes.fetch(:name)
           )
 
           serialized_params = serialize(
-              web_vuln_attributes.fetch(:params)
+            web_vuln_attributes.fetch(:params)
           )
           xml.params(serialized_params)
 
           xml.path(
-              web_vuln_attributes.fetch(:path)
+            web_vuln_attributes.fetch(:path)
           )
           xml.pname(
-              web_vuln_attributes.fetch(:pname)
+            web_vuln_attributes.fetch(:pname)
           )
           xml.port(
-              service_attributes.fetch(:port)
+            service_attributes.fetch(:port)
           )
           xml.proof(
-              web_vuln_attributes.fetch(:proof)
+            web_vuln_attributes.fetch(:proof)
           )
           xml.risk(
-              web_vuln_attributes.fetch(:risk)
+            web_vuln_attributes.fetch(:risk)
           )
 
           ssl = false
@@ -1007,9 +1006,9 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
       end
 
       it 'should create an Mdm::WebVuln' do
-        expect {
+        expect do
           import_msf_web_vuln_element
-        }.to change(Mdm::WebVuln, :count).by(1)
+        end.to change(Mdm::WebVuln, :count).by(1)
       end
     end
   end
@@ -1025,7 +1024,7 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
 
     subject(:import_msf_xml) do
       expect(workspace).to receive(:name) { 'default' }
-      db_manager.import_msf_xml({:data => data, :workspace => workspace})
+      db_manager.import_msf_xml({ data: data, workspace: workspace })
     end
 
     it 'should call #check_msf_xml_version!' do
@@ -1040,16 +1039,16 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
           xml.web_forms do
             xml.web_form do
               xml.host(
-                  host_attributes.fetch(:address)
+                host_attributes.fetch(:address)
               )
               xml.method(
-                  web_form_attributes.fetch(:method)
+                web_form_attributes.fetch(:method)
               )
               xml.path(
-                  web_form_attributes.fetch(:path)
+                web_form_attributes.fetch(:path)
               )
               xml.port(
-                  service_attributes.fetch(:port)
+                service_attributes.fetch(:port)
               )
 
               ssl = false
@@ -1079,28 +1078,28 @@ RSpec.shared_examples_for 'Msf::DBManager::Import::MetasploitFramework::XML' do
           xml.web_pages do
             xml.web_page do
               xml.body(
-                  web_page_attributes.fetch(:body)
+                web_page_attributes.fetch(:body)
               )
               xml.code(
-                  web_page_attributes.fetch(:code)
+                web_page_attributes.fetch(:code)
               )
 
               serialized_headers = serialize(
-                  web_page_attributes.fetch(:headers)
+                web_page_attributes.fetch(:headers)
               )
               xml.headers(serialized_headers)
 
               xml.host(
-                  host_attributes.fetch(:address)
+                host_attributes.fetch(:address)
               )
               xml.path(
-                  web_page_attributes.fetch(:headers)
+                web_page_attributes.fetch(:headers)
               )
               xml.port(
-                  service_attributes.fetch(:port)
+                service_attributes.fetch(:port)
               )
               xml.query(
-                  web_page_attributes.fetch(:query)
+                web_page_attributes.fetch(:query)
               )
 
               ssl = false

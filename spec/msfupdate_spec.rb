@@ -3,7 +3,6 @@ require 'spec_helper'
 load Metasploit::Framework.root.join('msfupdate').to_path
 
 RSpec.describe Msfupdate do
-
   def dummy_pathname
     Pathname.new(File.dirname(__FILE__)).join('dummy')
   end
@@ -73,7 +72,7 @@ RSpec.describe Msfupdate do
       end
 
       it "exits before updating" do
-        expect {subject.parse_args(args)}.to raise_error(SystemExit)
+        expect { subject.parse_args(args) }.to raise_error(SystemExit)
       end
     end
 
@@ -327,5 +326,4 @@ RSpec.describe Msfupdate do
       # TODO: Add more tests!
     end
   end
-
 end

@@ -1,4 +1,5 @@
 # -*- coding:binary -*-
+
 require 'spec_helper'
 
 require 'rex/mac_oui'
@@ -21,7 +22,7 @@ RSpec.describe Rex::Oui do
     end
 
     context "when valid mac format, without OUI" do
-      let(:mac) { '11:22:33:44:55:66'}
+      let(:mac) { '11:22:33:44:55:66' }
       it { is_expected.to eq('UNKNOWN') }
     end
 
@@ -50,7 +51,7 @@ RSpec.describe Rex::Oui do
     end
 
     context "when valid mac format, without OUI" do
-      let(:mac) { '11:22:33:44:55:66'}
+      let(:mac) { '11:22:33:44:55:66' }
       it { is_expected.to eq('UNKNOWN') }
     end
 

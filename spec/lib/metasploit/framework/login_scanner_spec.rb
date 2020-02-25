@@ -5,7 +5,6 @@ require 'metasploit/framework/login_scanner/smb'
 require 'metasploit/framework/login_scanner/vnc'
 
 RSpec.describe Metasploit::Framework::LoginScanner do
-
   subject { described_class.classes_for_service(service) }
   let(:port) { nil }
   let(:name) { nil }
@@ -52,5 +51,4 @@ RSpec.describe Metasploit::Framework::LoginScanner do
       it { is_expected.not_to include Metasploit::Framework::LoginScanner::SMB }
     end
   end
-
 end

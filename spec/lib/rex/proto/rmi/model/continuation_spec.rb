@@ -1,18 +1,18 @@
 # -*- coding:binary -*-
+
 require 'spec_helper'
 
 require 'stringio'
 require 'rex/proto/rmi'
 
 RSpec.describe Rex::Proto::Rmi::Model::Continuation do
-
   subject(:continuation) do
     described_class.new
   end
 
   let(:sample) do
-    "\x00\x0e\x31\x37\x32\x2e\x31\x36\x2e\x31\x35\x38\x2e\x31\x33\x32" +
-    "\x00\x00\x00\x00"
+    "\x00\x0e\x31\x37\x32\x2e\x31\x36\x2e\x31\x35\x38\x2e\x31\x33\x32" \
+      "\x00\x00\x00\x00"
   end
 
   let(:sample_io) { StringIO.new(sample) }

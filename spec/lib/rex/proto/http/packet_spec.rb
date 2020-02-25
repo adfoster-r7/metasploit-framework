@@ -1,4 +1,3 @@
-
 require 'spec_helper'
 require 'rex/proto/http/packet'
 
@@ -48,6 +47,5 @@ RSpec.describe Rex::Proto::Http::Packet do
         expect(subject.body).to eq body
       end
     end
-
   end
 end

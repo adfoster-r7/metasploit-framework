@@ -1,9 +1,7 @@
-
 require 'spec_helper'
 require 'metasploit/framework/login_scanner/afp'
 
 RSpec.describe Metasploit::Framework::LoginScanner::AFP do
-
   subject(:scanner) { described_class.new }
 
   it_behaves_like 'Metasploit::Framework::LoginScanner::Base', has_realm_key: false, has_default_realm: false
@@ -53,8 +51,5 @@ RSpec.describe Metasploit::Framework::LoginScanner::AFP do
       expect(result).to be_kind_of(Metasploit::Framework::LoginScanner::Result)
       expect(result.status).to eq(Metasploit::Model::Login::Status::INCORRECT)
     end
-
   end
-
 end
-

@@ -3,7 +3,7 @@ require 'metasploit/framework/obfuscation/crandomizer/utility'
 
 RSpec.describe Metasploit::Framework::Obfuscation::CRandomizer::CodeFactory::Base do
   let(:stub_code) do
-    %Q|
+    %|
     void stub() {
       int x = 1;
     }|
@@ -26,7 +26,7 @@ RSpec.describe Metasploit::Framework::Obfuscation::CRandomizer::CodeFactory::Bas
 
   describe '#good_dep?' do
     let(:source_code) do
-      %Q|
+      %|
       void printf(const char*);
 
       int main() {
@@ -47,7 +47,7 @@ RSpec.describe Metasploit::Framework::Obfuscation::CRandomizer::CodeFactory::Bas
     end
 
     it 'returns false when the source does not support OutputDebugString' do
-      stub_code = %Q|
+      stub_code = %|
       void OutputDebugString(const char*);
 
       void stub() {
@@ -62,7 +62,7 @@ RSpec.describe Metasploit::Framework::Obfuscation::CRandomizer::CodeFactory::Bas
 
   describe '#normalized_stub' do
     it 'normalizes the stub' do
-      normalized_code = %Q|int x = 1;|
+      normalized_code = %(int x = 1;)
       expect(subject.normalized_stub.join).to eq(normalized_code)
     end
   end

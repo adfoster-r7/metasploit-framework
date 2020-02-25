@@ -44,10 +44,10 @@ RSpec.shared_context 'Msf::Simple::Framework#modules loading' do
   # @raise [KeyError] if `:ancestor_reference_names` is not given when `:module_type` is `'payload'`.
   # @raise [KeyError] unless `:module_type` is given.
   # @raise [KeyError] unless `:reference_name` is given.
-  def derive_ancestor_reference_names(options={})
+  def derive_ancestor_reference_names(options = {})
     options.assert_valid_keys(:ancestor_reference_names, :module_type, :reference_name)
 
-    options.fetch(:ancestor_reference_names) {
+    options.fetch(:ancestor_reference_names) do
       module_type = options.fetch(:module_type)
 
       if module_type == 'payload'
@@ -58,7 +58,7 @@ RSpec.shared_context 'Msf::Simple::Framework#modules loading' do
       reference_name = options.fetch(:reference_name)
 
       [reference_name]
-    }
+    end
   end
 
   # The module loader that can load module ancestors from `modules_path`
@@ -66,12 +66,12 @@ RSpec.shared_context 'Msf::Simple::Framework#modules loading' do
   # @param modules_path [String] path to `modules` directory from which to load ancestor reference names.
   # @return [Msf::Modules::Loader::Base]
   def loader_for_modules_path(modules_path)
-    loader = framework.modules.send(:loaders).find { |loader|
+    loader = framework.modules.send(:loaders).find do |loader|
       loader.loadable?(modules_path)
-    }
+    end
 
     # Override load_error so that rspec will print it instead of going to framework log
-    def loader.load_error(module_path, error)
+    def loader.load_error(_module_path, error)
       raise error
     end
 
@@ -81,7 +81,7 @@ RSpec.shared_context 'Msf::Simple::Framework#modules loading' do
   # Expects to load `:ancestor_reference_name` of `:module_type` from `:modules_path`.
   #
   # @raise expectation failure if `:ancestor_reference_name` cannot be loaded
-  def expect_to_load_module_ancestor(options={})
+  def expect_to_load_module_ancestor(options = {})
     options.assert_valid_keys(:ancestor_reference_name, :modules_path, :module_type)
 
     ancestor_reference_name = options.fetch(:ancestor_reference_name)
@@ -103,16 +103,16 @@ RSpec.shared_context 'Msf::Simple::Framework#modules loading' do
   # @option options [Stirng] :module_type The type of `:ancestor_reference_names` to derive their full paths under
   #   `:modules_path`.
   # @raise expectation failure if any `:ancestor_reference_names` cannot be loaded.
-  def expect_to_load_module_ancestors(options={})
+  def expect_to_load_module_ancestors(options = {})
     options.assert_valid_keys(:ancestor_reference_names, :modules_path, :module_type)
 
     ancestor_references_names = options.fetch(:ancestor_reference_names)
 
     ancestor_references_names.each do |ancestor_reference_name|
       expect_to_load_module_ancestor(
-          ancestor_reference_name: ancestor_reference_name,
-          modules_path: options[:modules_path],
-          module_type: options[:module_type]
+        ancestor_reference_name: ancestor_reference_name,
+        modules_path: options[:modules_path],
+        module_type: options[:module_type]
       )
     end
   end
@@ -133,32 +133,32 @@ RSpec.shared_context 'Msf::Simple::Framework#modules loading' do
   # @raise [KeyError] if `:ancestor_reference_names` is not given when `:module_type` is `'payload'`.
   # @raise [KeyError] unless :module_type is given.
   # @raise [KeyError] unless :reference_name is given.
-  def load_and_create_module(options={})
+  def load_and_create_module(options = {})
     options.assert_valid_keys(:ancestor_reference_names, :modules_path, :module_type, :reference_name)
 
     reference_name = options.fetch(:reference_name)
     module_type = options.fetch(:module_type)
 
-    ancestor_reference_names = self.derive_ancestor_reference_names(
-        options.except(:modules_path)
+    ancestor_reference_names = derive_ancestor_reference_names(
+      options.except(:modules_path)
     )
 
-    modules_path = options.fetch(:modules_path) {
+    modules_path = options.fetch(:modules_path) do
       self.modules_path
-    }
+    end
 
     expect_to_load_module_ancestors(
-        ancestor_reference_names: ancestor_reference_names,
-        modules_path: modules_path,
-        module_type: module_type
+      ancestor_reference_names: ancestor_reference_names,
+      modules_path: modules_path,
+      module_type: module_type
     )
 
     module_set = module_set_for_type(module_type)
 
     module_instance = module_set.create(reference_name)
     expect(module_instance).not_to(
-        be_nil,
-        "Could not create #{module_type}/#{reference_name} after loading #{ancestor_reference_names.sort.to_sentence}"
+      be_nil,
+      "Could not create #{module_type}/#{reference_name} after loading #{ancestor_reference_names.sort.to_sentence}"
     )
 
     module_instance
@@ -179,7 +179,7 @@ RSpec.shared_context 'Msf::Simple::Framework#modules loading' do
   # The default modules path for this `Rails.application`.
   #
   # @return [String]
-  let(:modules_path) {
+  let(:modules_path) do
     Rails.application.paths['modules'].expanded.first
-  }
+  end
 end

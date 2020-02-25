@@ -1,11 +1,12 @@
 # -*- coding:binary -*-
+
 require 'spec_helper'
 require 'msf/core/module'
 
 RSpec.describe Msf::Module do
-  subject(:msf_module) {
+  subject(:msf_module) do
     described_class.new
-  }
+  end
 
   it { is_expected.to respond_to :debugging? }
   it { is_expected.to respond_to :fail_with }
@@ -36,17 +37,23 @@ RSpec.describe Msf::Module do
   it_should_behave_like 'Msf::Module::UUID'
 
   context 'class' do
-    subject {
+    subject do
       described_class
-    }
+    end
 
     it { is_expected.to respond_to :cached? }
     it { is_expected.to respond_to :usable? }
   end
 
   describe "cloning modules into replicants" do
-    module MsfExtensionTestFoo; def my_test1; true; end; end;
-    module MsfExtensionTestBar; def my_test2; true; end; end;
+    module MsfExtensionTestFoo
+      def my_test1
+        true
+                                end; end
+    module MsfExtensionTestBar
+      def my_test2
+        true
+                                end; end
 
     describe "#perform_extensions" do
       describe "when there are extensions registered" do
@@ -66,7 +73,7 @@ RSpec.describe Msf::Module do
         end
 
         it 'should raise an exception' do
-          expect{msf_module.replicant}.to raise_error(RuntimeError)
+          expect { msf_module.replicant }.to raise_error(RuntimeError)
         end
       end
     end
@@ -85,8 +92,6 @@ RSpec.describe Msf::Module do
           expect(msf_module.replicant.datastore[Msf::Module::REPLICANT_EXTENSION_DS_KEY]).to eql([MsfExtensionTestFoo, MsfExtensionTestBar])
         end
       end
-
     end
   end
-
 end

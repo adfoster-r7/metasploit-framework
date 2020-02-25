@@ -2,10 +2,9 @@ require 'spec_helper'
 require 'metasploit/framework/credential'
 
 RSpec.describe Metasploit::Framework::Credential do
-
-  subject(:cred_detail) {
+  subject(:cred_detail) do
     described_class.new
-  }
+  end
 
   let(:public) { "public" }
   let(:private) { "private" }
@@ -27,7 +26,6 @@ RSpec.describe Metasploit::Framework::Credential do
   end
 
   context 'validations' do
-
     it 'is not valid without paired being set' do
       expect(cred_detail).to_not be_valid
     end
@@ -79,7 +77,6 @@ RSpec.describe Metasploit::Framework::Credential do
         expect(cred_detail).to be_valid
       end
     end
-
   end
 
   describe "#to_credential" do
@@ -136,7 +133,7 @@ RSpec.describe Metasploit::Framework::Credential do
       end
     end
     context "when comparing to a different object" do
-      let(:other) {'a string'}
+      let(:other) { 'a string' }
       specify do
         expect(other).not_to eq(cred_detail)
       end
@@ -149,7 +146,7 @@ RSpec.describe Metasploit::Framework::Credential do
     end
     it 'returns a hash in the format expect for create_credential' do
       cred_hash = {
-          private_data: private,
+        private_data: private,
           private_type: private_type,
           username: public,
           realm_key: realm_type,

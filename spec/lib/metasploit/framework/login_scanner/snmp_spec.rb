@@ -5,28 +5,27 @@ RSpec.describe Metasploit::Framework::LoginScanner::SNMP do
   let(:public) { 'public' }
   let(:private) { nil }
 
-  let(:pub_comm) {
+  let(:pub_comm) do
     Metasploit::Framework::Credential.new(
-        paired: false,
-        public: public,
-        private: private
+      paired: false,
+      public: public,
+      private: private
     )
-  }
+  end
 
-  let(:invalid_detail) {
+  let(:invalid_detail) do
     Metasploit::Framework::Credential.new(
-        paired: true,
-        public: nil,
-        private: nil
+      paired: true,
+      public: nil,
+      private: nil
     )
-  }
+  end
 
-  let(:detail_group) {
+  let(:detail_group) do
     [ pub_comm ]
-  }
+  end
 
-  subject(:snmp_scanner) {
+  subject(:snmp_scanner) do
     described_class.new
-  }
-
+  end
 end

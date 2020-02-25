@@ -2,7 +2,6 @@ require 'spec_helper'
 require 'metasploit/framework/aws/client'
 
 RSpec.describe Metasploit::Framework::Aws::Client do
-
   subject do
     s = Class.new(Msf::Auxiliary) do
       include Metasploit::Framework::Aws::Client

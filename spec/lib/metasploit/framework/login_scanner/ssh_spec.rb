@@ -6,56 +6,56 @@ RSpec.describe Metasploit::Framework::LoginScanner::SSH do
   let(:private) { 'toor' }
   let(:key) { OpenSSL::PKey::RSA.generate(2048).to_s }
 
-  let(:pub_blank) {
+  let(:pub_blank) do
     Metasploit::Framework::Credential.new(
-        paired: true,
-        public: public,
-        private: ''
+      paired: true,
+      public: public,
+      private: ''
     )
-  }
+  end
 
-  let(:pub_pub) {
+  let(:pub_pub) do
     Metasploit::Framework::Credential.new(
-        paired: true,
-        public: public,
-        private: public
+      paired: true,
+      public: public,
+      private: public
     )
-  }
+  end
 
-  let(:pub_pri) {
+  let(:pub_pri) do
     Metasploit::Framework::Credential.new(
-        paired: true,
-        public: public,
-        private: private
+      paired: true,
+      public: public,
+      private: private
     )
-  }
+  end
 
-  let(:pub_key) {
+  let(:pub_key) do
     Metasploit::Framework::Credential.new(
-        paired: true,
-        public: public,
-        private: key,
-        private_type: :ssh_key
+      paired: true,
+      public: public,
+      private: key,
+      private_type: :ssh_key
     )
-  }
+  end
 
-  let(:invalid_detail) {
+  let(:invalid_detail) do
     Metasploit::Framework::Credential.new(
-        paired: true,
-        public: nil,
-        private: nil
+      paired: true,
+      public: nil,
+      private: nil
     )
-  }
+  end
 
-  let(:detail_group) {
+  let(:detail_group) do
     [ pub_blank, pub_pub, pub_pri]
-  }
+  end
 
-  subject(:ssh_scanner) {
+  subject(:ssh_scanner) do
     described_class.new
-  }
+  end
 
-  it_behaves_like 'Metasploit::Framework::LoginScanner::Base',  has_realm_key: false, has_default_realm: false
+  it_behaves_like 'Metasploit::Framework::LoginScanner::Base', has_realm_key: false, has_default_realm: false
 
 
   it { is_expected.to respond_to :verbosity }
@@ -75,9 +75,7 @@ RSpec.describe Metasploit::Framework::LoginScanner::SSH do
   end
 
   context 'validations' do
-
     context 'verbosity' do
-
       it 'is valid with :debug' do
         ssh_scanner.verbosity = :debug
         expect(ssh_scanner.errors[:verbosity]).to be_empty
@@ -115,8 +113,6 @@ RSpec.describe Metasploit::Framework::LoginScanner::SSH do
         expect(ssh_scanner.errors[:verbosity]).to include 'is not included in the list'
       end
     end
-
-
   end
 
   context '#attempt_login' do
@@ -136,23 +132,23 @@ RSpec.describe Metasploit::Framework::LoginScanner::SSH do
 
     context 'with a password' do
       it 'calls Net::SSH with the correct arguments' do
-        factory = Rex::Socket::SSHFactory.new(nil,nil,nil)
+        factory = Rex::Socket::SSHFactory.new(nil, nil, nil)
         opt_hash = {
-            :port            => ssh_scanner.port,
-            :use_agent       => false,
-            :config          => false,
-            :verbose         => ssh_scanner.verbosity,
-            :proxy           => factory,
-            :auth_methods    => ['password','keyboard-interactive'],
-            :password        => private,
-            :non_interactive => true,
-            :verify_host_key => :never
+          port: ssh_scanner.port,
+            use_agent: false,
+            config: false,
+            verbose: ssh_scanner.verbosity,
+            proxy: factory,
+            auth_methods: ['password', 'keyboard-interactive'],
+            password: private,
+            non_interactive: true,
+            verify_host_key: :never
         }
         allow(Rex::Socket::SSHFactory).to receive(:new).and_return factory
         expect(Net::SSH).to receive(:start).with(
-            ssh_scanner.host,
-            public,
-            opt_hash
+          ssh_scanner.host,
+          public,
+          opt_hash
         )
         ssh_scanner.attempt_login(pub_pri)
       end
@@ -160,29 +156,28 @@ RSpec.describe Metasploit::Framework::LoginScanner::SSH do
 
     context 'with a key' do
       it 'calls Net::SSH with the correct arguments' do
-        factory = Rex::Socket::SSHFactory.new(nil,nil,nil)
+        factory = Rex::Socket::SSHFactory.new(nil, nil, nil)
         opt_hash = {
-            :auth_methods    => ['publickey'],
-            :port            => ssh_scanner.port,
-            :use_agent       => false,
-            :key_data        => key,
-            :config          => false,
-            :verbose         => ssh_scanner.verbosity,
-            :proxy           => factory,
-            :verify_host_key => :never
+          auth_methods: ['publickey'],
+            port: ssh_scanner.port,
+            use_agent: false,
+            key_data: key,
+            config: false,
+            verbose: ssh_scanner.verbosity,
+            proxy: factory,
+            verify_host_key: :never
         }
         allow(Rex::Socket::SSHFactory).to receive(:new).and_return factory
         expect(Net::SSH).to receive(:start).with(
-            ssh_scanner.host,
-            public,
-            hash_including(opt_hash)
+          ssh_scanner.host,
+          public,
+          hash_including(opt_hash)
         )
         ssh_scanner.attempt_login(pub_key)
       end
     end
 
     context 'when it fails' do
-
       it 'returns Metasploit::Model::Login::Status::UNABLE_TO_CONNECT for a Rex::ConnectionError' do
         expect(Net::SSH).to receive(:start) { raise Rex::ConnectionError }
         expect(ssh_scanner.attempt_login(pub_pri).status).to eq Metasploit::Model::Login::Status::UNABLE_TO_CONNECT
@@ -220,23 +215,19 @@ RSpec.describe Metasploit::Framework::LoginScanner::SSH do
     end
 
     context 'when it succeeds' do
-
       it 'gathers proof of the connections' do
-        expect(Net::SSH).to receive(:start) {"fake_socket"}
+        expect(Net::SSH).to receive(:start) { "fake_socket" }
         my_scanner = ssh_scanner
         expect(my_scanner).to receive(:gather_proof)
         my_scanner.attempt_login(pub_pri)
       end
 
       it 'returns a success code and proof' do
-        expect(Net::SSH).to receive(:start) {"fake_socket"}
+        expect(Net::SSH).to receive(:start) { "fake_socket" }
         my_scanner = ssh_scanner
         expect(my_scanner).to receive(:gather_proof).and_return(public)
         expect(my_scanner.attempt_login(pub_pri).status).to eq Metasploit::Model::Login::Status::SUCCESSFUL
       end
     end
   end
-
-
-
 end

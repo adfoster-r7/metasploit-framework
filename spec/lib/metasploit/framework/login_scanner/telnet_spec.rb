@@ -2,10 +2,9 @@ require 'spec_helper'
 require 'metasploit/framework/login_scanner/telnet'
 
 RSpec.describe Metasploit::Framework::LoginScanner::Telnet do
-
   subject(:login_scanner) { described_class.new }
 
-  it_behaves_like 'Metasploit::Framework::LoginScanner::Base',  has_realm_key: false, has_default_realm: false
+  it_behaves_like 'Metasploit::Framework::LoginScanner::Base', has_realm_key: false, has_default_realm: false
   it_behaves_like 'Metasploit::Framework::LoginScanner::RexSocket'
   it_behaves_like 'Metasploit::Framework::Tcp::Client'
 
@@ -53,7 +52,7 @@ RSpec.describe Metasploit::Framework::LoginScanner::Telnet do
       end
 
       it 'is valid for a legitimate number' do
-        login_scanner.port = rand(1000) + 1
+        login_scanner.port = rand(1..1000)
         expect(login_scanner.errors[:banner_timeout]).to be_empty
       end
     end
@@ -84,10 +83,9 @@ RSpec.describe Metasploit::Framework::LoginScanner::Telnet do
       end
 
       it 'is valid for a legitimate number' do
-        login_scanner.port = rand(1000) + 1
+        login_scanner.port = rand(1..1000)
         expect(login_scanner.errors[:telnet_timeout]).to be_empty
       end
     end
   end
-
 end

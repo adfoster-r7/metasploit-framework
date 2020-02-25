@@ -1,7 +1,6 @@
 require 'metasploit/framework/obfuscation/crandomizer/code_factory'
 
 RSpec.describe Metasploit::Framework::Obfuscation::CRandomizer::CodeFactory::GetTickCount do
-
   subject(:get_tick_count) do
     described_class.new
   end
@@ -39,5 +38,4 @@ RSpec.describe Metasploit::Framework::Obfuscation::CRandomizer::CodeFactory::Get
       expect(subject.send(:diff_gettickcount)).to match(/void stub()/)
     end
   end
-
 end

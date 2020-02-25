@@ -1,4 +1,5 @@
 # -*- coding: binary -*-
+
 require 'spec_helper'
 
 require 'msf/core/post/windows/mssql'
@@ -7,8 +8,8 @@ RSpec.describe Msf::Post::Windows::MSSQL do
   let(:subject) do
     mod = double(Module.new)
     mod.extend described_class
-    stubs = [ :vprint_status, :print_status, :vprint_good, :print_good,
-      :print_error, :vprint_error, :print_bad, :vprint_bad, :print_warning ]
+    stubs = %i[vprint_status print_status vprint_good print_good
+               print_error vprint_error print_bad vprint_bad print_warning]
     stubs.each { |meth| allow(mod).to receive(meth) }
     allow(mod).to receive(:service_info).and_return({})
     mod
@@ -237,7 +238,7 @@ RSpec.describe Msf::Post::Windows::MSSQL do
 
       it "should identify only a named SQL instance" do
         allow(subject).to receive(:each_service).and_yield(normal_service).and_yield(running_analysis_service)
-          .and_yield(running_2k_sql_instance).and_yield(running_named_2k_sql_instance)
+                                                .and_yield(running_2k_sql_instance).and_yield(running_named_2k_sql_instance)
         result = subject.check_for_sqlserver(instance)
         expect(result).to eq running_named_2k_sql_instance
       end
@@ -250,7 +251,7 @@ RSpec.describe Msf::Post::Windows::MSSQL do
 
       it "should identify only a named SQL instance" do
         allow(subject).to receive(:each_service).and_yield(normal_service).and_yield(running_analysis_service)
-          .and_yield(running_2k5_sql_instance).and_yield(running_named_2k5_sql_instance)
+                                                .and_yield(running_2k5_sql_instance).and_yield(running_named_2k5_sql_instance)
         result = subject.check_for_sqlserver(instance)
         expect(result).to eq running_named_2k5_sql_instance
       end
@@ -263,7 +264,7 @@ RSpec.describe Msf::Post::Windows::MSSQL do
 
       it "should identify only a named SQL instance" do
         allow(subject).to receive(:each_service).and_yield(normal_service).and_yield(running_analysis_service)
-          .and_yield(running_2k8_sql_instance).and_yield(running_named_2k8_sql_instance)
+                                                .and_yield(running_2k8_sql_instance).and_yield(running_named_2k8_sql_instance)
         result = subject.check_for_sqlserver(instance)
         expect(result).to eq running_named_2k8_sql_instance
       end

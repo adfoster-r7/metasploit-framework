@@ -1,7 +1,8 @@
 # -*- coding:binary -*-
+
 RSpec.shared_examples_for 'typed_path' do |map|
   map ||= {}
-  if map.length < 1
+  if map.empty?
     raise ArgumentError,
           "type_path shared example requires a hash mapping the type constant name to the directory name: " \
            "it_should_behave_like 'type_path', 'Msf::Auxiliary' => 'auxiliary'"

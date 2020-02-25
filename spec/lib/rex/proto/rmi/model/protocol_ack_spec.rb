@@ -1,18 +1,18 @@
 # -*- coding:binary -*-
+
 require 'spec_helper'
 
 require 'stringio'
 require 'rex/proto/rmi'
 
 RSpec.describe Rex::Proto::Rmi::Model::ProtocolAck do
-
   subject(:protocol_ack) do
     described_class.new
   end
 
   let(:sample) do
-    "\x4e\x00\x0e\x31\x37\x32\x2e\x31\x36\x2e\x31\x35\x38\x2e\x31\x33" +
-    "\x32\x00\x00\x06\xea"
+    "\x4e\x00\x0e\x31\x37\x32\x2e\x31\x36\x2e\x31\x35\x38\x2e\x31\x33" \
+      "\x32\x00\x00\x06\xea"
   end
 
   let(:sample_io) { StringIO.new(sample) }

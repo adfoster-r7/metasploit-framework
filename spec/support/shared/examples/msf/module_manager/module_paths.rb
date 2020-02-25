@@ -27,9 +27,9 @@ RSpec.shared_examples_for 'Msf::ModuleManager::ModulePaths' do
     context 'with other file' do
       it 'should raise ArgumentError' do
         Tempfile.open(basename_prefix) do |file|
-          expect {
+          expect do
             subject.add_module_path(file.path)
-          }.to raise_error(ArgumentError, 'The path supplied is not a valid directory.')
+          end.to raise_error(ArgumentError, 'The path supplied is not a valid directory.')
         end
       end
     end

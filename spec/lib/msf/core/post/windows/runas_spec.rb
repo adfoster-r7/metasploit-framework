@@ -1,4 +1,5 @@
 # -*- coding: binary -*-
+
 require 'spec_helper'
 
 require 'msf/core/post/windows/runas'
@@ -15,9 +16,9 @@ RSpec.describe Msf::Post::Windows::Runas do
   let(:advapi32) do
     advapi32 = double('advapi32')
     allow(advapi32).to receive(:CreateProcessWithLogonW).and_return({
-                        'return' => true,
+                                                                      'return' => true,
                         'lpProcessInformation' => process_info
-    })
+                                                                    })
     allow(advapi32).to receive(:CreateProcessAsUserA).and_return ({
       'return' => true,
       'lpProcessInformation' => process_info
@@ -36,8 +37,8 @@ RSpec.describe Msf::Post::Windows::Runas do
   let(:subject) do
     mod = double(Module.new)
     mod.extend described_class
-    stubs = [ :vprint_status, :print_status, :vprint_good, :print_good,
-      :print_error, :vprint_error, :print_bad, :vprint_bad ]
+    stubs = %i[vprint_status print_status vprint_good print_good
+               print_error vprint_error print_bad vprint_bad]
     stubs.each { |meth| allow(mod).to receive(meth) }
     allow(mod).to receive_message_chain("session.railgun.kernel32").and_return(kernel32)
     allow(mod).to receive_message_chain("session.railgun.advapi32").and_return(advapi32)

@@ -1,18 +1,19 @@
 # -*- coding:binary -*-
+
 require 'rex/proto/nuuo/client_request'
 
 RSpec.describe Rex::Proto::Nuuo::ClientRequest do
-  subject(:client_request) {
+  subject(:client_request) do
     opts = {
       'user_session' => user_session,
       'headers' => headers_hash,
       'data' => data
     }
     described_class.new(opts)
-  }
-  let(:user_session) {nil}
-  let(:headers_hash) {{}}
-  let(:data) {nil}
+  end
+  let(:user_session) { nil }
+  let(:headers_hash) { {} }
+  let(:data) { nil }
 
   describe '#to_s' do
     context 'given no additional options' do
@@ -22,18 +23,20 @@ RSpec.describe Rex::Proto::Nuuo::ClientRequest do
     end
 
     context 'given a headers hash' do
-      let(:headers_hash) {{
-        'TestHeader' => 'TestValue',
-        'TestHeader1' => 'TestValue1'
-      }}
+      let(:headers_hash) do
+        {
+          'TestHeader' => 'TestValue',
+       'TestHeader1' => 'TestValue1'
+        }
+      end
       it 'dumps the headers after the method line' do
         expect(client_request.to_s).to eq("USERLOGIN NUCM/1.0\r\nTestHeader: TestValue\r\nTestHeader1: TestValue1\r\n\r\n")
       end
     end
 
     context 'given a user_session and User-Session-No header' do
-      let(:user_session) {'0'}
-      let(:headers_hash) {{'User-Session-No' => '1'}}
+      let(:user_session) { '0' }
+      let(:headers_hash) { { 'User-Session-No' => '1' } }
 
       it 'prefers the User-Session-No in the headers hash' do
         expect(client_request.to_s).to eq("USERLOGIN NUCM/1.0\r\nUser-Session-No: 1\r\n\r\n")
@@ -55,9 +58,8 @@ RSpec.describe Rex::Proto::Nuuo::ClientRequest do
 
 
   describe '#set_header' do
-
     context 'given no user session number' do
-      let(:user_session) {nil}
+      let(:user_session) { nil }
 
       it 'returns an empty header' do
         expect(client_request.set_header('user_session', 'User-Session-No')).to eq('')
@@ -65,7 +67,7 @@ RSpec.describe Rex::Proto::Nuuo::ClientRequest do
     end
 
     context 'given user session number' do
-      let(:user_session) {'987'}
+      let(:user_session) { '987' }
 
       it 'returns a User-Session-No header' do
         expect(client_request.set_header('user_session', 'User-Session-No')).to eq("User-Session-No: 987\r\n")
@@ -79,14 +81,13 @@ RSpec.describe Rex::Proto::Nuuo::ClientRequest do
     end
 
     context 'given a key specified in the headers hash' do
-      let(:user_session) {'987'}
-      let(:headers_hash) {{'User-Session-No' => '1000'}}
+      let(:user_session) { '987' }
+      let(:headers_hash) { { 'User-Session-No' => '1000' } }
 
       it 'returns an empty header' do
         expect(client_request.set_header('user_session', 'User-Session-No')).to eq('')
       end
     end
-
   end
 
   describe '#set_extra_headers' do
@@ -97,10 +98,12 @@ RSpec.describe Rex::Proto::Nuuo::ClientRequest do
     end
 
     context 'given a headers hash' do
-      let(:headers_hash) {{
-        'Header' => 'Value',
-        'Another' => 'One'
-      }}
+      let(:headers_hash) do
+        {
+          'Header' => 'Value',
+       'Another' => 'One'
+        }
+      end
 
       it 'returns formatted headers' do
         expect(client_request.set_extra_headers).to eq("Header: Value\r\nAnother: One\r\n")
@@ -116,7 +119,7 @@ RSpec.describe Rex::Proto::Nuuo::ClientRequest do
     end
 
     context 'given body content' do
-      let(:data) {"test data"}
+      let(:data) { "test data" }
 
       it 'returns \r\n followed by the body content' do
         expect(client_request.set_body).to eq("\r\ntest data")
@@ -125,8 +128,8 @@ RSpec.describe Rex::Proto::Nuuo::ClientRequest do
   end
 
   describe '#set_formatted_header' do
-    let(:name) {'HeaderName'}
-    let(:value) {'HeaderValue'}
+    let(:name) { 'HeaderName' }
+    let(:value) { 'HeaderValue' }
 
     it 'creates a request header' do
       expect(subject.set_formatted_header(name, value)).to eq("HeaderName: HeaderValue\r\n")

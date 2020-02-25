@@ -4,12 +4,11 @@ require 'metasploit/framework/login_scanner/pop3'
 RSpec.describe Metasploit::Framework::LoginScanner::POP3 do
   subject(:scanner) { described_class.new }
 
-  it_behaves_like 'Metasploit::Framework::LoginScanner::Base',  has_realm_key: false, has_default_realm: false
+  it_behaves_like 'Metasploit::Framework::LoginScanner::Base', has_realm_key: false, has_default_realm: false
   it_behaves_like 'Metasploit::Framework::LoginScanner::RexSocket'
   it_behaves_like 'Metasploit::Framework::Tcp::Client'
 
   context "#attempt_login" do
-
     let(:pub_blank) do
       Metasploit::Framework::Credential.new(
         paired: true,
@@ -44,7 +43,7 @@ RSpec.describe Metasploit::Framework::LoginScanner::POP3 do
     end
 
     context "Open Connection" do
-      let(:sock) {double('socket')}
+      let(:sock) { double('socket') }
 
       before(:example) do
         allow(sock).to receive(:shutdown)
@@ -54,7 +53,7 @@ RSpec.describe Metasploit::Framework::LoginScanner::POP3 do
         allow(scanner).to receive(:sock).and_return(sock)
 
         expect(scanner).to receive(:connect)
-        expect(scanner).to receive(:select).with([sock],nil,nil,0.4)
+        expect(scanner).to receive(:select).with([sock], nil, nil, 0.4)
       end
 
       it "Server returns +OK" do
@@ -66,7 +65,6 @@ RSpec.describe Metasploit::Framework::LoginScanner::POP3 do
 
         expect(result).to be_kind_of(Metasploit::Framework::LoginScanner::Result)
         expect(result.status).to eq(Metasploit::Model::Login::Status::SUCCESSFUL)
-
       end
 
       it "Server Returns Something Else" do
@@ -77,9 +75,7 @@ RSpec.describe Metasploit::Framework::LoginScanner::POP3 do
         expect(result).to be_kind_of(Metasploit::Framework::LoginScanner::Result)
         expect(result.status).to eq(Metasploit::Model::Login::Status::INCORRECT)
         expect(result.proof).to eq("+ERROR")
-
       end
     end
-
   end
 end
