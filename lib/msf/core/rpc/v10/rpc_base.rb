@@ -24,6 +24,10 @@ class RPC_Base
   def error(code, message)
     raise Msf::RPC::Exception.new(code, message)
   end
+
+  def client_error(message)
+    raise Msf::RPC::Client.new(code, message)
+  end
 end
 
 end

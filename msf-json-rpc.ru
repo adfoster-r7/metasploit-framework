@@ -18,4 +18,22 @@ end
 # Note: setup Rails environment before calling require
 require 'msf/core/web_services/json_rpc_app'
 
+class LoggingMiddleware
+  def initialize(app)
+    @app = app
+  end
+
+  def call(env)
+    req = Rack::Request.new(env)
+    request_body = req.body.read
+    req.body.rewind
+
+    $stderr.puts "Request: #{request_body}"
+    response_status, response_headers, response_body = @app.call(env)
+    $stderr.puts "Response (Status code #{response_status}): #{response_body}"
+    [response_status, response_headers, response_body]
+  end
+end
+
+use LoggingMiddleware
 run Msf::WebServices::JsonRpcApp

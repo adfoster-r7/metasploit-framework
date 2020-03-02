@@ -165,16 +165,24 @@ protected
   def self.job_run_proc(ctx, &block)
     mod = ctx[0]
     run_uuid = ctx[1]
+
     begin
-      mod.setup
-      mod.framework.events.on_module_run(mod)
       begin
         mod.framework.job_state_tracker.start run_uuid
+        mod.setup
+        mod.framework.events.on_module_run(mod)
         result = block.call(mod)
         mod.framework.job_state_tracker.completed(run_uuid, result)
       rescue ::Exception => e
         mod.framework.job_state_tracker.failed(run_uuid, e)
         raise
+      ensure
+        if mod.framework.job_state_tracker.running?(run_uuid) || mod.framework.job_state_tracker.waiting?(run_uuid)
+          require 'pry'
+          binding.pry
+          puts "lawl"
+        end
+        # mod.framework.running.delete run_uuid
       end
     rescue Msf::Auxiliary::Complete
       mod.cleanup

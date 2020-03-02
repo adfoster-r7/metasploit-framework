@@ -402,7 +402,7 @@ class RPC_Module < RPC_Base
     res
   end
 
-  # Returns the total modules in each state.
+  # Provides insight into what modules have been
   #
   # @return [Hash] Running module stats that contain the following keys:
   #  * 'ready' [Integer] The number of modules waiting to be kicked off.
@@ -412,9 +412,9 @@ class RPC_Module < RPC_Base
   #  rpc.call('module.running_stats')
   def rpc_running_stats
     {
-        "waiting" => self.framework.job_state_tracker.waiting_size,
-        "running" => self.framework.job_state_tracker.running_size,
-        "results" => self.framework.job_state_tracker.results_size,
+        "waiting" => self.framework.job_state_tracker.waiting_ids,
+        "running" => self.framework.job_state_tracker.running_ids,
+        "results" => self.framework.job_state_tracker.result_ids
     }
   end
 
@@ -484,6 +484,11 @@ class RPC_Module < RPC_Base
   #  rpc.call('module.execute', 'exploit', 'multi/handler', opts)
   def rpc_execute(mtype, mname, opts)
     mod = _find_module(mtype,mname)
+
+    if mod.type != mtype
+      error(400, "Client provided module type '#{mtype}' did not match expected type '#{mod.type}' for '#{mod.fullname}'")
+    end
+
     case mtype
       when 'exploit'
         _run_exploit(mod, opts)
@@ -510,6 +515,11 @@ class RPC_Module < RPC_Base
   # @return
   def rpc_check(mtype, mname, opts)
     mod = _find_module(mtype,mname)
+
+    if mod.type != mtype
+      error(400, "Client provided module type '#{mtype}' did not match expected type '#{mod.type}' for '#{mod.fullname}'")
+    end
+
     case mtype
     when 'exploit'
       _check_exploit(mod, opts)
@@ -539,7 +549,7 @@ class RPC_Module < RPC_Base
       end
     elsif self.framework.job_state_tracker.running? uuid
       {"status" => "running"}
-    elsif self.framework.job_state_tracker.waiting uuid
+    elsif self.framework.job_state_tracker.waiting? uuid
       {"status" => "ready"}
     else
       error(404, "Results not found for module instance #{uuid}")
