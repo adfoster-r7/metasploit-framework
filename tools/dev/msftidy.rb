@@ -11,6 +11,7 @@
 require 'fileutils'
 require 'find'
 require 'time'
+require 'rubocop'
 
 CHECK_OLD_RUBIES = !!ENV['MSF_CHECK_OLD_RUBIES']
 SUPPRESS_INFO_MESSAGES = !!ENV['MSF_SUPPRESS_INFO_MESSAGES']
@@ -36,6 +37,23 @@ class String
   def cyan
     "\e[1;36;40m#{self}\e[0m"
   end
+end
+
+##
+# Any modules created after 2020-04-01 require Rubocop to be ran.
+# This epoch was chosen from the landing date of the initial PR to
+# enforce consistent module formatting with Rubocop:
+#
+#   https://github.com/rapid7/metasploit-framework/pull/12990
+#
+# @param [string] full_filepath
+# @return [boolean] True if this module is new and requires Rubocop, otherwise false
+def requires_rubocop?(full_filepath)
+  rubocop_on_modules_epoch = Date.iso8601('2020-04-01')
+  module_created_at = %x[ git rev-list -s --format="%ci" HEAD -- #{full_filepath} | tail -1 ]
+  return true if module_created_at.blank?
+
+  Date.parse(module_created_at) > rubocop_on_modules_epoch
 end
 
 class Msftidy
@@ -804,6 +822,12 @@ if __FILE__ == $PROGRAM_NAME
         next if File.executable?(full_filepath) && msftidy.source =~ /require ["']metasploit["']/
         msftidy.run_checks
         @exit_status = msftidy.status if (msftidy.status > @exit_status.to_i)
+
+        next unless requires_rubocop? full_filepath
+
+        rubocop = RuboCop::CLI.new
+        rubocop_result = rubocop.run [$PROGRAM_NAME]
+        @exit_status = rubocop_result if (rubocop_result > @exit_status.to_i)
       end
     rescue Errno::ENOENT
       $stderr.puts "#{File.basename(__FILE__)}: #{dir}: No such file or directory"
