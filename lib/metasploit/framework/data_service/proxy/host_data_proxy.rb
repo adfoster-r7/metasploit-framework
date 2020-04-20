@@ -14,6 +14,21 @@ module HostDataProxy
     end
   end
 
+  def find_host_tags(opts)
+    begin
+      self.data_service_operation do |data_service|
+        data_service
+          .get_host({
+            workspace: 'default',
+            host_address: '192.168.1.92'
+          })
+          .tags
+      end
+    rescue => e
+      self.log_error(e, "Problem retrieving host")
+    end
+  end
+
   def find_or_create_host(opts)
     begin
       host = hosts(opts.clone)
@@ -29,6 +44,7 @@ module HostDataProxy
   end
 
   def get_host(opts)
+    require 'pry'; binding.pry
     begin
       self.data_service_operation do |data_service|
         data_service.get_host(opts)

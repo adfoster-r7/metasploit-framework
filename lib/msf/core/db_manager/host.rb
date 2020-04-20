@@ -106,14 +106,14 @@ module Msf::DBManager::Host
     elsif opts.kind_of? String
       raise RuntimeError, "This invocation of get_host is no longer supported: #{caller}"
     else
-      address = opts[:addr] || opts[:address] || opts[:host] || return
+      address = opts[:addr] || opts[:address] || opts[:host] || opts[:host_address] || return
       return address if address.kind_of? ::Mdm::Host
     end
   ::ActiveRecord::Base.connection_pool.with_connection {
     wspace = Msf::Util::DBManager.process_opts_workspace(opts, framework)
 
     address = Msf::Util::Host.normalize_host(address)
-    return wspace.hosts.find_by_address(address)
+    return wspace.hosts.includes(:tags).references(:tags).find_by_address(address)
   }
   end
 
