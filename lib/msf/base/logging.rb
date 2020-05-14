@@ -25,12 +25,11 @@ class Logging
         Msf::Config.log_directory + File::SEPARATOR + "framework.log")
       error_f = Rex::Logging::Sinks::Flatfile.new(
         Msf::Config.log_directory + File::SEPARATOR + "error.log")
-      /(\[\d\d\/\d\d\/\d\d\d\d \d\d:\d\d:\d\d\] \[.*?\] error:(?:(?!\n\n).)+)/
+
       # Register each known log source
       [
         Rex::LogSource,
         Msf::LogSource,
-        'base'
       ].each { |src|
         register_log_source(src, f)
       }

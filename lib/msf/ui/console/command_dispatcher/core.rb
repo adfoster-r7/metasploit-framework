@@ -147,9 +147,6 @@ class Core
     @previous_module = nil
     @previous_target = nil
     @history_limit = 100
-
-    Debug.set_driver(driver)
-    Debug.set_framework(framework)
   end
 
   def deprecated_commands
@@ -307,7 +304,7 @@ class Core
   def cmd_debug_help
     print_line "Usage: debug [options]"
     print_line
-    print_line("Print a set of information to be included when opening an Issue on Github. " +
+    print_line("Print a set of information in a Markdown format to be included when opening an Issue on Github. " +
                  "This information helps us fix problems you encounter and should be included when you open a new issue: " +
                  Debug.get_issue_link)
     print @@debug_opts.usage
@@ -318,7 +315,7 @@ class Core
   #
   def cmd_debug(*args)
     if args.empty?
-      print_line Debug.get_all
+      print_line Debug.get_all(framework, driver)
       return
     end
 
@@ -329,7 +326,7 @@ class Core
       @@debug_opts.parse(args) do |opt|
         case opt
         when '-d'
-          output << Debug.get_datastore
+          output << Debug.get_datastore(framework, driver)
         when '-H'
           output << Debug.get_history
         when '-e'
@@ -337,7 +334,7 @@ class Core
         when '-l'
           output << Debug.get_logs
         when '-v'
-          output << Debug.get_versions
+          output << Debug.get_versions(framework)
         end
       end
 
@@ -345,7 +342,7 @@ class Core
         print_line("Valid argument was not given.")
         cmd_debug_help
       else
-        output = Debug.get_banner + output
+        output = Debug.get_preamble + output
         print_line output
       end
     end

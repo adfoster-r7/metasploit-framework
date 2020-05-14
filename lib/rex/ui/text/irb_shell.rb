@@ -21,9 +21,6 @@ class IrbShell
   # IRB to the appropriate binding context.
   #
   def run
-    require 'pry'
-    binding.pry
-
     # Initialize IRB by setting up its internal configuration hash and
     # stuff.
     if (@@IrbInitialized == false)

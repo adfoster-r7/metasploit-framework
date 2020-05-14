@@ -285,7 +285,7 @@ class Driver < Msf::Ui::Driver
   end
 
   #
-  # Generates console configuration for display or saving.
+  # Generate configuration for the console.
   #
   def get_config
     # Build out the console config group

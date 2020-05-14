@@ -426,8 +426,6 @@ class Config < Hash
   #        })
   def save(opts)
     ini = Rex::Parser::Ini.new(opts['ConfigFile'] || config_file)
-    require 'pry'
-    binding.pry
 
     ini.update(opts)
 
