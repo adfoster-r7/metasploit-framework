@@ -315,7 +315,7 @@ class Core
   #
   def cmd_debug(*args)
     if args.empty?
-      print_line Debug.get_all(framework, driver)
+      print_line Debug.all(framework, driver)
       return
     end
 
@@ -326,15 +326,15 @@ class Core
       @@debug_opts.parse(args) do |opt|
         case opt
         when '-d'
-          output << Debug.get_datastore(framework, driver)
+          output << Debug.datastore(framework, driver)
         when '-H'
-          output << Debug.get_history
+          output << Debug.history
         when '-e'
-          output << Debug.get_errors
+          output << Debug.errors
         when '-l'
-          output << Debug.get_logs
+          output << Debug.logs
         when '-v'
-          output << Debug.get_versions(framework)
+          output << Debug.versions(framework)
         end
       end
 
@@ -342,7 +342,7 @@ class Core
         print_line("Valid argument was not given.")
         cmd_debug_help
       else
-        output = Debug.get_preamble + output
+        output = Debug.preamble + output
         print_line output
       end
     end

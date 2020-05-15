@@ -30,6 +30,7 @@ class Logging
       [
         Rex::LogSource,
         Msf::LogSource,
+        'base'
       ].each { |src|
         register_log_source(src, f)
       }
