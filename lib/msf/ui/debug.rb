@@ -18,17 +18,23 @@ module Msf
       end
 
       def self.get_preamble
-        return ("\nPlease provide the below information in any Github issues you open. New issues can be opened here #{get_issue_link}\n"+
-          "%red%undENSURE YOU HAVE REMOVED ANY SENSITIVE INFORMATION BEFORE SUBMITTING!%clr\n\n")
+        return <<~PREMABLE
+                  Please provide the below information in any Github issues you open. New issues can be opened here #{get_issue_link}
+                  %red%undENSURE YOU HAVE REMOVED ANY SENSITIVE INFORMATION BEFORE SUBMITTING!%clr
+    
+                  ===8<=== CUT AND PASTE EVERYTHING BELOW THIS LINE ===8<===
+
+
+                PREMABLE
       end
 
       def self.get_all(framework, driver)
         all_information = get_preamble
-        all_information << get_datastore(framework, driver)
-        all_information << get_history
-        all_information << get_errors
-        all_information << get_logs
-        all_information << get_versions(framework)
+        all_information += get_datastore(framework, driver)
+        all_information += get_history
+        all_information += get_errors
+        all_information += get_logs
+        all_information += get_versions(framework)
 
         all_information
       end
@@ -69,11 +75,14 @@ module Msf
         end
 
         build_section('Module/Datastore',
-                      'The following global/module datastore, & databse setup was configured before the issue ocurred:',
+                      'The following global/module datastore, & databse setup was configured before the issue occurred:',
                       content)
       end
 
       def self.get_history
+        require 'pry'
+        binding.pry
+
         end_pos = (Readline::HISTORY.length) -1
         start_pos = end_pos > COMMAND_HISTORY_TOTAL ? end_pos - (COMMAND_HISTORY_TOTAL - 1) : 0
 
@@ -92,8 +101,28 @@ module Msf
       def self.get_errors
         errors = File.read(Msf::Config.log_directory + File::SEPARATOR + "error.log")
 
-        #Returns the errors in error.log file as an array | Separator of errors is two consecutive \n chars
-        res = errors.scan(/(\[\d\d\/\d\d\/\d\d\d\d \d\d:\d\d:\d\d\] \[.*?\] error:(?:(?!\n\n).)+)/m)
+        # Returns the errors in error.log file as an array
+        # Separator of individual errors is two consecutive \n chars
+        #
+        # The below example errors will be captured as three separate errors (Any accompanying traces will also be captured):
+        #
+        # [05/15/2020 14:13:38] [e(0)] error: [-] Error during IRB: undefined method `[]' for nil:NilClass
+        #
+        #
+        # [05/15/2020 14:19:20] [e(0)] error: [-] Error while running command debug: can't modify frozen String
+        # Call stack:
+        # /Users/Shared/Relocated_Items/Security/rapid7/metasploit-framework/lib/msf/ui/debug.rb:33:in `get_all'
+        # /Users/Shared/Relocated_Items/Security/rapid7/metasploit-framework/lib/msf/ui/console/command_dispatcher/core.rb:318:in `cmd_debug'
+        # /Users/Shared/Relocated_Items/Security/rapid7/metasploit-framework/lib/rex/ui/text/dispatcher_shell.rb:523:in `run_command'
+        # /Users/Shared/Relocated_Items/Security/rapid7/metasploit-framework/lib/rex/ui/text/dispatcher_shell.rb:474:in `block in run_single'
+        # /Users/Shared/Relocated_Items/Security/rapid7/metasploit-framework/lib/rex/ui/text/dispatcher_shell.rb:468:in `each'
+        # /Users/Shared/Relocated_Items/Security/rapid7/metasploit-framework/lib/rex/ui/text/dispatcher_shell.rb:468:in `run_single'
+        # /Users/Shared/Relocated_Items/Security/rapid7/metasploit-framework/lib/rex/ui/text/shell.rb:158:in `run'
+        # /Users/Shared/Relocated_Items/Security/rapid7/metasploit-framework/lib/metasploit/framework/command/console.rb:48:in `start'
+        # /Users/Shared/Relocated_Items/Security/rapid7/metasploit-framework/lib/metasploit/framework/command/base.rb:82:in `start'
+        #
+        # [05/15/2020 14:23:55] [e(0)] error: [-] Error during IRB: undefined method `[]' for nil:NilClass
+        res = errors.scan(%r|(\[\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}\] \[[^\n]*?\] error:(?:(?!\n\n).)+)|m)
 
         #Scan returns each error as a single item array
         res.flatten!
@@ -102,7 +131,7 @@ module Msf
 
         errors_str = concat_str_array_from_last_idx(res, ERROR_TOTAL, true)
         build_section('Errors',
-                      'The following errors ocurred before the issue occuered:',
+                      'The following errors occurred before the issue occurred:',
                       errors_str)
       end
 
@@ -112,7 +141,7 @@ module Msf
         logs_str = concat_str_array_from_last_idx(log_lines, LOG_LINE_TOTAL)
 
         build_section('Logs',
-                      'The following logs were recorded before the issue ocurred:',
+                      'The following logs were recorded before the issue occurred:',
                       logs_str)
       end
 
@@ -124,8 +153,13 @@ module Msf
         str += "Framework Patch Version: #{patch} \n"
         str += "Ruby Version: #{RUBY_DESCRIPTION} \n"
         str += "DB Session Status: #{get_db_connection_info(framework)} \n"
+        str += "Installation Method: #{get_installation_method} \n"
+        str += "\n"
+        str += "OS: #{Gem::Platform::local.os} \n"
+        str += "OS Version: #{Gem::Platform::local.version} \n"
+        str += "CPU Architecture: #{Gem::Platform::local.cpu} \n"
 
-        build_section('Version/Install', 'The versions & install method of your metaploit setup:', str)
+        build_section('Version/Install', 'The versions & install method of your Metasploit setup:', str)
       end
 
       #######
@@ -202,6 +236,18 @@ module Msf
 
         </details>
         EOF
+      end
+
+      def self.get_installation_method
+        if File.exists?(File.join(File::SEPARATOR, 'opt', 'metasploit-framework', 'version.yaml'))
+          'Omnibus Installer'
+        elsif Msf::Config.install_root == File.join(File::SEPARATOR, 'usr', 'share', 'metasploit-framework')
+          'Kali'
+        elsif File.directory?(Msf::Config.install_root + File::SEPARATOR + '.git')
+          'Git Clone'
+        else
+          'Downloaded Release from GitHub'
+        end
       end
     end
   end
