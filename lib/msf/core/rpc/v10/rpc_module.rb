@@ -2,6 +2,7 @@
 
 require 'json'
 require 'msf/util/document_generator'
+require 'objspace'
 
 module Msf
 module RPC
@@ -402,6 +403,22 @@ class RPC_Module < RPC_Base
     res
   end
 
+  def rpc_dump_objspace
+    dump_location = "./ruby-heap-#{Time.now.to_i}.dump"
+    Thread.new do
+      GC.start
+      GC.start
+      require "objspace"
+      # ObjectSpace.trace_object_allocations_start
+      io = File.open(dump_location, "w")
+      ObjectSpace.dump_all(output: io)
+      io.close
+    end
+    {
+      "dump_location": dump_location
+    }
+  end
+
   # Returns the currently running module stats in each state.
   #
   # @return [Hash] Running module stats that contain the following keys:
@@ -414,7 +431,14 @@ class RPC_Module < RPC_Base
     {
         "waiting" => self.job_status_tracker.waiting_ids,
         "running" => self.job_status_tracker.running_ids,
-        "results" => self.job_status_tracker.result_ids
+        "results" => self.job_status_tracker.result_ids,
+        "waiting_count" => self.job_status_tracker.waiting_ids.length,
+        "running_count" => self.job_status_tracker.running_ids.length,
+        "results_count" => self.job_status_tracker.result_ids.length,
+        "job_id" => framework.jobs.instance_variable_get(:@job_id_pool),
+        "gc_stats" => GC.stat,
+        "objspace_stats" => ObjectSpace.count_objects,
+        "memsize_of_all" => ObjectSpace.memsize_of_all
     }
   end
 
