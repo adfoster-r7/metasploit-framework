@@ -47,7 +47,7 @@ class Service
     self.token_timeout      = self.options[:token_timeout] || 300
     self.tokens             = self.options[:tokens] || {}
     self.users              = self.options[:users] || []
-    self.job_status_tracker = Msf::RPC::RpcJobStatusTracker.new
+    self.job_status_tracker = Msf::Simple::NoopJobListener.instance
 
     add_handler("core",    Msf::RPC::RPC_Core.new(self))
     add_handler("auth",    Msf::RPC::RPC_Auth.new(self))
