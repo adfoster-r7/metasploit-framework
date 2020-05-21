@@ -219,6 +219,7 @@ module Shell
 
     self.on_print_proc.call(msg) if self.on_print_proc
     # Errors are not subject to disabled output
+    log_output(output.print_error(msg))
     log_error(output.print_error(msg))
   end
 

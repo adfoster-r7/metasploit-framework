@@ -12,29 +12,33 @@ module Msf
       COMMAND_HISTORY_TOTAL = 50
       ERROR_TOTAL = 10
       LOG_LINE_TOTAL = 50
-
-      def self.issue_link
-        return 'https://github.com/rapid7/metasploit-framework/issues/new'
-      end
-
-      def self.preamble
-        return <<~PREMABLE
-          Please provide the below information in any Github issues you open. New issues can be opened here #{get_issue_link}
+      ISSUE_LINK = 'https://github.com/rapid7/metasploit-framework/issues/new'
+      PREAMBLE = <<~PREMABLE
+          Please provide the below information in any Github issues you open. New issues can be opened here #{ISSUE_LINK.dup}
           %red%undENSURE YOU HAVE REMOVED ANY SENSITIVE INFORMATION BEFORE SUBMITTING!%clr
 
           ===8<=== CUT AND PASTE EVERYTHING BELOW THIS LINE ===8<===
 
 
-        PREMABLE
+      PREMABLE
+
+
+
+      def self.issue_link
+        return ISSUE_LINK.dup
+      end
+
+      def self.preamble
+        return PREAMBLE.dup
       end
 
       def self.all(framework, driver)
         all_information = preamble
-        all_information += datastore(framework, driver)
-        all_information += history
-        all_information += errors
-        all_information += logs
-        all_information += versions(framework)
+        all_information << datastore(framework, driver)
+        all_information << history
+        all_information << errors
+        all_information << logs
+        all_information << versions(framework)
 
         all_information
       end
