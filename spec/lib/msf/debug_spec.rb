@@ -491,6 +491,7 @@ RSpec.describe 'Debug command functionality' do
       expect(db).to receive(:driver).and_return('driver')
 
       allow(::Msf::Config).to receive(:install_root).at_least(3).times.and_return('bad/path')
+      RUBY_DESCRIPTION = 'Ruby Description'
 
       expected_output = <<~OUTPUT
       ##  %grnVersion/Install%clr
@@ -500,7 +501,7 @@ RSpec.describe 'Debug command functionality' do
 
       ```
       Framework: VERSION
-      Ruby: ruby 2.6.5p114 (2019-10-01 revision 67812) [x86_64-darwin19]
+      Ruby: #{RUBY_DESCRIPTION}
       Install Root: bad/path
       Session Type: driver selected, no connection
       Install Method: Other
@@ -526,6 +527,7 @@ RSpec.describe 'Debug command functionality' do
       expect(db).to receive(:get_data_service).at_least(2).times.and_return('db_data_service')
 
       allow(::Msf::Config).to receive(:install_root).at_least(3).times.and_return('bad/path')
+      RUBY_DESCRIPTION = 'Ruby Description'
 
       expected_output = <<~OUTPUT
       ##  %grnVersion/Install%clr
@@ -535,7 +537,7 @@ RSpec.describe 'Debug command functionality' do
 
       ```
       Framework: VERSION
-      Ruby: ruby 2.6.5p114 (2019-10-01 revision 67812) [x86_64-darwin19]
+      Ruby: #{RUBY_DESCRIPTION}
       Install Root: bad/path
       Session Type: Connected to db_name. Connection type: http. Connection name: db_data_service.
       Install Method: Other
@@ -568,6 +570,7 @@ RSpec.describe 'Debug command functionality' do
 
       allow(::ActiveRecord::Base).to receive(:connection_pool).and_return(connection_pool)
       allow(::Msf::Config).to receive(:install_root).at_least(3).times.and_return('bad/path')
+      RUBY_DESCRIPTION = 'Ruby Description'
 
       expected_output = <<~OUTPUT
       ##  %grnVersion/Install%clr
@@ -577,7 +580,7 @@ RSpec.describe 'Debug command functionality' do
 
       ```
       Framework: VERSION
-      Ruby: ruby 2.6.5p114 (2019-10-01 revision 67812) [x86_64-darwin19]
+      Ruby: #{RUBY_DESCRIPTION}
       Install Root: bad/path
       Session Type: Connected to current_db_connection. Connection type: local. Connection name: db_data_service.
       Install Method: Other
@@ -601,6 +604,7 @@ RSpec.describe 'Debug command functionality' do
       expect(db).to receive(:driver).and_return('driver')
 
       allow(::Msf::Config).to receive(:install_root).at_least(3).times.and_return(File.join(File::SEPARATOR, 'usr', 'share', 'metasploit-framework'))
+      RUBY_DESCRIPTION = 'Ruby Description'
 
       expected_output = <<~OUTPUT
       ##  %grnVersion/Install%clr
@@ -610,7 +614,7 @@ RSpec.describe 'Debug command functionality' do
 
       ```
       Framework: VERSION
-      Ruby: ruby 2.6.5p114 (2019-10-01 revision 67812) [x86_64-darwin19]
+      Ruby: #{RUBY_DESCRIPTION}
       Install Root: /usr/share/metasploit-framework
       Session Type: driver selected, no connection
       Install Method: Kali
@@ -635,6 +639,7 @@ RSpec.describe 'Debug command functionality' do
       expect(db).to receive(:driver).and_return('driver')
 
       allow(::Msf::Config).to receive(:install_root).at_least(3).times.and_return(File.join(FILE_FIXTURES_PATH, 'debug', 'installs' ,'omnibus'))
+      RUBY_DESCRIPTION = 'Ruby Description'
 
       expected_output = <<~OUTPUT
       ##  %grnVersion/Install%clr
@@ -644,7 +649,7 @@ RSpec.describe 'Debug command functionality' do
 
       ```
       Framework: VERSION
-      Ruby: ruby 2.6.5p114 (2019-10-01 revision 67812) [x86_64-darwin19]
+      Ruby: #{RUBY_DESCRIPTION}
       Install Root: #{File.join(FILE_FIXTURES_PATH, 'debug', 'installs', 'omnibus')}
       Session Type: driver selected, no connection
       Install Method: Omnibus Installer
@@ -677,7 +682,7 @@ RSpec.describe 'Debug command functionality' do
 
         ```
         Framework: VERSION
-        Ruby: ruby 2.6.5p114 (2019-10-01 revision 67812) [x86_64-darwin19]
+        Ruby: #{RUBY_DESCRIPTION}
         Install Root: #{File.join(FILE_FIXTURES_PATH, 'debug', 'installs')}
         Session Type: driver selected, no connection
         Install Method: Git Clone
