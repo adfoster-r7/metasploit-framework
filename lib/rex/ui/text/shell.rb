@@ -219,7 +219,7 @@ module Shell
 
     self.on_print_proc.call(msg) if self.on_print_proc
     # Errors are not subject to disabled output
-    log_output(output.print_error(msg))
+    log_error(output.print_error(msg))
   end
 
   alias_method :print_bad, :print_error
@@ -373,6 +373,11 @@ protected
   #
   def log_output(buf)
     rlog(buf, log_source) if (log_source)
+  end
+
+  #This is overwritten by hwbridge/ui/console.rb & meterpreter/ui/console.rb which have access to elog directly
+  def log_error(buf)
+    elog(buf, 'core')
   end
 
   #

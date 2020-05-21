@@ -91,7 +91,7 @@ RSpec.describe 'Debug command functionality' do
       expect(subject.errors).to eql(error_log_output)
     end
 
-    it "correctly retrieves and parses a command history shorter than the command total" do
+    it "correctly retrieves & parses a command history shorter than the command total" do
       Readline::HISTORY = Array.new(4) { |i| "Command #{i+1}"}
 
       error_log_output = <<~E_LOG
@@ -115,7 +115,7 @@ RSpec.describe 'Debug command functionality' do
       expect(subject.history).to eql(error_log_output)
     end
 
-    it "correctly retrieves and parses a command history equal in length to the command total" do
+    it "correctly retrieves & parses a command history equal in length to the command total" do
       Readline::HISTORY = Array.new(10) { |i| "Command #{i+1}"}
       error_log_output = <<~E_LOG
         ##  %grnHistory%clr
@@ -144,7 +144,7 @@ RSpec.describe 'Debug command functionality' do
       expect(subject.history).to eql(error_log_output)
     end
 
-    it "correctly retrieves and parses a command history larger than the command total" do
+    it "correctly retrieves & parses a command history larger than the command total" do
       Readline::HISTORY = Array.new(15) { |i| "Command #{i+1}"}
       error_log_output = <<~E_LOG
         ##  %grnHistory%clr
@@ -178,7 +178,7 @@ RSpec.describe 'Debug command functionality' do
       expect(subject.history).to eql(error_log_output)
     end
 
-    it "correctly retrieves and parses an empty config file and datastore" do
+    it "correctly retrieves & parses an empty config file & datastore" do
       allow(::Msf::Config).to receive(:config_file).and_return(File.join(FILE_FIXTURES_PATH, 'debug', 'config_files', 'empty.ini'))
 
       framework = double('framework')
@@ -193,7 +193,7 @@ RSpec.describe 'Debug command functionality' do
 
       expected_output = <<~OUTPUT
       ##  %grnModule/Datastore%clr
-      The following global/module datastore, and databse setup was configured before the issue occurred:
+      The following global/module datastore, & databse setup was configured before the issue occurred:
       <details>
       <summary>Collapse</summary>
 
@@ -209,7 +209,7 @@ RSpec.describe 'Debug command functionality' do
       expect(subject.datastore(framework, driver)).to eql(expected_output)
     end
 
-    it "correctly retrieves and parses a populated global datastore" do
+    it "correctly retrieves & parses a populated global datastore" do
       allow(::Msf::Config).to receive(:config_file).and_return(File.join(FILE_FIXTURES_PATH, 'debug', 'config_files', 'empty.ini'))
 
       framework = double('framework')
@@ -228,7 +228,7 @@ RSpec.describe 'Debug command functionality' do
 
       expected_output = <<~OUTPUT
       ##  %grnModule/Datastore%clr
-      The following global/module datastore, and databse setup was configured before the issue occurred:
+      The following global/module datastore, & databse setup was configured before the issue occurred:
       <details>
       <summary>Collapse</summary>
 
@@ -247,7 +247,7 @@ RSpec.describe 'Debug command functionality' do
       expect(subject.datastore(framework, driver)).to eql(expected_output)
     end
 
-    it "correctly retrieves and parses a populated global datastore and current module" do
+    it "correctly retrieves & parses a populated global datastore and current module" do
       allow(::Msf::Config).to receive(:config_file).and_return(File.join(FILE_FIXTURES_PATH, 'debug', 'config_files', 'empty.ini'))
 
       framework = double('framework')
@@ -270,7 +270,7 @@ RSpec.describe 'Debug command functionality' do
 
       expected_output = <<~OUTPUT
       ##  %grnModule/Datastore%clr
-      The following global/module datastore, and databse setup was configured before the issue occurred:
+      The following global/module datastore, & databse setup was configured before the issue occurred:
       <details>
       <summary>Collapse</summary>
 
@@ -294,7 +294,7 @@ RSpec.describe 'Debug command functionality' do
       expect(subject.datastore(framework, driver)).to eql(expected_output)
     end
 
-    it "correctly retrieves and parses active module variables " do
+    it "correctly retrieves & parses active module variables " do
       allow(::Msf::Config).to receive(:config_file).and_return(File.join(FILE_FIXTURES_PATH, 'debug', 'config_files', 'empty.ini'))
 
       framework = double('framework')
@@ -324,7 +324,7 @@ RSpec.describe 'Debug command functionality' do
 
       expected_output = <<~OUTPUT
       ##  %grnModule/Datastore%clr
-      The following global/module datastore, and databse setup was configured before the issue occurred:
+      The following global/module datastore, & databse setup was configured before the issue occurred:
       <details>
       <summary>Collapse</summary>
 
@@ -342,7 +342,7 @@ RSpec.describe 'Debug command functionality' do
       expect(subject.datastore(framework, driver)).to eql(expected_output)
     end
 
-    it "correctly retrieves and parses Database information" do
+    it "correctly retrieves & parses Database information" do
       allow(::Msf::Config).to receive(:config_file).and_return(File.join(FILE_FIXTURES_PATH, 'debug', 'config_files', 'db.ini'))
 
       framework = double('framework')
@@ -357,7 +357,7 @@ RSpec.describe 'Debug command functionality' do
 
       expected_output = <<~OUTPUT
       ##  %grnModule/Datastore%clr
-      The following global/module datastore, and databse setup was configured before the issue occurred:
+      The following global/module datastore, & databse setup was configured before the issue occurred:
       <details>
       <summary>Collapse</summary>
 
@@ -379,7 +379,7 @@ RSpec.describe 'Debug command functionality' do
       expect(subject.datastore(framework, driver)).to eql(expected_output)
     end
 
-    it "correctly retrieves and parses logs shorter than the log line total" do
+    it "correctly retrieves & parses logs shorter than the log line total" do
       range = 1..30
       logs = ''
       range.each do |i|
@@ -406,7 +406,7 @@ RSpec.describe 'Debug command functionality' do
       expect(subject.logs).to eql(error_log_output)
     end
 
-    it "correctly retrieves and parses logs equal to the log line total" do
+    it "correctly retrieves & parses logs equal to the log line total" do
       range = 1..50
       logs = ''
       range.each do |i|
@@ -433,7 +433,7 @@ RSpec.describe 'Debug command functionality' do
       expect(subject.logs).to eql(error_log_output)
     end
 
-    it "correctly retrieves and parses logs larger than the log line total" do
+    it "correctly retrieves & parses logs larger than the log line total" do
       range = 51..100
       logs = ''
       range.each do |i|
@@ -460,7 +460,7 @@ RSpec.describe 'Debug command functionality' do
       expect(subject.logs).to eql(error_log_output)
     end
 
-    it "correctly retrieves and parses an empty log file" do
+    it "correctly retrieves & parses an empty log file" do
       allow(::Msf::Config).to receive(:log_directory).and_return(File.join(FILE_FIXTURES_PATH, 'debug', 'framework_logs', 'empty'))
 
       error_log_output = <<~E_LOG
@@ -495,7 +495,7 @@ RSpec.describe 'Debug command functionality' do
 
       expected_output = <<~OUTPUT
       ##  %grnVersion/Install%clr
-      The versions and install method of your Metasploit setup:
+      The versions & install method of your Metasploit setup:
       <details>
       <summary>Collapse</summary>
 
@@ -531,7 +531,7 @@ RSpec.describe 'Debug command functionality' do
 
       expected_output = <<~OUTPUT
       ##  %grnVersion/Install%clr
-      The versions and install method of your Metasploit setup:
+      The versions & install method of your Metasploit setup:
       <details>
       <summary>Collapse</summary>
 
@@ -574,7 +574,7 @@ RSpec.describe 'Debug command functionality' do
 
       expected_output = <<~OUTPUT
       ##  %grnVersion/Install%clr
-      The versions and install method of your Metasploit setup:
+      The versions & install method of your Metasploit setup:
       <details>
       <summary>Collapse</summary>
 
@@ -608,7 +608,7 @@ RSpec.describe 'Debug command functionality' do
 
       expected_output = <<~OUTPUT
       ##  %grnVersion/Install%clr
-      The versions and install method of your Metasploit setup:
+      The versions & install method of your Metasploit setup:
       <details>
       <summary>Collapse</summary>
 
@@ -643,7 +643,7 @@ RSpec.describe 'Debug command functionality' do
 
       expected_output = <<~OUTPUT
       ##  %grnVersion/Install%clr
-      The versions and install method of your Metasploit setup:
+      The versions & install method of your Metasploit setup:
       <details>
       <summary>Collapse</summary>
 
@@ -663,38 +663,37 @@ RSpec.describe 'Debug command functionality' do
       puts expect(subject.versions(framework)).to eql(expected_output)
     end
 
-    # TODO: Figure out a way to push a .git folder to the remote repo so this test can detect it
-    # it "correctly retrieves version information with no connected DB and a Git Clone" do
-    #     framework = double('framework')
-    #     expect(framework).to receive(:version).and_return('VERSION')
-    #
-    #     db = double('db')
-    #     expect(framework).to receive(:db).at_least(2).times.and_return(db)
-    #     expect(db).to receive(:connection_established?).and_return(false)
-    #     expect(db).to receive(:driver).and_return('driver')
-    #
-    #     allow(::Msf::Config).to receive(:install_root).at_least(3).times.and_return(File.join(FILE_FIXTURES_PATH, 'debug', 'installs'))
-    #
-    #     expected_output = <<~OUTPUT
-    #     ##  %grnVersion/Install%clr
-    #     The versions and install method of your Metasploit setup:
-    #     <details>
-    #     <summary>Collapse</summary>
-    #
-    #     ```
-    #     Framework: VERSION
-    #     Ruby: #{RUBY_DESCRIPTION}
-    #     Install Root: #{File.join(FILE_FIXTURES_PATH, 'debug', 'installs')}
-    #     Session Type: driver selected, no connection
-    #     Install Method: Git Clone
-    #     ```
-    #
-    #     </details>
-    #
-    #
-    #     OUTPUT
-    #
-    #     puts expect(subject.versions(framework)).to eql(expected_output)
-    #   end
+    it "correctly retrieves version information with no connected DB and a Git Clone" do
+        framework = double('framework')
+        expect(framework).to receive(:version).and_return('VERSION')
+
+        db = double('db')
+        expect(framework).to receive(:db).at_least(2).times.and_return(db)
+        expect(db).to receive(:connection_established?).and_return(false)
+        expect(db).to receive(:driver).and_return('driver')
+
+        allow(::Msf::Config).to receive(:install_root).at_least(3).times.and_return(File.join(FILE_FIXTURES_PATH, 'debug', 'installs'))
+
+        expected_output = <<~OUTPUT
+        ##  %grnVersion/Install%clr
+        The versions & install method of your Metasploit setup:
+        <details>
+        <summary>Collapse</summary>
+
+        ```
+        Framework: VERSION
+        Ruby: #{RUBY_DESCRIPTION}
+        Install Root: #{File.join(FILE_FIXTURES_PATH, 'debug', 'installs')}
+        Session Type: driver selected, no connection
+        Install Method: Git Clone
+        ```
+
+        </details>
+
+
+        OUTPUT
+
+        puts expect(subject.versions(framework)).to eql(expected_output)
+      end
   end
 end
