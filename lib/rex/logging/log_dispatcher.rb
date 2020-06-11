@@ -134,8 +134,42 @@ def dlog(msg, src = 'core', level = 0)
   $dispatcher.log(LOG_DEBUG, src, level, msg)
 end
 
-def elog(msg, src = 'core', level = 0)
-  $dispatcher.log(LOG_ERROR, src, level, msg)
+# Logs errors in a standard format for each Log Level.
+#
+# @param msg [String] Contains message from the developer explaining why an error was encountered. Log Levels 0-3.
+#
+# @param src [String] USed to indicate where the error is originating from. Most commonly set to 'core' to ensure logs
+# are place in 'framework.log'.
+#
+# @param level [Integer] Sets the level an error should be logged at. Descriptions of each log level can be found in
+# lib/rex/logging.rb. Log Level will be change automatically to 0 if no +error+ is included, and will be changed to 3
+# if +insane_information+ is included. Log Level will always be set to 3 by +insane_information+, even if +error+ is nil.
+#
+# @param error [Exception] Exception of an error that needs to be logged. Mandatory in Log Levels 1-2. Optional in Log Level 3.
+#
+# @param insane_information [Hash] Used to pass very verbose information about the behavior of the framework
+# (Eg Loop Iterations, Variables, Function Calls).
+#
+# @return [NilClass].
+def elog(msg, src = 'core', level = 0, error = nil, insane_information = nil)
+  if error.nil? && !insane_information.nil?
+    level = 0
+  elsif insane_information.nil?
+    level = 3
+  end
+
+  case level
+  when 0
+    standardised_msg = elog_level_0(msg)
+  when 1
+    standardised_msg = elog_level_1(msg, error)
+  when 2
+    standardised_msg = elog_level_2(msg, error)
+  when 3
+    standardised_msg = elog_level_3(msg, error, insane_information)
+  end
+
+  $dispatcher.log(LOG_ERROR, src, level, standardised_msg)
 end
 
 def wlog(msg, src = 'core', level = 0)
@@ -147,10 +181,6 @@ def ilog(msg, src = 'core', level = 0)
 end
 
 def rlog(msg, src = 'core', level = 0)
-  if (msg == ExceptionCallStack)
-    msg = "\nCall stack:\n" + $@.join("\n") + "\n"
-  end
-
   $dispatcher.log(LOG_RAW, src, level, msg)
 end
 
@@ -178,3 +208,41 @@ end
 
 # Creates the global log dispatcher
 $dispatcher = Rex::Logging::LogDispatcher.new
+
+private
+
+def elog_level_0(msg)
+  <<~ERROR
+    Error Message: 
+    #{msg}
+  ERROR
+end
+
+def elog_level_1(msg, e)
+  <<~ERROR
+    #{elog_level_0(msg)}
+    
+    Exception Details:
+    #{e.message} (#{e.class})
+  ERROR
+end
+
+def elog_level_2(msg, e)
+  # full_message is a combination of an errors' message, class and backtrace, printed in the same format as an Unexpected Error.
+  <<~ERROR
+    #{elog_level_0(msg)}
+    
+    Exception Details:
+    #{e.full_message}
+  ERROR
+end
+
+def elog_level_3(msg, e, insane_information_hash)
+  <<~ERROR
+    #{elog_level_2(msg,e)}
+    
+    Framework Details:
+    #{JSON.pretty_generate(insane_information_hash)}
+  ERROR
+end
+
