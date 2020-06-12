@@ -81,8 +81,7 @@ module ResponseDataHelper
         File.open(save_path, 'w+') { |file| file.write(decoded_file) }
       end
     rescue => e
-      elog "There was an error writing the file: #{e}"
-      e.backtrace.each { |line| elog "#{line}\n"}
+      elog('There was an error writing the file', error:e)
     end
     save_path
   end

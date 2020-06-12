@@ -142,34 +142,31 @@ end
 # are place in 'framework.log'.
 #
 # @param level [Integer] Sets the level an error should be logged at. Descriptions of each log level can be found in
-# lib/rex/logging.rb. Log Level will be change automatically to 0 if no +error+ is included, and will be changed to 3
-# if +insane_information+ is included. Log Level will always be set to 3 by +insane_information+, even if +error+ is nil.
+# lib/rex/logging.rb. Log Level will be changeD automatically to 0 if no +error+ is included.
 #
 # @param error [Exception] Exception of an error that needs to be logged. Mandatory in Log Levels 1-2. Optional in Log Level 3.
 #
-# @param insane_information [Hash] Used to pass very verbose information about the behavior of the framework
 # (Eg Loop Iterations, Variables, Function Calls).
 #
 # @return [NilClass].
-def elog(msg, src = 'core', level = 0, error = nil, insane_information = nil)
-  if error.nil? && !insane_information.nil?
-    level = 0
-  elsif insane_information.nil?
-    level = 3
-  end
+def elog(msg, src = 'core', error:nil)
+  if error.nil?
+    $dispatcher.log(LOG_ERROR, src, get_log_level(src), msg)
+    return
+  else
 
-  case level
-  when 0
-    standardised_msg = elog_level_0(msg)
-  when 1
-    standardised_msg = elog_level_1(msg, error)
-  when 2
-    standardised_msg = elog_level_2(msg, error)
-  when 3
-    standardised_msg = elog_level_3(msg, error, insane_information)
-  end
+    log_level = get_log_level(src)
 
-  $dispatcher.log(LOG_ERROR, src, level, standardised_msg)
+    unless log_level
+      log_level = LEV_3
+    end
+
+    error_details = "#{error.class} #{error.message}"
+    if get_log_level(src) >= LEV_1
+      error_details << "\nCall stack:\n#{error.backtrace.join("\n")}"
+    end
+    $dispatcher.log(LOG_ERROR, src, get_log_level(src), "#{msg} - #{error_details}")
+  end
 end
 
 def wlog(msg, src = 'core', level = 0)
@@ -237,12 +234,12 @@ def elog_level_2(msg, e)
   ERROR
 end
 
-def elog_level_3(msg, e, insane_information_hash)
+def elog_level_3(msg, e)
   <<~ERROR
     #{elog_level_2(msg,e)}
     
-    Framework Details:
-    #{JSON.pretty_generate(insane_information_hash)}
+    Exception Cause:
+    #{e.cause}
   ERROR
 end
 

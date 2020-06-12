@@ -122,7 +122,7 @@ class Console
   def log_error(msg)
     print_error(msg)
 
-    elog(msg, 'meterpreter')
+    elog(msg, src='meterpreter')
 
     dlog("Call stack:\n#{$@.join("\n")}", 'meterpreter')
   end
