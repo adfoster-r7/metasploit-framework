@@ -81,7 +81,7 @@ module ResponseDataHelper
         File.open(save_path, 'w+') { |file| file.write(decoded_file) }
       end
     rescue => e
-      elog('There was an error writing the file', error:e)
+      elog('There was an error writing the file', error: e)
     end
     save_path
   end

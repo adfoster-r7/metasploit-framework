@@ -138,18 +138,15 @@ end
 #
 # @param msg [String] Contains message from the developer explaining why an error was encountered. Log Levels 0-3.
 #
-# @param src [String] USed to indicate where the error is originating from. Most commonly set to 'core' to ensure logs
+# @param src [String] Used to indicate where the error is originating from. Most commonly set to 'core' to ensure logs
 # are place in 'framework.log'.
-#
-# @param level [Integer] Sets the level an error should be logged at. Descriptions of each log level can be found in
-# lib/rex/logging.rb. Log Level will be changeD automatically to 0 if no +error+ is included.
 #
 # @param error [Exception] Exception of an error that needs to be logged. Mandatory in Log Levels 1-2. Optional in Log Level 3.
 #
 # (Eg Loop Iterations, Variables, Function Calls).
 #
 # @return [NilClass].
-def elog(msg, src = 'core', error:nil)
+def elog(msg='', src='core', error:nil)
   if error.nil?
     $dispatcher.log(LOG_ERROR, src, get_log_level(src), msg)
     return
@@ -157,15 +154,19 @@ def elog(msg, src = 'core', error:nil)
 
     log_level = get_log_level(src)
 
+    # If the source has no associated log_level, the default log level is used
     unless log_level
       log_level = LEV_3
     end
 
     error_details = "#{error.class} #{error.message}"
-    if get_log_level(src) >= LEV_1
+    if log_level >= LEV_1
       error_details << "\nCall stack:\n#{error.backtrace.join("\n")}"
     end
-    $dispatcher.log(LOG_ERROR, src, get_log_level(src), "#{msg} - #{error_details}")
+
+    dispatcher_msg = msg.empty? ? "#{error_details}" : "#{msg} - #{error_details}"
+
+    $dispatcher.log(LOG_ERROR, src, get_log_level(src), dispatcher_msg)
   end
 end
 
@@ -205,41 +206,3 @@ end
 
 # Creates the global log dispatcher
 $dispatcher = Rex::Logging::LogDispatcher.new
-
-private
-
-def elog_level_0(msg)
-  <<~ERROR
-    Error Message: 
-    #{msg}
-  ERROR
-end
-
-def elog_level_1(msg, e)
-  <<~ERROR
-    #{elog_level_0(msg)}
-    
-    Exception Details:
-    #{e.message} (#{e.class})
-  ERROR
-end
-
-def elog_level_2(msg, e)
-  # full_message is a combination of an errors' message, class and backtrace, printed in the same format as an Unexpected Error.
-  <<~ERROR
-    #{elog_level_0(msg)}
-    
-    Exception Details:
-    #{e.full_message}
-  ERROR
-end
-
-def elog_level_3(msg, e)
-  <<~ERROR
-    #{elog_level_2(msg,e)}
-    
-    Exception Cause:
-    #{e.cause}
-  ERROR
-end
-
