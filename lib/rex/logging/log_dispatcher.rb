@@ -146,22 +146,24 @@ end
 # (Eg Loop Iterations, Variables, Function Calls).
 #
 # @return [NilClass].
-def elog(msg='', src='core', error:nil)
+def elog(msg='', src='core', log_level: 0, error: nil)
   if error.nil?
     $dispatcher.log(LOG_ERROR, src, get_log_level(src), msg)
     return
   else
 
-    log_level = get_log_level(src)
+    global_log_level = get_log_level(src)
 
     # If the source has no associated log_level, the default log level is used
-    unless log_level
-      log_level = LEV_3
+    unless global_log_level
+      global_log_level = LEV_3
     end
 
-    error_details = "#{error.class} #{error.message}"
-    if log_level >= LEV_1
-      error_details << "\nCall stack:\n#{error.backtrace.join("\n")}"
+    if log_level <= global_log_level
+      error_details = "#{error.class} #{error.message}"
+      if global_log_level >= LEV_3
+        error_details << "\nCall stack:\n#{error.backtrace.join("\n")}"
+      end
     end
 
     dispatcher_msg = msg.empty? ? "#{error_details}" : "#{msg} - #{error_details}"
