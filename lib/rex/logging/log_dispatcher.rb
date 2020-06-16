@@ -128,7 +128,7 @@ end
 # still be directed at the correct log file.
 #
 ###
-ExceptionCallStack = "__EXCEPTCALLSTACK__"
+BACKTRACE_LOG_LEVEL = LEV_3
 
 def dlog(msg, src = 'core', level = 0)
   $dispatcher.log(LOG_DEBUG, src, level, msg)
@@ -136,39 +136,31 @@ end
 
 # Logs errors in a standard format for each Log Level.
 #
-# @param msg [String] Contains message from the developer explaining why an error was encountered. Log Levels 0-3.
+# @param msg [String] Contains message from the developer explaining why an error was encountered.
+# Can also be an +Exception+, in which case a log is built from the +Exception+ with no accompanying message.
 #
-# @param src [String] Used to indicate where the error is originating from. Most commonly set to 'core' to ensure logs
-# are place in 'framework.log'.
+# @param src [String] Used to indicate where the error is originating from. Most commonly set to 'core'.
 #
-# @param error [Exception] Exception of an error that needs to be logged. Mandatory in Log Levels 1-2. Optional in Log Level 3.
+# @param log_level [Integer] Indicates the level of logging the message should be recorded at. If log_level is greater than
+# the global log level set for +src+, then the log is not recorded.
+#
+# @param error [Exception] Exception of an error that needs to be logged. For all log messages, the class and message of
+# an exception is added to a log message. If the global log level set for +src+ is greater than +BACKTRACE_LOG_LEVEL+,
+# then the stack trace for an error is also added to the log message.
 #
 # (Eg Loop Iterations, Variables, Function Calls).
 #
 # @return [NilClass].
-def elog(msg= nil, src='core', log_level: 0, error: nil)
-  if error.nil?
-    $dispatcher.log(LOG_ERROR, src, get_log_level(src), msg)
-    return
+def elog(msg, src = 'core', log_level = 0, error: nil)
+  global_log_level = get_global_log_level(src)
+  return if log_level > global_log_level
+
+  if msg.is_a?(Exception)
+    $dispatcher.log(LOG_ERROR, src, level, build_error_details(msg, global_log_level))
+  elsif error.nil?
+    $dispatcher.log(LOG_ERROR, src, level, msg)
   else
-
-    global_log_level = get_log_level(src)
-
-    # If the source has no associated log_level, the default log level is used
-    unless global_log_level
-      global_log_level = LEV_3
-    end
-
-    if log_level <= global_log_level
-      error_details = "#{error.class} #{error.message}"
-      if global_log_level >= LEV_3
-        error_details << "\nCall stack:\n#{error.backtrace.join("\n")}"
-      end
-    end
-
-    dispatcher_msg = msg ? "#{error_details}" : "#{msg} - #{error_details}"
-
-    $dispatcher.log(LOG_ERROR, src, log_level, dispatcher_msg)
+    $dispatcher.log(LOG_ERROR, src, level, "#{msg} - #{build_error_details(error, global_log_level)}")
   end
 end
 
@@ -204,6 +196,24 @@ end
 
 def get_log_level(src)
   $dispatcher.get_level(src)
+end
+
+def get_global_log_level(src)
+  level = get_log_level(src)
+
+  # If the source has no associated log_level, the default log level is used
+  unless level
+    level = LEV_3
+  end
+
+  level
+end
+
+def build_error_details(error, global_log_level)
+  error_details = "#{error.class} #{error.message}"
+  if global_log_level >= BACKTRACE_LOG_LEVEL
+    error_details << "\nCall stack:\n#{error.backtrace.join("\n")}"
+  end
 end
 
 # Creates the global log dispatcher
