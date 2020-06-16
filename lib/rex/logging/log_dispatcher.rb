@@ -146,7 +146,7 @@ end
 # (Eg Loop Iterations, Variables, Function Calls).
 #
 # @return [NilClass].
-def elog(msg='', src='core', log_level: 0, error: nil)
+def elog(msg= nil, src='core', log_level: 0, error: nil)
   if error.nil?
     $dispatcher.log(LOG_ERROR, src, get_log_level(src), msg)
     return
@@ -166,9 +166,9 @@ def elog(msg='', src='core', log_level: 0, error: nil)
       end
     end
 
-    dispatcher_msg = msg.empty? ? "#{error_details}" : "#{msg} - #{error_details}"
+    dispatcher_msg = msg ? "#{error_details}" : "#{msg} - #{error_details}"
 
-    $dispatcher.log(LOG_ERROR, src, get_log_level(src), dispatcher_msg)
+    $dispatcher.log(LOG_ERROR, src, log_level, dispatcher_msg)
   end
 end
 
