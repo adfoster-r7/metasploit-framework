@@ -23,19 +23,14 @@ class Logging
 
       f = Rex::Logging::Sinks::Flatfile.new(
         Msf::Config.log_directory + File::SEPARATOR + "framework.log")
-      error_f = Rex::Logging::Sinks::Flatfile.new(
-        Msf::Config.log_directory + File::SEPARATOR + "error.log")
 
       # Register each known log source
       [
         Rex::LogSource,
-        Msf::LogSource,
-        'base'
+        Msf::LogSource
       ].each { |src|
         register_log_source(src, f)
       }
-
-      register_log_source('error', error_f)
     end
   end
 

@@ -306,7 +306,7 @@ class Core
     print_line
     print_line("Print a set of information in a Markdown format to be included when opening an Issue on Github. " +
                  "This information helps us fix problems you encounter and should be included when you open a new issue: " +
-                 Debug.get_issue_link)
+                 Debug.issue_link)
     print @@debug_opts.usage
   end
 

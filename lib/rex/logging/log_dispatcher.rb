@@ -136,10 +136,6 @@ end
 
 def elog(msg, src = 'core', level = 0)
   $dispatcher.log(LOG_ERROR, src, level, msg)
-
-  if src != 'error'
-    $dispatcher.log(LOG_ERROR, 'error', level, msg)
-  end
 end
 
 def wlog(msg, src = 'core', level = 0)

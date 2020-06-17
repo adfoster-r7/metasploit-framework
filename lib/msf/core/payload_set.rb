@@ -83,8 +83,7 @@ class PayloadSet < ModuleSet
       payload_dependencies = op[4].dependencies
       unless payload_dependencies.empty?
         supported = payload_dependencies.all?(&:available?)
-        elog("Dependency for #{name} is not supported") unless supported
-        elog("Dependencies for #{name}: #{payload_dependencies}") unless supported
+        elog("Dependencies for #{name} are not supported: #{payload_dependencies}") unless supported
         next unless supported
       end
 
@@ -115,8 +114,7 @@ class PayloadSet < ModuleSet
       stager_dependencies = stager_inst.dependencies
       unless stager_dependencies.empty?
         supported = stager_dependencies.all?(&:available?)
-        elog("Dependency for #{stager_name} is not supported") unless supported
-        elog("Dependencies for #{stager_name}: #{stager_dependencies}") unless supported
+        elog("Dependencies for #{stager_name} are not supported: #{stager_dependencies}") unless supported
         next unless supported
       end
 

@@ -486,7 +486,7 @@ module DispatcherShell
 
           print_error(
             "Error while running command #{method}: #{$!}" +
-            "text/shell\nCall stack:\n#{$@.join("\n")}")
+            "\n\nCall stack:\n#{$@.join("\n")}")
 
           raise if propagate_errors
         rescue ::Exception => e
