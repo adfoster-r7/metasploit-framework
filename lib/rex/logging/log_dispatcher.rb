@@ -108,7 +108,7 @@ class LogDispatcher
   # This method returns the log level threshold of a given source.
   #
   def get_level(src)
-    log_levels[src]
+    log_levels.fetch(src, DEFAULT_LOG_LEVEL)
   end
 
   attr_accessor :log_sinks, :log_sinks_lock # :nodoc:
@@ -118,17 +118,8 @@ end
 end
 end
 
-###
-#
-# An instance of the log dispatcher exists in the global namespace, along
-# with stubs for many of the common logging methods.  Various sources can
-# register themselves as a log sink such that logs can be directed at
-# various targets depending on where they're sourced from.  By doing it
-# this way, things like sessions can use the global logging stubs and
-# still be directed at the correct log file.
-#
-###
-BACKTRACE_LOG_LEVEL = LEV_3
+BACKTRACE_LOG_LEVEL = 3 # Equal to LEV_3
+DEFAULT_LOG_LEVEL = 3 # Equal to LEV_3
 
 def dlog(msg, src = 'core', level = 0)
   $dispatcher.log(LOG_DEBUG, src, level, msg)
@@ -152,15 +143,21 @@ end
 #
 # @return [NilClass].
 def elog(msg, src = 'core', log_level = 0, error: nil)
-  global_log_level = get_global_log_level(src)
-  return if log_level > global_log_level
+  error = msg.is_a?(Exception) ? msg : error
 
-  if msg.is_a?(Exception)
-    $dispatcher.log(LOG_ERROR, src, level, build_error_details(msg, global_log_level))
-  elsif error.nil?
-    $dispatcher.log(LOG_ERROR, src, level, msg)
+  if error.nil?
+    $dispatcher.log(LOG_ERROR, src, log_level, msg)
   else
-    $dispatcher.log(LOG_ERROR, src, level, "#{msg} - #{build_error_details(error, global_log_level)}")
+    error_details = "#{error.class} #{error.message}"
+    if get_log_level(src) >= BACKTRACE_LOG_LEVEL
+      error_details << "\nCall stack:\n#{error.backtrace.join("\n")}"
+    end
+
+    if msg.is_a?(Exception)
+      $dispatcher.log(LOG_ERROR, src, log_level,"#{error_details}")
+    else
+      $dispatcher.log(LOG_ERROR, src, log_level,"#{msg} - #{error_details}")
+    end
   end
 end
 
@@ -196,24 +193,6 @@ end
 
 def get_log_level(src)
   $dispatcher.get_level(src)
-end
-
-def get_global_log_level(src)
-  level = get_log_level(src)
-
-  # If the source has no associated log_level, the default log level is used
-  unless level
-    level = LEV_3
-  end
-
-  level
-end
-
-def build_error_details(error, global_log_level)
-  error_details = "#{error.class} #{error.message}"
-  if global_log_level >= BACKTRACE_LOG_LEVEL
-    error_details << "\nCall stack:\n#{error.backtrace.join("\n")}"
-  end
 end
 
 # Creates the global log dispatcher
