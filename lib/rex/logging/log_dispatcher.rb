@@ -118,8 +118,18 @@ end
 end
 end
 
+# An instance of the log dispatcher exists in the global namespace, along
+# with stubs for many of the common logging methods.  Various sources can
+# register themselves as a log sink such that logs can be directed at
+# various targets depending on where they're sourced from.  By doing it
+# this way, things like sessions can use the global logging stubs and
+# still be directed at the correct log file.
+#
+###
+ExceptionCallStack = "__EXCEPTCALLSTACK__"
+
 BACKTRACE_LOG_LEVEL = 3 # Equal to LEV_3
-DEFAULT_LOG_LEVEL = 3 # Equal to LEV_3
+DEFAULT_LOG_LEVEL = 0 # Equal to LEV_3
 
 def dlog(msg, src = 'core', level = 0)
   $dispatcher.log(LOG_DEBUG, src, level, msg)
@@ -170,6 +180,10 @@ def ilog(msg, src = 'core', level = 0)
 end
 
 def rlog(msg, src = 'core', level = 0)
+  if (msg == ExceptionCallStack)
+    msg = "\nCall stack:\n" + $@.join("\n") + "\n"
+  end
+
   $dispatcher.log(LOG_RAW, src, level, msg)
 end
 
