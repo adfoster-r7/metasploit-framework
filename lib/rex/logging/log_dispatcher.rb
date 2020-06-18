@@ -145,7 +145,7 @@ end
 def elog(msg, src = 'core', log_level = 0, error: nil)
   error = msg.is_a?(Exception) ? msg : error
 
-  if error.nil?
+  if error.nil? || !error.is_a?(Exception)
     $dispatcher.log(LOG_ERROR, src, log_level, msg)
   else
     error_details = "#{error.class} #{error.message}"
