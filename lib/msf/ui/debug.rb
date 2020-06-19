@@ -14,10 +14,10 @@ module Msf
       LOG_LINE_TOTAL = 50
       ISSUE_LINK = 'https://github.com/rapid7/metasploit-framework/issues/new'
       PREAMBLE = <<~PREMABLE
-          Please provide the below information in any Github issues you open. New issues can be opened here #{ISSUE_LINK.dup}
-          %red%undENSURE YOU HAVE REMOVED ANY SENSITIVE INFORMATION BEFORE SUBMITTING!%clr
+        Please provide the below information in any Github issues you open. New issues can be opened here #{ISSUE_LINK.dup}
+        %red%undENSURE YOU HAVE REMOVED ANY SENSITIVE INFORMATION BEFORE SUBMITTING!%clr
 
-          ===8<=== CUT AND PASTE EVERYTHING BELOW THIS LINE ===8<===
+        ===8<=== CUT AND PASTE EVERYTHING BELOW THIS LINE ===8<===
 
 
       PREMABLE
@@ -42,143 +42,139 @@ module Msf
       end
 
       def self.datastore(framework, driver)
-        begin
-          # Generate an ini with the existing config file
-          ini = Rex::Parser::Ini.new(Msf::Config.config_file)
 
-          # Delete all groups from the config ini that potentially have more up to date information
-          ini.keys.each do |k|
-            unless k =~ %r{^framework/database}
-              ini.delete(k)
-            end
+        # Generate an ini with the existing config file
+        ini = Rex::Parser::Ini.new(Msf::Config.config_file)
+
+        # Delete all groups from the config ini that potentially have more up to date information
+        ini.keys.each do |k|
+          unless k =~ %r{^framework/database}
+            ini.delete(k)
           end
-
-          # Retrieve and add more up to date information
-          add_hash_to_ini_group(ini, framework.datastore, driver.get_config_core)
-          add_hash_to_ini_group(ini, driver.get_config, driver.get_config_group)
-
-          if driver.active_module
-            active_module_datastore_dup = driver.active_module.datastore.dup
-
-            # Ensures that the local default value of a variable isn't set if a global value of a variable is set
-            active_module_datastore_dup.each do |(k, v)|
-              # Removes an active module datastore item if it has a default value & it matches the default value
-              if driver.active_module.options.key?(k.upcase) && driver.active_module.options[k.upcase].default == v
-                active_module_datastore_dup.delete(k)
-              end
-            end
-
-            add_hash_to_ini_group(ini, active_module_datastore_dup, driver.active_module.refname)
-          end
-
-          if ini.to_s.empty?
-            content = 'The local config file is empty, no global variables are set, and there is no active module.'
-          else
-            content = ini.to_s
-          end
-
-          build_section('Module/Datastore',
-                        'The following global/module datastore, and database setup was configured before the issue occurred:',
-                        content)
-        rescue => e
-          "Failed to extract Datastore: #{e.class} - #{e.message} \n Call stack:\n#{e.backtrace.join("\n")}"
         end
+
+        # Retrieve and add more up to date information
+        add_hash_to_ini_group(ini, framework.datastore, driver.get_config_core)
+        add_hash_to_ini_group(ini, driver.get_config, driver.get_config_group)
+
+        if driver.active_module
+          add_hash_to_ini_group(ini, driver.active_module.datastore.dup, driver.active_module.refname)
+        end
+
+        if ini.to_s.empty?
+          content = 'The local config file is empty, no global variables are set, and there is no active module.'
+        else
+          content = ini.to_s
+        end
+
+        build_section('Module/Datastore',
+                      'The following global/module datastore, and database setup was configured before the issue occurred:',
+                      content)
+      rescue StandardError => e
+        section_build_error('Failed to extract Datastore', e)
+
       end
 
       def self.history
-        begin
-          end_pos = Readline::HISTORY.length - 1
-          start_pos = end_pos > COMMAND_HISTORY_TOTAL ? end_pos - (COMMAND_HISTORY_TOTAL - 1) : 0
 
-          commands = ''
-          while start_pos <= end_pos
-            # Formats command position in history to 6 characters in length
-            commands += "#{'%-6.6s' % start_pos.to_s} #{Readline::HISTORY[start_pos]}\n"
-            start_pos += 1
-          end
+        end_pos = Readline::HISTORY.length - 1
+        start_pos = end_pos > COMMAND_HISTORY_TOTAL ? end_pos - (COMMAND_HISTORY_TOTAL - 1) : 0
 
-          build_section('History',
-                        'The following commands were ran before this issue occurred:',
-                        commands)
-        rescue => e
-          "Failed to extract History: #{e.class} - #{e.message} \n Call stack:\n#{e.backtrace.join("\n")}"
+        commands = ''
+        while start_pos <= end_pos
+          # Formats command position in history to 6 characters in length
+          commands += "#{'%-6.6s' % start_pos.to_s} #{Readline::HISTORY[start_pos]}\n"
+          start_pos += 1
         end
+
+        build_section('History',
+                      'The following commands were ran before this issue occurred:',
+                      commands)
+      rescue StandardError => e
+        section_build_error('Failed to extract History', e)
+
       end
 
       def self.errors
-        begin
-          errors = File.read(File.join(Msf::Config.log_directory, 'error.log'))
 
-          # Returns the errors in error.log file as an array
-          # Separator of individual errors is two consecutive \n chars
-          #
-          # The below example errors will be captured as three separate errors (Any accompanying traces will also be captured):
-          #
-          # [05/15/2020 14:13:38] [e(0)] error: [-] Error during IRB: undefined method `[]' for nil:NilClass
-          #
-          #
-          # [05/15/2020 14:19:20] [e(0)] error: [-] Error while running command debug: can't modify frozen String
-          # Call stack:
-          # /Users/Shared/Relocated_Items/Security/rapid7/metasploit-framework/lib/msf/ui/debug.rb:33:in `get_all'
-          # /Users/Shared/Relocated_Items/Security/rapid7/metasploit-framework/lib/msf/ui/console/command_dispatcher/core.rb:318:in `cmd_debug'
-          # /Users/Shared/Relocated_Items/Security/rapid7/metasploit-framework/lib/rex/ui/text/dispatcher_shell.rb:523:in `run_command'
-          # /Users/Shared/Relocated_Items/Security/rapid7/metasploit-framework/lib/rex/ui/text/dispatcher_shell.rb:474:in `block in run_single'
-          # /Users/Shared/Relocated_Items/Security/rapid7/metasploit-framework/lib/rex/ui/text/dispatcher_shell.rb:468:in `each'
-          # /Users/Shared/Relocated_Items/Security/rapid7/metasploit-framework/lib/rex/ui/text/dispatcher_shell.rb:468:in `run_single'
-          # /Users/Shared/Relocated_Items/Security/rapid7/metasploit-framework/lib/rex/ui/text/shell.rb:158:in `run'
-          # /Users/Shared/Relocated_Items/Security/rapid7/metasploit-framework/lib/metasploit/framework/command/console.rb:48:in `start'
-          # /Users/Shared/Relocated_Items/Security/rapid7/metasploit-framework/lib/metasploit/framework/command/base.rb:82:in `start'
-          #
-          #
-          # [05/15/2020 14:23:55] [e(0)] error: [-] Error during IRB: undefined method `[]' for nil:NilClass
-          res = errors.scan(%r|(\[\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}\] \[[^\n]*?\] error:(?:(?!\n\n).)+)|m)
+        errors = File.read(File.join(Msf::Config.log_directory, 'error.log'))
 
-          if res.empty?
-            return build_section('Errors',
-                                 'The following errors occurred before the issue occurred:',
-                                 'The error log file was empty')
-          end
+        # Returns any error logs in framework.log file as an array
+        # "[mm/dd/yyyy hh:mm:ss] [e([ANY_NUMBER])]" Indicates the start of an error message
+        # The end of an error message is indicated by the start of the next log message [mm/dd/yyyy hh:mm:ss] [[ANY_LETTER]([ANY_NUMBER])]
+        #
+        #
+        # The below example framework.log will only return three separate errors, and their accompanying traces:
+        #
+        # [05/15/2020 14:13:38] [e(0)] core: [-] Error during IRB: undefined method `[]' for nil:NilClass
+        #
+        # [06/19/2020 12:05:02] [i(0)] core: Trying to continue despite failed database creation: could not connect to server: Connection refused
+        # 	Is the server running on host "127.0.0.1" and accepting
+        # 	TCP/IP connections on port 5433?
+        #
+        # [05/15/2020 14:19:20] [e(0)] core: [-] Error while running command debug: can't modify frozen String
+        # Call stack:
+        # /Users/Shared/Relocated_Items/Security/rapid7/metasploit-framework/lib/msf/ui/debug.rb:33:in `get_all'
+        # /Users/Shared/Relocated_Items/Security/rapid7/metasploit-framework/lib/msf/ui/console/command_dispatcher/core.rb:318:in `cmd_debug'
+        # /Users/Shared/Relocated_Items/Security/rapid7/metasploit-framework/lib/rex/ui/text/dispatcher_shell.rb:523:in `run_command'
+        # /Users/Shared/Relocated_Items/Security/rapid7/metasploit-framework/lib/rex/ui/text/dispatcher_shell.rb:474:in `block in run_single'
+        # /Users/Shared/Relocated_Items/Security/rapid7/metasploit-framework/lib/rex/ui/text/dispatcher_shell.rb:468:in `each'
+        # /Users/Shared/Relocated_Items/Security/rapid7/metasploit-framework/lib/rex/ui/text/dispatcher_shell.rb:468:in `run_single'
+        # /Users/Shared/Relocated_Items/Security/rapid7/metasploit-framework/lib/rex/ui/text/shell.rb:158:in `run'
+        # /Users/Shared/Relocated_Items/Security/rapid7/metasploit-framework/lib/metasploit/framework/command/console.rb:48:in `start'
+        # /Users/Shared/Relocated_Items/Security/rapid7/metasploit-framework/lib/metasploit/framework/command/base.rb:82:in `start'
+        #
+        # [06/19/2020 11:51:44] [d(2)] core: Stager osx/armle/reverse_tcp and stage osx/x64/meterpreter have incompatible architectures: armle - x64
+        #
+        # [05/15/2020 14:23:55] [e(0)] core: [-] Error during IRB: undefined method `[]' for nil:NilClass
+        res = errors.scan(%r|\[\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}\] \[e\(\d+\)\] (?:(?!\[\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}\] \[[A-Za-z]\(\d+\)\]).)+|m)
 
-          # Scan returns each error as a single item array
-          res.flatten!
-
-          errors_str = concat_str_array_from_last_idx(res, ERROR_TOTAL, true)
-          build_section('Errors',
-                        'The following errors occurred before the issue occurred:',
-                        errors_str)
-        rescue => e
-          "Failed to extract Errors: #{e.class} - #{e.message} \n Call stack:\n#{e.backtrace.join("\n")}"
+        if res.empty?
+          return build_section('Errors',
+                               'The following errors occurred before the issue occurred:',
+                               'The error log file was empty')
         end
+
+        # Scan returns each error as a single item array
+        res.flatten!
+
+        errors_str = concat_str_array_from_last_idx(res, ERROR_TOTAL)
+        build_section('Errors',
+                      'The following errors occurred before the issue occurred:',
+                      errors_str)
+      rescue StandardError => e
+        section_build_error('Failed to extract Errors', e)
+
       end
 
       def self.logs
-        begin
-          log_lines = File.readlines(File.join(Msf::Config.log_directory, 'framework.log'))
 
-          logs_str = concat_str_array_from_last_idx(log_lines, LOG_LINE_TOTAL)
+        log_lines = File.readlines(File.join(Msf::Config.log_directory, 'framework.log'))
 
-          build_section('Logs',
-                        'The following logs were recorded before the issue occurred:',
-                        logs_str)
-        rescue => e
-          "Failed to extract Logs: #{e.class} - #{e.message} \n Call stack:\n#{e.backtrace.join("\n")}"
-        end
+        logs_str = concat_str_array_from_last_idx(log_lines, LOG_LINE_TOTAL)
+
+        build_section('Logs',
+                      'The following logs were recorded before the issue occurred:',
+                      logs_str)
+      rescue StandardError => e
+        section_build_error('Failed to extract Logs', e)
+
       end
 
       def self.versions(framework)
-        begin
-          str = <<~VERSIONS
+
+        str = <<~VERSIONS
           Framework: #{framework.version}
           Ruby: #{RUBY_DESCRIPTION}
           Install Root: #{Msf::Config.install_root}
           Session Type: #{db_connection_info(framework)}
           Install Method: #{installation_method}
-          VERSIONS
+        VERSIONS
 
-          build_section('Version/Install', 'The versions and install method of your Metasploit setup:', str)
-        rescue => e
-          "Failed to extract Versions: #{e.class} - #{e.message} \n Call stack:\n#{e.backtrace.join("\n")}"
-        end
+        build_section('Version/Install', 'The versions and install method of your Metasploit setup:', str)
+      rescue StandardError => e
+        section_build_error('Failed to extract Versions', e)
+
       end
 
       class << self
@@ -199,12 +195,11 @@ module Msf
           end
         end
 
-        def concat_str_array_from_last_idx(array, concat_total, extra_padding = false)
+        def concat_str_array_from_last_idx(array, concat_total)
           start_pos = array.length > concat_total ? array.length - concat_total : 0
           end_pos = array.length - 1
 
-          pad = extra_padding ? "\n\n" : ''
-          str = array[start_pos..end_pos].join(pad)
+          str = array[start_pos..end_pos].join('')
 
           str.strip
         end
@@ -270,6 +265,10 @@ module Msf
           else
             'Other'
           end
+        end
+
+        def section_build_error(msg, error)
+          "#{msg}: #{error.class} - #{error.message} \n Call stack:\n#{error.backtrace.join("\n")}"
         end
       end
     end
