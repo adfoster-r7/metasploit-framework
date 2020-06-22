@@ -27,7 +27,8 @@ class Logging
       # Register each known log source
       [
         Rex::LogSource,
-        Msf::LogSource
+        Msf::LogSource,
+        'base',
       ].each { |src|
         register_log_source(src, f)
       }

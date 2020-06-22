@@ -262,6 +262,8 @@ module Msf
             'Kali'
           elsif File.directory?(File.join(Msf::Config.install_root, '.git'))
             'Git Clone'
+          elsif Msf::Config.install_root == File.join(File::SEPARATOR, 'opt', 'metasploit')
+            'Arch'
           else
             'Other'
           end
