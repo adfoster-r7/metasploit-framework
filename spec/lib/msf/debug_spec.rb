@@ -674,7 +674,7 @@ RSpec.describe Msf::Ui::Debug do
       ```
       Framework: VERSION
       Ruby: #{RUBY_DESCRIPTION}
-      Install Root: /usr/share/metasploit-framework
+      Install Root: #{File.join(File::SEPARATOR, 'usr', 'share', 'metasploit-framework')}
       Session Type: driver selected, no connection
       Install Method: Kali
       ```
@@ -687,7 +687,7 @@ RSpec.describe Msf::Ui::Debug do
     expect(subject.versions(framework)).to eql(expected_output)
   end
 
-  it 'correctly retrieves version information with no connected DB and a Kali Install' do
+  it 'correctly retrieves version information with no connected DB and an Omnibus Install' do
     db = instance_double(
       'db',
       connection_established?: false,
@@ -759,6 +759,46 @@ RSpec.describe Msf::Ui::Debug do
       Install Root: #{File.join(file_fixtures_path, 'debug', 'installs')}
       Session Type: driver selected, no connection
       Install Method: Git Clone
+      ```
+
+      </details>
+
+
+    OUTPUT
+
+    puts expect(subject.versions(framework)).to eql(expected_output)
+  end
+
+  it 'correctly retrieves version information with no connected DB and a Arch Pacman install' do
+    db = instance_double(
+      'db',
+      connection_established?: false,
+      driver: 'driver'
+    )
+
+    framework = instance_double(
+      ::Msf::Framework,
+      version: 'VERSION',
+      db: db
+    )
+
+    expect(framework).to receive(:db).at_least(2).times
+
+    allow(::Msf::Config).to receive(:install_root).at_least(3).times.and_return(File.join(File::SEPARATOR, 'opt', 'metasploit'))
+
+    expected_output = <<~OUTPUT
+      ##  %grnVersion/Install%clr
+
+      The versions and install method of your Metasploit setup:
+      <details>
+      <summary>Collapse</summary>
+
+      ```
+      Framework: VERSION
+      Ruby: #{RUBY_DESCRIPTION}
+      Install Root: #{File.join(File::SEPARATOR, 'opt', 'metasploit')}
+      Session Type: driver selected, no connection
+      Install Method: Arch Pacman
       ```
 
       </details>
