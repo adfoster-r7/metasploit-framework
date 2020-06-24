@@ -12,7 +12,7 @@ module Msf
       COMMAND_HISTORY_TOTAL = 50
       ERROR_TOTAL = 10
       LOG_LINE_TOTAL = 50
-      ISSUE_LINK = 'https://github.com/rapid7/metasploit-framework/issues/new'
+      ISSUE_LINK = 'https://github.com/rapid7/metasploit-framework/issues/new/choose'
       PREAMBLE = <<~PREMABLE
         Please provide the below information in any Github issues you open. New issues can be opened here #{ISSUE_LINK.dup}
         %red%undENSURE YOU HAVE REMOVED ANY SENSITIVE INFORMATION BEFORE SUBMITTING!%clr
