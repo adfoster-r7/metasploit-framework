@@ -89,10 +89,18 @@ RSpec.describe Msf::Ui::Debug do
   it 'correctly retrieves and parses a command history shorter than the command total' do
     stub_const('Readline::HISTORY', Array.new(4) { |i| "Command #{i + 1}" })
 
-    error_log_output = <<~E_LOG
+    driver = instance_double(
+      'driver',
+      hist_last_saved: 0
+    )
+
+    stub_const("Msf::Ui::Debug::COMMAND_HISTORY_TOTAL", 10)
+    expect(driver).to receive(:hist_last_saved).exactly(2).times
+
+    history_output = <<~E_LOG
       ##  %grnHistory%clr
 
-      The following commands were ran before this issue occurred:
+      The following commands were ran during the session and before this issue occurred:
       <details>
       <summary>Collapse</summary>
 
@@ -108,16 +116,24 @@ RSpec.describe Msf::Ui::Debug do
 
     E_LOG
 
-    expect(subject.history).to eql(error_log_output)
+    expect(subject.history(driver)).to eql(history_output)
   end
 
   it 'correctly retrieves and parses a command history equal in length to the command total' do
+    driver = instance_double(
+      'driver',
+      hist_last_saved: 0
+    )
+
+    stub_const("Msf::Ui::Debug::COMMAND_HISTORY_TOTAL", 10)
+    expect(driver).to receive(:hist_last_saved).exactly(2).times
+
     stub_const('Readline::HISTORY', Array.new(10) { |i| "Command #{i + 1}" })
 
-    error_log_output = <<~E_LOG
+    history_output = <<~E_LOG
       ##  %grnHistory%clr
 
-      The following commands were ran before this issue occurred:
+      The following commands were ran during the session and before this issue occurred:
       <details>
       <summary>Collapse</summary>
 
@@ -139,25 +155,28 @@ RSpec.describe Msf::Ui::Debug do
 
     E_LOG
 
-    expect(subject.history).to eql(error_log_output)
+    puts expect(subject.history(driver)).to eql(history_output)
   end
 
   it 'correctly retrieves and parses a command history larger than the command total' do
+    driver = instance_double(
+      'driver',
+      hist_last_saved: 0
+    )
+
+    stub_const("Msf::Ui::Debug::COMMAND_HISTORY_TOTAL", 10)
+    expect(driver).to receive(:hist_last_saved).exactly(1).time
+
     stub_const('Readline::HISTORY', Array.new(15) { |i| "Command #{i + 1}" })
 
-    error_log_output = <<~E_LOG
+    history_output = <<~E_LOG
       ##  %grnHistory%clr
 
-      The following commands were ran before this issue occurred:
+      The following commands were ran during the session and before this issue occurred:
       <details>
       <summary>Collapse</summary>
 
       ```
-      0      Command 1
-      1      Command 2
-      2      Command 3
-      3      Command 4
-      4      Command 5
       5      Command 6
       6      Command 7
       7      Command 8
@@ -175,7 +194,41 @@ RSpec.describe Msf::Ui::Debug do
 
     E_LOG
 
-    expect(subject.history).to eql(error_log_output)
+    expect(subject.history(driver)).to eql(history_output)
+  end
+
+  it 'correctly retrieves and parses a command history larger than the command total and a session command count smaller than the command total' do
+    driver = instance_double(
+      'driver',
+      hist_last_saved: 10
+    )
+
+    stub_const("Msf::Ui::Debug::COMMAND_HISTORY_TOTAL", 10)
+    expect(driver).to receive(:hist_last_saved).exactly(2).time
+
+    stub_const('Readline::HISTORY', Array.new(15) { |i| "Command #{i + 1}" })
+
+    history_output = <<~E_LOG
+      ##  %grnHistory%clr
+
+      The following commands were ran during the session and before this issue occurred:
+      <details>
+      <summary>Collapse</summary>
+
+      ```
+      10     Command 11
+      11     Command 12
+      12     Command 13
+      13     Command 14
+      14     Command 15
+      ```
+
+      </details>
+
+
+    E_LOG
+
+    expect(subject.history(driver)).to eql(history_output)
   end
 
   it 'correctly retrieves and parses an empty config file and datastore' do
@@ -337,7 +390,7 @@ RSpec.describe Msf::Ui::Debug do
       active_module: active_module
     )
 
-    expect(driver).to receive(:active_module).at_least(3)
+    expect(driver).to receive(:active_module).exactly(3).times
 
     expect(active_module).to receive(:refname)
 
@@ -523,7 +576,7 @@ RSpec.describe Msf::Ui::Debug do
       db: db
     )
 
-    allow(::Msf::Config).to receive(:install_root).at_least(3).times.and_return('bad/path')
+    allow(::Msf::Config).to receive(:install_root).exactly(3).times.and_return('bad/path')
 
     expected_output = <<~OUTPUT
       ##  %grnVersion/Install%clr
@@ -563,13 +616,13 @@ RSpec.describe Msf::Ui::Debug do
       db: db
     )
 
-    expect(framework).to receive(:db).at_least(2).times
+    expect(framework).to receive(:db).exactly(6).times
     expect(db).to receive(:connection_established?)
-    expect(db).to receive(:driver).at_least(2).times
+    expect(db).to receive(:driver).exactly(2).times
     expect(db).to receive(:name).and_return('db_name')
-    expect(db).to receive(:get_data_service).at_least(2).times
+    expect(db).to receive(:get_data_service).exactly(2).times
 
-    allow(::Msf::Config).to receive(:install_root).at_least(3).times.and_return('bad/path')
+    allow(::Msf::Config).to receive(:install_root).exactly(3).times.and_return('bad/path')
 
     expected_output = <<~OUTPUT
       ##  %grnVersion/Install%clr
@@ -614,15 +667,15 @@ RSpec.describe Msf::Ui::Debug do
       db: db
     )
 
-    expect(framework).to receive(:db).at_least(2).times
-    expect(db).to receive(:driver).at_least(2).times
-    expect(db).to receive(:get_data_service).at_least(2).times
+    expect(framework).to receive(:db).exactly(5).times
+    expect(db).to receive(:driver).exactly(2).times
+    expect(db).to receive(:get_data_service).exactly(2).times
 
     connection_pool = double('connection_pool')
     expect(connection_pool).to receive(:with_connection).and_yield(connection)
 
     allow(::ActiveRecord::Base).to receive(:connection_pool).and_return(connection_pool)
-    allow(::Msf::Config).to receive(:install_root).at_least(3).times.and_return('bad/path')
+    allow(::Msf::Config).to receive(:install_root).exactly(3).times.and_return('bad/path')
 
     expected_output = <<~OUTPUT
       ##  %grnVersion/Install%clr
@@ -660,9 +713,9 @@ RSpec.describe Msf::Ui::Debug do
       db: db
     )
 
-    expect(framework).to receive(:db).at_least(2).times
+    expect(framework).to receive(:db).exactly(2).times
 
-    allow(::Msf::Config).to receive(:install_root).at_least(3).times.and_return(File.join(File::SEPARATOR, 'usr', 'share', 'metasploit-framework'))
+    allow(::Msf::Config).to receive(:install_root).exactly(3).times.and_return(File.join(File::SEPARATOR, 'usr', 'share', 'metasploit-framework'))
 
     expected_output = <<~OUTPUT
       ##  %grnVersion/Install%clr
@@ -676,7 +729,7 @@ RSpec.describe Msf::Ui::Debug do
       Ruby: #{RUBY_DESCRIPTION}
       Install Root: #{File.join(File::SEPARATOR, 'usr', 'share', 'metasploit-framework')}
       Session Type: driver selected, no connection
-      Install Method: Kali
+      Install Method: Other
       ```
 
       </details>
@@ -701,9 +754,9 @@ RSpec.describe Msf::Ui::Debug do
     )
 
     expect(framework)
-      .to receive(:db).at_least(2).times
+      .to receive(:db).exactly(2).times
 
-    allow(::Msf::Config).to receive(:install_root).at_least(3).times.and_return(File.join(file_fixtures_path, 'debug', 'installs', 'omnibus'))
+    allow(::Msf::Config).to receive(:install_root).exactly(3).times.and_return(File.join(file_fixtures_path, 'debug', 'installs', 'omnibus'))
 
     expected_output = <<~OUTPUT
       ##  %grnVersion/Install%clr
@@ -741,9 +794,9 @@ RSpec.describe Msf::Ui::Debug do
       db: db
     )
 
-    expect(framework).to receive(:db).at_least(2).times
+    expect(framework).to receive(:db).exactly(2).times
 
-    allow(::Msf::Config).to receive(:install_root).at_least(3).times.and_return(File.join(file_fixtures_path, 'debug', 'installs'))
+    allow(::Msf::Config).to receive(:install_root).exactly(4).times.and_return(File.join(file_fixtures_path, 'debug', 'installs'))
     allow(File).to receive(:directory?).with(File.join(Msf::Config.install_root, '.git')).and_return(true)
 
     expected_output = <<~OUTPUT
@@ -766,7 +819,7 @@ RSpec.describe Msf::Ui::Debug do
 
     OUTPUT
 
-    puts expect(subject.versions(framework)).to eql(expected_output)
+    expect(subject.versions(framework)).to eql(expected_output)
   end
 
   it 'correctly retrieves version information with no connected DB and a Arch Pacman install' do
@@ -782,9 +835,9 @@ RSpec.describe Msf::Ui::Debug do
       db: db
     )
 
-    expect(framework).to receive(:db).at_least(2).times
+    expect(framework).to receive(:db).exactly(2).times
 
-    allow(::Msf::Config).to receive(:install_root).at_least(3).times.and_return(File.join(File::SEPARATOR, 'opt', 'metasploit'))
+    allow(::Msf::Config).to receive(:install_root).exactly(3).times.and_return(File.join(File::SEPARATOR, 'opt', 'metasploit'))
 
     expected_output = <<~OUTPUT
       ##  %grnVersion/Install%clr
@@ -798,7 +851,7 @@ RSpec.describe Msf::Ui::Debug do
       Ruby: #{RUBY_DESCRIPTION}
       Install Root: #{File.join(File::SEPARATOR, 'opt', 'metasploit')}
       Session Type: driver selected, no connection
-      Install Method: Arch Pacman
+      Install Method: Other
       ```
 
       </details>
@@ -806,6 +859,6 @@ RSpec.describe Msf::Ui::Debug do
 
     OUTPUT
 
-    puts expect(subject.versions(framework)).to eql(expected_output)
+    expect(subject.versions(framework)).to eql(expected_output)
   end
 end

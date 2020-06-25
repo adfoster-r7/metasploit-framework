@@ -33,7 +33,7 @@ module Msf
       def self.all(framework, driver)
         all_information = preamble
         all_information << datastore(framework, driver)
-        all_information << history
+        all_information << history(driver)
         all_information << errors
         all_information << logs
         all_information << versions(framework)
@@ -75,10 +75,9 @@ module Msf
 
       end
 
-      def self.history
-
+      def self.history(driver)
         end_pos = Readline::HISTORY.length - 1
-        start_pos = end_pos > COMMAND_HISTORY_TOTAL ? end_pos - (COMMAND_HISTORY_TOTAL - 1) : 0
+        start_pos = end_pos - COMMAND_HISTORY_TOTAL > driver.hist_last_saved ? end_pos - (COMMAND_HISTORY_TOTAL - 1) : driver.hist_last_saved
 
         commands = ''
         while start_pos <= end_pos
@@ -88,7 +87,7 @@ module Msf
         end
 
         build_section('History',
-                      'The following commands were ran before this issue occurred:',
+                      'The following commands were ran during the session and before this issue occurred:',
                       commands)
       rescue StandardError => e
         section_build_error('Failed to extract History', e)
@@ -97,7 +96,7 @@ module Msf
 
       def self.errors
 
-        errors = File.read(File.join(Msf::Config.log_directory, 'error.log'))
+        errors = File.read(File.join(Msf::Config.log_directory, 'framework.log'))
 
         # Returns any error logs in framework.log file as an array
         # "[mm/dd/yyyy hh:mm:ss] [e([ANY_NUMBER])]" Indicates the start of an error message
@@ -258,12 +257,8 @@ module Msf
         def installation_method
           if File.exist?(File.join(Msf::Config.install_root, 'version.yml'))
             'Omnibus Installer'
-          elsif Msf::Config.install_root == File.join(File::SEPARATOR, 'usr', 'share', 'metasploit-framework')
-            'Kali'
           elsif File.directory?(File.join(Msf::Config.install_root, '.git'))
             'Git Clone'
-          elsif Msf::Config.install_root == File.join(File::SEPARATOR, 'opt', 'metasploit')
-            'Arch Pacman'
           else
             'Other'
           end

@@ -75,7 +75,7 @@ class Core
   @@debug_opts = Rex::Parser::Arguments.new(
     "-h" => [ false, "Help banner."                                   ],
     "-d" => [ false, "Display the Datastore Information."             ],
-    "-H" => [ false, "Display command history."                       ],
+    "-c" => [ false, "Display command history."                       ],
     "-e" => [ false, "Display the most recent Error and Stack Trace." ],
     "-l" => [ false, "Display the most recent logs."                  ],
     "-v" => [ false, "Display versions and install info."             ])
@@ -327,8 +327,8 @@ class Core
         case opt
         when '-d'
           output << Debug.datastore(framework, driver)
-        when '-H'
-          output << Debug.history
+        when '-c'
+          output << Debug.history(driver)
         when '-e'
           output << Debug.errors
         when '-l'
