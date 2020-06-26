@@ -205,6 +205,11 @@ module Msf
 
         # Copy pasta of the print_connection_info method in console/command_dispatcher/db.rb
         def db_connection_info(framework)
+
+          require 'pry'
+          binding.pry
+
+
           unless framework.db.connection_established?
             return "#{framework.db.driver} selected, no connection"
           end

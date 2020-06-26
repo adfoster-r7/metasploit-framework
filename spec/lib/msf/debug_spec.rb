@@ -1,6 +1,7 @@
 require 'spec_helper'
 require 'msf/ui/debug'
 require 'msf/base/config'
+require 'msf/ui/console/driver'
 
 RSpec.describe Msf::Ui::Debug do
   let(:file_fixtures_path) { File.join(Msf::Config.install_root, 'spec', 'file_fixtures') }
@@ -90,7 +91,7 @@ RSpec.describe Msf::Ui::Debug do
     stub_const('Readline::HISTORY', Array.new(4) { |i| "Command #{i + 1}" })
 
     driver = instance_double(
-      'driver',
+      Msf::Ui::Console::Driver,
       hist_last_saved: 0
     )
 
@@ -121,7 +122,7 @@ RSpec.describe Msf::Ui::Debug do
 
   it 'correctly retrieves and parses a command history equal in length to the command total' do
     driver = instance_double(
-      'driver',
+      ::Msf::Ui::Console::Driver,
       hist_last_saved: 0
     )
 
@@ -155,12 +156,12 @@ RSpec.describe Msf::Ui::Debug do
 
     E_LOG
 
-    puts expect(subject.history(driver)).to eql(history_output)
+    expect(subject.history(driver)).to eql(history_output)
   end
 
   it 'correctly retrieves and parses a command history larger than the command total' do
     driver = instance_double(
-      'driver',
+      ::Msf::Ui::Console::Driver,
       hist_last_saved: 0
     )
 
@@ -199,7 +200,7 @@ RSpec.describe Msf::Ui::Debug do
 
   it 'correctly retrieves and parses a command history larger than the command total and a session command count smaller than the command total' do
     driver = instance_double(
-      'driver',
+      ::Msf::Ui::Console::Driver,
       hist_last_saved: 10
     )
 
@@ -240,7 +241,7 @@ RSpec.describe Msf::Ui::Debug do
     )
 
     driver = instance_double(
-      'driver',
+      ::Msf::Ui::Console::Driver,
       get_config_core: 'config_core',
       get_config: {},
       get_config_group: 'config_group',
@@ -283,7 +284,7 @@ RSpec.describe Msf::Ui::Debug do
     )
 
     driver = instance_double(
-      'driver',
+      ::Msf::Ui::Console::Driver,
       get_config_core: 'group/name/1',
       get_config: {},
       get_config_group: 'config_group',
@@ -325,7 +326,7 @@ RSpec.describe Msf::Ui::Debug do
     )
 
     driver = instance_double(
-      'driver',
+      ::Msf::Ui::Console::Driver,
       get_config_core: 'group/name/1',
       get_config: {
         'key4' => 'val4',
@@ -372,8 +373,7 @@ RSpec.describe Msf::Ui::Debug do
     )
 
     active_module = instance_double(
-      'active_module',
-      active_module: active_module,
+      Msf::Module,
       datastore: {
         'key7' => 'val7',
         'key8' => 'default_val8',
@@ -383,7 +383,7 @@ RSpec.describe Msf::Ui::Debug do
     )
 
     driver = instance_double(
-      'driver',
+      ::Msf::Ui::Console::Driver,
       get_config_core: 'group/name/1',
       get_config: {},
       get_config_group: 'config_group',
@@ -425,7 +425,7 @@ RSpec.describe Msf::Ui::Debug do
     )
 
     driver = instance_double(
-      'driver',
+      ::Msf::Ui::Console::Driver,
       get_config_core: 'group/name/1',
       get_config: {},
       get_config_group: 'group/name/2',
@@ -565,7 +565,7 @@ RSpec.describe Msf::Ui::Debug do
 
   it 'correctly retrieves version information with no connected DB' do
     db = instance_double(
-      'db',
+      Msf::DBManager,
       connection_established?: false,
       driver: 'driver'
     )
@@ -601,14 +601,17 @@ RSpec.describe Msf::Ui::Debug do
     expect(subject.versions(framework)).to eql(expected_output)
   end
 
-  it 'correctly retrieves version information with DB connected via http' do
-    db = instance_double(
-      'db',
-      connection_established?: true,
-      driver: 'http',
+  it 'correctly retrieves version information with DB connected via http', focus:true do
+    db = class_double(
+      Metasploit::Framework::DataService::DataProxy,
       name: 'db_name',
-      get_data_service: 'db_data_service'
     )
+
+    # allow to receive used here due to shenanigans with DataProxy using +send+ in the +method_missing+ method
+    allow(db).to receive(:driver).and_return('db_data_service')
+    allow(db).to receive(:connection_established?).and_return(true)
+    allow(db).to receive(:get_data_service).and_return('db_data_service')
+    allow(db).to receive(:name).and_return('db_name')
 
     framework = instance_double(
       ::Msf::Framework,
@@ -616,13 +619,7 @@ RSpec.describe Msf::Ui::Debug do
       db: db
     )
 
-    expect(framework).to receive(:db).exactly(6).times
-    expect(db).to receive(:connection_established?)
-    expect(db).to receive(:driver).exactly(2).times
-    expect(db).to receive(:name).and_return('db_name')
-    expect(db).to receive(:get_data_service).exactly(2).times
-
-    allow(::Msf::Config).to receive(:install_root).exactly(3).times.and_return('bad/path')
+    allow(::Msf::Config).to receive(:install_root).and_return('bad/path')
 
     expected_output = <<~OUTPUT
       ##  %grnVersion/Install%clr
@@ -649,14 +646,14 @@ RSpec.describe Msf::Ui::Debug do
 
   it 'correctly retrieves version information with DB connected via local connection' do
     db = instance_double(
-      'db',
+      Msf::DBManager,
       connection_established?: true,
       driver: 'local',
       get_data_service: 'db_data_service'
     )
 
     connection = instance_double(
-      'connection',
+      ThreadSafe::Cache,
       current_database: 'current_db_connection',
       respond_to?: true
     )
@@ -671,7 +668,7 @@ RSpec.describe Msf::Ui::Debug do
     expect(db).to receive(:driver).exactly(2).times
     expect(db).to receive(:get_data_service).exactly(2).times
 
-    connection_pool = double('connection_pool')
+    connection_pool = double(ActiveRecord::ConnectionAdapters::ConnectionPool)
     expect(connection_pool).to receive(:with_connection).and_yield(connection)
 
     allow(::ActiveRecord::Base).to receive(:connection_pool).and_return(connection_pool)
@@ -702,7 +699,7 @@ RSpec.describe Msf::Ui::Debug do
 
   it 'correctly retrieves version information with no connected DB and a Kali Install' do
     db = instance_double(
-      'db',
+      Msf::DBManager,
       connection_established?: false,
       driver: 'driver'
     )
@@ -742,7 +739,7 @@ RSpec.describe Msf::Ui::Debug do
 
   it 'correctly retrieves version information with no connected DB and an Omnibus Install' do
     db = instance_double(
-      'db',
+      Msf::DBManager,
       connection_established?: false,
       driver: 'driver'
     )
@@ -783,7 +780,7 @@ RSpec.describe Msf::Ui::Debug do
 
   it 'correctly retrieves version information with no connected DB and a Git Clone' do
     db = instance_double(
-      'db',
+      Msf::DBManager,
       connection_established?: false,
       driver: 'driver'
     )
@@ -824,7 +821,7 @@ RSpec.describe Msf::Ui::Debug do
 
   it 'correctly retrieves version information with no connected DB and a Arch Pacman install' do
     db = instance_double(
-      'db',
+      Msf::DBManager,
       connection_established?: false,
       driver: 'driver'
     )
