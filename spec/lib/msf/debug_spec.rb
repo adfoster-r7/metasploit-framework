@@ -95,8 +95,7 @@ RSpec.describe Msf::Ui::Debug do
       hist_last_saved: 0
     )
 
-    stub_const("Msf::Ui::Debug::COMMAND_HISTORY_TOTAL", 10)
-    expect(driver).to receive(:hist_last_saved).exactly(2).times
+    stub_const('Msf::Ui::Debug::COMMAND_HISTORY_TOTAL', 10)
 
     history_output = <<~E_LOG
       ##  %grnHistory%clr
@@ -126,8 +125,7 @@ RSpec.describe Msf::Ui::Debug do
       hist_last_saved: 0
     )
 
-    stub_const("Msf::Ui::Debug::COMMAND_HISTORY_TOTAL", 10)
-    expect(driver).to receive(:hist_last_saved).exactly(2).times
+    stub_const('Msf::Ui::Debug::COMMAND_HISTORY_TOTAL', 10)
 
     stub_const('Readline::HISTORY', Array.new(10) { |i| "Command #{i + 1}" })
 
@@ -165,9 +163,7 @@ RSpec.describe Msf::Ui::Debug do
       hist_last_saved: 0
     )
 
-    stub_const("Msf::Ui::Debug::COMMAND_HISTORY_TOTAL", 10)
-    expect(driver).to receive(:hist_last_saved).exactly(1).time
-
+    stub_const('Msf::Ui::Debug::COMMAND_HISTORY_TOTAL', 10)
     stub_const('Readline::HISTORY', Array.new(15) { |i| "Command #{i + 1}" })
 
     history_output = <<~E_LOG
@@ -204,9 +200,7 @@ RSpec.describe Msf::Ui::Debug do
       hist_last_saved: 10
     )
 
-    stub_const("Msf::Ui::Debug::COMMAND_HISTORY_TOTAL", 10)
-    expect(driver).to receive(:hist_last_saved).exactly(2).time
-
+    stub_const('Msf::Ui::Debug::COMMAND_HISTORY_TOTAL', 10)
     stub_const('Readline::HISTORY', Array.new(15) { |i| "Command #{i + 1}" })
 
     history_output = <<~E_LOG
@@ -247,10 +241,6 @@ RSpec.describe Msf::Ui::Debug do
       get_config_group: 'config_group',
       active_module: nil
     )
-    expect(driver).to receive(:get_config_core).and_return('config_core')
-    expect(driver).to receive(:get_config).and_return({})
-    expect(driver).to receive(:get_config_group).and_return('config_group')
-    expect(driver).to receive(:active_module).and_return(nil)
 
     expected_output = <<~OUTPUT
       ##  %grnModule/Datastore%clr
@@ -390,10 +380,6 @@ RSpec.describe Msf::Ui::Debug do
       active_module: active_module
     )
 
-    expect(driver).to receive(:active_module).exactly(3).times
-
-    expect(active_module).to receive(:refname)
-
     expected_output = <<~OUTPUT
       ##  %grnModule/Datastore%clr
 
@@ -441,12 +427,12 @@ RSpec.describe Msf::Ui::Debug do
 
       ```
       [framework/database/1]
-      key10=val10
-      key11=val11
+      key10=[Filtered]
+      key11=[Filtered]
 
       [framework/database/2]
-      key12=val12
-      key13=val13
+      key12=[Filtered]
+      key13=[Filtered]
       ```
 
       </details>
@@ -576,7 +562,7 @@ RSpec.describe Msf::Ui::Debug do
       db: db
     )
 
-    allow(::Msf::Config).to receive(:install_root).exactly(3).times.and_return('bad/path')
+    allow(::Msf::Config).to receive(:install_root).and_return('bad/path')
 
     expected_output = <<~OUTPUT
       ##  %grnVersion/Install%clr
@@ -590,7 +576,7 @@ RSpec.describe Msf::Ui::Debug do
       Ruby: #{RUBY_DESCRIPTION}
       Install Root: bad/path
       Session Type: driver selected, no connection
-      Install Method: Other
+      Install Method: Other - Please specify
       ```
 
       </details>
@@ -601,17 +587,14 @@ RSpec.describe Msf::Ui::Debug do
     expect(subject.versions(framework)).to eql(expected_output)
   end
 
-  it 'correctly retrieves version information with DB connected via http', focus:true do
-    db = class_double(
-      Metasploit::Framework::DataService::DataProxy,
+  it 'correctly retrieves version information with DB connected via http' do
+    db = double(
+      'Metasploit::Framework::DataService::DataProxy',
       name: 'db_name',
+      driver: 'http',
+      connection_established?: true,
+      get_data_service: 'db_data_service'
     )
-
-    # allow to receive used here due to shenanigans with DataProxy using +send+ in the +method_missing+ method
-    allow(db).to receive(:driver).and_return('db_data_service')
-    allow(db).to receive(:connection_established?).and_return(true)
-    allow(db).to receive(:get_data_service).and_return('db_data_service')
-    allow(db).to receive(:name).and_return('db_name')
 
     framework = instance_double(
       ::Msf::Framework,
@@ -633,7 +616,7 @@ RSpec.describe Msf::Ui::Debug do
       Ruby: #{RUBY_DESCRIPTION}
       Install Root: bad/path
       Session Type: Connected to db_name. Connection type: http. Connection name: db_data_service.
-      Install Method: Other
+      Install Method: Other - Please specify
       ```
 
       </details>
@@ -645,17 +628,11 @@ RSpec.describe Msf::Ui::Debug do
   end
 
   it 'correctly retrieves version information with DB connected via local connection' do
-    db = instance_double(
-      Msf::DBManager,
+    db = double(
+      'Metasploit::Framework::DataService::DataProxy',
       connection_established?: true,
       driver: 'local',
       get_data_service: 'db_data_service'
-    )
-
-    connection = instance_double(
-      ThreadSafe::Cache,
-      current_database: 'current_db_connection',
-      respond_to?: true
     )
 
     framework = instance_double(
@@ -664,15 +641,16 @@ RSpec.describe Msf::Ui::Debug do
       db: db
     )
 
-    expect(framework).to receive(:db).exactly(5).times
-    expect(db).to receive(:driver).exactly(2).times
-    expect(db).to receive(:get_data_service).exactly(2).times
-
-    connection_pool = double(ActiveRecord::ConnectionAdapters::ConnectionPool)
-    expect(connection_pool).to receive(:with_connection).and_yield(connection)
+    connection_pool = instance_double(ActiveRecord::ConnectionAdapters::ConnectionPool)
+    connection = double(
+      'connection',
+      current_database: 'current_db_connection',
+      respond_to?: true
+    )
+    allow(connection_pool).to receive(:with_connection).and_yield(connection)
 
     allow(::ActiveRecord::Base).to receive(:connection_pool).and_return(connection_pool)
-    allow(::Msf::Config).to receive(:install_root).exactly(3).times.and_return('bad/path')
+    allow(::Msf::Config).to receive(:install_root).and_return('bad/path')
 
     expected_output = <<~OUTPUT
       ##  %grnVersion/Install%clr
@@ -686,7 +664,7 @@ RSpec.describe Msf::Ui::Debug do
       Ruby: #{RUBY_DESCRIPTION}
       Install Root: bad/path
       Session Type: Connected to current_db_connection. Connection type: local. Connection name: db_data_service.
-      Install Method: Other
+      Install Method: Other - Please specify
       ```
 
       </details>
@@ -710,9 +688,7 @@ RSpec.describe Msf::Ui::Debug do
       db: db
     )
 
-    expect(framework).to receive(:db).exactly(2).times
-
-    allow(::Msf::Config).to receive(:install_root).exactly(3).times.and_return(File.join(File::SEPARATOR, 'usr', 'share', 'metasploit-framework'))
+    allow(::Msf::Config).to receive(:install_root).and_return(File.join(File::SEPARATOR, 'usr', 'share', 'metasploit-framework'))
 
     expected_output = <<~OUTPUT
       ##  %grnVersion/Install%clr
@@ -726,7 +702,7 @@ RSpec.describe Msf::Ui::Debug do
       Ruby: #{RUBY_DESCRIPTION}
       Install Root: #{File.join(File::SEPARATOR, 'usr', 'share', 'metasploit-framework')}
       Session Type: driver selected, no connection
-      Install Method: Other
+      Install Method: Other - Please specify
       ```
 
       </details>
@@ -750,10 +726,7 @@ RSpec.describe Msf::Ui::Debug do
       db: db
     )
 
-    expect(framework)
-      .to receive(:db).exactly(2).times
-
-    allow(::Msf::Config).to receive(:install_root).exactly(3).times.and_return(File.join(file_fixtures_path, 'debug', 'installs', 'omnibus'))
+    allow(::Msf::Config).to receive(:install_root).and_return(File.join(file_fixtures_path, 'debug', 'installs', 'omnibus'))
 
     expected_output = <<~OUTPUT
       ##  %grnVersion/Install%clr
@@ -791,9 +764,7 @@ RSpec.describe Msf::Ui::Debug do
       db: db
     )
 
-    expect(framework).to receive(:db).exactly(2).times
-
-    allow(::Msf::Config).to receive(:install_root).exactly(4).times.and_return(File.join(file_fixtures_path, 'debug', 'installs'))
+    allow(::Msf::Config).to receive(:install_root).and_return(File.join(file_fixtures_path, 'debug', 'installs'))
     allow(File).to receive(:directory?).with(File.join(Msf::Config.install_root, '.git')).and_return(true)
 
     expected_output = <<~OUTPUT
@@ -832,9 +803,7 @@ RSpec.describe Msf::Ui::Debug do
       db: db
     )
 
-    expect(framework).to receive(:db).exactly(2).times
-
-    allow(::Msf::Config).to receive(:install_root).exactly(3).times.and_return(File.join(File::SEPARATOR, 'opt', 'metasploit'))
+    allow(::Msf::Config).to receive(:install_root).times.and_return(File.join(File::SEPARATOR, 'opt', 'metasploit'))
 
     expected_output = <<~OUTPUT
       ##  %grnVersion/Install%clr
@@ -848,7 +817,7 @@ RSpec.describe Msf::Ui::Debug do
       Ruby: #{RUBY_DESCRIPTION}
       Install Root: #{File.join(File::SEPARATOR, 'opt', 'metasploit')}
       Session Type: driver selected, no connection
-      Install Method: Other
+      Install Method: Other - Please specify
       ```
 
       </details>

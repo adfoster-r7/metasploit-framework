@@ -145,14 +145,15 @@ class DataProxy
     false
   end
 
+  def respond_to_missing?(method_name, include_private=true)
+    respond_to?(method_name, include_private)
+  end
+
   def get_data_service
     raise 'No registered data_service' unless @current_data_service
     return @current_data_service
   end
 
-  def respond_to_missing?(method_name)
-    true
-  end
 
   # Performs a set of data service operations declared within the block.
   # This passes the @current_data_service as a parameter to the block.

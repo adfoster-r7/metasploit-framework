@@ -47,8 +47,8 @@ module Msf
         ini = Rex::Parser::Ini.new(Msf::Config.config_file)
 
         # Delete all groups from the config ini that potentially have more up to date information
-        ini.keys.each do |k|
-          unless k =~ %r{^framework/database}
+        ini.keys.each do |key|
+          unless key =~ %r{^framework/database}
             ini.delete(k)
           end
         end
@@ -61,18 +61,26 @@ module Msf
           add_hash_to_ini_group(ini, driver.active_module.datastore.dup, driver.active_module.refname)
         end
 
+        # Filter credentials
+        ini.each do |key, value|
+          if key =~ %r{^framework/database/}
+            value.transform_values! { '[Filtered]' }
+          end
+        end
+
         if ini.to_s.empty?
           content = 'The local config file is empty, no global variables are set, and there is no active module.'
         else
           content = ini.to_s
         end
 
-        build_section('Module/Datastore',
-                      'The following global/module datastore, and database setup was configured before the issue occurred:',
-                      content)
+        build_section(
+          'Module/Datastore',
+          'The following global/module datastore, and database setup was configured before the issue occurred:',
+          content
+        )
       rescue StandardError => e
         section_build_error('Failed to extract Datastore', e)
-
       end
 
       def self.history(driver)
@@ -86,12 +94,13 @@ module Msf
           start_pos += 1
         end
 
-        build_section('History',
-                      'The following commands were ran during the session and before this issue occurred:',
-                      commands)
+        build_section(
+          'History',
+          'The following commands were ran during the session and before this issue occurred:',
+          commands
+        )
       rescue StandardError => e
         section_build_error('Failed to extract History', e)
-
       end
 
       def self.errors
@@ -129,18 +138,22 @@ module Msf
         res = errors.scan(%r|\[\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}\] \[e\(\d+\)\] (?:(?!\[\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}\] \[[A-Za-z]\(\d+\)\]).)+|m)
 
         if res.empty?
-          return build_section('Errors',
-                               'The following errors occurred before the issue occurred:',
-                               'The error log file was empty')
+          return build_section(
+            'Errors',
+            'The following errors occurred before the issue occurred:',
+            'The error log file was empty'
+          )
         end
 
         # Scan returns each error as a single item array
         res.flatten!
 
         errors_str = concat_str_array_from_last_idx(res, ERROR_TOTAL)
-        build_section('Errors',
-                      'The following errors occurred before the issue occurred:',
-                      errors_str)
+        build_section(
+          'Errors',
+          'The following errors occurred before the issue occurred:',
+          errors_str
+        )
       rescue StandardError => e
         section_build_error('Failed to extract Errors', e)
 
@@ -152,9 +165,11 @@ module Msf
 
         logs_str = concat_str_array_from_last_idx(log_lines, LOG_LINE_TOTAL)
 
-        build_section('Logs',
-                      'The following logs were recorded before the issue occurred:',
-                      logs_str)
+        build_section(
+          'Logs',
+          'The following logs were recorded before the issue occurred:',
+          logs_str
+        )
       rescue StandardError => e
         section_build_error('Failed to extract Logs', e)
 
@@ -173,7 +188,6 @@ module Msf
         build_section('Version/Install', 'The versions and install method of your Metasploit setup:', str)
       rescue StandardError => e
         section_build_error('Failed to extract Versions', e)
-
       end
 
       class << self
@@ -205,11 +219,6 @@ module Msf
 
         # Copy pasta of the print_connection_info method in console/command_dispatcher/db.rb
         def db_connection_info(framework)
-
-          require 'pry'
-          binding.pry
-
-
           unless framework.db.connection_established?
             return "#{framework.db.driver} selected, no connection"
           end
@@ -265,7 +274,7 @@ module Msf
           elsif File.directory?(File.join(Msf::Config.install_root, '.git'))
             'Git Clone'
           else
-            'Other'
+            'Other - Please specify'
           end
         end
 
