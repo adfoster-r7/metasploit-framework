@@ -23,8 +23,6 @@ require 'msf/ui/console/command_dispatcher/modules'
 require 'msf/ui/console/command_dispatcher/developer'
 require 'msf/util/document_generator'
 
-require 'msf/core/opt_condition'
-
 require 'optparse'
 
 module Msf
@@ -1842,6 +1840,7 @@ class Core
   # @param words [Array<String>] the previously completed words on the command line.  words is always
   # at least 1 when tab completion has reached this stage since the command itself has been completed
   def cmd_set_tabs(str, words)
+    
     # A value has already been specified
     return [] if words.length > 2
 
@@ -1849,7 +1848,8 @@ class Core
     if words.length == 2
       return tab_complete_option_values(str, words, opt: words[1])
     end
-    tab_complete_option_names(str, words)
+    Readline.completion_append_character = " "
+    return tab_complete_option_names(str, words)
   end
 
   def cmd_setg_help
@@ -1857,17 +1857,6 @@ class Core
     print_line
     print_line "Exactly like set -g, set a value in the global datastore."
     print_line
-  end
-
-  #
-  # Tab completion for the unset command
-  #
-  # @param str [String] the string currently being typed before tab was hit
-  # @param words [Array<String>] the previously completed words on the command
-  #   line. `words` is always at least 1 when tab completion has reached this
-  #   stage since the command itself has been completed.
-  def cmd_unset_tabs(str, words)
-    tab_complete_datastore_names(str, words)
   end
 
   #
