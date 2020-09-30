@@ -85,7 +85,7 @@ module ServletHelper
   end
 
   def get_db
-    DBManagerProxy.instance.db
+    framework.db
   end
 
   # Sinatra injects extra parameters for some reason: https://github.com/sinatra/sinatra/issues/453

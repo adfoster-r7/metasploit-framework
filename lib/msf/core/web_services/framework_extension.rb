@@ -36,15 +36,21 @@ module Msf::WebServices
       app.set :data_service_skip_verify, to_bool(ENV.fetch('MSF_WS_DATA_SERVICE_SKIP_VERIFY', false))
 
       # Create simplified instance of the framework
-      app.set :framework, Msf::Simple::Framework.create
+      app.set :framework, (proc do
+        @@framework ||= begin
+          framework = Msf::Simple::Framework.create
 
-      if !app.settings.data_service_url.nil? && !app.settings.data_service_url.empty?
-        framework_db_connect_http_data_service(framework: app.settings.framework,
-                                               data_service_url: app.settings.data_service_url,
-                                               api_token: app.settings.data_service_api_token,
-                                               cert: app.settings.data_service_cert,
-                                               skip_verify: app.settings.data_service_skip_verify)
-      end
+          if !app.settings.data_service_url.nil? && !app.settings.data_service_url.empty?
+            framework_db_connect_http_data_service(framework: framework,
+                                                   data_service_url: app.settings.data_service_url,
+                                                   api_token: app.settings.data_service_api_token,
+                                                   cert: app.settings.data_service_cert,
+                                                   skip_verify: app.settings.data_service_skip_verify)
+          end
+
+          framework
+        end
+      end)
     end
 
     def self.framework_db_connect_http_data_service(

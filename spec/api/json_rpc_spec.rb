@@ -2,6 +2,7 @@ require 'spec_helper'
 require 'msf/core/rpc'
 require 'rack/test'
 require 'rack/protection'
+require 'msf/core/web_services/json_rpc_app'
 
 # These tests ensure the full end to end functionality of metasploit's JSON RPC
 # endpoint. There are multiple layers of possible failure in our API, and unit testing
@@ -18,11 +19,7 @@ RSpec.describe "Metasploit's json-rpc" do
   let(:framework) { app.settings.framework }
   let(:module_name) { 'scanner/ssl/openssl_heartbleed' }
   let(:a_valid_result_uuid) { { 'result' => hash_including({ 'uuid' => match(/\w+/) }) } }
-  let(:app) do
-    # Lazy load to ensure that the json rpc app doesn't create an instance of framework out of band
-    require 'msf/core/web_services/json_rpc_app'
-    ::Msf::WebServices::JsonRpcApp.new
-  end
+  let(:app) { ::Msf::WebServices::JsonRpcApp.new }
 
   before(:example) do
     allow(framework.db).to receive(:active).and_return(false)
