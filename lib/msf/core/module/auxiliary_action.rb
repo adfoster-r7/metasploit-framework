@@ -31,6 +31,7 @@ class Msf::Module::AuxiliaryAction
     self.name        = name
     self.opts        = opts
     self.description = opts['Description'] || ''
+    self.module_name = opts['ModuleName']
   end
 
   #
@@ -49,12 +50,16 @@ class Msf::Module::AuxiliaryAction
   #
   attr_reader :description
   #
+  # If the action is powered by another module
+  #
+  attr_reader :module_name
+  #
   # Action specific parameters
   #
   attr_reader :opts
 
 protected
 
-  attr_writer :name, :opts, :description # :nodoc:
+  attr_writer :name, :opts, :description, :module_name # :nodoc:
 
 end

@@ -183,10 +183,11 @@ class Auxiliary
       print_error("Auxiliary interrupted by the console user")
     rescue ::Exception => e
       print_error("Auxiliary failed: #{e.class} #{e}")
+      # require 'pry'; binding.pry
       if(e.class.to_s != 'Msf::OptionValidateError')
         print_error("Call stack:")
         e.backtrace.each do |line|
-          break if line =~ /lib.msf.base.simple/
+          # break if line =~ /lib.msf.base.simple/
           print_error("  #{line}")
         end
       end

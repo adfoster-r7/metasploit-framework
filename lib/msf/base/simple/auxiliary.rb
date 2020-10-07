@@ -208,6 +208,7 @@ protected
     rescue ::Exception => e
       mod.error = e
       mod.print_error("Auxiliary failed: #{e.class} #{e}")
+      # require 'pry'; binding.pry
       if(e.class.to_s != 'Msf::OptionValidateError')
         mod.print_error("Call stack:")
         e.backtrace.each do |line|
