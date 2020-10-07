@@ -192,7 +192,32 @@ module Msf
           def cmd_options(*args)
             if args.empty?
               if (active_module)
-                show_options(active_module)
+                # TODO: Should 'aggregate' modules be validating their own options?
+                if active_module.is_a?(Msf::Module::AggregateModule)
+                  # Print all of the common options
+                  show_options(
+                    active_module,
+                    hacky_spike_action: :options,
+                    hacky_spike_name: "All options"
+                  )
+
+                  # Print all of the required actions
+                  sorted_actions = active_module.actions.sort_by(&:name)
+                  sorted_actions.each do |action|
+                    mod = framework.modules.create(action.module_name)
+                    # TODO: Required to get the option values showing up. Need to learn more about the context behind 'sharing' here. Seems safe for now?
+                    mod.share_datastore(active_module.datastore)
+                    show_options(
+                      mod,
+                     hacky_spike_name: "#{action.name} options"
+                    )
+                  end
+
+                  show_options(active_module, hacky_spike_action: :actions)
+                else
+                  show_options(active_module)
+                end
+
                 return true
               else
                 show_global_options
@@ -201,6 +226,22 @@ module Msf
             end
 
             args.each do |name|
+              # Support for `options smb_enumusers` - as `options` on an 'aggregate' module might be overwhelming? :/
+              if active_module && active_module.is_a?(Msf::Module::AggregateModule)
+                found = false
+                active_module.actions.each do |action|
+                  next if found
+                  next unless action.name.casecmp?(name)
+                  found = true
+                  mod = framework.modules.create(action.module_name)
+                  # TODO: Required to get the option values showing up. Need to learn more about the context behind 'sharing' here. Seems safe for now?
+                  mod.share_datastore(active_module.datastore)
+                  show_options(mod)
+                end
+
+                next if found
+              end
+
               mod = framework.modules.create(name)
 
               if (mod == nil)
@@ -238,7 +279,23 @@ module Msf
           # @param words (see #cmd_use_tabs)
 
           def cmd_options_tabs(str, words)
-            cmd_use_tabs(str, words)
+            action_names = []
+            if active_module.is_a?(Msf::Module::AggregateModule)
+              # TODO: Nicked from option name tab completion, confirm if it's copy/pasta'd elsewhere too
+              action_names = active_module.actions.map(&:name)
+              action_names = action_names.select { |term| term.upcase.start_with?(str.upcase) }
+              action_names = action_names.map do |term|
+                if str == str.upcase
+                  str + term[str.length..-1].upcase
+                elsif str == str.downcase
+                  str + term[str.length..-1].downcase
+                else
+                  str + term[str.length..-1]
+                end
+              end
+            end
+
+            cmd_use_tabs(str, words) + action_names
           end
 
           def cmd_loadpath_help

@@ -59,9 +59,19 @@ class Auxiliary
       return mod.send(meth.to_s, *args)
     end
 
-    action = meth.to_s.delete_prefix('cmd_')
-    if mod && mod.kind_of?(Msf::Module::HasActions) && mod.actions.map(&:name).any? { |a| a.casecmp?(action) }
-       return do_action(action, *args)
+    # TODO: This existing code is funky
+    action_name = meth.to_s.delete_prefix('cmd_')
+    if mod && mod.kind_of?(Msf::Module::HasActions) && mod.actions.map(&:name).any? { |a| a.casecmp?(action_name) }
+       return do_action(action_name, *args)
+    end
+
+    if meth.to_s.end_with?("_tabs")
+      # require 'pry'; binding.pry
+      action_name = meth.to_s.delete_prefix('cmd_').delete_suffix("_tabs")
+      # require 'pry'; binding.pry
+      if mod && mod.kind_of?(Msf::Module::HasActions) && mod.actions.map(&:name).any? { |a| a.casecmp?(action_name) }
+        return do_action_tabs(action_name, *args)
+      end
     end
 
     return
@@ -71,11 +81,36 @@ class Auxiliary
   #
   # Execute the module with a set action
   #
-  def do_action(meth, *args)
-    action = mod.actions.find { |action| action.name.casecmp?(meth) }
-    raise Msf::MissingActionError.new(meth) if action.nil?
+  def do_action(action_name, *args)
+    action = mod.actions.find { |action| action.name.casecmp?(action_name) }
+    raise Msf::MissingActionError.new(action_name) if action.nil?
 
     cmd_run(*args, action: action.name)
+  end
+
+  # TODO: This existing code is funky
+  def do_action_tabs(action_name, str, words)
+    action = mod.actions.find { |action| action.name.casecmp?(action_name) }
+    raise Msf::MissingActionError.new(meth) if action.nil?
+
+    # TODO: Confirm that the action is present, and the module has the mixin functionality for being powered by sub modules
+    # TODO: This would still need to show additional options that the run command gives
+    # TOO: Confirm the performance overhead of this
+    mod = framework.modules.create(action.module_name)
+    tab_complete_option(mod, str, words)
+  end
+
+  # TODO: The previous action names as commands code didn't implement respond_to, put in a hack for spiking
+  def respond_to?(meth, *args)
+    if meth.to_s.end_with?("_tabs")
+      action = meth.to_s.delete_prefix('cmd_').delete_suffix("_tabs")
+      # require 'pry'; binding.pry
+      if action && mod && mod.kind_of?(Msf::Module::HasActions) && mod.actions.map(&:name).any? { |a| a.casecmp?(action) }
+        return true
+      end
+    end
+
+    super(meth, *args)
   end
 
   #
@@ -90,8 +125,9 @@ class Auxiliary
   # Tab completion for the run command
   #
   def cmd_run_tabs(str, words)
+    require 'pry'; binding.pry
     flags = @@auxiliary_opts.fmt.keys
-    options = tab_complete_option(str, words)
+    options = tab_complete_option(active_module, str, words)
     flags + options
   end
 

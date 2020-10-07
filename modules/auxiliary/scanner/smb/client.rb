@@ -19,13 +19,44 @@
 #  as well as enforing 'single responsibility' still.
 #
 #  However it might be cumbersome from a developers perspective.
+# - We'll have to update the 'reload' command to reload module dependencies
+# - TODO: Where would 'clients', or 'collection of module' modules live? Auxilliary? A new folder?
+#     iirc Auxiliary modules shouldn't gain shells, but this module should be capable of gaining sessions IMO
+# - TODO: Align the functionality of 'options' and 'show options'
+# - TODO: Should 'aggregate' module options on the parent, and should they be validating their children's options?
+# - TODO: Do we need to add support for 'options action_name' ?
+# - Should we support the functionality of 'set ACTION foo' and 'run' still?
+# - Should we enforce that no sub modules have actions set?
+#     i.e. An aggregate module can't depend on a module that itself has additional options
+# - TODO: We would most likely have to update the 'info' command, including `info -d`
 
 ##
-# Thi mixin signifies that the module itself implements no functionality.
+# This mixin signifies that the module itself implements no functionality.
 # Instead it acts as an aggregate module that simply delegates all responsibility
 # to other modules
 ##
-module Msf::Module::HasModuleActions
+module Msf::Module::AggregateModule
+
+  def initialize(info)
+    super
+
+    # TODO: Not sure about the UX for the user here.
+    # Register _all_ children actions in the aggregate module.
+    actions.each do |action|
+      mod = framework.modules.create(action.module_name)
+      # TODO: Investigate the current semantics. Particularly: validating duplicate names / difference types etc, as well as different default values - particularly for randomized fields
+      mod.options.values.each do |option|
+        if option.advanced?
+          register_advanced_options([option])
+        elsif option.evasion?
+          register_evasion_options([option])
+        else
+          register_options([option])
+        end
+      end
+    end
+  end
+
   def run
     module_name = action.module_name
     mod = framework.modules.create(module_name)
@@ -44,7 +75,7 @@ module Msf::Module::HasModuleActions
       )
     end
 
-    print_status("Using #{module_name} as check")
+    print_status("Using #{module_name} as action")
 
     # Retrieve the module's return value
     res = mod.run_simple(
@@ -54,36 +85,11 @@ module Msf::Module::HasModuleActions
     )
 
     res
-
-    # # Ensure return value is a CheckCode
-    # case res
-    # when Exploit::CheckCode
-    #   # Return the CheckCode
-    #   res
-    # when Hash
-    #   # XXX: Find CheckCode associated with RHOST, which is set automatically
-    #   checkcode = res[datastore['RHOST']]
-    #
-    #   # Bail if module doesn't return a CheckCode
-    #   unless checkcode.kind_of?(Exploit::CheckCode)
-    #     return Exploit::CheckCode::Unsupported(
-    #       "#{check_module} does not return a CheckCode."
-    #     )
-    #   end
-    #
-    #   # Return the CheckCode
-    #   checkcode
-    # else
-    #   # Bail if module doesn't return a CheckCode
-    #   Exploit::CheckCode::Unsupported(
-    #     "#{check_module} does not return a CheckCode."
-    #   )
-    # end
   end
 end
 
 class MetasploitModule < Msf::Auxiliary
-  include Msf::Module::HasModuleActions
+  include Msf::Module::AggregateModule
 
   def initialize
     super(
@@ -99,12 +105,40 @@ class MetasploitModule < Msf::Auxiliary
             'Description' => 'Get the smb version',
             'ModuleName' => 'auxiliary/scanner/smb/smb_version'
           ],
+          # TODO: Would we want to add a "enumerate everything" action?
+          # [
+          #   'smb_enumall',
+          #   'Description' => 'all the enumeration',
+          #   'ModuleName' => 'auxiliary/scanner/smb/smb_enumshares'
+          # ],
           [
             # With the above 'version' namespacing issue, looks like `smb_` prefixes should be followed for now.
-            'smb_shares',
-            'Description' => 'Get the smb version',
+            'smb_enumshares',
+            'Description' => 'Get the smb shares',
             'ModuleName' => 'auxiliary/scanner/smb/smb_enumshares'
-          ]
+          ],
+          [
+            # With the above 'version' namespacing issue, looks like `smb_` prefixes should be followed for now.
+            'smb_enumusers',
+            'Description' => 'Get the smb users',
+            'ModuleName' => 'auxiliary/scanner/smb/smb_enumusers'
+          ],
+          [
+            'smb_enumgpp',
+            'Description' => 'Attempt to log in',
+            'ModuleName' => 'auxiliary/scanner/smb/smb_enum_gpp'
+          ],
+          [
+            # On the fence about this being here
+            'smb_secretsdump',
+            'Description' => 'Dump the secrets',
+            'ModuleName' => 'auxiliary/gather/windows_secrets_dump'
+          ],
+          [
+            'smb_login',
+            'Description' => 'Attempt to log in',
+            'ModuleName' => 'auxiliary/scanner/smb/smb_login'
+          ],
         ],
     )
   end

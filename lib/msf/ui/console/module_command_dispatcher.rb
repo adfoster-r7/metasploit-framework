@@ -319,6 +319,13 @@ module ModuleCommandDispatcher
       self.mod.init_ui(driver.input, driver.output)
     end
 
+    if reloaded_mod.is_a?(Msf::Module::AggregateModule)
+      reloaded_mod.actions.each do |action|
+        mod_class = framework.modules[action.module_name]
+        framework.modules.reload_module(mod_class)
+      end
+    end
+
     reloaded_mod
   end
 

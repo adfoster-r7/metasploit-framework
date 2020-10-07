@@ -138,7 +138,6 @@ class MetasploitModule < Msf::Auxiliary
 
   # Fingerprint a single host
   def run_host(ip)
-
     [[139, false], [445, true]].each do |info|
 
     @rport = info[0]

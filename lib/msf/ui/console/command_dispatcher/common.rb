@@ -100,42 +100,46 @@ module Common
     print_line
   end
 
-  def show_options(mod) # :nodoc:
-    mod_opt = Serializer::ReadableText.dump_options(mod, '   ')
-    print("\nModule options (#{mod.fullname}):\n\n#{mod_opt}\n") if (mod_opt and mod_opt.length > 0)
+  def show_options(mod, hacky_spike_action: :all, hacky_spike_name: nil) # :nodoc:
+    if hacky_spike_action == :all || hacky_spike_action == :options
+      mod_opt = Serializer::ReadableText.dump_options(mod, '   ')
+      print("\n#{hacky_spike_name || "Module options"} (#{mod.fullname}):\n\n#{mod_opt}\n") if (mod_opt and mod_opt.length > 0)
 
-    # If it's an exploit and a payload is defined, create it and
-    # display the payload's options
-    if ((mod.exploit? or mod.evasion? ) and mod.datastore['PAYLOAD'])
-      p = framework.payloads.create(mod.datastore['PAYLOAD'])
+      # If it's an exploit and a payload is defined, create it and
+      # display the payload's options
+      if ((mod.exploit? or mod.evasion? ) and mod.datastore['PAYLOAD'])
+        p = framework.payloads.create(mod.datastore['PAYLOAD'])
 
-      if (!p)
-        print_error("Invalid payload defined: #{mod.datastore['PAYLOAD']}\n")
-        return
+        if (!p)
+          print_error("Invalid payload defined: #{mod.datastore['PAYLOAD']}\n")
+          return
+        end
+
+        p.share_datastore(mod.datastore)
+
+        if (p)
+          p_opt = Serializer::ReadableText.dump_options(p, '   ')
+          print("\nPayload options (#{mod.datastore['PAYLOAD']}):\n\n#{p_opt}\n") if (p_opt and p_opt.length > 0)
+          print("   **DisablePayloadHandler: True   (no handler will be created!)**\n\n") if mod.datastore['DisablePayloadHandler'].to_s == 'true'
+        end
       end
 
-      p.share_datastore(mod.datastore)
-
-      if (p)
-        p_opt = Serializer::ReadableText.dump_options(p, '   ')
-        print("\nPayload options (#{mod.datastore['PAYLOAD']}):\n\n#{p_opt}\n") if (p_opt and p_opt.length > 0)
-        print("   **DisablePayloadHandler: True   (no handler will be created!)**\n\n") if mod.datastore['DisablePayloadHandler'].to_s == 'true'
+      # Print the selected target
+      if (mod.exploit? and mod.target)
+        mod_targ = Serializer::ReadableText.dump_exploit_target(mod, '   ')
+        print("\nExploit target:\n\n#{mod_targ}\n") if (mod_targ and mod_targ.length > 0)
+      elsif mod.evasion? and mod.target
+        mod_targ = Serializer::ReadableText.dump_evasion_target(mod, '   ')
+        print("\nEvasion target:\n\n#{mod_targ}\n") if (mod_targ and mod_targ.length > 0)
       end
     end
 
-    # Print the selected target
-    if (mod.exploit? and mod.target)
-      mod_targ = Serializer::ReadableText.dump_exploit_target(mod, '   ')
-      print("\nExploit target:\n\n#{mod_targ}\n") if (mod_targ and mod_targ.length > 0)
-    elsif mod.evasion? and mod.target
-      mod_targ = Serializer::ReadableText.dump_evasion_target(mod, '   ')
-      print("\nEvasion target:\n\n#{mod_targ}\n") if (mod_targ and mod_targ.length > 0)
-    end
-
-    # Print the selected action
-    if mod.kind_of?(Msf::Module::HasActions) && mod.action
-      mod_action = Serializer::ReadableText.dump_module_action(mod, '   ')
-      print("\n#{mod.type.capitalize} action:\n\n#{mod_action}\n") if (mod_action and mod_action.length > 0)
+    if hacky_spike_action == :all || hacky_spike_action == :actions
+      # Print the selected action
+      if mod.kind_of?(Msf::Module::HasActions) && mod.action
+        mod_action = Serializer::ReadableText.dump_module_action(mod, '   ')
+        print("\n#{mod.type.capitalize} action:\n\n#{mod_action}\n") if (mod_action and mod_action.length > 0)
+      end
     end
 
     # Uncomment this line if u want target like msf2 format
