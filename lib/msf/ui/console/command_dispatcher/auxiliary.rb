@@ -94,7 +94,7 @@ class Auxiliary
     raise Msf::MissingActionError.new(meth) if action.nil?
 
     # TODO: Confirm that the action is present, and the module has the mixin functionality for being powered by sub modules
-    # TODO: This would still need to show additional options that the run command gives
+    # TODO: The actions command could in theory still be used with flags. This functionality would need to be updated to support flags / contributing the existing `run` command's tab array
     # TOO: Confirm the performance overhead of this
     mod = framework.modules.create(action.module_name)
     tab_complete_option(mod, str, words)

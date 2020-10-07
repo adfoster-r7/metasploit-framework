@@ -5,30 +5,33 @@
 
 # TODO:
 #   - Promote 'actions' to a top level keyboard, as a shortcut to 'show actions'
-#   - How would this impact the RPC client?
-#   - Running a module without an action currently gives no stack trace:
+#     msf6 auxiliary(scanner/smb/client) > actions
+#       [-] Unknown command: actions.
+#   - Will we need to consider any RPC client changes?
+#   - XXX: Running a module without an action currently gives no stack trace:
 #       msf6 auxiliary(scanner/smb/client) > run
 #       [-] Auxiliary failed: Msf::MissingActionError Invalid action: Please use: Download
 #       [-] Call stack:
 #       msf6 auxiliary(scanner/smb/client) >
-# - 'show options' would need to be updated to support _all_ options from the modules, not just the 'parent'
-# - Current implementation assumes that the 'client' module becomes completely empty
-#   and delegates all responsibility to other modules.
+#   - 'show options' would need to be updated to support _all_ options from the modules, not just the 'parent'
+#  - Current implementation assumes that the 'client' module becomes completely empty
+#     and delegates all responsibility to other modules.
 #
-#  This allows existing modules in isolation, useful for Pro + module counts etc,
-#  as well as enforing 'single responsibility' still.
+#     This allows existing modules in isolation, useful for Pro + module counts etc,
+#     as well as enforing 'single responsibility' still.
 #
-#  However it might be cumbersome from a developers perspective.
-# - We'll have to update the 'reload' command to reload module dependencies
-# - TODO: Where would 'clients', or 'collection of module' modules live? Auxilliary? A new folder?
+#     However it might be cumbersome from a developers perspective.
+#   - We'll have to update the 'reload' command to reload module dependencies
+#   - TODO: Where would 'clients', or 'collection of module' modules live? Auxilliary? A new folder?
 #     iirc Auxiliary modules shouldn't gain shells, but this module should be capable of gaining sessions IMO
-# - TODO: Align the functionality of 'options' and 'show options'
-# - TODO: Should 'aggregate' module options on the parent, and should they be validating their children's options?
-# - TODO: Do we need to add support for 'options action_name' ?
-# - Should we support the functionality of 'set ACTION foo' and 'run' still?
-# - Should we enforce that no sub modules have actions set?
+#   - TODO: Align the functionality of 'options' and 'show options'
+#   - TODO: Should 'aggregate' module options on the parent, and should they be validating their children's options?
+#   - TODO: Do we need to add support for 'options action_name' ?
+#   - Should we support the functionality of 'set ACTION foo' and 'run' still?
+#   - Should we enforce that no sub modules have actions set?
 #     i.e. An aggregate module can't depend on a module that itself has additional options
-# - TODO: We would most likely have to update the 'info' command, including `info -d`
+#   - TODO: We would most likely have to update the 'info' command, including `info -d`
+#   - TODO: Will this break any downstream automation / assumptions if an 'aggregate module' is implemented as a mixin
 
 ##
 # This mixin signifies that the module itself implements no functionality.
@@ -109,7 +112,7 @@ class MetasploitModule < Msf::Auxiliary
           # [
           #   'smb_enumall',
           #   'Description' => 'all the enumeration',
-          #   'ModuleName' => 'auxiliary/scanner/smb/smb_enumshares'
+          #   'ModuleNames' => ['auxiliary/scanner/smb/smb_enumshares', ... ] ?
           # ],
           [
             # With the above 'version' namespacing issue, looks like `smb_` prefixes should be followed for now.
