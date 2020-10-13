@@ -46,6 +46,11 @@ module Msf::Module::AggregateModule
     # TODO: Not sure about the UX for the user here.
     # Register _all_ children actions in the aggregate module.
     actions.each do |action|
+      unless action.module_name || action.run_tags
+        raise "Tags or ModuleName required"
+      end
+
+      next unless action.module_name
       mod = framework.modules.create(action.module_name)
       # TODO: Investigate the current semantics. Particularly: validating duplicate names / difference types etc, as well as different default values - particularly for randomized fields
       mod.options.values.each do |option|
@@ -61,7 +66,28 @@ module Msf::Module::AggregateModule
   end
 
   def run
-    module_name = action.module_name
+    if action.run_tags
+      required_tags = action.run_tags
+      relevant_actions = actions.select do |action|
+        action.tags.intersection(required_tags).any?
+      end
+
+      relevant_actions.each do |action|
+        $stderr.puts "interesting #{action}"
+        run_module(action.module_name)
+      rescue => e
+        $stderr.puts "interesting #{e}"
+      end
+    elsif action.module_name
+      run_module(action.module_name)
+    else
+      raise "Tags or ModuleName required"
+    end
+  end
+
+  private
+
+  def run_module(module_name)
     mod = framework.modules.create(module_name)
 
     # Bail if it isn't aux
@@ -82,9 +108,9 @@ module Msf::Module::AggregateModule
 
     # Retrieve the module's return value
     res = mod.run_simple(
-      'LocalInput'  => user_input,
+      'LocalInput' => user_input,
       'LocalOutput' => user_output,
-      'Options'     => datastore # XXX: This clobbers the datastore!
+      'Options' => datastore # XXX: This clobbers the datastore!
     )
 
     res
@@ -104,41 +130,45 @@ class MetasploitModule < Msf::Auxiliary
         [
           [
             # Note: Can't use 'version', as it conflicts with the global version command which takes precedent
-            'smb_version',
+            'enum_version',
             'Description' => 'Get the smb version',
             'ModuleName' => 'auxiliary/scanner/smb/smb_version'
           ],
           # TODO: Would we want to add a "enumerate everything" action?
-          # [
-          #   'smb_enumall',
-          #   'Description' => 'all the enumeration',
-          #   'ModuleNames' => ['auxiliary/scanner/smb/smb_enumshares', ... ] ?
-          # ],
+          [
+            'enum_all',
+            'Description' => 'all the enumeration',
+            'RunTags' => [:enum]
+          ],
           [
             # With the above 'version' namespacing issue, looks like `smb_` prefixes should be followed for now.
             'smb_enumshares',
             'Description' => 'Get the smb shares',
-            'ModuleName' => 'auxiliary/scanner/smb/smb_enumshares'
+            'ModuleName' => 'auxiliary/scanner/smb/smb_enumshares',
+            'Tags' => [:enum],
           ],
           [
             # With the above 'version' namespacing issue, looks like `smb_` prefixes should be followed for now.
-            'smb_enumusers',
+            'enum_users',
             'Description' => 'Get the smb users',
-            'ModuleName' => 'auxiliary/scanner/smb/smb_enumusers'
+            'ModuleName' => 'auxiliary/scanner/smb/smb_enumusers',
+            'Tags' => [:enum],
           ],
           [
-            'smb_enumgpp',
+            'enum_gpp',
             'Description' => 'Attempt to log in',
-            'ModuleName' => 'auxiliary/scanner/smb/smb_enum_gpp'
+            'ModuleName' => 'auxiliary/scanner/smb/smb_enum_gpp',
+            'Tags' => [:enum],
           ],
           [
             # On the fence about this being here
-            'smb_secretsdump',
+            'secrets_dump',
             'Description' => 'Dump the secrets',
-            'ModuleName' => 'auxiliary/gather/windows_secrets_dump'
+            'ModuleName' => 'auxiliary/gather/windows_secrets_dump',
+            'Tags' => [:enum],
           ],
           [
-            'smb_login',
+            'login',
             'Description' => 'Attempt to log in',
             'ModuleName' => 'auxiliary/scanner/smb/smb_login'
           ],

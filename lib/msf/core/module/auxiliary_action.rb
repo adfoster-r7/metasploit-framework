@@ -3,6 +3,7 @@ require 'msf/core'
 
 ###
 #
+# TODO: Not sure if this definition needs changed now
 # A target for an exploit.
 #
 ###
@@ -32,6 +33,8 @@ class Msf::Module::AuxiliaryAction
     self.opts        = opts
     self.description = opts['Description'] || ''
     self.module_name = opts['ModuleName']
+    self.tags = opts['Tags']
+    self.run_tags = opts['RunTags']
   end
 
   #
@@ -58,8 +61,10 @@ class Msf::Module::AuxiliaryAction
   #
   attr_reader :opts
 
+  attr_reader :tags, :run_tags
+
 protected
 
-  attr_writer :name, :opts, :description, :module_name # :nodoc:
+  attr_writer :name, :opts, :description, :module_name, :tags, :run_tags # :nodoc:
 
 end

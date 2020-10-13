@@ -100,7 +100,36 @@ module Common
     print_line
   end
 
-  def show_options(mod, hacky_spike_action: :all, hacky_spike_name: nil) # :nodoc:
+
+  def show_options(mod)
+    # TODO: Should 'aggregate' modules be validating their own options?
+    if mod.is_a?(Msf::Module::AggregateModule)
+      # Print all of the common options
+      _show_options_hacky_print(
+        active_module,
+        hacky_spike_action: :options,
+        hacky_spike_name: "All options"
+      )
+
+      # Print all of the required actions
+      sorted_actions = mod.actions.sort_by(&:name)
+      sorted_actions.each do |action|
+        mod = framework.modules.create(action.module_name)
+        # TODO: Required to get the option values showing up. Need to learn more about the context behind 'sharing' here. Seems safe for now?
+        mod.share_datastore(mod.datastore)
+        _show_options_hacky_print(
+          mod,
+          hacky_spike_name: "#{action.name} options"
+        )
+      end
+
+      _show_options_hacky_print(mod, hacky_spike_action: :actions)
+    else
+      _show_options_hacky_print(mod)
+    end
+  end
+
+  def _show_options_hacky_print(mod, hacky_spike_action: :all, hacky_spike_name: nil) # :nodoc:
     if hacky_spike_action == :all || hacky_spike_action == :options
       mod_opt = Serializer::ReadableText.dump_options(mod, '   ')
       print("\n#{hacky_spike_name || "Module options"} (#{mod.fullname}):\n\n#{mod_opt}\n") if (mod_opt and mod_opt.length > 0)

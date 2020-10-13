@@ -125,7 +125,6 @@ class Auxiliary
   # Tab completion for the run command
   #
   def cmd_run_tabs(str, words)
-    require 'pry'; binding.pry
     flags = @@auxiliary_opts.fmt.keys
     options = tab_complete_option(active_module, str, words)
     flags + options
