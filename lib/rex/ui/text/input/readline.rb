@@ -27,6 +27,7 @@ begin
 
       if (tab_complete_proc)
         ::Readline.basic_word_break_characters = ""
+        ::Readline.completion_append_character = ' '
         ::Readline.completion_proc = tab_complete_proc
         @rl_saved_proc = tab_complete_proc
       end
@@ -37,6 +38,7 @@ begin
     #
     def reset_tab_completion(tab_complete_proc = nil)
       ::Readline.basic_word_break_characters = "\x00"
+      ::Readline.completion_append_character = ' '
       ::Readline.completion_proc = tab_complete_proc || @rl_saved_proc
     end
 
