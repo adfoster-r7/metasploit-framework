@@ -155,6 +155,7 @@ begin
       end
 =end
       reset_sequence = ""
+      ::Readline.completion_append_character = ' '
 
       if defined? RbReadline
         RbReadline.rl_instream = fd
