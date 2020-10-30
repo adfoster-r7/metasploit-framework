@@ -3,122 +3,8 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-# TODO:
-#   - Promote 'actions' to a top level keyboard, as a shortcut to 'show actions'
-#     msf6 auxiliary(scanner/smb/client) > actions
-#       [-] Unknown command: actions.
-#   - Will we need to consider any RPC client changes?
-#   - XXX: Running a module without an action currently gives no stack trace:
-#       msf6 auxiliary(scanner/smb/client) > run
-#       [-] Auxiliary failed: Msf::MissingActionError Invalid action: Please use: Download
-#       [-] Call stack:
-#       msf6 auxiliary(scanner/smb/client) >
-#   - 'show options' would need to be updated to support _all_ options from the modules, not just the 'parent'
-#  - Current implementation assumes that the 'client' module becomes completely empty
-#     and delegates all responsibility to other modules.
-#
-#     This allows existing modules in isolation, useful for Pro + module counts etc,
-#     as well as enforing 'single responsibility' still.
-#
-#     However it might be cumbersome from a developers perspective.
-#   - We'll have to update the 'reload' command to reload module dependencies
-#   - TODO: Where would 'clients', or 'collection of module' modules live? Auxilliary? A new folder?
-#     iirc Auxiliary modules shouldn't gain shells, but this module should be capable of gaining sessions IMO
-#   - TODO: Align the functionality of 'options' and 'show options'
-#   - TODO: Should 'aggregate' module options on the parent, and should they be validating their children's options?
-#   - TODO: Do we need to add support for 'options action_name' ?
-#   - Should we support the functionality of 'set ACTION foo' and 'run' still?
-#   - Should we enforce that no sub modules have actions set?
-#     i.e. An aggregate module can't depend on a module that itself has additional options
-#   - TODO: We would most likely have to update the 'info' command, including `info -d`
-#   - TODO: Will this break any downstream automation / assumptions if an 'aggregate module' is implemented as a mixin
-
-##
-# This mixin signifies that the module itself implements no functionality.
-# Instead it acts as an aggregate module that simply delegates all responsibility
-# to other modules
-##
-module Msf::Module::AggregateModule
-
-  def initialize(info)
-    super
-
-    # TODO: Not sure about the UX for the user here.
-    # Register _all_ children actions in the aggregate module.
-    actions.each do |action|
-      unless action.module_name || action.run_tags
-        raise "Tags or ModuleName required"
-      end
-
-      next unless action.module_name
-      mod = framework.modules.create(action.module_name)
-      # TODO: Investigate the current semantics. Particularly: validating duplicate names / difference types etc, as well as different default values - particularly for randomized fields
-      mod.options.values.each do |option|
-        if option.advanced?
-          register_advanced_options([option])
-        elsif option.evasion?
-          register_evasion_options([option])
-        else
-          register_options([option])
-        end
-      end
-    end
-  end
-
-  def run
-    if action.run_tags
-      required_tags = action.run_tags
-      relevant_actions = actions.select do |action|
-        action.tags.intersection(required_tags).any?
-      end
-
-      relevant_actions.each do |action|
-        $stderr.puts "interesting #{action}"
-        run_module(action.module_name)
-      rescue => e
-        $stderr.puts "interesting #{e}"
-      end
-    elsif action.module_name
-      run_module(action.module_name)
-    else
-      raise "Tags or ModuleName required"
-    end
-  end
-
-  private
-
-  def run_module(module_name)
-    mod = framework.modules.create(module_name)
-
-    # Bail if it isn't aux
-    if mod.type != Msf::MODULE_AUX
-      return Exploit::CheckCode::Unsupported(
-        "#{check_module} is not an auxiliary module."
-      )
-    end
-
-    # Bail if run isn't defined
-    unless mod.respond_to?(:run)
-      return Exploit::CheckCode::Unsupported(
-        "#{check_module} does not define a run method."
-      )
-    end
-
-    print_status("Using #{module_name} as action")
-
-    # Retrieve the module's return value
-    res = mod.run_simple(
-      'LocalInput' => user_input,
-      'LocalOutput' => user_output,
-      'Options' => datastore # XXX: This clobbers the datastore!
-    )
-
-    res
-  end
-end
-
 class MetasploitModule < Msf::Auxiliary
-  include Msf::Module::AggregateModule
+  include Msf::AggregateModule
 
   def initialize
     super(
@@ -126,53 +12,118 @@ class MetasploitModule < Msf::Auxiliary
       'Description' => 'Combines all of the utilities required for SMB enumeration/exploitation',
       'Author' => 'Metasploit people',
       'License' => MSF_LICENSE,
-      'Actions' =>
-        [
-          [
-            # Note: Can't use 'version', as it conflicts with the global version command which takes precedent
-            'enum_version',
-            'Description' => 'Get the smb version',
-            'ModuleName' => 'auxiliary/scanner/smb/smb_version'
-          ],
-          # TODO: Would we want to add a "enumerate everything" action?
-          [
-            'enum_all',
-            'Description' => 'all the enumeration',
-            'RunTags' => [:enum]
-          ],
-          [
-            # With the above 'version' namespacing issue, looks like `smb_` prefixes should be followed for now.
-            'smb_enumshares',
-            'Description' => 'Get the smb shares',
-            'ModuleName' => 'auxiliary/scanner/smb/smb_enumshares',
-            'Tags' => [:enum],
-          ],
-          [
-            # With the above 'version' namespacing issue, looks like `smb_` prefixes should be followed for now.
-            'enum_users',
-            'Description' => 'Get the smb users',
-            'ModuleName' => 'auxiliary/scanner/smb/smb_enumusers',
-            'Tags' => [:enum],
-          ],
-          [
-            'enum_gpp',
-            'Description' => 'Attempt to log in',
-            'ModuleName' => 'auxiliary/scanner/smb/smb_enum_gpp',
-            'Tags' => [:enum],
-          ],
-          [
-            # On the fence about this being here
-            'secrets_dump',
-            'Description' => 'Dump the secrets',
-            'ModuleName' => 'auxiliary/gather/windows_secrets_dump',
-            'Tags' => [:enum],
-          ],
-          [
-            'login',
-            'Description' => 'Attempt to log in',
-            'ModuleName' => 'auxiliary/scanner/smb/smb_login'
-          ],
-        ],
+      'Actions' => enum + checks + file_handling + gather + misc
     )
+  end
+
+  private
+
+  def enum
+    [
+      [
+        'enum',
+        'Description' => 'all the enumeration',
+        'InvokesTags' => [:enum]
+      ],
+      [
+        # TODO: Can't use 'version', as it conflicts with the global version command which takes precedent
+        'version',
+        'Description' => 'Get the smb version',
+        'ModuleName' => 'auxiliary/scanner/smb/smb_version',
+        'AssociatedTags' => [:check, :enum]
+      ],
+      [
+        'shares',
+        'Description' => 'Get the smb shares',
+        'ModuleName' => 'auxiliary/scanner/smb/smb_enumshares',
+        'AssociatedTags' => [:enum],
+      ],
+      [
+        'users',
+        'Description' => 'Get the smb users',
+        'ModuleName' => 'auxiliary/scanner/smb/smb_enumusers',
+        'AssociatedTags' => [:enum],
+      ],
+      # TODO: Is this used frequently?
+      [
+        'enum_gpp',
+        'Description' => 'Attempt to log in',
+        'ModuleName' => 'auxiliary/scanner/smb/smb_enum_gpp',
+        'AssociatedTags' => [:enum],
+      ],
+    ]
+  end
+
+  def checks
+    [
+      [
+        # TODO: Decide if we want 'check' to be an action. It means there's no special case handling for logic such as `options check`, `show actions`, but it's also maybe unexpected to module developers.
+        'check',
+        'Description' => 'Run all module checks associated with this module',
+        'InvokesTags' => [:check]
+      ],
+      [
+        'ms17_010',
+        # TODO: Confirm if this check handles also handles the coverage of "exploit/windows/smb/ms17_010_eternalblue_win8"
+        'Description' => 'Test for ms17_010',
+        'ModuleName' => 'auxiliary/scanner/smb/smb_ms17_010',
+        'AssociatedTags' => [:check]
+      ],
+      # [
+      #   'ms08_067_netapi',
+      #   'Description' => 'Test for ms08_067_netapi',
+      #   # TODO: Discuss whether we want exploits to be allowed. It should most likely only allow check methods.
+      #   'ModuleName' => 'windows/smb/ms08_067_netapi',
+      #   'AssociatedTags' => [:check]
+      # ]
+    ]
+  end
+
+  # TODO: This may be awkward using, the user might expect 'upload foo', similar to evil-winrm and meterpreter's API.
+  def file_handling
+    [
+      [
+        'upload',
+        'Description' => 'Upload an arbitrary file',
+        'ModuleName' => 'auxiliary/admin/smb/upload_file',
+        # 'ExampleUsage' => 'upload lpath=Gemfile.lock rpath=testing smbshare=C$'
+        'AssociatedTags' => []
+      ],
+      [
+        'download',
+        'Description' => 'download an arbitrary file',
+        'ModuleName' => 'auxiliary/admin/smb/download_file',
+        'AssociatedTags' => []
+      ],
+      # TODO: `ls` functionality
+    ]
+  end
+
+  def gather
+    [
+      [
+        'gather_all',
+        'Description' => 'all the enumeration',
+        'InvokesTags' => [:gather]
+      ],
+      [
+        # TODO: Would secrets dump be under enum?
+        'secrets_dump',
+        'Description' => 'Dump the secrets',
+        'ModuleName' => 'auxiliary/gather/windows_secrets_dump',
+        'AssociatedTags' => [:gather],
+      ]
+    ]
+  end
+
+  def misc
+    [
+      [
+        'login',
+        'Description' => 'Attempt to log in',
+        'ModuleName' => 'auxiliary/scanner/smb/smb_login',
+        'AssociatedTags' => []
+      ],
+    ]
   end
 end

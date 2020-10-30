@@ -140,7 +140,7 @@ class ReadableText
       'Description'
     ]
 
-    if mod.is_a?(Msf::Module::AggregateModule)
+    if mod.is_a?(Msf::AggregateModule)
       columns << 'Module'
     end
 
@@ -152,7 +152,7 @@ class ReadableText
 
     mod.actions.each_with_index { |target, idx|
       row = [ target.name || 'All' , target.description || '' ]
-      if mod.is_a?(Msf::Module::AggregateModule)
+      if mod.is_a?(Msf::AggregateModule)
         row << target.module_name
       end
       tbl << row

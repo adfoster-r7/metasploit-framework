@@ -2093,6 +2093,10 @@ class Core
   # Returns the revision of the framework and console library
   #
   def cmd_version(*args)
+    # TODO: Decide how we best want to handle 'version' being used by an aggregate module. 'enum_version' seemed like a good workaround, but after dogfooding - it's not great
+    # TODO: Verify why multiple methods are called by the dispatcher. `version` calls both the module dispatcher, as well as this dispatcher
+    return if active_module.is_a?(Msf::AggregateModule)
+
     print_line("Framework: #{Msf::Framework::Version}")
     print_line("Console  : #{Msf::Framework::Version}")
   end

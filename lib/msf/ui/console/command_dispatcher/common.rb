@@ -103,7 +103,7 @@ module Common
 
   def show_options(mod)
     # TODO: Should 'aggregate' modules be validating their own options?
-    if mod.is_a?(Msf::Module::AggregateModule)
+    if mod.is_a?(Msf::AggregateModule)
       # Print all of the common options
       _show_options_hacky_print(
         active_module,
