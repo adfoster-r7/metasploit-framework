@@ -48,7 +48,7 @@ class MetasploitModule < Msf::Auxiliary
 
     pjl.fsinit(rpath[0..1])
 
-    if pjl.fsdownload(lpath, rpath)
+    if pjl.fsupload(lpath, rpath)
       print_good("#{rhost}:#{rport} - Saved #{lpath} to #{rpath}")
     end
 
