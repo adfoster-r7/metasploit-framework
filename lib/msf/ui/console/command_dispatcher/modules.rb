@@ -199,7 +199,9 @@ module Msf
           def cmd_options(*args)
             if args.empty?
               if active_module && active_module.is_a?(Msf::AggregateModule)
-                print_error("Action name required, please use one of: #{active_module.actions.map(&:name).join(', ')}")
+                print_error("Action name required, please use 'options <action name>', where action name is one of:")
+                self.driver.run_single("actions")
+
                 return false
               elsif (active_module)
                 show_options(active_module)

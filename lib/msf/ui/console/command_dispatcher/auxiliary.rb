@@ -172,6 +172,8 @@ class Auxiliary
       jobify = true
     end
 
+
+    # TODO: This won't work. The auxilary runner supports rhosts functionality. In the case of the smb version module, this command handler sets RHOST = x.x.x.x, but RHOSTS is still set. When the request is proxied through by AggregateModule to the target, it breaks this assumption - as the scanner plucks out 'rhosts' - and starts walking over the range all over again.
     rhosts = datastore['RHOSTS']
     begin
       # Check if this is a scanner module or doesn't target remote hosts
@@ -194,6 +196,7 @@ class Auxiliary
 
         rhosts_range = Rex::Socket::RangeWalker.new(rhosts_opt.normalize(rhosts))
         rhosts_range.each do |rhost|
+          require 'pry'; binding.pry
           nmod = mod.replicant
           nmod.datastore['RHOST'] = rhost
           print_status("Running module against #{rhost}")
@@ -216,6 +219,15 @@ class Auxiliary
       end
     rescue ::Interrupt
       print_error("Auxiliary interrupted by the console user")
+    rescue ::Msf::MissingActionError => e
+      if active_module.is_a?(Msf::AggregateModule)
+        print_error("Run command not supported, please use one of the following action names instead:")
+        self.driver.run_single("actions")
+      else
+        print_error("Action not specified. Either specify it with 'set ACTION action_name' and run again, or simply use the action name as the command")
+        self.driver.run_single("actions")
+      end
+      return false
     rescue ::Exception => e
       print_error("Auxiliary failed: #{e.class} #{e}")
       # require 'pry'; binding.pry

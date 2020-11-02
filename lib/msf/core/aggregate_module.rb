@@ -33,6 +33,7 @@
 #   - TODO: We would most likely have to update the 'info' command, including `info -d`
 #   - TODO: Will this break any downstream automation / assumptions if an 'aggregate module' is implemented as a mixin
 #   - TODO: The upload/download modules for smb aren't great / consistent with expectations, i.e. expecting `download` download to the current working directory
+#   - TODO: ctrl+c kills the current 'child' module, and not the current 'parent' aggregate module
 
 ##
 # This mixin signifies that the module itself implements no functionality.
@@ -86,6 +87,7 @@ module Msf::AggregateModule
   end
 
   def run
+    require 'pry'; binding.pry
     run_action(action)
   end
 

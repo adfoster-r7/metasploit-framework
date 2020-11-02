@@ -177,6 +177,7 @@ class MetasploitModule < Msf::Auxiliary
   # Fingerprint a single host
   #
   def run_host(ip)
+    require 'pry'; binding.pry
     smb_ports = [445, 139]
     lines = [] # defer status output to the very end to group lines together by host
     smb_ports.each do |pnum|
