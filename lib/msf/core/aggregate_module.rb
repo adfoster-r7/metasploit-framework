@@ -87,7 +87,6 @@ module Msf::AggregateModule
   end
 
   def run
-    require 'pry'; binding.pry
     run_action(action)
   end
 
@@ -109,16 +108,69 @@ module Msf::AggregateModule
 
   private
 
+  def highlight_module_name(module_name)
+    last_name = module_name.split("/").last
+    "%grn#{last_name}%clr"
+  end
+
   def run_action(action)
     associated_modules = find_modules_by_action(action)
     associated_modules.each do |module_name|
-      run_module(module_name)
+      print_status("---------------------- Using #{highlight_module_name(module_name)} as action ----------------------")
+
+      # TODO: Tempoarily stolen from command_dispatcher/auxillary - this most likely shouldn't live here in this form. It needs to work with scanners most likely too.
+      rhosts = datastore['RHOSTS']
+      begin
+        # TODO: We'll need to think about rhosts in its entirety
+        # Check if this is a scanner module or doesn't target remote hosts
+        # if rhosts.blank? || mod.class.included_modules.include?(Msf::Auxiliary::Scanner)
+        #   run_module(
+        #     module_name,
+        #     self.datastore
+        #   )
+        # else
+          # For multi target attempts with non-scanner modules.
+          rhosts_opt = Msf::OptAddressRange.new('RHOSTS')
+          if !rhosts_opt.valid?(rhosts)
+            print_error("Auxiliary failed: option RHOSTS failed to validate.")
+            return false
+          end
+
+          rhosts_range = Rex::Socket::RangeWalker.new(rhosts_opt.normalize(rhosts))
+          rhosts_range.each do |rhost|
+            run_module(
+              module_name,
+              self.datastore.merge('RHOSTS' => nil).merge('RHOST' => rhost)
+            )
+          end
+        # end
+      rescue ::Timeout::Error
+        print_error("Auxiliary triggered a timeout exception")
+        print_error("Call stack:")
+        e.backtrace.each do |line|
+          break if line =~ /lib.msf.base.simple/
+          print_error("  #{line}")
+        end
+      # rescue ::Interrupt
+      #   print_error("Auxiliary interrupted by the console user")
+      rescue ::Exception => e
+        print_error("Auxiliary failed: #{e.class} #{e}")
+        if(e.class.to_s != 'Msf::OptionValidateError')
+          print_error("Call stack:")
+          e.backtrace.each do |line|
+            # break if line =~ /lib.msf.base.simple/
+            print_error("  #{line}")
+          end
+        end
+
+        return false
+      end
     rescue => e
       $stderr.puts "TODO: Error handling. Module failed #{e}"
     end
   end
 
-  def run_module(module_name)
+  def run_module(module_name, datastore)
     mod = framework.modules.create(module_name)
 
     # Bail if it isn't aux
@@ -134,8 +186,6 @@ module Msf::AggregateModule
         "#{mod} does not define a run method."
       )
     end
-
-    print_status("---------------------- Using #{module_name} as action ----------------------")
 
     # Retrieve the module's return value
     res = mod.run_simple(

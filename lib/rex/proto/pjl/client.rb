@@ -167,7 +167,6 @@ class Client
     end
 
     $stderr.puts "going to send!"
-    require 'pry'; binding.pry
     @sock.put(
       %Q{#{FSDOWNLOAD} FORMAT:BINARY SIZE=#{SIZE_MAX} NAME = "#{path}"\n}
     )
@@ -178,8 +177,6 @@ class Client
     # if @sock.get(DEFAULT_TIMEOUT) =~ /SIZE=\d+\r?\n(.*)\f/m
     #   file = $1
     # end
-
-    require 'pry'; binding.pry
 
     file
   end

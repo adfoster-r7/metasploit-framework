@@ -42,7 +42,6 @@ class MetasploitModule < Msf::Auxiliary
     connect
     pjl = Rex::Proto::PJL::Client.new(sock)
     pjl.begin_job
-    require 'pry'; binding.pry
 
     pjl.fsinit(path[0..1])
     file = pjl.fsdownload(path)
