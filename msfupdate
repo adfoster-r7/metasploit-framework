@@ -307,7 +307,7 @@ class Msfupdate
   end
 end
 
-if __FILE__ == $PROGRAM_NAME
+if File.expand_path($PROGRAM_NAME) == File.expand_path(__FILE__)
   cli = Msfupdate.new(File.dirname(msfbase))
   cli.parse_args(ARGV.dup)
   cli.run!
