@@ -1,5 +1,10 @@
 #!/usr/bin/env ruby
 
+# Silences warnings as they only serve to confuse end users
+if defined?(Warning) && Warning.respond_to?(:[]=)
+  Warning[:deprecated] = false
+end
+
 require 'fileutils'
 require 'io/console'
 require 'json'
