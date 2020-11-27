@@ -3,7 +3,7 @@ services:
   ms:
     image: metasploitframework/metasploit-framework:latest
     environment:
-      DATABASE_URL: postgres://postgres@db:5432/msf?pool=200&timeout=5
+      DATABASE_URL: postgres://postgres:postgres@db:5432/msf?pool=200&timeout=5
     links:
       - db
     ports:
@@ -13,6 +13,8 @@ services:
 
   db:
     image: postgres:10-alpine
+    environment:
+      POSTGRES_PASSWORD: postgres
     volumes:
       - pg_data:/var/lib/postgresql/data
 
