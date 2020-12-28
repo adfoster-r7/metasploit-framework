@@ -10,8 +10,6 @@
 #
 
 
-require 'msf/core/opt_condition'
-
 require 'optparse'
 
 module Msf
@@ -1813,6 +1811,7 @@ class Core
   # @param words [Array<String>] the previously completed words on the command line.  words is always
   # at least 1 when tab completion has reached this stage since the command itself has been completed
   def cmd_set_tabs(str, words)
+
     # A value has already been specified
     return [] if words.length > 2
 
@@ -1838,6 +1837,7 @@ class Core
   #   line. `words` is always at least 1 when tab completion has reached this
   #   stage since the command itself has been completed.
   def cmd_unset_tabs(str, words)
+    # TODO:
     tab_complete_datastore_names(active_module, str, words)
   end
 
@@ -2075,6 +2075,10 @@ class Core
   # Returns the revision of the framework and console library
   #
   def cmd_version(*args)
+    # TODO: Decide how we best want to handle 'version' being used by an aggregate module. 'enum_version' seemed like a good workaround, but after dogfooding - it's not great
+    # TODO: Verify why multiple methods are called by the dispatcher. `version` calls both the module dispatcher, as well as this dispatcher
+    return if active_module.is_a?(Msf::AggregateModule)
+
     print_line("Framework: #{Msf::Framework::Version}")
     print_line("Console  : #{Msf::Framework::Version}")
   end

@@ -112,7 +112,6 @@ class DataStore < Hash
 
       next if (var =~ /^\s+$/)
 
-
       # Invalid parse?  Raise an exception and let those bastards know.
       if (var == nil or val == nil)
         var = "unknown" if (!var)

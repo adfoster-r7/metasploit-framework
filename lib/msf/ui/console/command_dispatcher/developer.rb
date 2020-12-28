@@ -156,6 +156,9 @@ class Msf::Ui::Console::CommandDispatcher::Developer
   # Open the Pry debugger on the current module or Framework
   #
   def cmd_pry(*args)
+    preserved_console_history = Readline::HISTORY.to_a
+    Readline::HISTORY.pop until Readline::HISTORY.empty?
+
     if args.include?('-h')
       cmd_pry_help
       return
@@ -178,6 +181,9 @@ class Msf::Ui::Console::CommandDispatcher::Developer
 
     print_status("You are in #{active_module.fullname}\n")
     active_module.pry
+  ensure
+    Readline::HISTORY.pop until Readline::HISTORY.empty?
+    preserved_console_history.each { |s| Readline::HISTORY << s }
   end
 
   def cmd_edit_help

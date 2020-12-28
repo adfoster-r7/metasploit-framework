@@ -117,17 +117,67 @@ module ModuleCommandDispatcher
     end
   end
 
+  @@auxiliary_action_opts = Rex::Parser::Arguments.new(
+    '-h' => [ false, 'Help banner.'                                                        ],
+    '-j' => [ false, 'Run in the context of a job.'                                        ],
+    '-o' => [ true,  'A comma separated list of options in VAR=VAL format.'                ],
+    '-q' => [ false, 'Run the module in quiet mode with no output'                         ]
+  )
+
+  @@auxiliary_opts = Rex::Parser::Arguments.new(@@auxiliary_action_opts.fmt.merge(
+    '-a' =>  [ true,  'The action to use.  If none is specified, ACTION is used.'],
+    ))
+
   #
   # Checks to see if a target is vulnerable.
   #
   def cmd_check(*args)
-    if args.first =~ /^\-h$/i
-      cmd_check_help
-      return
+    # TODO: Inconsistent API between check and run command:
+    #
+    # Usage: check [option] [IP Range]
+    #
+    # Options:
+    # -h  You are looking at it.
+    #
+    # Examples:
+    #
+    # Normally, if a RHOST is already specified, you can just run check.
+    # But here are different ways to use the command:
+    #
+    # Against a single host:
+    # check 192.168.1.123
+    #
+    # Against a range of IPs:
+    # check 192.168.1.1-192.168.1.254
+    #
+    # Against a range of IPs loaded from a file:
+    # check file:///tmp/ip_list.txt
+    #
+    # Multi-threaded checks:
+    # 1. set THREADS 10
+    # 2. check
+    opts    = []
+    @@auxiliary_opts.parse(args) do |opt, idx, val|
+      case opt
+      when '-h'
+        cmd_check_help
+        return false
+      else
+        if val[0] != '-' && val.match?('=')
+          opts.push(val)
+        else
+          cmd_check_help
+          return false
+        end
+      end
     end
 
-    ip_range_arg = args.join(' ') unless args.empty?
-    ip_range_arg ||= mod.datastore['RHOSTS'] || framework.datastore['RHOSTS'] || ''
+    # TODO: Temporary hack; But the end result is breaking `check x.x.x.x` in favor of `check rhosts=x.x.x.x`
+    nmod = mod.replicant
+    # TODO: Workaround from simple/auxiliary - Import options from the OptionStr
+    nmod._import_extra_options('OptionStr' => opts.join(','))
+    # ip_range_arg = args.join(' ') unless args.empty?
+    ip_range_arg ||= nmod.datastore['RHOSTS'] || framework.datastore['RHOSTS'] || ''
     opt = Msf::OptAddressRange.new('RHOSTS')
 
     begin
@@ -135,22 +185,32 @@ module ModuleCommandDispatcher
         hosts = Rex::Socket::RangeWalker.new(opt.normalize(ip_range_arg))
 
         # Check multiple hosts
-        last_rhost_opt = mod.datastore['RHOST']
-        last_rhosts_opt = mod.datastore['RHOSTS']
-        mod.datastore['RHOSTS'] = ip_range_arg
+        last_rhost_opt = nmod.datastore['RHOST']
+        last_rhosts_opt = nmod.datastore['RHOSTS']
+        nmod.datastore['RHOSTS'] = ip_range_arg
         begin
-          if hosts.length > 1
+          if mod.is_a?(Msf::AggregateModule)
+            nmod.run_simple(
+              # TODO: Conflicts with the existing check semantics
+              'Action'         => 'check',
+              'OptionStr'      => opts.join(','),
+              'LocalInput'     => driver.input,
+              'LocalOutput'    => driver.output,
+              'RunAsJob'       => false,
+              'Quiet'          => quiet
+            )
+          elsif hosts.length > 1
             check_multiple(hosts)
           # Short-circuit check_multiple if it's a single host
           else
-            mod.datastore['RHOST'] = hosts.next_ip
+            nmod.datastore['RHOST'] = hosts.next_ip
             check_simple
           end
         ensure
           # Restore the original rhost if set
-          mod.datastore['RHOST'] = last_rhost_opt
-          mod.datastore['RHOSTS'] = last_rhosts_opt
-          mod.cleanup
+          nmod.datastore['RHOST'] = last_rhost_opt
+          nmod.datastore['RHOSTS'] = last_rhosts_opt
+          nmod.cleanup
         end
       # XXX: This is basically dead code now that exploits use RHOSTS
       else
@@ -317,6 +377,15 @@ module ModuleCommandDispatcher
       self.mod = reloaded_mod
 
       self.mod.init_ui(driver.input, driver.output)
+    end
+
+    if reloaded_mod.is_a?(Msf::AggregateModule)
+      reloaded_mod.actions.each do |action|
+        next unless action.module_name.present?
+
+        mod_class = framework.modules[action.module_name]
+        framework.modules.reload_module(mod_class)
+      end
     end
 
     reloaded_mod

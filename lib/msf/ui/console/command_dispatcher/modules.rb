@@ -38,6 +38,7 @@ module Msf
               "advanced"   => "Displays advanced options for one or more modules",
               "info"       => "Displays information about one or more modules",
               "options"    => "Displays global options or for one or more modules",
+              "actions"    => "Displays actions for one or more modules",
               "loadpath"   => "Searches for and loads modules from a path",
               "popm"       => "Pops the latest module off the stack and makes it active",
               "pushm"      => "Pushes the active or list of modules onto the module stack",
@@ -193,10 +194,22 @@ module Msf
             print_line
           end
 
+
+          def cmd_actions(*args)
+            # TODO: Perhaps this would have to abide by similar semantics to `options ...` and `show options`
+            self.driver.run_single("show actions")
+          end
+
           def cmd_options(*args)
             if args.empty?
-              if (active_module)
+              if active_module && active_module.is_a?(Msf::AggregateModule)
+                print_error("Action name required, please use 'options <action name>', where action name is one of:")
+                self.driver.run_single("actions")
+
+                return false
+              elsif (active_module)
                 show_options(active_module)
+
                 return true
               else
                 show_global_options
@@ -204,7 +217,28 @@ module Msf
               end
             end
 
+            # TODO: Align `options` and `show options` functionality
             args.each do |name|
+              # Support for `options smb_enumusers` - as `options` on an 'aggregate' module might be overwhelming
+              if active_module && active_module.is_a?(Msf::AggregateModule)
+                matching_action = active_module.actions.find { |action| action.name.casecmp?(name) }
+                if matching_action
+                  module_names = active_module.find_modules_by_action(matching_action)
+                else
+                  module_names = []
+                end
+
+                if module_names.any?
+                  module_names.each do |module_name|
+                    mod = framework.modules.create(module_name)
+                    # TODO: Required to get the option values showing up. Need to learn more about the context behind 'sharing' here. Seems safe for now?
+                    mod.share_datastore(active_module.datastore)
+                    show_options(mod)
+                  end
+                  next
+                end
+              end
+
               mod = framework.modules.create(name)
 
               if (mod == nil)
@@ -242,7 +276,23 @@ module Msf
           # @param words (see #cmd_use_tabs)
 
           def cmd_options_tabs(str, words)
-            cmd_use_tabs(str, words)
+            action_names = []
+            if active_module.is_a?(Msf::AggregateModule)
+              # TODO: Nicked from option name tab completion, confirm if it's copy/pasta'd elsewhere too
+              action_names = active_module.actions.map(&:name)
+              action_names = action_names.select { |term| term.upcase.start_with?(str.upcase) }
+              action_names = action_names.map do |term|
+                if str == str.upcase
+                  str + term[str.length..-1].upcase
+                elsif str == str.downcase
+                  str + term[str.length..-1].downcase
+                else
+                  str + term[str.length..-1]
+                end
+              end
+            end
+
+            cmd_use_tabs(str, words) + action_names
           end
 
           def cmd_loadpath_help
@@ -595,7 +645,9 @@ module Msf
                   cmd_info(*args[1, args.length])
                 when 'options'
                   if (mod)
-                    show_options(mod)
+                    # TODO:
+                    # show_options(mod)
+                    cmd_options(*args)
                   else
                     show_global_options
                   end

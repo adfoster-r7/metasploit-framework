@@ -45,12 +45,20 @@ module ModuleActionCommands
       return mod.send(meth.to_s, *args)
     end
 
-    action = meth.to_s.delete_prefix('cmd_')
-    if mod && mod.kind_of?(Msf::Module::HasActions) && mod.actions.map(&:name).any? { |a| a.casecmp?(action) }
-      return do_action(action, *args)
+    # TODO: This existing code is funky
+    action_name = meth.to_s.delete_prefix('cmd_')
+    if mod && mod.kind_of?(Msf::Module::HasActions) && mod.actions.map(&:name).any? { |a| a.casecmp?(action_name) }
+      return do_action(action_name, *args)
     end
 
-    super
+    if meth.to_s.end_with?("_tabs")
+      action_name = meth.to_s.delete_prefix('cmd_').delete_suffix("_tabs")
+      if mod && mod.kind_of?(Msf::Module::HasActions) && mod.actions.map(&:name).any? { |a| a.casecmp?(action_name) }
+        return do_action_tabs(action_name, *args)
+      end
+    end
+
+    return
   end
 
   #
@@ -96,11 +104,37 @@ module ModuleActionCommands
   #
   # Execute the module with a set action
   #
-  def do_action(meth, *args)
-    action = mod.actions.find { |action| action.name.casecmp?(meth) }
-    raise Msf::MissingActionError.new(meth) if action.nil?
+  def do_action(action_name, *args)
+    action = mod.actions.find { |action| action.name.casecmp?(action_name) }
+    raise Msf::MissingActionError.new(action_name) if action.nil?
 
     cmd_run(*args, action: action.name)
+  end
+
+  # TODO: This existing code is funky
+  def do_action_tabs(action_name, str, words)
+    action = mod.actions.find { |action| action.name.casecmp?(action_name) }
+    raise Msf::MissingActionError.new(action_name) if action.nil?
+
+    # TODO: Confirm that the action is present, and the module has the mixin functionality for being powered by sub modules
+    # TODO: The actions command could in theory still be used with flags. This functionality would need to be updated to support flags / contributing the existing `run` command's tab array
+    # TOO: Confirm the performance overhead of this
+    # mod = framework.modules.create(action.module_name)
+    # tab_complete_option(mod, str, words)
+    # TODO: This is adding support for actions that trigger other modules, like the 'check' command
+    tab_complete_option(active_module, str, words)
+  end
+
+  # TODO: The previous action names as commands code didn't implement respond_to, put in a hack for spiking
+  def respond_to?(meth, *args)
+    if meth.to_s.end_with?("_tabs")
+      action = meth.to_s.delete_prefix('cmd_').delete_suffix("_tabs")
+      if action && mod && mod.kind_of?(Msf::Module::HasActions) && mod.actions.map(&:name).any? { |a| a.casecmp?(action) }
+        return true
+      end
+    end
+
+    super(meth, *args)
   end
 
   def cmd_action_help(action)
