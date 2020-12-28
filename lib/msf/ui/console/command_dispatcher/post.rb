@@ -115,7 +115,6 @@ class Post
   end
 
   alias cmd_exploit cmd_run
-
   alias cmd_exploit_tabs cmd_run_tabs
 
   def cmd_run_help
