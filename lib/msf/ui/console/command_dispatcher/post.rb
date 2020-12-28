@@ -162,7 +162,7 @@ class Post
   #
   def cmd_run_tabs(str, words)
     flags = @@post_opts.fmt.keys
-    options = tab_complete_option(str, words)
+    options = tab_complete_option(active_module, str, words)
     flags + options
   end
 

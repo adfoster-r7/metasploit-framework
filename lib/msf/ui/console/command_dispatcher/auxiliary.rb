@@ -91,7 +91,7 @@ class Auxiliary
   #
   def cmd_run_tabs(str, words)
     flags = @@auxiliary_opts.fmt.keys
-    options = tab_complete_option(str, words)
+    options = tab_complete_option(active_module, str, words)
     flags + options
   end
 
