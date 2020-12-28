@@ -44,7 +44,7 @@ class MetasploitModule < Msf::Auxiliary
     pjl.begin_job
 
     pjl.fsinit(path[0..1])
-    file = pjl.fsupload(path)
+    file = pjl.fsdownload(path)
 
     pjl.end_job
     disconnect

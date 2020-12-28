@@ -161,18 +161,22 @@ class Client
   #
   # @param path [String] Remote path
   # @return [String] File as a string
-  def fsupload(path)
+  def fsdownload(path)
     if path !~ /^[0-2]:/
       raise ArgumentError, "Path must begin with 0:, 1:, or 2:"
     end
 
-    file = nil
+    $stderr.puts "going to send!"
+    @sock.put(
+      %Q{#{FSDOWNLOAD} FORMAT:BINARY SIZE=#{SIZE_MAX} NAME = "#{path}"\n}
+    )
 
-    @sock.put(%Q{#{FSUPLOAD} NAME = "#{path}" OFFSET=0 SIZE=#{SIZE_MAX}\n})
-
-    if @sock.get(DEFAULT_TIMEOUT) =~ /SIZE=\d+\r?\n(.*)\f/m
-      file = $1
-    end
+    $stderr.puts "going to wait lol"
+    file = @sock.get(DEFAULT_TIMEOUT)
+    # TODO: Couldn't find this in the specification
+    # if @sock.get(DEFAULT_TIMEOUT) =~ /SIZE=\d+\r?\n(.*)\f/m
+    #   file = $1
+    # end
 
     file
   end
@@ -183,16 +187,14 @@ class Client
   # @param rpath [String] Remote path
   # @param is_file [Boolean] True if data_or_lpath is a local file path
   # @return [Boolean] True if the file was uploaded
-  def fsdownload(data_or_lpath, rpath, is_file: true)
+  def fsupload(data_or_lpath, rpath, is_file: true)
     if rpath !~ /^[0-2]:/
       raise ArgumentError, "Path must begin with 0:, 1:, or 2:"
     end
 
     file = is_file ? File.read(data_or_lpath) : data_or_lpath
 
-    @sock.put(
-      %Q{#{FSDOWNLOAD} FORMAT:BINARY SIZE=#{file.length} NAME = "#{rpath}"\n}
-    )
+    @sock.put(%Q{#{FSUPLOAD} NAME = "#{rpath}" OFFSET=0 SIZE=#{file.length}\n})
 
     @sock.put(file)
     @sock.put(UEL)

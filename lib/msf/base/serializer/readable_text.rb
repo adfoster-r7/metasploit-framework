@@ -134,17 +134,27 @@ class ReadableText
   # @param h [String] the string to display as the table heading.
   # @return [String] the string form of the table.
   def self.dump_module_actions(mod, indent = '', h = nil)
+    columns = [
+      'Name',
+      'Description'
+    ]
+
+    if mod.is_a?(Msf::AggregateModule)
+      columns << 'Module'
+    end
+
     tbl = Rex::Text::Table.new(
       'Indent'  => indent.length,
       'Header'  => h,
-      'Columns' =>
-        [
-          'Name',
-          'Description'
-        ])
+      'Columns' => columns
+    )
 
     mod.actions.each_with_index { |target, idx|
-      tbl << [ target.name || 'All' , target.description || '' ]
+      row = [ target.name || 'All' , target.description || '' ]
+      if mod.is_a?(Msf::AggregateModule)
+        row << target.module_name
+      end
+      tbl << row
     }
 
     tbl.to_s + "\n"
