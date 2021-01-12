@@ -27,8 +27,6 @@ class MetasploitModule < Msf::Auxiliary
         OptBool.new('SHOW_TITLES', [ true, 'Show the titles on the console as they are grabbed', true ]),
         OptString.new('TARGETURI', [true, 'The base path', '/'])
       ])
-
-    deregister_options('VHOST')
   end
 
   def run
