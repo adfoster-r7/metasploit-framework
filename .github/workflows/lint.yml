@@ -1,0 +1,72 @@
+name: Lint
+
+on:
+  push:
+    branches-ignore:
+      - gh-pages
+      - metakitty
+  # Note this is 'pull_request_target' and _not_ 'pull_request'
+  #   https://github.blog/2020-08-03-github-actions-improvements-for-fork-and-pull-request-workflows/
+  pull_request_target:
+    branches:
+      - '*'
+    types: [synchronize, reopened]
+
+jobs:
+  test:
+    runs-on: ubuntu-16.04
+    timeout-minutes: 40
+
+    strategy:
+      fail-fast: true
+      matrix:
+        ruby:
+          - 2.5
+
+    name: Lint ${{ matrix.ruby }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        # Required to checkout HEAD^ and 3a046f01dae340c124dd3895e670983aef5fe0c5 for the msftidy script
+        # https://github.com/actions/checkout/tree/5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f#checkout-head
+        # Note that this adds ~30 seconds to CI time. Msftidy could be extracted to its own job to run
+        # in parallel.
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-ruby@v1
+        with:
+          ruby-version: ${{ matrix.ruby }}
+
+      - name: Run msftidy
+        run: |
+          bundle install rubocop
+          ln -sf ../../tools/dev/pre-commit-hook.rb ./.git/hooks/post-merge
+          ls -la ./.git/hooks
+          ./.git/hooks/post-merge
+
+      - name: Notify user of lint success
+        if: ${{ success() && github.event.issue.pull_request }}
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.issues.removeLabel({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['needs-linting']
+            })
+
+      - name: Notify user of lint failure
+        if: ${{ failure() && github.event.issue.pull_request }}
+        uses: actions/github-script@v3
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            github.issues.addLabels({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              labels: ['needs-linting']
+            })
