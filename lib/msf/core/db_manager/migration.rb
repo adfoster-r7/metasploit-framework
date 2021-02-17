@@ -22,6 +22,8 @@ module Msf::DBManager::Migration
   #
   # @see ActiveRecord::MigrationContext.migrate
   def migrate(config=nil, verbose=false)
+    return
+
     ran = []
     # Rails 5 changes ActiveRecord parents means to migrate outside
     # the `rake` task framework has to dig a little lower into ActiveRecord

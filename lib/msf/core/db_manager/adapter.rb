@@ -27,22 +27,22 @@ module Msf::DBManager::Adapter
   # Scan through available drivers
   #
   def initialize_adapter
-    ApplicationRecord.default_timezone = :utc
-
-    if connection_established? && ApplicationRecord.connection_config[:adapter] == ADAPTER
-      dlog("Already established connection to #{ADAPTER}, so reusing active connection.")
-      self.drivers << ADAPTER
-      self.driver = ADAPTER
-    else
-      begin
-        ApplicationRecord.establish_connection(adapter: ADAPTER)
-        ApplicationRecord.remove_connection
-      rescue Exception => error
-        @adapter_error = error
-      else
-        self.drivers << ADAPTER
-        self.driver = ADAPTER
-      end
-    end
+    # ApplicationRecord.default_timezone = :utc
+    #
+    # if connection_established? && ApplicationRecord.connection_config[:adapter] == ADAPTER
+    #   dlog("Already established connection to #{ADAPTER}, so reusing active connection.")
+    #   self.drivers << ADAPTER
+    #   self.driver = ADAPTER
+    # else
+    #   begin
+    #     ApplicationRecord.establish_connection(adapter: ADAPTER)
+    #     ApplicationRecord.remove_connection
+    #   rescue Exception => error
+    #     @adapter_error = error
+    #   else
+    #     self.drivers << ADAPTER
+    #     self.driver = ADAPTER
+    #   end
+    # end
   end
 end

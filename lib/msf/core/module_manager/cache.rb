@@ -159,8 +159,17 @@ module Msf::ModuleManager::Cache
       # Skip cached modules that are not in our allowed load paths
       next if allowed_paths.select{|x| path.index(x) == 0}.empty?
 
+      directory_by_type = {
+        'auxiliary' => 'auxiliary',
+        'encoder' => 'encoders',
+        'exploit' => 'exploits',
+        'nop' => 'nops',
+        'payload' => 'payloads',
+        'post' => 'post',
+        'evasion' => 'evasion'
+      }
       # The load path is assumed to be the next level above the type directory
-      type_dir = File.join('', Mdm::Module::Detail::DIRECTORY_BY_TYPE[type], '')
+      type_dir = File.join('', directory_by_type[type], '')
       parent_path = path.split(type_dir)[0..-2].join(type_dir) # TODO: rewrite
 
       module_info_by_path[path] = {
