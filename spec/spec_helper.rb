@@ -20,7 +20,7 @@ end
 require File.expand_path('../../config/environment', __FILE__)
 
 # Don't `require 'rspec/rails'` as it includes support for pieces of rails that metasploit-framework doesn't use
-require 'rspec/rails'
+# require 'rspec/rails'
 
 require 'metasploit/framework/spec'
 
@@ -76,7 +76,7 @@ RSpec.configure do |config|
   #     --seed 1234
   config.order = :random
 
-  config.use_transactional_fixtures = true
+  # config.use_transactional_fixtures = true
 
   # Seed global randomization in this process using the `--seed` CLI option.
   # Setting this allows you to use `--seed` to deterministically reproduce
@@ -113,7 +113,7 @@ RSpec.configure do |config|
   #     describe ThingsController, :type => :controller do
   #       # Equivalent to being in spec/controllers
   #     end
-  config.infer_spec_type_from_file_location!
+  # config.infer_spec_type_from_file_location!
 
   if ENV['REMOTE_DB']
     require 'metasploit/framework/data_service/remote/managed_remote_data_service'

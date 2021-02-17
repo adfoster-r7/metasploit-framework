@@ -38,7 +38,7 @@ group :development, :test do
   gem 'rake'
   # Define `rake spec`.  Must be in development AND test so that its available by default as a rake test when the
   # environment is development
-  gem 'rspec-rails'
+  # gem 'rspec-rails'
   gem 'rspec-rerun'
   gem 'rubocop'
   gem 'swagger-blocks'
