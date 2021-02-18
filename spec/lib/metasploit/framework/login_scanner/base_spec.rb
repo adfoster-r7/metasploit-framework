@@ -50,6 +50,7 @@ RSpec.describe Metasploit::Framework::LoginScanner::Base do
   context 'validations' do
 
     it 'is valid!' do
+      require 'pry'; binding.pry
       expect(login_scanner).to be_valid
     end
 

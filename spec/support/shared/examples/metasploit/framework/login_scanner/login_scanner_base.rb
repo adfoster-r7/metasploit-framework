@@ -157,6 +157,7 @@ RSpec.shared_examples_for 'Metasploit::Framework::LoginScanner::Base' do | opts 
 
       it 'is not valid for DNS name that cannot be resolved' do
         login_scanner.host = 'nosuchplace.metasploit.com'
+        require 'pry'; binding.pry
         expect(login_scanner).to_not be_valid
         expect(login_scanner.errors[:host]).to include "could not be resolved"
       end

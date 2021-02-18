@@ -1,6 +1,10 @@
 # -*- coding: binary -*-
 require 'spec_helper'
 
+require 'rex'
+require 'msf'
+require 'rex/text'
+require 'msfenv'
 
 RSpec.describe Msf::Post::Windows::Priv do
 

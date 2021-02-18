@@ -9,9 +9,9 @@ require 'optparse'
 require 'timeout'
 
 # Silences warnings as they only serve to confuse end users
-if defined?(Warning) && Warning.respond_to?(:[]=)
-  Warning[:deprecated] = false
-end
+# if defined?(Warning) && Warning.respond_to?(:[]=)
+#   Warning[:deprecated] = false
+# end
 
 msfbase = __FILE__
 while File.symlink?(msfbase)

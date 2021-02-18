@@ -123,6 +123,7 @@ module Msf
       self.options.add_evasion_options(info['EvasionOptions'], self.class)
 
       # Create and initialize the data store for this module
+      require 'msf/core/data_store.rb'
       self.datastore = ModuleDataStore.new(self)
 
       # Import default options into the datastore
@@ -401,7 +402,7 @@ module Msf
         'Platform'    => [],  # No platforms by default.
         'Ref'         => nil,
         'Privileged'  => false,
-        'License'     => MSF_LICENSE,
+        'License'     => 'MSF_LICENSE',
         'Notes'       => {}
       }.update(self.module_info)
       self.module_store = {}

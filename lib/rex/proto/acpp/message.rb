@@ -175,7 +175,8 @@ module ACPP
         Rex::Encoding::Xor::Generic.encode([@password].pack('a32').slice(0, 32), XOR_KEY).first,
         @unknown4,
         payload
-      ].pack('a4NNNNa8NNa12a32a48a*')
+      ].join("\n")
+        # .pack('a4NNNNa8NNa12a32a48a*')
     end
   end
 end

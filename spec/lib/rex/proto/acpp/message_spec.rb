@@ -2,6 +2,10 @@
 require 'spec_helper'
 
 require 'rex/proto/acpp'
+require 'rex/text'
+require 'msf'
+require 'msfenv'
+require 'rex'
 
 RSpec.describe Rex::Proto::ACPP::Message do
 

@@ -25,9 +25,13 @@ module Metasploit
         #     authenticate to.
         attr_accessor :uri
 
+
+        alias  old_method method
+
         # @!attribute uri
         #   @return [String] HTTP method, e.g. "GET", "POST"
         attr_accessor :method
+
 
         # @!attribute user_agent
         #   @return [String] the User-Agent to use for the HTTP requests

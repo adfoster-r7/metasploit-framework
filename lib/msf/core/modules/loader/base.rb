@@ -136,6 +136,7 @@ class Msf::Modules::Loader::Base
       namespace_module.parent_path = parent_path
 
       begin
+        require 'pry'; binding.pry
         namespace_module.module_eval_with_lexical_scope(module_content, module_path)
       # handle interrupts as pass-throughs unlike other Exceptions so users can bail with Ctrl+C
       rescue ::Interrupt
@@ -242,6 +243,7 @@ class Msf::Modules::Loader::Base
     recalculate_by_type = {}
 
     each_module_reference_name(path, options) do |parent_path, type, module_reference_name|
+      require 'pry'; binding.pry
       load_module(
           parent_path,
           type,
@@ -354,6 +356,8 @@ class Msf::Modules::Loader::Base
 
       lines.join("\n")
     }
+
+    require 'pry'; binding.pry
 
     # - because the added wrap lines have to act like they were written before NAMESPACE_MODULE_CONTENT
     line_with_wrapping = NAMESPACE_MODULE_LINE - nested_module_names.length
