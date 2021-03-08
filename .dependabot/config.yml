@@ -1,0 +1,14 @@
+version: 1
+update_configs:
+  - package_manager: "ruby:bundler"
+    directory: "/"
+    default_labels:
+      - automation
+    update_schedule: "live"
+    # These dependencies are currently pinned and require manual review, but are often forgotten about
+    # All other dependencies are updated automatically by Jenkins and are not maintained by dependabot.
+    allowed_updates:
+      - match:
+          dependency_name: "metasploit-payloads"
+      - match:
+          dependency_name: "metasploit_payloads-mettle"
