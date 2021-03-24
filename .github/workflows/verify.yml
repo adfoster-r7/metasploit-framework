@@ -10,38 +10,38 @@ on:
       - '*'
 
 jobs:
-  build:
-    runs-on: ubuntu-16.04
-    timeout-minutes: 40
-    name: Docker Build
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
+  # build:
+  #   runs-on: ubuntu-16.04
+  #   timeout-minutes: 40
+  #   name: Docker Build
+  #   steps:
+  #     - name: Checkout code
+  #       uses: actions/checkout@v2
 
-      - name: docker-compose build
-        run: |
-          curl -L https://github.com/docker/compose/releases/download/1.22.0/docker-compose-`uname -s`-`uname -m` > docker-compose
-          chmod +x docker-compose
-          sudo mv docker-compose /usr/bin
+  #     - name: docker-compose build
+  #       run: |
+  #         curl -L https://github.com/docker/compose/releases/download/1.22.0/docker-compose-`uname -s`-`uname -m` > docker-compose
+  #         chmod +x docker-compose
+  #         sudo mv docker-compose /usr/bin
 
-          /usr/bin/docker-compose build
+  #         /usr/bin/docker-compose build
 
   test:
-    runs-on: ubuntu-16.04
+    runs-on: windows-2019
     timeout-minutes: 40
 
-    services:
-      postgres:
-        image: postgres:9.6
-        ports: ["5432:5432"]
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+    # services:
+    #   postgres:
+    #     image: postgres:9.6
+    #     ports: ["5432:5432"]
+    #     env:
+    #       POSTGRES_USER: postgres
+    #       POSTGRES_PASSWORD: postgres
+    #     options: >-
+    #       --health-cmd pg_isready
+    #       --health-interval 10s
+    #       --health-timeout 5s
+    #       --health-retries 5
 
     strategy:
       fail-fast: true
@@ -62,7 +62,43 @@ jobs:
 
     name: Ruby ${{ matrix.ruby }} - ${{ matrix.test_cmd }}
     steps:
+      # https://github.com/npgsql/npgsql/actions/runs/33105758/workflow#L36-L74
+      - name: Start PostgreSQL ${{ matrix.pg_major }} (Windows)
+        if: startsWith(matrix.os, 'windows')
+        run: |
+          # Find EnterpriseDB version number
+          EDB_VERSION=$(\
+            curl -Ls 'http://sbp.enterprisedb.com/applications.xml' |
+            sed -n '\#<id>postgresql_${{ matrix.pg_major }}</id>#{n;p;n;p;}' |
+            sed -n '\#<platform>windows-x64</platform>#{n;p;}' |
+            sed -E 's#.*<version>([^<]+)</version>#\1#')
+          # Install PostgreSQL
+          echo "Installing PostgreSQL (version: ${EDB_VERSION})"
+          curl -o pgsql.zip -L https://get.enterprisedb.com/postgresql/postgresql-${EDB_VERSION}-windows-x64-binaries.zip
+          unzip pgsql.zip -x 'pgsql/include/**' 'pgsql/doc/**' 'pgsql/pgAdmin 4/**' 'pgsql/StackBuilder/**'
+          # Match Npgsql CI Docker image and stash one level up
+          cp {$GITHUB_WORKSPACE/.build/docker,pgsql}/server.crt
+          cp {$GITHUB_WORKSPACE/.build/docker,pgsql}/server.key
+          # Find OSGEO version number
+          OSGEO_VERSION=$(\
+            curl -Ls https://download.osgeo.org/postgis/windows/pg${{ matrix.pg_major }} |
+            sed -n 's/.*>postgis-bundle-pg${{ matrix.pg_major }}-\(${{ env.postgis_version }}.[0-9]*.[0-9]*\)x64.zip<.*/\1/p')
+          # Install PostGIS
+          echo "Installing PostGIS (version: ${OSGEO_VERSION})"
+          POSTGIS_FILE="postgis-bundle-pg${{ matrix.pg_major }}-${OSGEO_VERSION}x64"
+          curl -o postgis.zip -L https://download.osgeo.org/postgis/windows/pg${{ matrix.pg_major }}/${POSTGIS_FILE}.zip
+          unzip postgis.zip -d postgis
+          cp -a postgis/$POSTGIS_FILE/. pgsql/
+          # Start PostgreSQL
+          pgsql/bin/initdb -D pgsql/PGDATA -E UTF8 -U postgres
+          pgsql/bin/pg_ctl -D pgsql/PGDATA -l logfile -o '-c max_prepared_transactions=10 -c ssl=true -c ssl_cert_file=../server.crt -c ssl_key_file=../server.key' start
+          # Configure test account
+          pgsql/bin/psql -U postgres -c "CREATE ROLE npgsql_tests SUPERUSER LOGIN PASSWORD 'npgsql_tests'"
+          pgsql/bin/psql -U postgres -c "CREATE DATABASE npgsql_tests OWNER npgsql_tests"
+        shell: bash
+    
       - name: Install system dependencies
+        if: startsWith(matrix.os, 'windows')
         run: sudo apt-get install libpcap-dev graphviz
 
       - name: Checkout code
