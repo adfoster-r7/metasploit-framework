@@ -12,7 +12,13 @@ class MetasploitModule < Msf::Auxiliary
       'Description' => 'Combines all of the utilities required for SMB enumeration/exploitation',
       'Author' => 'Metasploit people',
       'License' => MSF_LICENSE,
-      'Actions' => enum + checks + file_handling + gather + misc
+      'Actions' => (
+        enum +
+          checks +
+          file_handling +
+          gather +
+          misc
+      )
     )
   end
 
@@ -22,34 +28,44 @@ class MetasploitModule < Msf::Auxiliary
     [
       [
         'enum',
-        'Description' => 'all the enumeration',
-        'InvokesTags' => [:enum]
+        {
+          'Description' => 'all the enumeration',
+          'InvokesTags' => [:enum]
+        }
       ],
       [
         # TODO: Can't use 'version', as it conflicts with the global version command which takes precedent
         'version',
-        'Description' => 'Get the smb version',
-        'ModuleName' => 'auxiliary/scanner/smb/smb_version',
-        'AssociatedTags' => [:check, :enum]
+        {
+          'Description' => 'Get the smb version',
+          'ModuleName' => 'auxiliary/scanner/smb/smb_version',
+          'AssociatedTags' => %i[check enum]
+        }
       ],
       [
         'shares',
-        'Description' => 'Get the smb shares',
-        'ModuleName' => 'auxiliary/scanner/smb/smb_enumshares',
-        'AssociatedTags' => [:enum],
+        {
+          'Description' => 'Get the smb shares',
+          'ModuleName' => 'auxiliary/scanner/smb/smb_enumshares',
+          'AssociatedTags' => [:enum]
+        },
       ],
       [
         'users',
-        'Description' => 'Get the smb users',
-        'ModuleName' => 'auxiliary/scanner/smb/smb_enumusers',
-        'AssociatedTags' => [:enum],
+        {
+          'Description' => 'Get the smb users',
+          'ModuleName' => 'auxiliary/scanner/smb/smb_enumusers',
+          'AssociatedTags' => [:enum]
+        },
       ],
       # TODO: Is this used frequently?
       [
         'enum_gpp',
-        'Description' => 'Attempt to log in',
-        'ModuleName' => 'auxiliary/scanner/smb/smb_enum_gpp',
-        'AssociatedTags' => [:enum],
+        {
+          'Description' => 'Attempt to log in',
+          'ModuleName' => 'auxiliary/scanner/smb/smb_enum_gpp',
+          'AssociatedTags' => [:enum]
+        },
       ],
     ]
   end
@@ -59,15 +75,19 @@ class MetasploitModule < Msf::Auxiliary
       [
         # TODO: Decide if we want 'check' to be an action. It means there's no special case handling for logic such as `options check`, `show actions`, but it's also maybe unexpected to module developers.
         'check',
-        'Description' => 'Run all module checks associated with this module',
-        'InvokesTags' => [:check]
+        {
+          'Description' => 'Run all module checks associated with this module',
+          'InvokesTags' => [:check]
+        }
       ],
       [
         'ms17_010',
         # TODO: Confirm if this check handles also handles the coverage of "exploit/windows/smb/ms17_010_eternalblue_win8"
-        'Description' => 'Test for ms17_010',
-        'ModuleName' => 'auxiliary/scanner/smb/smb_ms17_010',
-        'AssociatedTags' => [:check]
+        {
+          'Description' => 'Test for ms17_010',
+          'ModuleName' => 'auxiliary/scanner/smb/smb_ms17_010',
+          'AssociatedTags' => [:check]
+        }
       ],
       # [
       #   'ms08_067_netapi',
@@ -84,16 +104,20 @@ class MetasploitModule < Msf::Auxiliary
     [
       [
         'upload',
-        'Description' => 'Upload an arbitrary file',
-        'ModuleName' => 'auxiliary/admin/smb/upload_file',
-        # 'ExampleUsage' => 'upload lpath=Gemfile.lock rpath=testing smbshare=C$'
-        'AssociatedTags' => []
+        {
+          'Description' => 'Upload an arbitrary file',
+          'ModuleName' => 'auxiliary/admin/smb/upload_file',
+          # 'ExampleUsage' => 'upload lpath=Gemfile.lock rpath=testing smbshare=C$'
+          'AssociatedTags' => []
+        }
       ],
       [
         'download',
-        'Description' => 'download an arbitrary file',
-        'ModuleName' => 'auxiliary/admin/smb/download_file',
-        'AssociatedTags' => []
+        {
+          'Description' => 'download an arbitrary file',
+          'ModuleName' => 'auxiliary/admin/smb/download_file',
+          'AssociatedTags' => []
+        }
       ],
       # TODO: `ls` functionality
     ]
@@ -103,15 +127,19 @@ class MetasploitModule < Msf::Auxiliary
     [
       [
         'gather_all',
-        'Description' => 'all the enumeration',
-        'InvokesTags' => [:gather]
+        {
+          'Description' => 'all the enumeration',
+          'InvokesTags' => [:gather]
+        }
       ],
       [
         # TODO: Would secrets dump be under enum?
         'secrets_dump',
-        'Description' => 'Dump the secrets',
-        'ModuleName' => 'auxiliary/gather/windows_secrets_dump',
-        'AssociatedTags' => [:gather],
+        {
+          'Description' => 'Dump the secrets',
+          'ModuleName' => 'auxiliary/gather/windows_secrets_dump',
+          'AssociatedTags' => [:gather]
+        },
       ]
     ]
   end
@@ -120,9 +148,11 @@ class MetasploitModule < Msf::Auxiliary
     [
       [
         'login',
-        'Description' => 'Attempt to log in',
-        'ModuleName' => 'auxiliary/scanner/smb/smb_login',
-        'AssociatedTags' => []
+        {
+          'Description' => 'Attempt to log in',
+          'ModuleName' => 'auxiliary/scanner/smb/smb_login',
+          'AssociatedTags' => []
+        }
       ],
     ]
   end

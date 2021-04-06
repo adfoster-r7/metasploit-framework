@@ -69,7 +69,6 @@ module ModuleActionCommands
     action  ||= mod.datastore['ACTION']
     jobify  = false
     quiet   = false
-
     @@module_opts.parse(args) do |opt, idx, val|
       case opt
       when '-j'

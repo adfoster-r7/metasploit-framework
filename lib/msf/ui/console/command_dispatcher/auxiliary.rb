@@ -51,9 +51,12 @@ class Auxiliary
       jobify = true
     end
 
-    # TODO: This is edge casey, the above code sets OptionStr - but the following code doesn't have OptionStr into consideration
+    # TODO: This is edge casey, the above code sets OptionStr - but the following code doesn't take OptionStr into consideration
     rhosts = datastore['RHOSTS']
-    # TODO: This won't work. The auxilary runner supports rhosts functionality. In the case of the smb version module, this command handler sets RHOST = x.x.x.x, but RHOSTS is still set. When the request is proxied through by AggregateModule to the target, it breaks this assumption - as the scanner plucks out 'rhosts' - and starts walking over the range all over again.
+    # TODO: This won't work. The auxiliary runner supports rhosts functionality. In the case of the smb version module,
+    # TODO: this command handler sets RHOST = x.x.x.x, but RHOSTS is still set. When the request is proxied through by
+    # TODO: AggregateModule to the target, it breaks this assumption - as the scanner plucks out 'rhosts' - and starts
+    # TODO: walking over the range all over again.
     begin
       # Check if this is a scanner module or doesn't target remote hosts
       if rhosts.blank? || mod.class.included_modules.include?(Msf::Auxiliary::Scanner)
@@ -69,7 +72,7 @@ class Auxiliary
       elsif rhosts.blank? || mod.is_a?(Msf::AggregateModule)
         mod.run_simple(
           'Action'         => action,
-          'OptionStr'      => opts.join(','),
+          'OptionStr'      => args[:datastore_options].map { |k,v| "#{k}=#{v}" }.join(','),
           'LocalInput'     => driver.input,
           'LocalOutput'    => driver.output,
           'RunAsJob'       => false,

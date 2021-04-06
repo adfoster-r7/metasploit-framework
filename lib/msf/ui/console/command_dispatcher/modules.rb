@@ -207,7 +207,7 @@ module Msf
                 self.driver.run_single("actions")
 
                 return false
-              elsif (active_module)
+              elsif active_module
                 show_options(active_module)
 
                 return true
@@ -221,6 +221,13 @@ module Msf
             args.each do |name|
               # Support for `options smb_enumusers` - as `options` on an 'aggregate' module might be overwhelming
               if active_module && active_module.is_a?(Msf::AggregateModule)
+                if args.length == 1 && args[0] == 'options'
+                  print_error("Action name required, please use 'options <action name>', where action name is one of:")
+                  self.driver.run_single("actions")
+
+                  return false
+                end
+
                 matching_action = active_module.actions.find { |action| action.name.casecmp?(name) }
                 if matching_action
                   module_names = active_module.find_modules_by_action(matching_action)
