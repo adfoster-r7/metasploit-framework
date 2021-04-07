@@ -28,11 +28,12 @@ class MetasploitModule < Msf::Auxiliary
         Options are case-insensitive can also be inlined for ease of use:
 
           version rhosts=127.0.0.1
-          login rhosts=127.0.0.1 username=root pass_filE=./wordlist.txt verbose=true
+          login rhosts=127.0.0.1 username=root pass_file=./wordlist.txt verbose=true
           exec username=root password=password sql='select version()'
 
         View the currently available options with:
 
+          options
           options version
           options login
           options dump_all
@@ -148,7 +149,7 @@ class MetasploitModule < Msf::Auxiliary
         {
           'Description' => 'Test writable dirs',
           'ModuleName' => 'auxiliary/scanner/mysql/mysql_writable_dirs',
-          'AssociatedTags' => [],
+          'AssociatedTags' => []
         }
       ],
     ]
