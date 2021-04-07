@@ -291,9 +291,7 @@ class ReadableText
     end
 
     # Description
-    output << "Description:\n"
-    output << word_wrap(Rex::Text.compress(mod.description))
-    output << "\n"
+    output << dump_description(mod, indent)
 
     # References
     output << dump_references(mod, indent)
@@ -347,9 +345,7 @@ class ReadableText
     end
 
     # Description
-    output << "Description:\n"
-    output << word_wrap(Rex::Text.compress(mod.description))
-    output << "\n"
+    output << dump_description(mod, indent)
 
     # References
     output << dump_references(mod, indent)
@@ -407,9 +403,7 @@ class ReadableText
     end
 
     # Description
-    output << "Description:\n"
-    output << word_wrap(Rex::Text.compress(mod.description))
-    output << "\n"
+    output << dump_description(mod, indent)
 
     # References
     output << dump_references(mod, indent)
@@ -456,9 +450,7 @@ class ReadableText
     end
 
     # Description
-    output << "Description:\n"
-    output << word_wrap(Rex::Text.compress(mod.description))
-    output << "\n"
+    output << dump_description(mod, indent)
 
     # References
     output << dump_references(mod, indent)
@@ -530,9 +522,7 @@ class ReadableText
     output << dump_traits(mod)
 
     # Description
-    output << "Description:\n"
-    output << word_wrap(Rex::Text.compress(mod.description))
-    output << "\n"
+    output << dump_description(mod, indent)
 
     output << dump_references(mod, indent)
 
@@ -643,6 +633,20 @@ class ReadableText
     end
 
     return tbl.to_s
+  end
+
+  def self.dump_description(mod, indent = '')
+    output = ''
+    if mod.is_a?(Msf::AggregateModule)
+      output << "Usage:\n"
+      output << mod.description.strip_heredoc.lines.map { |line| "#{indent}#{line}" }.join
+      output << "\n"
+    else
+      output << "Description:\n"
+      output << word_wrap(Rex::Text.compress(mod.description))
+      output << "\n"
+    end
+    output
   end
 
   # Dumps the references associated with the supplied module.

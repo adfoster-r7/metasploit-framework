@@ -8,7 +8,7 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name' => 'MySQL Client module',
+      'Name' => 'Microsoft SQL Server Client',
       'Description' => %q{
         A typical work flow consists of loading the module, setting your options,
         and using the required action commands.
@@ -111,14 +111,23 @@ class MetasploitModule < Msf::Auxiliary
         },
       ],
       [
-        'hashdump',
+        'userdump',
         {
-          'Description' => 'Dump the hashes',
-          'ModuleName' => 'auxiliary/scanner/mysql/mysql_hashdump',
+          'Description' => 'Dump the users',
+          'ModuleName' => 'auxiliary/admin/mssql/mssql_enum_sql_logins',
           'AssociatedTags' => [:gather]
         },
-      ]
+      ],
+      # [
+      #   'userdump',
+      #   {
+      #     'Description' => 'Dump the hashes',
+      #     'ModuleName' => 'auxiliary/admin/mssql/mssql_enum_sql_logins',
+      #     'AssociatedTags' => [:gather]
+      #   }
+      # ]
     ]
+
   end
 
   def misc
@@ -137,20 +146,8 @@ class MetasploitModule < Msf::Auxiliary
           'Description' => 'Execute mysql commands',
           'ModuleName' => 'auxiliary/admin/mysql/mysql_sql',
           'AssociatedTags' => [],
-          'Examples' => [
-            "exec username=root password=password sql='select version()'"
-          ]
         }
-      ],
-      # TODO: This doesn't clean up any files by default
-      [
-        'writable_dirs',
-        {
-          'Description' => 'Test writable dirs',
-          'ModuleName' => 'auxiliary/scanner/mysql/mysql_writable_dirs',
-          'AssociatedTags' => [],
-        }
-      ],
+      ]
     ]
   end
 end

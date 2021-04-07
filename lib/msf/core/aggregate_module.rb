@@ -48,7 +48,7 @@ module Msf::AggregateModule
     # TODO: This validation should most likely be implemented elsewhere
     duplicate_action_names = actions.group_by(&:name).select { |_name, values| values.length > 1 }
     if duplicate_action_names.any?
-      raise "Found duplicate action names: #{duplicate_action_names.keys.join(', ')}"
+      raise "Module '#{name}' has duplicate actions: #{duplicate_action_names.keys.join(', ')}"
     end
 
     # TODO: Not sure about the UX for the user here.
@@ -59,6 +59,7 @@ module Msf::AggregateModule
       end
 
       next unless action.module_name
+
       mod = framework.modules.create(action.module_name)
       unless mod.auxiliary?
         raise "Action '#{action.name}' is wanting to run a module that isn't an auxiliary module #{action.module_name}', this functionality is not supported"
@@ -90,6 +91,10 @@ module Msf::AggregateModule
     run_action(action)
   end
 
+  def find_action_by_name(name)
+    actions.find { |action| action.name == name }
+  end
+
   def find_modules_by_action(action)
     if action.invokes_tags
       find_modules_by_tags(action.invokes_tags)
@@ -99,11 +104,11 @@ module Msf::AggregateModule
   end
 
   def find_modules_by_tags(required_tags)
-    associate_actions = actions.select do |candidate_action|
+    associated_actions = actions.select do |candidate_action|
       (candidate_action.associated_tags & required_tags).any?
     end
 
-    associate_actions.map(&:module_name)
+    associated_actions.map(&:module_name)
   end
 
   private

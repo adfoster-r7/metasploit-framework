@@ -150,10 +150,16 @@ module DispatcherShell
       if cmd
         help_found = false
         cmd_found = false
+
         shell.dispatcher_stack.each do |dispatcher|
           next unless dispatcher.respond_to?(:commands)
           next if (dispatcher.commands.nil?)
           next if (dispatcher.commands.length == 0)
+
+          # TODO: Lives elsewhere, there's roughly the same duplicated coded for the 'show options' functionality
+          if active_module.is_a?(Msf::AggregateModule)
+
+          end
 
           if dispatcher.respond_to?("cmd_#{cmd}", true)
             cmd_found = true

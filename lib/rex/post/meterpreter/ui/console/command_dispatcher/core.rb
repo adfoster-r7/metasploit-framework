@@ -1561,7 +1561,7 @@ class Console::CommandDispatcher::Core
     end
 
     module_name = args.shift
-    mod = client.framework.modules.create(module_name);
+    mod = client.framework.modules.create(module_name)
 
     if mod.nil?
       print_error("Invalid module: #{module_name}")

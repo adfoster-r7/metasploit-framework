@@ -24,7 +24,7 @@ class MetasploitModule < Msf::Auxiliary
     )
 
     register_options([
-      OptPath.new('DIR_LIST', [ true, "List of directories to test", '' ]),
+      OptPath.new('DIR_LIST', [ true, "List of directories to test", ::File.join(Msf::Config.data_directory, 'wordlists', 'writable_linux_directories.txt')]),
       OptString.new('FILE_NAME', [ true, "Name of file to write", Rex::Text.rand_text_alpha(8) ]),
       OptString.new('USERNAME', [ true, 'The username to authenticate as', "root" ])
     ])

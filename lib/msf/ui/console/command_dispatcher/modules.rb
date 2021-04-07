@@ -194,8 +194,7 @@ module Msf
             print_line
           end
 
-
-          def cmd_actions(*args)
+          def cmd_actions(*_args)
             # TODO: Perhaps this would have to abide by similar semantics to `options ...` and `show options`
             self.driver.run_single("show actions")
           end
@@ -219,7 +218,7 @@ module Msf
 
             # TODO: Align `options` and `show options` functionality
             args.each do |name|
-              # Support for `options smb_enumusers` - as `options` on an 'aggregate' module might be overwhelming
+              # Handles support for `options smb_enumusers` - as `options` on an 'aggregate' module might be overwhelming
               if active_module && active_module.is_a?(Msf::AggregateModule)
                 if args.length == 1 && args[0] == 'options'
                   print_error("Action name required, please use 'options <action name>', where action name is one of:")
@@ -1520,6 +1519,10 @@ module Msf
           def show_actions(mod) # :nodoc:
             mod_actions = Serializer::ReadableText.dump_module_actions(mod, '   ')
             print("\n#{mod.type.capitalize} actions:\n\n#{mod_actions}\n") if (mod_actions and mod_actions.length > 0)
+
+            if active_module.is_a?(Msf::AggregateModule)
+              print(Msf::Serializer::ReadableText.dump_description(active_module, '   '))
+            end
           end
 
           def show_advanced_options(mod) # :nodoc:

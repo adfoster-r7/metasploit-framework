@@ -100,6 +100,12 @@ class MetasploitModule < Msf::Auxiliary
   def misc
     [
       [
+        'anonymous_login',
+        'Description' => 'Check anonymous login',
+        'ModuleName' => 'auxiliary/scanner/ftp/anonymous',
+        'AssociatedTags' => [:check, :enum]
+      ],
+      [
         'login',
         'Description' => 'Attempt to log in',
         'ModuleName' => 'auxiliary/scanner/ftp/ftp_login',
