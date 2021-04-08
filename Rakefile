@@ -24,6 +24,8 @@ else
   RSpec::Core::RakeTask.new(spec: 'db:test:prepare')
 end
 
+require_relative './test/tests/rakefile.rb'
+
 Metasploit::Framework::Application.load_tasks
 Metasploit::Framework::Spec::Constants.define_task
 Metasploit::Framework::Spec::Threads::Suite.define_task

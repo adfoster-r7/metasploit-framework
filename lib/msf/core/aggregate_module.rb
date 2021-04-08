@@ -60,6 +60,10 @@ module Msf::AggregateModule
       next unless action.module_name
 
       mod = framework.modules.create(action.module_name)
+
+      if !mod
+        raise "Aggregate module unable to load dependency #{action.module_name} for action #{action.name}"
+      end
       unless mod.auxiliary?
         raise "Action '#{action.name}' is wanting to run a module that isn't an auxiliary module #{action.module_name}', this functionality is not supported"
       end

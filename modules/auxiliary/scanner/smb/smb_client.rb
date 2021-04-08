@@ -184,6 +184,14 @@ class MetasploitModule < Msf::Auxiliary
   def misc
     [
       [
+        'test_edgecases',
+        {
+          'Description' => 'Test edge cases',
+          'ModuleName' => 'auxiliary/scanner/smb/test_edgecases',
+          'AssociatedTags' => []
+        }
+      ],
+      [
         'login',
         {
           'Description' => 'Attempt to log in',
@@ -200,6 +208,7 @@ class MetasploitModule < Msf::Auxiliary
           'AssociatedTags' => []
         }
       ],
+
     ]
   end
 end
