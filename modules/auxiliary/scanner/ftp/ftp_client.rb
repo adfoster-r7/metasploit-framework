@@ -10,7 +10,7 @@ class MetasploitModule < Msf::Auxiliary
     super(
       'Name' => 'FTP Client module',
       'Description' => 'Combines all of the utilities required for FTP enumeration/exploitation',
-      'Author' => 'Metasploit people',
+      'Author' => ['Metasploit people'],
       'License' => MSF_LICENSE,
       'Actions' => enum + checks + file_handling + gather + misc
     )

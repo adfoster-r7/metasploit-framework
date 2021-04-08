@@ -44,7 +44,6 @@ module Msf::AggregateModule
 
   def initialize(info)
     super
-
     # TODO: This validation should most likely be implemented elsewhere
     duplicate_action_names = actions.group_by(&:name).select { |_name, values| values.length > 1 }
     if duplicate_action_names.any?
@@ -66,6 +65,7 @@ module Msf::AggregateModule
       end
 
       # TODO: Investigate the current semantics of merging multiple properties. Particularly: validating duplicate names / difference types etc, as well as different default values - particularly for randomized fields
+      # TODO: For instance the smb capture module doesn't require rhost, but other options will mark it as required
       mod.options.values.each do |option|
         if option.advanced?
           register_advanced_options([option])
@@ -143,9 +143,13 @@ module Msf::AggregateModule
 
           rhosts_range = Rex::Socket::RangeWalker.new(rhosts_opt.normalize(rhosts))
           rhosts_range.each do |rhost|
+            new_datastore = self.datastore.merge('RHOSTS' => nil).merge('RHOST' => rhost)
+            if action.module_action
+              new_datastore['Action'] = action.module_action
+            end
             run_module(
               module_name,
-              self.datastore.merge('RHOSTS' => nil).merge('RHOST' => rhost)
+              new_datastore
             )
           end
         # end

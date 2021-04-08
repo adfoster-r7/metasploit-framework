@@ -38,7 +38,7 @@ class MetasploitModule < Msf::Auxiliary
           options login
           options dump_all
       },
-      'Author' => 'Metasploit people',
+      'Author' => ['Metasploit people'],
       'License' => MSF_LICENSE,
       'Actions' => (
       enum +

@@ -8,7 +8,7 @@
 ###
 #
 
-# TOOD: Add a module action? Not sure how this will impact the internals.
+# TODO: Add a new module action? Not sure how this will impact the internals.
 class Msf::Module::AuxiliaryAction
 
   #
@@ -36,6 +36,7 @@ class Msf::Module::AuxiliaryAction
     self.module_name = opts['ModuleName']
     self.associated_tags = opts['AssociatedTags'] || []
     self.invokes_tags = opts['InvokesTags']
+    self.module_action = opts['ModuleAction']
   end
 
   #
@@ -62,10 +63,10 @@ class Msf::Module::AuxiliaryAction
   #
   attr_reader :opts
 
-  attr_reader :invokes_tags, :associated_tags
+  attr_reader :invokes_tags, :associated_tags, :module_action
 
 protected
 
-  attr_writer :name, :opts, :description, :module_name, :invokes_tags, :associated_tags # :nodoc:
+  attr_writer :name, :opts, :description, :module_name, :invokes_tags, :associated_tags, :module_action # :nodoc:
 
 end

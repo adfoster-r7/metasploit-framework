@@ -9,8 +9,38 @@ class MetasploitModule < Msf::Auxiliary
   def initialize
     super(
       'Name' => 'SMB Client module',
-      'Description' => 'Combines all of the utilities required for SMB enumeration/exploitation',
-      'Author' => 'Metasploit people',
+      'Description' => %q{
+        A typical work flow consists of loading the module, setting your options,
+        and using the required action commands.
+
+        Example:
+
+          use auxiliary/scanner/smb/smb_client
+
+          set RHOSTS 127.0.0.1
+          set SMBUser username
+          set SMBPass password
+
+          enum
+          version
+          check
+          gather_all
+
+        Options are case-insensitive can also be inlined for ease of use:
+
+          version rhosts=127.0.0.1
+          login rhosts=127.0.0.1 smbuser=Administrator smbpass='P4$$w0rd' verbose=true
+          upload rhosts=127.0.0.1 smbuser=Administrator smbpass='P4$$w0rd' smbshare=shared_folder lpath=./payload.exe rpath=payload.exe
+          ls smbshare=shared_folder rpath='foo\bar'
+
+        View the currently available options with:
+
+          options
+          options version
+          options login
+          options check
+      },
+      'Author' => ['Metasploit people'],
       'License' => MSF_LICENSE,
       'Actions' => (
         enum +
@@ -119,7 +149,14 @@ class MetasploitModule < Msf::Auxiliary
           'AssociatedTags' => []
         }
       ],
-      # TODO: `ls` functionality
+      [
+        'ls',
+        {
+          'Description' => 'list a share directory',
+          'ModuleName' => 'auxiliary/admin/smb/list_directory',
+          'AssociatedTags' => []
+        }
+      ],
     ]
   end
 
@@ -151,6 +188,15 @@ class MetasploitModule < Msf::Auxiliary
         {
           'Description' => 'Attempt to log in',
           'ModuleName' => 'auxiliary/scanner/smb/smb_login',
+          'AssociatedTags' => []
+        }
+      ],
+      [
+        'capture',
+        {
+          'Description' => 'Run SMB capture server',
+          'ModuleName' => 'auxiliary/server/capture/smb',
+          'ModuleAction' => 'Capture',
           'AssociatedTags' => []
         }
       ],

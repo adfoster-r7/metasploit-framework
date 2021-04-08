@@ -10,7 +10,7 @@ class MetasploitModule < Msf::Auxiliary
     super(
       'Name' => 'SMB Client module',
       'Description' => 'Combines all of the utilities required for SMB enumeration/exploitation',
-      'Author' => 'Metasploit people',
+      'Author' => ['Metasploit people'],
       'License' => MSF_LICENSE,
       'Actions' => enum + checks + file_handling + gather + misc
     )
