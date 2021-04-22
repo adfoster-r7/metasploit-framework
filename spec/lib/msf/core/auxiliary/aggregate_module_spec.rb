@@ -1,235 +1,169 @@
 require 'spec_helper'
 
-
 RSpec.describe Msf::AggregateModule do
 
-  include_context 'Msf::DBManager'
-  include_context 'Metasploit::Framework::Spec::Constants cleaner'
+  include_context 'Msf::Simple::Framework'
 
-  let(:dummy_class) do
+  # TODO: Seems sus, threads were only left over at the end - pointing to rspec leaking threads?
+  include_context 'Msf::Framework#threads cleaner'
+  # include_context 'Metasploit::Framework::Spec::Constants cleaner'
+
+  def create_mod
     described_class = self.described_class
-
     mod_klass = Class.new(Msf::Auxiliary) do
       include described_class
 
-      def initialize
+      def initialize(module_actions)
         super(
-          'Name' => 'test aggregate module',
-          'Description' => 'test aggregate module',
+          'Name' => 'Mock aggregate module name',
+          'Description' => 'Mock aggregate module description',
           'Author' => ['Unknown'],
           'License' => MSF_LICENSE,
-          'Actions' => [
-            [
-              'scan',
-              {
-                'Description' => 'Scan the target',
-                'ModuleName' => 'auxiliary/scanner',
-                'AssociatedTags' => []
-              }
-            ]
-          ]
+          'Actions' => module_actions
         )
       end
     end
-    s = mod_klass.new
-    # TODO: Aggregate mixin already requires that the framework object is ready, and can't be provided _after_ the initialize method is run
-    s.framework = framework
-    s.datastore['Region'] = 'us-east-1'
-    s.datastore['RHOST'] = '127.0.0.1'
-    s
+    mod_klass.framework = framework
+    instance = mod_klass.new(module_actions)
+    Msf::Simple::Framework.simplify_module(instance, false)
+    instance
   end
 
   before :each do
     framework.modules.add_module_path(File.join(FILE_FIXTURES_PATH, 'modules'))
   end
 
-  let(:auxiliary_scanner) {
-    framework.modules.create('exploit/auto_target_windows')
-  }
+  describe 'scanner module support' do
+    let(:module_actions) do
+      [
+        [
+          'scan',
+          {
+            'Description' => 'Scan the target',
+            'ModuleName' => 'auxiliary/scanner',
+            'AssociatedTags' => []
+          }
+        ]
+      ]
+    end
 
-  let(:windows_exploit) {
-    framework.modules.add_module_path(File.join(FILE_FIXTURES_PATH, 'modules'))
-    framework.modules.create('exploit/auto_target_windows')
-  }
+    context 'when there is one RHOST value' do
+      it 'returns one result' do
+        mod = create_mod
+        result = mod.run_simple(
+          'Action' => 'scan',
+          'Options' => {
+            'RHOSTS' => '192.0.2.0',
+          },
+          'RunAsJob' => false,
+          'Quiet' => true
+        )
 
-  let(:linux_exploit){
-    framework.modules.add_module_path(File.join(FILE_FIXTURES_PATH, 'modules'))
-    framework.modules.create('exploit/auto_target_linux')
-  }
+        expected_result = {
+          "auxiliary/scanner" => {
+            "192.0.2.0" => "scanner result for 192.0.2.0"
+          }
+        }
 
-  let(:auto_exploit){
-    framework.modules.add_module_path(File.join(FILE_FIXTURES_PATH, 'modules'))
-    framework.modules.create('exploit/existing_auto_target')
-  }
+        expect(mod.error).to be_nil
+        expect(result).to eq(expected_result)
+      end
+    end
 
-  let(:single_exploit){
-    framework.modules.add_module_path(File.join(FILE_FIXTURES_PATH, 'modules'))
-    framework.modules.create('exploit/single_target_exploit')
-  }
+    context 'when there are multiple RHOSTS' do
+      it 'returns all results' do
+        mod = create_mod
+        result = mod.run_simple(
+          'Action' => 'scan',
+          'Options' => {
+            'RHOSTS' => '192.0.2.0/30',
+          },
+          'RunAsJob' => false,
+          'Quiet' => true
+        )
 
-  describe 'testing' do
-    it 'works' do
-      require 'pry'; binding.pry
-      framework.
+        expected_result = {
+          "auxiliary/scanner" => {
+            "192.0.2.0" => "scanner result for 192.0.2.0",
+            "192.0.2.1" => "scanner result for 192.0.2.1",
+            "192.0.2.2" => "scanner result for 192.0.2.2",
+            "192.0.2.3" => "scanner result for 192.0.2.3"
+          }
+        }
+
+        expect(mod.error).to be_nil
+        expect(result).to eq(expected_result)
+      end
     end
   end
 
+  describe 'action validation' do
+    context 'when duplicate actions are present' do
+      let(:module_actions) do
+        [
+          [
+            'scan',
+            {
+              'Description' => 'Scan the target',
+              'ModuleName' => 'auxiliary/scanner',
+              'AssociatedTags' => []
+            }
+          ],
+          [
+            'scan',
+            {
+              'Description' => 'Scan the target',
+              'ModuleName' => 'auxiliary/simple',
+              'AssociatedTags' => []
+            }
+          ]
+        ]
+      end
 
-  context 'adding an Automatic target' do
-    context 'an exploit without an existing Automatic target' do
-
-      it 'should have an Automatic target added to the top of the list' do
-        first_target = windows_exploit.targets.first
-        expect(first_target.name).to eq 'Automatic'
+      it 'creates a validation error' do
+        expected_message = "Module 'Mock aggregate module name' has duplicate actions: scan"
+        expect { create_mod }.to raise_error Msf::ValidationError, expected_message
       end
     end
 
-    context 'an exploit with an existing Automatic target' do
-      it 'should not add an extra Automatic Target' do
-        expect(auto_exploit.targets.count).to eq 5
+    context 'when the target module does not exist' do
+      let(:module_actions) do
+        [
+          [
+            'scan',
+            {
+              'Description' => 'Scan the target',
+              'ModuleName' => 'auxiliary/typoed_module_name',
+              'AssociatedTags' => []
+            }
+          ]
+        ]
+      end
+
+      it 'creates a validation error' do
+        expected_message = "Aggregate module unable to load dependency 'auxiliary/typoed_module_name' for action 'scan'"
+        expect { create_mod }.to raise_error Msf::ValidationError, expected_message
       end
     end
 
-    context 'an exploit with only one target' do
-      it 'should not add an automatic target' do
-        expect(single_exploit.targets.count).to eq 1
+    context 'when attempting to configure an exploit module' do
+      let(:module_actions) do
+        [
+          [
+            'exploit',
+            {
+              'Description' => 'Scan the target',
+              'ModuleName' => 'exploit/auto_target_linux',
+              'AssociatedTags' => []
+            }
+          ]
+        ]
+      end
+
+      it 'creates a validation error' do
+        expected_message = "Action 'exploit' depends on a non-auxiliary module 'exploit/auto_target_linux', this functionality is not supported"
+        expect { create_mod }.to raise_error Msf::ValidationError, expected_message
       end
     end
   end
-
-  describe '#auto_target?' do
-    it 'should return true if the automatic target is selected' do
-      host_addr = '192.168.1.5'
-      host_obj  = FactoryBot.create(:mdm_host, address: host_addr )
-      windows_exploit.datastore['TARGET'] = 0
-      windows_exploit.datastore['WORKSPACE'] = host_obj.workspace.name
-      windows_exploit.datastore['RHOST'] = host_addr
-      expect(windows_exploit.auto_target?).to be true
-    end
-
-    it 'should return false if the automatic target is not selected' do
-      windows_exploit.datastore['TARGET'] = 1
-      expect(windows_exploit.auto_target?).to be false
-    end
-
-    it 'should return false if the automatic target was added by the module authour' do
-      auto_exploit.datastore['TARGET'] = 0
-      expect(auto_exploit.auto_target?).to be false
-    end
-  end
-
-  context 'finding the target host' do
-    it 'should return a matching Mdm::host if there is one' do
-      host_addr = '192.168.1.5'
-      host_obj  = FactoryBot.create(:mdm_host, address: host_addr )
-      windows_exploit.datastore['WORKSPACE'] = host_obj.workspace.name
-      windows_exploit.datastore['RHOST'] = host_addr
-      expect(windows_exploit.auto_target_host).to eq host_obj
-    end
-
-    it 'should return nil if there is not one' do
-      windows_exploit.datastore['RHOST'] = '192.168.111.115'
-      expect(windows_exploit.auto_target_host).to be_nil
-    end
-  end
-
-  context 'filtering targets' do
-    let(:windows_xp_host) { FactoryBot.create(:mdm_host, address: '192.168.172.150', os_family: 'Windows', os_name: 'Windows XP' ) }
-    let(:windows_xp_sp1_host) { FactoryBot.create(:mdm_host, address: '192.168.172.150', os_family: 'Windows', os_name: 'Windows XP', os_sp: 'SP1' ) }
-    let(:windows_xp_sp2_host) { FactoryBot.create(:mdm_host, address: '192.168.172.150', os_family: 'Windows', os_name: 'Windows XP', os_sp: 'SP2' ) }
-    let(:windows_xp_sp3_host) { FactoryBot.create(:mdm_host, address: '192.168.172.150', os_family: 'Windows', os_name: 'Windows XP', os_sp: 'SP3' ) }
-    let(:windows_7_host) { FactoryBot.create(:mdm_host, address: '192.168.172.150', os_family: 'Windows', os_name: 'Windows 7' ) }
-    let(:unknown_host) { FactoryBot.create(:mdm_host, address: '192.168.172.150', os_family: nil ) }
-    let(:potential_targets) { windows_exploit.filter_by_os_family(windows_xp_host) }
-    let(:xp_targets) { windows_exploit.filter_by_os_name(potential_targets,windows_xp_host) }
-
-    context 'by OS family' do
-      it 'should return an array of all matching targets' do
-        expect(windows_exploit.filter_by_os_family(windows_xp_host).count).to eq 4
-      end
-
-      it 'should return an empty array if there are no matches' do
-        expect(linux_exploit.filter_by_os_family(windows_xp_host).count).to eq 0
-      end
-
-      it 'should return nil if the os is unkown on the host' do
-        expect(windows_exploit.filter_by_os_family(unknown_host).count).to eq 0
-      end
-    end
-
-    context 'by OS Name' do
-
-
-      it 'should return an array of matching targets when any exist' do
-        expect(windows_exploit.filter_by_os_name(potential_targets,windows_xp_host)).to eq [potential_targets[1],potential_targets[3]]
-      end
-
-      it 'should return an empty array if there are no matches' do
-        expect(windows_exploit.filter_by_os_name(potential_targets,windows_7_host)).to eq []
-      end
-
-      it 'should return an empty array when there is no OS name' do
-        expect(windows_exploit.filter_by_os_name(potential_targets,unknown_host)).to eq []
-      end
-    end
-
-    context 'by OS Version/Service Pack' do
-      it 'should return an array of matching results if they exist' do
-        expect(windows_exploit.filter_by_os_sp(potential_targets,windows_xp_sp1_host)).to eq [xp_targets[0]]
-      end
-
-      it 'should return an empty array if there are no matching results' do
-        expect(windows_exploit.filter_by_os_sp(potential_targets,windows_xp_sp2_host)).to eq []
-      end
-
-      it 'should return an empty array if there is no SP' do
-        expect(windows_exploit.filter_by_os_sp(potential_targets,unknown_host)).to eq []
-      end
-
-    end
-
-    context '#filter_by_os' do
-      it 'should return an array of matching targets' do
-        expect(windows_exploit.filter_by_os(windows_xp_sp1_host)).to eq [xp_targets[0]]
-      end
-
-      it 'should fall back to previous filter levels if a more strict filter did not return results' do
-        expect(windows_exploit.filter_by_os(windows_xp_host)).to eq xp_targets
-      end
-    end
-
-    context '#select_target' do
-      it 'should return the matching target on a precise match' do
-        windows_exploit.datastore['WORKSPACE'] = windows_xp_sp1_host.workspace.name
-        windows_exploit.datastore['RHOST'] = windows_xp_sp1_host.address
-        expect(windows_exploit.select_target).to eq xp_targets[0]
-      end
-
-      it 'should return the first match on a less precise match' do
-        windows_exploit.datastore['WORKSPACE'] = windows_xp_host.workspace.name
-        windows_exploit.datastore['RHOST'] = windows_xp_host.address
-        expect(windows_exploit.select_target).to eq xp_targets[0]
-      end
-    end
-
-    context '#auto_targeted_index' do
-      it 'should return the index of the selected target' do
-        windows_exploit.datastore['WORKSPACE'] = windows_xp_sp1_host.workspace.name
-        windows_exploit.datastore['RHOST'] = windows_xp_sp1_host.address
-        expect(windows_exploit.auto_targeted_index).to eq 2
-      end
-
-      it 'should return nil if it does not find a match' do
-        windows_exploit.datastore['WORKSPACE'] = unknown_host.workspace.name
-        windows_exploit.datastore['RHOST'] = unknown_host.address
-        expect(windows_exploit.auto_targeted_index).to eq nil
-      end
-    end
-
-  end
-
-
-
-
-
 end

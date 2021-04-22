@@ -137,6 +137,8 @@ def run
         end
       end
 
+      # require 'pry'; binding.pry
+
       # Do as much of this work as possible while other threads are running
       while !res.empty?
         results.merge! res.pop
@@ -268,6 +270,7 @@ end
 def seppuko!
   @tl.each do |t|
     begin
+      require 'pry'; binding.pry
       t.kill if t.alive?
     rescue ::Exception
     end

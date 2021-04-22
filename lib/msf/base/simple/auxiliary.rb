@@ -85,6 +85,7 @@ module Auxiliary
       result = self.job_run_proc(ctx, &:run)
       self.job_cleanup_proc(ctx)
 
+      omod.error = mod.error
       return result
     end
   end

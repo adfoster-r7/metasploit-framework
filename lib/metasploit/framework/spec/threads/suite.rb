@@ -72,6 +72,7 @@ module Metasploit
                   thread_list = Metasploit::Framework::Spec::Threads::Suite.non_debugger_thread_list
                   thread_count = thread_list.count
 
+                  # require 'pry'; binding.pry
                   if thread_count > EXPECTED_THREAD_COUNT_AROUND_SUITE
                     error_lines = []
 

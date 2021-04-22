@@ -50,6 +50,7 @@ class Msf::ModuleSet < Hash
 
     # If the klass is valid for this reference_name, try to create it
     unless klass.nil? or klass == Msf::SymbolicModule
+      # require 'pry'; binding.pry
       instance = klass.new
     end
 

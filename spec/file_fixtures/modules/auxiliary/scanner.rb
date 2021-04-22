@@ -26,5 +26,6 @@ class MetasploitModule < Msf::Auxiliary
 
   def run_host(ip)
     print_status("Mock scanner for #{ip}")
+    "scanner result for #{ip}"
   end
 end

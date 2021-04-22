@@ -35,6 +35,8 @@
 #   - TODO: The upload/download modules for smb aren't great / consistent with expectations, i.e. expecting `download` download to the current working directory
 #   - TODO: ctrl+c kills the current 'child' module, and not the current 'parent' aggregate module
 
+require 'msf/core/exception'
+
 ##
 # This mixin signifies that the module itself implements no functionality.
 # Instead it acts as an aggregate module that simply delegates all responsibility
@@ -47,7 +49,7 @@ module Msf::AggregateModule
     # TODO: This validation should most likely be implemented elsewhere
     duplicate_action_names = actions.group_by(&:name).select { |_name, values| values.length > 1 }
     if duplicate_action_names.any?
-      raise "Module '#{name}' has duplicate actions: #{duplicate_action_names.keys.join(', ')}"
+      raise Msf::ValidationError, "Module '#{name}' has duplicate actions: #{duplicate_action_names.keys.join(', ')}"
     end
 
     # TODO: Not sure about the UX for the user here.
@@ -61,11 +63,15 @@ module Msf::AggregateModule
 
       mod = framework.modules.create(action.module_name)
 
-      if !mod
-        raise "Aggregate module unable to load dependency #{action.module_name} for action #{action.name}"
+      if mod.nil?
+        raise Msf::ValidationError, "Aggregate module unable to load dependency '#{action.module_name}' for action '#{action.name}'"
       end
       unless mod.auxiliary?
-        raise "Action '#{action.name}' is wanting to run a module that isn't an auxiliary module #{action.module_name}', this functionality is not supported"
+        raise Msf::ValidationError, "Action '#{action.name}' depends on a non-auxiliary module '#{action.module_name}', this functionality is not supported"
+      end
+
+      unless mod.respond_to?(:run)
+        raise Msf::ValidationError, "Action '#{action.name}' depends on a module without a run method '#{action.module_name}', this functionality is not supported"
       end
 
       # TODO: Investigate the current semantics of merging multiple properties. Particularly: validating duplicate names / difference types etc, as well as different default values - particularly for randomized fields
@@ -124,25 +130,30 @@ module Msf::AggregateModule
 
   def run_action(action)
     associated_modules = find_modules_by_action(action)
+    # A map of module names their respective results
+    results = {}
     associated_modules.each do |module_name|
       print_status("---------------------- Using #{highlight_module_name(module_name)} as action ----------------------")
 
       # TODO: Tempoarily stolen from command_dispatcher/auxillary - this most likely shouldn't live here in this form. It needs to work with scanners most likely too.
       rhosts = datastore['RHOSTS']
       begin
+        mod = framework.modules.create(module_name)
+
         # TODO: We'll need to think about rhosts in its entirety
         # Check if this is a scanner module or doesn't target remote hosts
-        # if rhosts.blank? || mod.class.included_modules.include?(Msf::Auxiliary::Scanner)
-        #   run_module(
-        #     module_name,
-        #     self.datastore
-        #   )
-        # else
+        if rhosts.blank? || mod.class.included_modules.include?(Msf::Auxiliary::Scanner)
+          results[module_name] = run_module(
+            mod,
+            self.datastore
+          )
+        else
           # For multi target attempts with non-scanner modules.
           rhosts_opt = Msf::OptAddressRange.new('RHOSTS')
           if !rhosts_opt.valid?(rhosts)
-            print_error("Auxiliary failed: option RHOSTS failed to validate.")
-            return false
+            # print_error()
+            raise Msf::ValidationError, "Auxiliary failed: option RHOSTS failed to validate."
+            # return false
           end
 
           rhosts_range = Rex::Socket::RangeWalker.new(rhosts_opt.normalize(rhosts))
@@ -151,19 +162,22 @@ module Msf::AggregateModule
             if action.module_action
               new_datastore['Action'] = action.module_action
             end
-            run_module(
-              module_name,
+            results[module_name] ||= {}
+            results[module_name][rhost] = run_module(
+              mod,
               new_datastore
             )
           end
-        # end
-      rescue ::Timeout::Error
+        end
+      rescue ::Timeout::Error => e
         print_error("Auxiliary triggered a timeout exception")
         print_error("Call stack:")
         e.backtrace.each do |line|
           break if line =~ /lib.msf.base.simple/
           print_error("  #{line}")
         end
+
+        raise e
       # rescue ::Interrupt
       #   print_error("Auxiliary interrupted by the console user")
       rescue ::Exception => e
@@ -176,29 +190,18 @@ module Msf::AggregateModule
           end
         end
 
-        return false
+        # TODO Should our implementation raise e when called from RPC/Tests?
+        raise e
       end
     rescue => e
-      $stderr.puts "TODO: Error handling. Module failed #{e}"
+      raise e
+      # $stderr.puts "TODO: Error handling. Module failed #{e}"
     end
+
+    results
   end
 
-  def run_module(module_name, datastore)
-    mod = framework.modules.create(module_name)
-
-    # Bail if it isn't aux
-    if mod.type != Msf::MODULE_AUX
-      return Exploit::CheckCode::Unsupported(
-        "#{mod} is not an auxiliary module."
-      )
-    end
-
-    # Bail if run isn't defined
-    unless mod.respond_to?(:run)
-      return Exploit::CheckCode::Unsupported(
-        "#{mod} does not define a run method."
-      )
-    end
+  def run_module(mod, datastore)
 
     # Retrieve the module's return value
     res = mod.run_simple(
