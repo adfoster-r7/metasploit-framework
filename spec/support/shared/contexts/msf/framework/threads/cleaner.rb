@@ -12,9 +12,13 @@ RSpec.shared_context 'Msf::Framework#threads cleaner' do
     thread_manager = framework.threads
 
     thread_manager.each do |thread|
-      thread.kill
-      # ensure killed thread is cleaned up by VM
-      thread.join
+      begin
+        thread.kill
+        # ensure killed thread is cleaned up by VM
+        thread.join
+      rescue => e
+        $stderr.puts "Thread manager had a thread that was dead #{e.inspect}"
+      end
     end
 
     thread_manager.monitor.kill

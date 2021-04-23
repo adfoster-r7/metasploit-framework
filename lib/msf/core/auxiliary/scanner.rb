@@ -268,7 +268,6 @@ end
 def seppuko!
   @tl.each do |t|
     begin
-      require 'pry'; binding.pry
       t.kill if t.alive?
     rescue ::Exception
     end

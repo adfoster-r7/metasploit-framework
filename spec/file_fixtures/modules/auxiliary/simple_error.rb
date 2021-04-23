@@ -8,8 +8,8 @@ class MetasploitModule < Msf::Auxiliary
     super(
       update_info(
         info,
-        'Name' => 'Mock simple auxiliary module',
-        'Description' => 'Mock simple auxiliary module',
+        'Name' => 'Mock error auxiliary module',
+        'Description' => 'Mock error auxiliary module',
         'Author' => 'Unknown',
         'License' => MSF_LICENSE,
         'References' => [
@@ -23,7 +23,7 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def run
-    print_status("Mock simple auxiliary module for #{datastore['RHOST']}")
-    "simple result for #{datastore['RHOST']}"
+    print_status("Mock error auxiliary module for #{datastore['RHOST']}")
+    raise "mock error for #{datastore['RHOST']}"
   end
 end

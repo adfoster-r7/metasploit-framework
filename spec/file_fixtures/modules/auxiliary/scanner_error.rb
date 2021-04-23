@@ -4,12 +4,14 @@
 ##
 
 class MetasploitModule < Msf::Auxiliary
+  include Msf::Auxiliary::Scanner
+
   def initialize(info = {})
     super(
       update_info(
         info,
-        'Name' => 'Mock simple auxiliary module',
-        'Description' => 'Mock simple auxiliary module',
+        'Name' => 'Mock scanner auxiliary module',
+        'Description' => 'Mock error auxiliary module',
         'Author' => 'Unknown',
         'License' => MSF_LICENSE,
         'References' => [
@@ -22,8 +24,8 @@ class MetasploitModule < Msf::Auxiliary
     ])
   end
 
-  def run
-    print_status("Mock simple auxiliary module for #{datastore['RHOST']}")
-    "simple result for #{datastore['RHOST']}"
+  def run_host(ip)
+    print_status("Mock scanner auxiliary scanner for #{ip}")
+    raise "mock scanner error for #{datastore['RHOST']}"
   end
 end

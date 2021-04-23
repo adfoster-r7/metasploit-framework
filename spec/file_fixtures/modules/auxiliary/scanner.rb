@@ -10,8 +10,8 @@ class MetasploitModule < Msf::Auxiliary
     super(
       update_info(
         info,
-        'Name' => 'Boilerplate auxiliary scanner',
-        'Description' => 'Test!',
+        'Name' => 'Mock scanner auxiliary module',
+        'Description' => 'Mock error auxiliary module',
         'Author' => 'Unknown',
         'License' => MSF_LICENSE,
         'References' => [
@@ -25,7 +25,7 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def run_host(ip)
-    print_status("Mock scanner for #{ip}")
+    print_status("Mock scanner auxiliary scanner for #{ip}")
     "scanner result for #{ip}"
   end
 end

@@ -5,7 +5,7 @@ RSpec.describe Msf::AggregateModule do
 
   # TODO: Seems sus, threads were only left over at the end - pointing to rspec leaking threads?
   include_context 'Msf::Framework#threads cleaner'
-  # include_context 'Metasploit::Framework::Spec::Constants cleaner'
+  include_context 'Metasploit::Framework::Spec::Constants cleaner'
 
   def create_mod
     described_class = self.described_class
@@ -32,71 +32,138 @@ RSpec.describe Msf::AggregateModule do
     framework.modules.add_module_path(File.join(FILE_FIXTURES_PATH, 'modules'))
   end
 
-  describe 'auxiliary scanner module support' do
-    let(:module_actions) do
-      [
+  describe 'scanner modules' do
+    context 'when the auxiliary scanner module fails' do
+      let(:module_actions) do
         [
-          'scan',
-          {
-            'Description' => 'Scan the target',
-            'ModuleName' => 'auxiliary/scanner',
-            'AssociatedTags' => []
-          }
+          [
+            'scan',
+            {
+              'Description' => 'Scan the target',
+              'ModuleName' => 'auxiliary/scanner_error',
+              'AssociatedTags' => []
+            }
+          ]
         ]
-      ]
-    end
+      end
 
-    context 'when there is one RHOST value' do
-      it 'returns one result' do
-        mod = create_mod
-        result = mod.run_simple(
-          'Action' => 'scan',
-          'Options' => {
-            'RHOSTS' => '192.0.2.0'
-          },
-          'RunAsJob' => false,
-          'Quiet' => true
-        )
+      context 'when there is one RHOST value' do
+        it 'returns one result' do
+          mod = create_mod
+          result = mod.run_simple(
+            'Action' => 'scan',
+            'Options' => {
+              'RHOSTS' => '192.0.2.0'
+            },
+            'RunAsJob' => false,
+            'Quiet' => true
+          )
 
-        expected_result = {
-          'auxiliary/scanner' => {
-            'result' => {
-              '192.0.2.0' => 'scanner result for 192.0.2.0'
+          expected_result = {
+            'auxiliary/scanner_error' => {
+              'result' => nil,
+              'error' => match_error(RuntimeError.new('mock scanner error for 192.0.2.0'))
             }
           }
-        }
 
-        expect(mod.error).to be_nil
-        expect(result).to eq(expected_result)
+          # TODO: Scanners don't propagate errors
+          # expect(mod.error).to match_error(RuntimeError.new('mock scanner error for 192.0.2.0'))
+          expect(result).to include(expected_result)
+        end
+      end
+
+      context 'when there are multiple RHOSTS' do
+        it 'returns all results' do
+          mod = create_mod
+          result = mod.run_simple(
+            'Action' => 'scan',
+            'Options' => {
+              'RHOSTS' => '192.0.2.0/30'
+            },
+            'RunAsJob' => false,
+            'Quiet' => true
+          )
+
+          expected_result = {
+            'auxiliary/scanner_error' => {
+              'result' => nil,
+              'error' => match_error(RuntimeError.new('mock scanner error for 192.0.2.0'))
+            }
+          }
+
+          # TODO: Scanners don't propagate errors
+          # expect(mod.error).to match_error(RuntimeError.new('mock scanner error for 192.0.2.0'))
+          expect(result).to include(expected_result)
+        end
       end
     end
 
-    context 'when there are multiple RHOSTS' do
-      it 'returns all results' do
-        mod = create_mod
-        result = mod.run_simple(
-          'Action' => 'scan',
-          'Options' => {
-            'RHOSTS' => '192.0.2.0/30'
-          },
-          'RunAsJob' => false,
-          'Quiet' => true
-        )
+    context 'when the auxiliary scanner module succeeds' do
+      let(:module_actions) do
+        [
+          [
+            'scan',
+            {
+              'Description' => 'Scan the target',
+              'ModuleName' => 'auxiliary/scanner',
+              'AssociatedTags' => []
+            }
+          ]
+        ]
+      end
 
-        expected_result = {
-          'auxiliary/scanner' => {
-            # TODO: This is super leaky as a result; Scanners return a different shape than exploits
-            'result' => {
-              '192.0.2.0' => 'scanner result for 192.0.2.0',
-              '192.0.2.1' => 'scanner result for 192.0.2.1',
-              '192.0.2.2' => 'scanner result for 192.0.2.2',
-              '192.0.2.3' => 'scanner result for 192.0.2.3'
+      context 'when there is one RHOST value' do
+        it 'returns one result' do
+          mod = create_mod
+          result = mod.run_simple(
+            'Action' => 'scan',
+            'Options' => {
+              'RHOSTS' => '192.0.2.0'
+            },
+            'RunAsJob' => false,
+            'Quiet' => true
+          )
+
+          expected_result = {
+            'auxiliary/scanner' => {
+              'result' => {
+                '192.0.2.0' => 'scanner result for 192.0.2.0'
+              }
             }
           }
-        }
 
-        expect(mod.error).to be_nil
-        expect(result).to eq(expected_result)
+          expect(mod.error).to be_nil
+          expect(result).to include(expected_result)
+        end
+      end
+
+      context 'when there are multiple RHOSTS' do
+        it 'returns all results' do
+          mod = create_mod
+          result = mod.run_simple(
+            'Action' => 'scan',
+            'Options' => {
+              'RHOSTS' => '192.0.2.0/30'
+            },
+            'RunAsJob' => false,
+            'Quiet' => true
+          )
+
+          expected_result = {
+            'auxiliary/scanner' => {
+              # TODO: This is super leaky as a result; Scanners return a different shape than exploits
+              'result' => {
+                '192.0.2.0' => 'scanner result for 192.0.2.0',
+                '192.0.2.1' => 'scanner result for 192.0.2.1',
+                '192.0.2.2' => 'scanner result for 192.0.2.2',
+                '192.0.2.3' => 'scanner result for 192.0.2.3'
+              }
+            }
+          }
+
+          expect(mod.error).to be_nil
+          expect(result).to include(expected_result)
+        end
       end
     end
   end
@@ -136,7 +203,7 @@ RSpec.describe Msf::AggregateModule do
         }
 
         expect(mod.error).to be_nil
-        expect(result).to eq(expected_result)
+        expect(result).to include(expected_result)
       end
     end
 
@@ -170,7 +237,7 @@ RSpec.describe Msf::AggregateModule do
         }
 
         expect(mod.error).to be_nil
-        expect(result).to eq(expected_result)
+        expect(result).to include(expected_result)
       end
     end
   end
@@ -196,8 +263,8 @@ RSpec.describe Msf::AggregateModule do
         [
           'module_b',
           {
-            'Description' => 'Simple auxiliary scan against the target',
-            'ModuleName' => 'auxiliary/simple',
+            'Description' => 'Raises an error',
+            'ModuleName' => 'auxiliary/simple_error',
             'AssociatedTags' => [:enum]
           }
         ]
@@ -219,13 +286,19 @@ RSpec.describe Msf::AggregateModule do
         expected_result = {
           'auxiliary/simple' => {
             '192.0.2.0' => {
-              'result' => 'simple result for 192.0.2.0'
+              'result' => "simple result for 192.0.2.0",
+            }
+          },
+          'auxiliary/simple_error' => {
+            '192.0.2.0' => {
+              'result' => nil,
+              'error' => match_error(RuntimeError.new('mock error for 192.0.2.0'))
             }
           }
         }
 
         expect(mod.error).to be_nil
-        expect(result).to eq(expected_result)
+        expect(result).to include(expected_result)
       end
     end
 
@@ -244,22 +317,40 @@ RSpec.describe Msf::AggregateModule do
         expected_result = {
           'auxiliary/simple' => {
             '192.0.2.0' => {
-              'result' => 'simple result for 192.0.2.0'
+              'result' => "simple result for 192.0.2.0",
             },
             '192.0.2.1' => {
-              'result' => 'simple result for 192.0.2.1'
+              'result' => "simple result for 192.0.2.1",
             },
             '192.0.2.2' => {
-              'result' => 'simple result for 192.0.2.2'
+              'result' => "simple result for 192.0.2.2",
             },
             '192.0.2.3' => {
-              'result' => 'simple result for 192.0.2.3'
+              'result' => "simple result for 192.0.2.3",
+            }
+          },
+          'auxiliary/simple_error' => {
+            '192.0.2.0' => {
+              'result' => nil,
+              'error' => match_error(RuntimeError.new('mock error for 192.0.2.0'))
+            },
+            '192.0.2.1' => {
+              'result' => nil,
+              'error' => match_error(RuntimeError.new('mock error for 192.0.2.1'))
+            },
+            '192.0.2.2' => {
+              'result' => nil,
+              'error' => match_error(RuntimeError.new('mock error for 192.0.2.2'))
+            },
+            '192.0.2.3' => {
+              'result' => nil,
+              'error' => match_error(RuntimeError.new('mock error for 192.0.2.3'))
             }
           }
         }
 
         expect(mod.error).to be_nil
-        expect(result).to eq(expected_result)
+        expect(result).to include(expected_result)
       end
     end
   end
