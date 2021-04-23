@@ -1,7 +1,6 @@
 require 'spec_helper'
 
 RSpec.describe Msf::AggregateModule do
-
   include_context 'Msf::Simple::Framework'
 
   # TODO: Seems sus, threads were only left over at the end - pointing to rspec leaking threads?
@@ -33,7 +32,7 @@ RSpec.describe Msf::AggregateModule do
     framework.modules.add_module_path(File.join(FILE_FIXTURES_PATH, 'modules'))
   end
 
-  describe 'scanner module support' do
+  describe 'auxiliary scanner module support' do
     let(:module_actions) do
       [
         [
@@ -53,15 +52,17 @@ RSpec.describe Msf::AggregateModule do
         result = mod.run_simple(
           'Action' => 'scan',
           'Options' => {
-            'RHOSTS' => '192.0.2.0',
+            'RHOSTS' => '192.0.2.0'
           },
           'RunAsJob' => false,
           'Quiet' => true
         )
 
         expected_result = {
-          "auxiliary/scanner" => {
-            "192.0.2.0" => "scanner result for 192.0.2.0"
+          'auxiliary/scanner' => {
+            'result' => {
+              '192.0.2.0' => 'scanner result for 192.0.2.0'
+            }
           }
         }
 
@@ -76,18 +77,184 @@ RSpec.describe Msf::AggregateModule do
         result = mod.run_simple(
           'Action' => 'scan',
           'Options' => {
-            'RHOSTS' => '192.0.2.0/30',
+            'RHOSTS' => '192.0.2.0/30'
           },
           'RunAsJob' => false,
           'Quiet' => true
         )
 
         expected_result = {
-          "auxiliary/scanner" => {
-            "192.0.2.0" => "scanner result for 192.0.2.0",
-            "192.0.2.1" => "scanner result for 192.0.2.1",
-            "192.0.2.2" => "scanner result for 192.0.2.2",
-            "192.0.2.3" => "scanner result for 192.0.2.3"
+          'auxiliary/scanner' => {
+            # TODO: This is super leaky as a result; Scanners return a different shape than exploits
+            'result' => {
+              '192.0.2.0' => 'scanner result for 192.0.2.0',
+              '192.0.2.1' => 'scanner result for 192.0.2.1',
+              '192.0.2.2' => 'scanner result for 192.0.2.2',
+              '192.0.2.3' => 'scanner result for 192.0.2.3'
+            }
+          }
+        }
+
+        expect(mod.error).to be_nil
+        expect(result).to eq(expected_result)
+      end
+    end
+  end
+
+  describe 'simple auxiliary module support' do
+    let(:module_actions) do
+      [
+        [
+          'simple_auxiliary',
+          {
+            'Description' => 'Simple auxiliary scan against the target',
+            'ModuleName' => 'auxiliary/simple',
+            'AssociatedTags' => []
+          }
+        ]
+      ]
+    end
+
+    context 'when there is one RHOST value' do
+      it 'returns one result' do
+        mod = create_mod
+        result = mod.run_simple(
+          'Action' => 'simple_auxiliary',
+          'Options' => {
+            'RHOSTS' => '192.0.2.0'
+          },
+          'RunAsJob' => false,
+          'Quiet' => true
+        )
+
+        expected_result = {
+          'auxiliary/simple' => {
+            '192.0.2.0' => {
+              'result' => 'simple result for 192.0.2.0'
+            }
+          }
+        }
+
+        expect(mod.error).to be_nil
+        expect(result).to eq(expected_result)
+      end
+    end
+
+    context 'when there are multiple RHOSTS' do
+      it 'returns all results' do
+        mod = create_mod
+        result = mod.run_simple(
+          'Action' => 'simple_auxiliary',
+          'Options' => {
+            'RHOSTS' => '192.0.2.0/30'
+          },
+          'RunAsJob' => false,
+          'Quiet' => true
+        )
+
+        expected_result = {
+          'auxiliary/simple' => {
+            '192.0.2.0' => {
+              'result' => 'simple result for 192.0.2.0'
+            },
+            '192.0.2.1' => {
+              'result' => 'simple result for 192.0.2.1'
+            },
+            '192.0.2.2' => {
+              'result' => 'simple result for 192.0.2.2'
+            },
+            '192.0.2.3' => {
+              'result' => 'simple result for 192.0.2.3'
+            }
+          }
+        }
+
+        expect(mod.error).to be_nil
+        expect(result).to eq(expected_result)
+      end
+    end
+  end
+
+  describe 'grouped functionality' do
+    let(:module_actions) do
+      [
+        [
+          'enum',
+          {
+            'Description' => 'Run all enum actions associated with this module',
+            'InvokesTags' => [:enum]
+          }
+        ],
+        [
+          'module_a',
+          {
+            'Description' => 'Simple auxiliary scan against the target',
+            'ModuleName' => 'auxiliary/simple',
+            'AssociatedTags' => [:enum]
+          }
+        ],
+        [
+          'module_b',
+          {
+            'Description' => 'Simple auxiliary scan against the target',
+            'ModuleName' => 'auxiliary/simple',
+            'AssociatedTags' => [:enum]
+          }
+        ]
+      ]
+    end
+
+    context 'when there is one RHOST value' do
+      it 'returns one result' do
+        mod = create_mod
+        result = mod.run_simple(
+          'Action' => 'enum',
+          'Options' => {
+            'RHOSTS' => '192.0.2.0'
+          },
+          'RunAsJob' => false,
+          'Quiet' => true
+        )
+
+        expected_result = {
+          'auxiliary/simple' => {
+            '192.0.2.0' => {
+              'result' => 'simple result for 192.0.2.0'
+            }
+          }
+        }
+
+        expect(mod.error).to be_nil
+        expect(result).to eq(expected_result)
+      end
+    end
+
+    context 'when there are multiple RHOSTS' do
+      it 'returns all results' do
+        mod = create_mod
+        result = mod.run_simple(
+          'Action' => 'enum',
+          'Options' => {
+            'RHOSTS' => '192.0.2.0/30'
+          },
+          'RunAsJob' => false,
+          'Quiet' => true
+        )
+
+        expected_result = {
+          'auxiliary/simple' => {
+            '192.0.2.0' => {
+              'result' => 'simple result for 192.0.2.0'
+            },
+            '192.0.2.1' => {
+              'result' => 'simple result for 192.0.2.1'
+            },
+            '192.0.2.2' => {
+              'result' => 'simple result for 192.0.2.2'
+            },
+            '192.0.2.3' => {
+              'result' => 'simple result for 192.0.2.3'
+            }
           }
         }
 

@@ -4,8 +4,6 @@
 ##
 
 class MetasploitModule < Msf::Auxiliary
-  include Msf::Auxiliary::Scanner
-
   def initialize(info = {})
     super(
       update_info(
@@ -24,8 +22,8 @@ class MetasploitModule < Msf::Auxiliary
     ])
   end
 
-  def run_host(ip)
-    print_status("Mock scanner for #{ip}")
-    "simple result for #{ip}"
+  def run
+    print_status("Mock scanner for #{datastore['RHOST']}")
+    "simple result for #{datastore['RHOST']}"
   end
 end

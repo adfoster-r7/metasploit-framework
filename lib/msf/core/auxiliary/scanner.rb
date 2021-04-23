@@ -137,8 +137,6 @@ def run
         end
       end
 
-      # require 'pry'; binding.pry
-
       # Do as much of this work as possible while other threads are running
       while !res.empty?
         results.merge! res.pop

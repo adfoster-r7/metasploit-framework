@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 ##
 # This module requires Metasploit: https://metasploit.com/download
 # Current source: https://github.com/rapid7/metasploit-framework
@@ -143,10 +145,7 @@ module Msf::AggregateModule
         # TODO: We'll need to think about rhosts in its entirety
         # Check if this is a scanner module or doesn't target remote hosts
         if rhosts.blank? || mod.class.included_modules.include?(Msf::Auxiliary::Scanner)
-          results[module_name] = run_module(
-            mod,
-            self.datastore
-          )
+          results[module_name] = run_module(mod, self.datastore)
         else
           # For multi target attempts with non-scanner modules.
           rhosts_opt = Msf::OptAddressRange.new('RHOSTS')
@@ -163,10 +162,7 @@ module Msf::AggregateModule
               new_datastore['Action'] = action.module_action
             end
             results[module_name] ||= {}
-            results[module_name][rhost] = run_module(
-              mod,
-              new_datastore
-            )
+            results[module_name][rhost] = run_module(mod, new_datastore)
           end
         end
       rescue ::Timeout::Error => e
@@ -202,16 +198,19 @@ module Msf::AggregateModule
   end
 
   def run_module(mod, datastore)
-
-    # Retrieve the module's return value
-    res = mod.run_simple(
+    module_result = mod.run_simple(
       'LocalInput' => user_input,
       'LocalOutput' => user_output,
-      'Options' => datastore # XXX: This clobbers the datastore!
+      'Options' => datastore
     )
 
     print("\n\n")
 
-    res
+    result = {
+      'result' => module_result
+    }
+    result['error'] = mod.error if mod.error
+
+    result
   end
 end
