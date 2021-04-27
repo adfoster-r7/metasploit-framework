@@ -190,6 +190,7 @@ module Metasploit::Framework
     # @yieldparam credential [Metasploit::Framework::Credential]
     # @return [void]
     def each
+      require 'pry'; binding.pry
       if pass_file.present?
         pass_fd = File.open(pass_file, 'r:binary')
       end

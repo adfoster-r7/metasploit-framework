@@ -175,7 +175,6 @@ module Auxiliary::AuthBrute
     cred_collection.add_public(msf_cred.public) if datastore['DB_ALL_USERS']
   end
 
-
   # Checks all three files for usernames and passwords, and combines them into
   # one credential list to apply against the supplied block. The block (usually
   # something like do_login(user,pass) ) is responsible for actually recording
@@ -192,6 +191,7 @@ module Auxiliary::AuthBrute
     this_service = [datastore['RHOST'],datastore['RPORT']].join(":")
     fq_rest = [this_service,"all remaining users"].join(":")
 
+    require 'pry'; binding.pry
     # This should kinda halfway be in setup, halfway in run... need to
     # revisit this.
     unless credentials ||= false # Assignment and comparison!
@@ -319,6 +319,7 @@ module Auxiliary::AuthBrute
     return credentials if datastore['USERPASS_FILE'] =~ /^memory:/
     users = load_user_vars(credentials)
     passwords = load_password_vars(credentials)
+    # TODO: Not sure why this exists? Will break if passwords are lazy loaded/generated though
     cleanup_files()
     if datastore['USER_AS_PASS']
       credentials = gen_user_as_password(users, credentials)
@@ -343,10 +344,11 @@ module Auxiliary::AuthBrute
         end
       end
     end
-    credentials.concat(combine_users_and_passwords(users, passwords))
-    credentials.uniq!
-    credentials = just_uniq_users(credentials) if @strip_passwords
-    credentials = just_uniq_passwords(credentials) if @strip_usernames
+    require 'pry'; binding.pry
+    credentials = (credentials + combine_users_and_passwords(users, passwords)).lazy.uniq
+    # TODO
+    # credentials = just_uniq_users(credentials) if @strip_passwords
+    # credentials = just_uniq_passwords(credentials) if @strip_usernames
     return credentials
   end
 
@@ -453,69 +455,30 @@ module Auxiliary::AuthBrute
   end
 
   def combine_users_and_passwords(user_array,pass_array)
-    if (user_array.length + pass_array.length) < 1
+    if user_array.none? && pass_array.none?
       return []
     end
-    combined_array = []
-    if pass_array.empty?
-      combined_array = user_array.map {|u| [u,""] }
-    elsif user_array.empty?
-      combined_array = pass_array.map {|p| ["",p] }
+
+    if pass_array.none?
+      combined_array = user_array.map { |u| [u, ""] }
+    elsif user_array.none?
+      combined_array = pass_array.map { |p| ["", p] }
     else
-      if datastore['PASSWORD_SPRAY']
-        pass_array.each do |p|
-          user_array.each do |u|
-            combined_array << [u,p]
-          end
-        end
-      else
-        user_array.each do |u|
-          pass_array.each do |p|
-            combined_array << [u,p]
-          end
-        end
-      end
+      combined_array = user_array.zip(pass_array)
     end
 
-    creds = [ [], [], [], [] ] # userpass, pass, user, rest
-    remaining_pairs = combined_array.length # counter for our occasional output
-    interval = 60 # seconds between each remaining pair message reported to user
-    next_message_time = Time.now + interval # initial timing interval for user message
-    # Move datastore['USERNAME'] and datastore['PASSWORD'] to the front of the list.
-    # Note that we cannot tell the user intention if USERNAME or PASSWORD is blank --
-    # maybe (and it's often) they wanted a blank. One more credential won't kill
-    # anyone, and hey, won't they be lucky if blank user/blank pass actually works!
-    combined_array.each do |pair|
-      if pair == [datastore['USERNAME'],datastore['PASSWORD']]
-        creds[0] << pair
-      elsif pair[1] == datastore['PASSWORD']
-        creds[1] << pair
-      elsif pair[0] == datastore['USERNAME']
-        creds[2] << pair
-      else
-        creds[3] << pair
-      end
-      if Time.now > next_message_time
-        print_brute(
-          :level => :vstatus,
-          :msg => "Pair list is still building with #{remaining_pairs} pairs left to process"
-        )
-        next_message_time = Time.now + interval
-      end
-      remaining_pairs -= 1
-    end
-    return creds[0] + creds[1] + creds[2] + creds[3]
+    combined_array
   end
 
   def extract_words(wordfile)
     return [] unless wordfile && File.readable?(wordfile)
-    begin
-      words = File.open(wordfile) {|f| f.read(f.stat.size)}
-    rescue
-      return
-    end
-    save_array = words.split(/\r?\n/)
-    return save_array
+
+    Enumerator.new do |results|
+      puts "Reading file #{wordfile}"
+      File.read(wordfile).each_line(chomp: true) do |line|
+        results << line
+      end
+    end.lazy
   end
 
   def get_object_from_memory_location(memloc)
@@ -526,15 +489,15 @@ module Auxiliary::AuthBrute
   end
 
   def extract_word_pair(wordfile)
-    creds = []
+    creds = empty_credential_collection
     if wordfile.to_s =~ /^memory:/
       return extract_word_pair_from_memory(wordfile.to_s)
     else
-      return [] unless wordfile && File.readable?(wordfile)
+      return empty_credential_collection unless wordfile && File.readable?(wordfile)
       begin
         upfile_contents = File.open(wordfile) {|f| f.read(f.stat.size)}
       rescue
-        return []
+        return empty_credential_collection
       end
       upfile_contents.split(/\n/).each do |line|
         user,pass = line.split(/\s+/,2).map { |x| x.strip }
@@ -729,6 +692,14 @@ module Auxiliary::AuthBrute
     end
   end
 
+  # Empty credential collection that is enumerable, but contains no results
+  # This should be used in place of empty array, otherwise `[] + enumerator` will
+  # cause the enumerator to be evaluated - which we want to avoid.
+  def empty_credential_collection
+    Enumerator.new do |_results|
+      # noop
+    end.lazy
+  end
 end
 end
 
