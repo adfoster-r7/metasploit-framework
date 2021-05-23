@@ -59,10 +59,6 @@ module Msf
                        enums: Rex::Socket::SslTcp.supported_ssl_methods)
     end
 
-    def self.RHOST_HTTP_URL(default = nil, required = false, desc = 'The target URL, only applicable if there is a single URL')
-      Msf::OptHTTPRhostURL.new(__method__.to_s, [required, desc, default ])
-    end
-
     def self.stager_retry_options
       [
         OptInt.new('StagerRetryCount',
@@ -108,7 +104,6 @@ module Msf
     Proxies = Proxies()
     RHOST = RHOST()
     RHOSTS = RHOSTS()
-    RHOST_HTTP_URL = RHOST_HTTP_URL()
     RPORT = RPORT()
     SSLVersion = SSLVersion()
   end
