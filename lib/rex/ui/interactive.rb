@@ -21,18 +21,12 @@ module Interactive
   # forwarding input from user_input to rstream and forwarding input from
   # rstream to user_output.
   #
-  def interact(user_input, user_output, history_context: {:history_file => nil, :name => nil})
+  def interact(user_input, user_output)
 
     # Detach from any existing console
-    if(self.interacting)
+    if self.interacting
       detach()
     end
-
-    history_file = history_context[:history_file]
-    name = history_context[:name]
-
-    Rex::Ui::Text::Shell::HistoryManager.push_context(history_file: history_file, name: name)
-
 
     init_ui(user_input, user_output)
 
@@ -80,7 +74,7 @@ module Interactive
       _interact_complete if (eof == true)
 
       # Shutdown the readline thread
- 			# XXX disabled
+      # XXX disabled
       # user_input.readline_stop() if user_input.supports_readline
 
       # Detach from the input/output handles

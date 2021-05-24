@@ -546,9 +546,9 @@ class CommandShell
     if expressions.empty?
       print_status('Starting IRB shell...')
       print_status("You are in the \"self\" (session) object\n")
-      Rex::Ui::Text::Shell::HistoryManager.push_context(name: :irb)
-      Rex::Ui::Text::IrbShell.new(self).run
-      Rex::Ui::Text::Shell::HistoryManager.pop_context
+      Rex::Ui::Text::Shell::HistoryManager.with_context(name: :irb) do
+        Rex::Ui::Text::IrbShell.new(self).run
+      end
     else
       # XXX: No vprint_status here
       if framework.datastore['VERBOSE'].to_s == 'true'
@@ -584,11 +584,10 @@ class CommandShell
 
     print_status('Starting Pry shell...')
     print_status("You are in the \"self\" (session) object\n")
-    histfile = Msf::Config.pry_history
     Pry.config.history_load = false
-    Rex::Ui::Text::Shell::HistoryManager.push_context(history_file: histfile,name: :pry)
-    self.pry
-    Rex::Ui::Text::Shell::HistoryManager.pop_context
+    Rex::Ui::Text::Shell::HistoryManager.with_context(history_file: Msf::Config.pry_history, name: :pry) do
+      self.pry
+    end
   end
 
   #
@@ -755,7 +754,9 @@ protected
   # shell_write instead of operating on rstream directly.
   def _interact
     framework.events.on_session_interact(self)
-    _interact_stream
+    Rex::Ui::Text::Shell::HistoryManager.with_context(name: self.type.to_sym) {
+      _interact_stream
+    }
   end
 
   ##
