@@ -9,6 +9,11 @@ group :coverage do
   gem 'simplecov', '0.18.2'
 end
 
+gem 'pcaprub', '0.13.1',
+    git: 'https://github.com/pcaprub/pcaprub',
+    branch: 'ruby3',
+    require: false
+
 group :development do
   # Markdown formatting for yard
   gem 'redcarpet'

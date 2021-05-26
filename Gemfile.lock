@@ -1,3 +1,10 @@
+GIT
+  remote: https://github.com/pcaprub/pcaprub
+  revision: b93f641184330f71c1c6131373097acdf1506d04
+  branch: ruby3
+  specs:
+    pcaprub (0.13.1)
+
 PATH
   remote: .
   specs:
@@ -276,7 +283,6 @@ GEM
     parser (3.0.1.1)
       ast (~> 2.4.1)
     patch_finder (1.0.2)
-    pcaprub (0.13.0)
     pdf-reader (2.4.2)
       Ascii85 (~> 1.0)
       afm (~> 0.2.1)
@@ -473,6 +479,7 @@ DEPENDENCIES
   memory_profiler
   metasploit-framework!
   octokit
+  pcaprub (= 0.13.1)!
   pry-byebug
   rake
   redcarpet
