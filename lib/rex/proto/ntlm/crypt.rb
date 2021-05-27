@@ -84,9 +84,9 @@ BASE = Rex::Proto::NTLM::Base
     raise RuntimeError, "No OpenSSL support" if not @@loaded_openssl
     dec = OpenSSL::Cipher.new('DES')
     keys.map do |k|
-      dec.decrypt
+      dec.encrypt
       dec.key = k
-      dec.update(plain)
+      dec.update(plain) + dec.final
     end
   end
 
