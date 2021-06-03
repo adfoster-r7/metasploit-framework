@@ -22,6 +22,7 @@ require:
   - ./lib/rubocop/cop/lint/module_disclosure_date_present.rb
   - ./lib/rubocop/cop/lint/deprecated_gem_version.rb
   - ./lib/rubocop/cop/lint/module_enforce_notes.rb
+  - ./lib/rubocop/cop/lint/meterpreter_commands_dependencies.rb
 
 Layout/SpaceBeforeBrackets:
   Description: >-
@@ -154,6 +155,18 @@ Layout/ModuleHashValuesOnSameLine:
 
 Layout/ModuleDescriptionIndentation:
   Enabled: true
+
+Lint/MeterpreterCommandDependencies:
+  Enabled: true
+  Exclude:
+    - 'lib/rex/post/meterpreter/client_core.rb'
+    - 'lib/rex/post/meterpreter/extensions/priv/priv.rb'
+    - 'lib/rex/post/meterpreter/extensions/stdapi/fs/dir.rb'
+    - 'lib/rex/post/meterpreter/extensions/stdapi/sys/process.rb'
+    - 'lib/rex/post/meterpreter/extensions/stdapi/ui.rb'
+    - 'lib/rex/post/meterpreter/extensions/stdapi/webcam/webcam.rb'
+    - 'lib/rex/post/meterpreter/ui/console/command_dispatcher/*'
+    - 'lib/rex/ui/text/shell.rb'
 
 Lint/ModuleDisclosureDateFormat:
   Enabled: true
