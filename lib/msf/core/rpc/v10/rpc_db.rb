@@ -765,32 +765,35 @@ public
   #  * 'host' [Array<Hash>] Each hash in the array contains the following:
   #    * 'address' [String] Address.
   #    * 'modules' [Array<Hash>] Each hash in the array modules contains the following:
-  #      * 'mtype' [String] Module type.
-  #      * 'mname' [String] Module name. For example: 'windows/wlan/wlan_profile'
+  #      * 'type' [String] Module type.
+  #      * 'name' [String] Module name. For example: 'windows/wlan/wlan_profile'
   # @example Here's how you would use this from the client:
   #  rpc.call('db.analyze_host', {:workspace => 'default', :host => ip})
 def rpc_analyze_host(xopts)
   ::ApplicationRecord.connection_pool.with_connection {
     _opts, _wspace = init_db_opts_workspace(xopts)
-
-    ret = {}
-    ret[:host] = []
+    ret = {
+      host: []
+    }
     opts = fix_options(xopts)
-    h = self.framework.db.get_host(opts)
-    return ret unless h
-    h_result = self.framework.analyze.host(h)
-    host_detail = {}
-    host_detail[:address] = h.address
-    # for now only modules can be returned, in future maybe process whole result map
-    unless h_result[:modules].empty?
-      host_detail[:modules] = []
-      h_result[:modules].each do |mod|
-        mod_detail = {}
-        mod_detail[:mtype]  = mod.type
-        mod_detail[:mname]  = mod.fullname
-        host_detail[:modules] << mod_detail
+    host = self.framework.db.get_host(opts)
+    return ret unless host
+
+    analyze_result = self.framework.analyze.host(host)
+    module_suggestions = analyze_result[:results].sort_by { |result| result.mod.fullname }
+    host_detail = {
+      address: host.address,
+      modules: module_suggestions.map do |result|
+        mod = result.mod
+        {
+          type: mod.type,
+          name: mod.fullname,
+          invalid: result.invalid.sort,
+          missing: result.missing.sort,
+          required: result.required.sort
+        }
       end
-    end
+    }
     ret[:host] << host_detail
     ret
   }
