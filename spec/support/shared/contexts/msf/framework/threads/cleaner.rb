@@ -4,7 +4,7 @@ RSpec.shared_context 'Msf::Framework#threads cleaner' do
       fail RuntimeError.new(
                "framework.threads was never initialized. There are no threads to clean up. " \
                "Remove `include_context Msf::Framework#threads cleaner` from context around " \
-               "'#{example.metadata.full_description}'"
+               "'#{example.metadata[:full_description]}'"
            )
     end
 
