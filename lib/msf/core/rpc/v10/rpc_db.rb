@@ -757,7 +757,8 @@ public
   # @option xopts [String] :addr Host address.
   # @option xopts [String] :address Same as :addr.
   # @option xopts [String] :host Same as :address.
-  # @option xopts [xopts]  :filter A hash that contains the following:
+  # @option xopts [Array<String>]  :payloads
+  # @option xopts [Hash]  :datastore Datastore values which can be set
   #  * 'Payload' [String]  All returned modules will support this payload
   # @raise [Msf::RPC::ServerException] You might get one of these errors:
   #  * 500 ActiveRecord::ConnectionNotEstablished. Try: rpc.call('console.create').
@@ -767,8 +768,8 @@ public
   #  * 'host' [Array<Hash>] Each hash in the array contains the following:
   #    * 'address' [String] Address.
   #    * 'modules' [Array<Hash>] Each hash in the array modules contains the following:
-  #      * 'mtype' [String] Module type.
-  #      * 'mname' [String] Module name. For example: 'windows/wlan/wlan_profile'
+  #      * 'type' [String] Module type.
+  #      * 'name' [String] Module name. For example: 'windows/wlan/wlan_profile'
   # @example Here's how you would use this from the client:
   #  rpc.call('db.analyze_host', {:workspace => 'default', :host => ip})
 def rpc_analyze_host(xopts)
@@ -781,15 +782,38 @@ def rpc_analyze_host(xopts)
     host = self.framework.db.get_host(opts)
     return ret unless host
 
-    analyze_result = self.framework.analyze.host(host)
+    analyze_options = {}
+    analyze_options[:payloads] = xopts[:payloads] if xopts[:payloads]
+    analyze_result = self.framework.analyze.host(host, **analyze_options)
     module_suggestions = analyze_result[:results].sort_by { |result| result.mod.fullname }
     host_detail = {
       address: host.address,
       modules: module_suggestions.map do |result|
         mod = result.mod
         {
-          mtype: mod.type,
-          mname: mod.fullname
+          type: mod.type,
+          name: mod.fullname,
+          metadata: {
+            required: result.required.select { |value| value.is_a?(Symbol) },
+            missing: result.missing.select { |value| value.is_a?(Symbol) },
+            invalid: result.missing.select { |value| value.is_a?(Symbol) }
+          },
+          payloads: [
+            mod.payload&.name
+          ].compact,
+          options: mod.options.values.map do |option|
+            metadata = {}
+            if result.invalid.include?(option.name)
+              metadata[:state] = [:invalid]
+            elsif result.missing.include?(option.name)
+              metadata[:state] = [:missing]
+            end
+            {
+              name: option.name,
+              value: mod.datastore[option.name],
+              metadata: metadata
+            }
+          end
         }
       end
     }

@@ -469,24 +469,39 @@ RSpec.describe "Metasploit's json-rpc" do
                 address: '192.0.2.2',
                 modules: [
                   {
-                    mname: 'exploit/multi/http/apache_activemq_upload_jsp',
-                    mtype: 'exploit'
+                    name: 'exploit/multi/http/apache_activemq_upload_jsp',
+                    type: 'exploit',
+                    metadata: {
+                      state: [
+                        "ready_for_testing"
+                      ],
+                      payloads: []
+                    },
+                    options: {
+
+                    }
                   },
                   {
-                    mtype: 'exploit',
-                    mname: 'exploit/windows/smb/ms17_010_eternalblue',
+                    type: 'exploit',
+                    name: 'exploit/windows/smb/ms17_010_eternalblue',
+                    metadata: {
+                      state: [],
+                      payloads: [
+                        "windows/x64/pingback_reverse_tcp"
+                      ]
+                    }
                   },
                   {
-                    mtype: 'exploit',
-                    mname: 'exploit/windows/smb/ms17_010_eternalblue_win8',
+                    type: 'exploit',
+                    name: 'exploit/windows/smb/ms17_010_eternalblue_win8',
                   },
                   {
-                    mtype: 'exploit',
-                    mname: 'exploit/windows/smb/ms17_010_psexec',
+                    type: 'exploit',
+                    name: 'exploit/windows/smb/ms17_010_psexec',
                   },
                   {
-                    mtype: 'exploit',
-                    mname: 'exploit/windows/smb/smb_doublepulsar_rce',
+                    type: 'exploit',
+                    name: 'exploit/windows/smb/smb_doublepulsar_rce',
                   }
                 ]
               }
@@ -498,7 +513,12 @@ RSpec.describe "Metasploit's json-rpc" do
         analyze_host(
           {
             workspace: 'default',
-            host: host_ip
+            host: host_ip,
+            # TODO: Add support for an initial datastore
+            #datastore: { ... },
+            payloads: [
+              'windows/x64/pingback_reverse_tcp'
+            ]
           }
         )
         expect(last_json_response).to include(expected_response)
