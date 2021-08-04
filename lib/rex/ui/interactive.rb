@@ -21,7 +21,7 @@ module Interactive
   # forwarding input from user_input to rstream and forwarding input from
   # rstream to user_output.
   #
-  def interact(user_input, user_output, raw: false)
+  def interact(user_input, user_output)
 
     # Detach from any existing console
     if self.interacting
@@ -48,7 +48,7 @@ module Interactive
     while (self.interacting == true)
 
       begin
-        _interact(raw: false)
+        _interact
 
       rescue Interrupt
         # If we get an interrupt exception, ask the user if they want to
@@ -133,13 +133,10 @@ protected
   attr_accessor :orig_usr1
   attr_accessor :orig_winch
 
-  attr_accessor :rows
-  attr_accessor :cols
-
   #
   # Stub method that is meant to handler interaction
   #
-  def _interact(raw: false)
+  def _interact
   end
 
   #
@@ -201,9 +198,11 @@ protected
   # Interacts with two streaming connections, reading data from one and
   # writing it to the other.  Both are expected to implement Rex::IO::Stream.
   #
-  def interact_stream(stream, raw: false)
+  def interact_stream(stream)
+    # TODO: Move this out to meterpreter's specific interactive channel implementation
     update_term_size
     handle_winch
+    raw = false
     if raw
       _local_fd.raw do
         interaction_loop(stream)
@@ -279,7 +278,7 @@ protected
     if orig_winch.nil?
       begin
         self.orig_winch = Signal.trap("WINCH") do
-          Thread.new { update_term_size }.join
+          Thread.new { _winch }.join
         end
       rescue
       end
@@ -298,13 +297,7 @@ protected
     end
   end
 
-  def update_term_size
-    rows, cols = ::IO.console.winsize
-    unless rows == self.rows && cols == self.cols
-      set_term_size(rows, cols)
-      self.rows = rows
-      self.cols = cols
-    end
+  def _winch
   end
 
   def restore_usr1

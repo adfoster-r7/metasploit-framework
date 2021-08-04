@@ -36,6 +36,7 @@ class StreamPool < Rex::Post::Meterpreter::Channels::Pool
   def initialize(client, cid, type, flags, packet, **_)
     super(client, cid, type, flags, packet)
 
+    require 'pry'; binding.pry
     initialize_abstraction
   end
 

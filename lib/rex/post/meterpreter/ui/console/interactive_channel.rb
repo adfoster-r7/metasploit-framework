@@ -17,12 +17,12 @@ module Console::InteractiveChannel
   #
   # Interacts with self.
   #
-  def _interact(raw: false)
+  def _interact
     # If the channel has a left-side socket, then we can interact with it.
     if (self.lsock)
       self.interactive(true)
 
-      interact_stream(self, raw)
+      interact_stream(self)
 
       self.interactive(false)
     else
@@ -36,6 +36,7 @@ module Console::InteractiveChannel
   # Called when an interrupt is sent.
   #
   def _interrupt
+    # TODO: Wire up raw mode handling here too probably
     prompt_yesno("Terminate channel #{self.cid}?")
   end
 
@@ -93,6 +94,18 @@ module Console::InteractiveChannel
   end
 
   attr_accessor :on_log_proc
+
+  attr_accessor :rows
+  attr_accessor :cols
+
+  def _winch
+    rows, cols = ::IO.console.winsize
+    unless rows == self.rows && cols == self.cols
+      set_term_size(rows, cols)
+      self.rows = rows
+      self.cols = cols
+    end
+  end
 
 end
 

@@ -250,6 +250,7 @@ class Console::CommandDispatcher::Stdapi::Sys
     print_line("Channel #{p.channel.cid} created.") if (p.channel)
 
     if (interact and p.channel)
+      require 'pry'; binding.pry
       shell.interact_with_channel(p.channel)
     end
   end

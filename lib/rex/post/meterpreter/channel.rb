@@ -121,6 +121,7 @@ class Channel
     end
 
     # Create the channel instance
+    require 'pry'; binding.pry
     klass.new(client, cid, type, flags, response, **klass_kwargs)
   end
 
