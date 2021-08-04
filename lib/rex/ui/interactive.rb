@@ -21,7 +21,7 @@ module Interactive
   # forwarding input from user_input to rstream and forwarding input from
   # rstream to user_output.
   #
-  def interact(user_input, user_output)
+  def interact(user_input, user_output, raw: false)
 
     # Detach from any existing console
     if self.interacting
@@ -48,7 +48,7 @@ module Interactive
     while (self.interacting == true)
 
       begin
-        _interact
+        _interact(raw: false)
 
       rescue Interrupt
         # If we get an interrupt exception, ask the user if they want to
@@ -131,11 +131,15 @@ protected
   #
   attr_accessor :orig_suspend
   attr_accessor :orig_usr1
+  attr_accessor :orig_winch
+
+  attr_accessor :rows
+  attr_accessor :cols
 
   #
   # Stub method that is meant to handler interaction
   #
-  def _interact
+  def _interact(raw: false)
   end
 
   #
@@ -197,27 +201,37 @@ protected
   # Interacts with two streaming connections, reading data from one and
   # writing it to the other.  Both are expected to implement Rex::IO::Stream.
   #
-  def interact_stream(stream)
-    while self.interacting && _remote_fd(stream)
-
-      # Select input and rstream
-      sd = Rex::ThreadSafe.select([ _local_fd, _remote_fd(stream) ], nil, nil, 0.25)
-
-      # Cycle through the items that have data
-      # From the stream?  Write to user_output.
-      sd[0].each { |s|
-        if (s == _remote_fd(stream))
-          _stream_read_remote_write_local(stream)
-        # From user_input?  Write to stream.
-        elsif (s == _local_fd)
-          _stream_read_local_write_remote(stream)
-        end
-      } if (sd)
-
-      Thread.pass
+  def interact_stream(stream, raw: false)
+    update_term_size
+    handle_winch
+    if raw
+      _local_fd.raw do
+        interaction_loop(stream)
+      end
+    else
+      interaction_loop(stream)
     end
   end
 
+  def interaction_loop(stream)
+    while interacting && _remote_fd(stream)
+      # Select input and rstream
+      sd = Rex::ThreadSafe.select([_local_fd, _remote_fd(stream)], nil, nil, 0.25)
+      # Cycle through the items that have data
+      # From the stream?  Write to user_output.
+      if sd
+        sd[0].each do |s|
+          if s == _remote_fd(stream)
+            _stream_read_remote_write_local(stream)
+            # From user_input?  Write to stream.
+          elsif s == _local_fd
+            _stream_read_local_write_remote(stream)
+          end
+        end
+      end
+      Thread.pass
+    end
+  end
 
   #
   # Installs a signal handler to monitor suspend signal notifications.
@@ -261,6 +275,37 @@ protected
     end
   end
 
+  def handle_winch
+    if orig_winch.nil?
+      begin
+        self.orig_winch = Signal.trap("WINCH") do
+          Thread.new { update_term_size }.join
+        end
+      rescue
+      end
+    end
+  end
+
+  def restore_winch
+    begin
+      if orig_winch
+        Signal.trap("WINCH", orig_winch)
+      else
+        Signal.trap("WINCH", "DEFAULT")
+      end
+      self.orig_winch = nil
+    rescue
+    end
+  end
+
+  def update_term_size
+    rows, cols = ::IO.console.winsize
+    unless rows == self.rows && cols == self.cols
+      set_term_size(rows, cols)
+      self.rows = rows
+      self.cols = cols
+    end
+  end
 
   def restore_usr1
     begin

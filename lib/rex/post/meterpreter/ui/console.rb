@@ -75,13 +75,13 @@ class Console
   #
   # Interacts with the supplied channel.
   #
-  def interact_with_channel(channel)
+  def interact_with_channel(channel, raw: false)
     channel.extend(InteractiveChannel) unless (channel.kind_of?(InteractiveChannel) == true)
     channel.on_command_proc = self.on_command_proc if self.on_command_proc
     channel.on_print_proc   = self.on_print_proc if self.on_print_proc
     channel.on_log_proc = method(:log_output) if self.respond_to?(:log_output, true)
 
-    channel.interact(input, output)
+    channel.interact(input, output, raw: raw)
     channel.reset_ui
   end
 

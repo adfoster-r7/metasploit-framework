@@ -17,12 +17,12 @@ module Console::InteractiveChannel
   #
   # Interacts with self.
   #
-  def _interact
+  def _interact(raw: false)
     # If the channel has a left-side socket, then we can interact with it.
     if (self.lsock)
       self.interactive(true)
 
-      interact_stream(self)
+      interact_stream(self, raw)
 
       self.interactive(false)
     else
@@ -67,7 +67,7 @@ module Console::InteractiveChannel
   # Reads data from local input and writes it remotely.
   #
   def _stream_read_local_write_remote(channel)
-    data = user_input.gets
+    data = user_input.getch
     return if not data
 
     self.on_command_proc.call(data.strip) if self.on_command_proc

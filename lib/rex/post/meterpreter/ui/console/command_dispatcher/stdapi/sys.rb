@@ -283,6 +283,7 @@ class Console::CommandDispatcher::Stdapi::Sys
   #
   def cmd_shell(*args)
     use_pty = false
+    raw = false
     sh_path = '/bin/bash'
 
     @@shell_opts.parse(args) do |opt, idx, val|
@@ -302,6 +303,8 @@ class Console::CommandDispatcher::Stdapi::Sys
         end
 
         return true
+      when '-i'
+        raw = true
       when '-t'
         use_pty = true
         # XXX: No other options must follow
@@ -325,7 +328,7 @@ class Console::CommandDispatcher::Stdapi::Sys
     when 'android'
       cmd_execute('-f', '/system/bin/sh', '-c', '-i')
     when 'linux', 'osx'
-      if use_pty && pty_shell(sh_path)
+      if use_pty && pty_shell(sh_path, raw: raw)
         return true
       end
 
@@ -349,7 +352,7 @@ class Console::CommandDispatcher::Stdapi::Sys
   #
   # Spawn a PTY shell
   #
-  def pty_shell(sh_path)
+  def pty_shell(sh_path, raw: false)
     sh_path = client.fs.file.exist?(sh_path) ? sh_path : '/bin/sh'
 
     # Python Meterpreter calls pty.openpty() - No need for other methods
