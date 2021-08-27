@@ -14,23 +14,21 @@ class MetasploitModule < Msf::Auxiliary
 
   # Aliases for common classes
   SIMPLE = Rex::Proto::SMB::SimpleClient
-  XCEPT  = Rex::Proto::SMB::Exceptions
-  CONST  = Rex::Proto::SMB::Constants
-
+  XCEPT = Rex::Proto::SMB::Exceptions
+  CONST = Rex::Proto::SMB::Constants
 
   def initialize
     super(
-      'Name'        => 'SMB File Delete Utility',
+      'Name' => 'SMB File Delete Utility',
       'Description' => %Q{
         This module deletes a file from a target share and path. The usual reason
       to use this module is to work around limitations in an existing SMB client that may not
       be able to take advantage of pass-the-hash style authentication.
       },
-      'Author'      =>
-        [
-          'mubix' # copied from hdm upload_file module
-        ],
-      'License'     => MSF_LICENSE
+      'Author' => [
+        'mubix' # copied from hdm upload_file module
+      ],
+      'License' => MSF_LICENSE
     )
 
     register_options([

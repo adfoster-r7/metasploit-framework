@@ -19,11 +19,10 @@ class MetasploitModule < Msf::Auxiliary
         credentials via SNMP Read-Only (RO) community string.
       },
       'Author' => ['Karn Ganeshen'],
-      'References' =>
-        [
-          ['CVE', '2017-5262'],
-          ['URL', 'https://blog.rapid7.com/2017/12/19/r7-2017-25-cambium-epmp-and-cnpilot-multiple-vulnerabilities']
-        ],
+      'References' => [
+        ['CVE', '2017-5262'],
+        ['URL', 'https://blog.rapid7.com/2017/12/19/r7-2017-25-cambium-epmp-and-cnpilot-multiple-vulnerabilities']
+      ],
       'License' => MSF_LICENSE
     )
 
@@ -116,13 +115,12 @@ class MetasploitModule < Msf::Auxiliary
       print_good("SIP Account Password: #{sip_accountpassword}\n")
 
       # Woot we got loot.
-      loot_name     = 'snmp_loot'
-      loot_type     = 'text/plain'
+      loot_name = 'snmp_loot'
+      loot_type = 'text/plain'
       loot_filename = 'cnpilot_snmp_loot.txt'
-      loot_desc     = 'Cambium cnPilot configuration data'
+      loot_desc = 'Cambium cnPilot configuration data'
       p = store_loot(loot_name, loot_type, datastore['RHOST'], cnpilot_info, loot_filename, loot_desc)
       print_good("Cambium cnPilot SNMP loot saved at #{p} \n")
-
     rescue SNMP::RequestTimeout
       print_error("#{ip} SNMP request timeout.")
     rescue Rex::ConnectionError

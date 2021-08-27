@@ -8,18 +8,21 @@ class MetasploitModule < Msf::Post
   include Msf::Post::Unix
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'         => 'Multi Gather IRSSI IRC Password(s)',
-      'Description'  => %q{
-        This module grabs IRSSI IRC credentials.
-      },
-      'Author'       => [
-        'Jonathan Claudius <jclaudius[at]mozilla.com>',
-      ],
-      'Platform'     => %w{bsd linux osx unix},
-      'SessionTypes' => %w{shell},
-      'License'      => MSF_LICENSE
-    ))
+    super(
+      update_info(
+        info,
+        'Name' => 'Multi Gather IRSSI IRC Password(s)',
+        'Description' => %q{
+          This module grabs IRSSI IRC credentials.
+        },
+        'Author' => [
+          'Jonathan Claudius <jclaudius[at]mozilla.com>',
+        ],
+        'Platform' => %w{bsd linux osx unix},
+        'SessionTypes' => %w{shell},
+        'License' => MSF_LICENSE
+      )
+    )
   end
 
   def run

@@ -31,19 +31,18 @@ class MetasploitModule < Rex::Encoder::BloXor
 
   def initialize
     super(
-      'Name'        => 'BloXor - A Metamorphic Block Based XOR Encoder',
+      'Name' => 'BloXor - A Metamorphic Block Based XOR Encoder',
       'Description' => 'A Metamorphic Block Based XOR Encoder.',
-      'Author'      => [ 'sf' ],
-      'Arch'        => ARCH_X86,
-      'License'     => MSF_LICENSE,
+      'Author' => [ 'sf' ],
+      'Arch' => ARCH_X86,
+      'License' => MSF_LICENSE,
       'EncoderType' => Msf::Encoder::Type::Unspecified
       )
   end
 
-  def compute_decoder( state )
+  def compute_decoder(state)
+    @machine = Rex::Poly::MachineX86.new(state.badchars)
 
-    @machine = Rex::Poly::MachineX86.new( state.badchars )
-
-    super( state )
+    super(state)
   end
 end

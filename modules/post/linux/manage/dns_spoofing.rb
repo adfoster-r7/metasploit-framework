@@ -9,21 +9,22 @@ class MetasploitModule < Msf::Post
 
   def initialize
     super(
-      'Name'         => 'Native DNS Spoofing module',
-      'Description'  => %q{
+      'Name' => 'Native DNS Spoofing module',
+      'Description' => %q{
         This module will be applied on a session connected to a shell. It will redirect DNS Request to remote DNS server.
       },
-      'Author'       => 'Alberto Rafael Rodriguez Iglesias <albertocysec[at]gmail.com>',
-      'License'      => MSF_LICENSE,
-      'Platform'     => ['linux'],
+      'Author' => 'Alberto Rafael Rodriguez Iglesias <albertocysec[at]gmail.com>',
+      'License' => MSF_LICENSE,
+      'Platform' => ['linux'],
       'SessionTypes' => ['shell', 'meterpreter']
     )
     register_options(
       [
-        OptString.new('ORIGIN_PORT', [true, 'Origin port','53']),
-        OptString.new('DESTINY_PORT', [true, 'Destination port','53']),
-        OptAddress.new('DESTINY_IP', [true, 'Needed','8.8.8.8'])
-      ])
+        OptString.new('ORIGIN_PORT', [true, 'Origin port', '53']),
+        OptString.new('DESTINY_PORT', [true, 'Destination port', '53']),
+        OptAddress.new('DESTINY_IP', [true, 'Needed', '8.8.8.8'])
+      ]
+    )
   end
 
   def run

@@ -10,16 +10,14 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'AIX SNMP Scanner Auxiliary Module',
+      'Name' => 'AIX SNMP Scanner Auxiliary Module',
       'Description' => 'AIX SNMP Scanner Auxiliary Module',
-      'Author'      =>
-        [
-          'Ramon de C Valle',
-          'Adriano Lima <adriano[at]risesecurity.org>',
-        ],
-      'License'     => MSF_LICENSE
+      'Author' => [
+        'Ramon de C Valle',
+        'Adriano Lima <adriano[at]risesecurity.org>',
+      ],
+      'License' => MSF_LICENSE
     )
-
   end
 
   def run_host(ip)
@@ -44,12 +42,12 @@ class MetasploitModule < Msf::Auxiliary
         version = "#{value[0]}.#{value[1]}.#{value[2]}.#{value[3]}"
 
         report_note(
-            :host   => ip,
-            :proto => 'udp',
-            :sname  => 'snmp',
-            :port   => datastore['RPORT'],
-            :type   => 'AIX',
-            :data   => version
+          :host => ip,
+          :proto => 'udp',
+          :sname => 'snmp',
+          :port => datastore['RPORT'],
+          :type => 'AIX',
+          :data => version
         )
 
         status = "#{ip} (#{description}) is running: "
@@ -68,6 +66,5 @@ class MetasploitModule < Msf::Auxiliary
     ensure
       disconnect_snmp
     end
-
   end
 end

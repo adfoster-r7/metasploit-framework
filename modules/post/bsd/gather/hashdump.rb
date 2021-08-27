@@ -11,14 +11,17 @@ class MetasploitModule < Msf::Post
   include Msf::Auxiliary::Report
 
   def initialize(info = {})
-    super( update_info( info,
-      'Name'          => 'BSD Dump Password Hashes',
-      'Description'   => %q{ Post module to dump the password hashes for all users on a BSD system. },
-      'License'       => MSF_LICENSE,
-      'Author'        => ['bcoles'],
-      'Platform'      => ['bsd'],
-      'SessionTypes'  => ['shell', 'meterpreter']
-    ))
+    super(
+      update_info(
+        info,
+        'Name' => 'BSD Dump Password Hashes',
+        'Description' => %q{ Post module to dump the password hashes for all users on a BSD system. },
+        'License' => MSF_LICENSE,
+        'Author' => ['bcoles'],
+        'Platform' => ['bsd'],
+        'SessionTypes' => ['shell', 'meterpreter']
+      )
+    )
   end
 
   def run
@@ -81,7 +84,8 @@ class MetasploitModule < Msf::Post
       user = sl.scan(/(^\w*):/).join
       pf.each_line do |pl|
         next unless pl.match(/^#{user}:/)
-        unshadowed << pl.gsub(/:\*:/,":#{pass}:")
+
+        unshadowed << pl.gsub(/:\*:/, ":#{pass}:")
       end
     end
 

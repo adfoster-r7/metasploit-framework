@@ -8,23 +8,26 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Dos
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Cisco IOS Telnet Denial of Service',
-      'Description'    => %q{
-        This module triggers a Denial of Service condition in the Cisco IOS
-        telnet service affecting multiple Cisco switches. Tested against Cisco
-        Catalyst 2960 and 3750.
-      },
-      'Author'      => [ 'Artem Kondratenko' ],
-      'License'     => MSF_LICENSE,
-      'References'  =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'Cisco IOS Telnet Denial of Service',
+        'Description' => %q{
+          This module triggers a Denial of Service condition in the Cisco IOS
+          telnet service affecting multiple Cisco switches. Tested against Cisco
+          Catalyst 2960 and 3750.
+        },
+        'Author' => [ 'Artem Kondratenko' ],
+        'License' => MSF_LICENSE,
+        'References' => [
           ['BID', '96960'],
           ['CVE', '2017-3881'],
           ['URL', 'https://tools.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-20170317-cmp'],
           ['URL', 'https://artkond.com/2017/04/10/cisco-catalyst-remote-code-execution']
         ],
-      'DisclosureDate' => '2017-03-17'))
+        'DisclosureDate' => '2017-03-17'
+      )
+    )
 
     register_options([ Opt::RPORT(23) ])
   end

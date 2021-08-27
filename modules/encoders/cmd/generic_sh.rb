@@ -10,24 +10,22 @@ class MetasploitModule < Msf::Encoder
 
   def initialize
     super(
-      'Name'             => 'Generic Shell Variable Substitution Command Encoder',
-      'Description'      => %q{
+      'Name' => 'Generic Shell Variable Substitution Command Encoder',
+      'Description' => %q{
         This encoder uses standard Bourne shell variable substitution
       tricks to avoid commonly restricted characters.
       },
-      'Author'           => 'hdm',
-      'Arch'             => ARCH_CMD,
-      'Platform'         => 'unix')
+      'Author' => 'hdm',
+      'Arch' => ARCH_CMD,
+      'Platform' => 'unix')
   end
-
 
   #
   # Encodes the payload
   #
   def encode_block(state, buf)
-
     # Skip encoding for empty badchars
-    if(state.badchars.length == 0)
+    if (state.badchars.length == 0)
       return buf
     end
 
@@ -42,9 +40,9 @@ class MetasploitModule < Msf::Encoder
       # Without an escape character we can't escape anything, so echo
       # won't work.  Try perl.
       if (state.badchars.include?("\\"))
-        buf = encode_block_perl(state,buf)
+        buf = encode_block_perl(state, buf)
       else
-        buf = encode_block_bash_echo(state,buf)
+        buf = encode_block_bash_echo(state, buf)
       end
     end
 
@@ -55,7 +53,6 @@ class MetasploitModule < Msf::Encoder
   # Uses the perl command to hex encode the command string
   #
   def encode_block_perl(state, buf)
-
     hex = buf.unpack("H*")
     cmd = 'perl -e '
     qot = ',-:.=+!@#$%^&'
@@ -104,7 +101,6 @@ class MetasploitModule < Msf::Encoder
   # Uses bash's echo -ne command to hex encode the command string
   #
   def encode_block_bash_echo(state, buf)
-
     hex = ''
 
     # Can we use single quotes to enclose the echo arguments?

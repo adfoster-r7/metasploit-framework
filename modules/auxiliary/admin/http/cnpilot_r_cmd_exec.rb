@@ -7,25 +7,25 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::CNPILOT
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name' => "Cambium cnPilot r200/r201 Command Execution as 'root'",
-      'Description' => %{
-        Cambium cnPilot r200/r201 device software versions 4.2.3-R4 to
-        4.3.3-R4, contain an undocumented, backdoor 'root' shell. This shell is
-        accessible via a specific url, to any authenticated user. The module uses this
-        shell to execute arbitrary system commands as 'root'.
-      },
-      'Author' =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => "Cambium cnPilot r200/r201 Command Execution as 'root'",
+        'Description' => %q{
+          Cambium cnPilot r200/r201 device software versions 4.2.3-R4 to
+          4.3.3-R4, contain an undocumented, backdoor 'root' shell. This shell is
+          accessible via a specific url, to any authenticated user. The module uses this
+          shell to execute arbitrary system commands as 'root'.
+        },
+        'Author' => [
           'Karn Ganeshen <KarnGaneshen[at]gmail.com>'
         ],
-      'References' =>
-        [
+        'References' => [
           ['CVE', '2017-5259'],
           ['URL', 'https://blog.rapid7.com/2017/12/19/r7-2017-25-cambium-epmp-and-cnpilot-multiple-vulnerabilities']
         ],
-      'License' => MSF_LICENSE
-     )
+        'License' => MSF_LICENSE
+      )
     )
 
     register_options(

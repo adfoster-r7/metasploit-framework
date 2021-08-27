@@ -19,15 +19,14 @@ class MetasploitModule < Msf::Auxiliary
         },
         'Author' => ['Heather Pilkington'],
         'License' => MSF_LICENSE,
-        'References' =>
-          [
-            ['CVE', '2000-0649'],
-            ['BID', '1499'],
-            ['EDB', '20096'],
-            ['URL', 'https://support.microsoft.com/en-us/help/218180/internet-information-server-returns-ip-address-in-http-header-content'], # iis 4,5,5.1
-            ['URL', 'https://support.microsoft.com/en-us/help/967342/fix-the-internal-ip-address-of-an-iis-7-0-server-is-revealed-if-an-htt'], # iis 7+
-            ['URL', 'https://techcommunity.microsoft.com/t5/iis-support-blog/iis-web-servers-running-in-windows-azure-may-reveal-their/ba-p/826500']
-          ]
+        'References' => [
+          ['CVE', '2000-0649'],
+          ['BID', '1499'],
+          ['EDB', '20096'],
+          ['URL', 'https://support.microsoft.com/en-us/help/218180/internet-information-server-returns-ip-address-in-http-header-content'], # iis 4,5,5.1
+          ['URL', 'https://support.microsoft.com/en-us/help/967342/fix-the-internal-ip-address-of-an-iis-7-0-server-is-revealed-if-an-htt'], # iis 7+
+          ['URL', 'https://techcommunity.microsoft.com/t5/iis-support-blog/iis-web-servers-running-in-windows-azure-may-reveal-their/ba-p/826500']
+        ]
       )
     )
   end

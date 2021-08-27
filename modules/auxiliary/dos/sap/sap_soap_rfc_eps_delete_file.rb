@@ -38,11 +38,10 @@ class MetasploitModule < Msf::Auxiliary
         [ 'URL', 'http://dsecrg.com/pages/vul/show.php?id=331' ],
         [ 'URL', 'https://service.sap.com/sap/support/notes/1554030' ]
       ],
-      'Author' =>
-        [
-          'Alexey Sintsov', # Vulnerability discovery
-          'nmonkee' # Metasploit module
-        ],
+      'Author' => [
+        'Alexey Sintsov', # Vulnerability discovery
+        'nmonkee' # Metasploit module
+      ],
       'License' => MSF_LICENSE
       )
 
@@ -97,9 +96,9 @@ class MetasploitModule < Msf::Auxiliary
         vprint_error("#{rhost}:#{rport} - Response message: " + res.message.to_s)
         vprint_error("#{rhost}:#{rport} - Response body: " + res.body.to_s) if res.body
       end
-      rescue ::Rex::ConnectionError
-        print_error("#{rhost}:#{rport} - Unable to connect")
-        return
-      end
+    rescue ::Rex::ConnectionError
+      print_error("#{rhost}:#{rport} - Unable to connect")
+      return
     end
   end
+end

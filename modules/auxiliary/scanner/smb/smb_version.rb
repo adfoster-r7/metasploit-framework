@@ -87,6 +87,7 @@ class MetasploitModule < Msf::Auxiliary
       end
 
       break if protocol.nil?
+
       version = { 'SMB2' => 2, 'SMB3' => 3 }.fetch(protocol, 1)
       versions.select! { |v| v < version }
 
@@ -306,7 +307,7 @@ class MetasploitModule < Msf::Auxiliary
         disconnect
 
         lines.each do |line|
-          send "#{ line[:verbose] ? 'v' : '' }print_#{line[:type]}", line[:message]
+          send "#{line[:verbose] ? 'v' : ''}print_#{line[:type]}", line[:message]
         end
         lines = []
       end

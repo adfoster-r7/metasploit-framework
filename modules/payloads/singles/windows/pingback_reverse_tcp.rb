@@ -3,9 +3,7 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 module MetasploitModule
-
   CachedSize = 307
 
   include Msf::Payload::Windows

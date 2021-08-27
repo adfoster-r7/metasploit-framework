@@ -10,43 +10,45 @@ class MetasploitModule < Msf::Post
 
   attr_accessor :web_server_was_disabled, :error_log_was_reset
 
-  def initialize(info={})
-    super( update_info( info, {
-      'Name'           => 'CUPS 1.6.1 Root File Read',
-      'Description'    => %q{
-        This module exploits a vulnerability in CUPS < 1.6.2, an open source printing system.
-        CUPS allows members of the lpadmin group to make changes to the cupsd.conf
-        configuration, which can specify an Error Log path. When the user visits the
-        Error Log page in the web interface, the cupsd daemon (running with setuid root)
-        reads the Error Log path and echoes it as plaintext.
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        {
+          'Name' => 'CUPS 1.6.1 Root File Read',
+          'Description' => %q{
+            This module exploits a vulnerability in CUPS < 1.6.2, an open source printing system.
+            CUPS allows members of the lpadmin group to make changes to the cupsd.conf
+            configuration, which can specify an Error Log path. When the user visits the
+            Error Log page in the web interface, the cupsd daemon (running with setuid root)
+            reads the Error Log path and echoes it as plaintext.
 
-        This module is known to work on Mac OS X < 10.8.4 and Ubuntu Desktop <= 12.0.4
-        as long as the session is in the lpadmin group.
+            This module is known to work on Mac OS X < 10.8.4 and Ubuntu Desktop <= 12.0.4
+            as long as the session is in the lpadmin group.
 
-        Warning: if the user has set up a custom path to the CUPS error log,
-        this module might fail to reset that path correctly. You can specify
-        a custom error log path with the ERROR_LOG datastore option.
-      },
-      'References'     =>
-        [
-          ['CVE', '2012-5519'],
-          ['OSVDB', '87635'],
-          ['URL', 'http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=692791']
-        ],
-      'License'        => MSF_LICENSE,
-      'Author'         =>
-        [
-          "Jann Horn", # discovery
-          "joev" # metasploit module
-        ],
-      'DisclosureDate' => '2012-11-20',
-      'Platform'       => %w{ linux osx }
-    }))
+            Warning: if the user has set up a custom path to the CUPS error log,
+            this module might fail to reset that path correctly. You can specify
+            a custom error log path with the ERROR_LOG datastore option.
+          },
+          'References' => [
+            ['CVE', '2012-5519'],
+            ['OSVDB', '87635'],
+            ['URL', 'http://bugs.debian.org/cgi-bin/bugreport.cgi?bug=692791']
+          ],
+          'License' => MSF_LICENSE,
+          'Author' => [
+            "Jann Horn", # discovery
+            "joev" # metasploit module
+          ],
+          'DisclosureDate' => '2012-11-20',
+          'Platform' => %w{linux osx}
+        }
+      )
+    )
     register_options([
       OptString.new("FILE", [true, "The file to steal.", "/etc/shadow"]),
       OptString.new("ERROR_LOG",
-        [true, "The original path to the CUPS error log", '/var/log/cups/error_log']
-      )
+                    [true, "The original path to the CUPS error log", '/var/log/cups/error_log'])
     ])
   end
 

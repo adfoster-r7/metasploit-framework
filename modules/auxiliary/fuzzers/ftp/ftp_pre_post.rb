@@ -9,55 +9,56 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'           => 'Simple FTP Fuzzer',
-      'Description'    => %q{
+      'Name' => 'Simple FTP Fuzzer',
+      'Description' => %q{
         This module will connect to a FTP server and perform pre- and post-authentication fuzzing
       },
-      'Author'         => [ 'corelanc0d3r <peter.ve[at]corelan.be>', 'jduck' ],
-      'License'        => MSF_LICENSE
+      'Author' => [ 'corelanc0d3r <peter.ve[at]corelan.be>', 'jduck' ],
+      'License' => MSF_LICENSE
       )
 
     register_options(
       [
         Opt::RPORT(21),
-        OptInt.new('STARTATSTAGE', [ false, "Start at this test stage",1]),
-        OptInt.new('STEPSIZE', [ false, "Increase string size each iteration with this number of chars",10]),
-        OptInt.new('DELAY', [ false, "Delay between connections in seconds",1]),
-        OptInt.new('STARTSIZE', [ false, "Fuzzing string startsize",10]),
-        OptInt.new('ENDSIZE', [ false, "Fuzzing string endsize",20000]),
-        OptInt.new('STOPAFTER', [ false, "Stop after x number of consecutive errors",2]),
-        OptString.new('USER', [ false, "Username",'anonymous']),
-        OptString.new('PASS', [ false, "Password",'mozilla@example.com']),
-        OptBool.new('FASTFUZZ', [ false, "Only fuzz with cyclic pattern",true]),
-        OptBool.new('CONNRESET', [ false, "Break on CONNRESET error",true]),
-      ])
+        OptInt.new('STARTATSTAGE', [ false, "Start at this test stage", 1]),
+        OptInt.new('STEPSIZE', [ false, "Increase string size each iteration with this number of chars", 10]),
+        OptInt.new('DELAY', [ false, "Delay between connections in seconds", 1]),
+        OptInt.new('STARTSIZE', [ false, "Fuzzing string startsize", 10]),
+        OptInt.new('ENDSIZE', [ false, "Fuzzing string endsize", 20000]),
+        OptInt.new('STOPAFTER', [ false, "Stop after x number of consecutive errors", 2]),
+        OptString.new('USER', [ false, "Username", 'anonymous']),
+        OptString.new('PASS', [ false, "Password", 'mozilla@example.com']),
+        OptBool.new('FASTFUZZ', [ false, "Only fuzz with cyclic pattern", true]),
+        OptBool.new('CONNRESET', [ false, "Break on CONNRESET error", true]),
+      ]
+    )
 
     @evilchars = [
-      'A','a','%s','%d','%n','%x','%p','-1','0','0xfffffffe','0xffffffff','A/','//','/..','//..',
-      'A%20','./A','.A',',A','A:','!A','&A','?A','\A','../A/','..?','//A:','\\A','{A','$A','A*',
-      'cmd','A@a.com','#A','A/../','~','~A','~A/','A`/','>A','<A','A%n','A../','.././','A../',
-      '....//','~?*/','.\../','\.//A','-%A','%Y','%H','/1','!','@','%','&','/?(*','*','(',')',
-      '`',',','~/','/.','\$:','/A~%n','=','=:;)}','1.2.','41414141','-1234','999999,','%00','+A',
-      '+123','..\'','??.','..\.\'','.../','1234123+',
-      '%Y%%Y%/','%FC%80%80%80%80%AE%FC%80%80%80%80%AE/','????/','\uff0e/','%%32%65%%32%65/',
-      '+B./','%%32%65%%32%65/','..%c0%af','..%e0%80%af','..%c1%9c'
+      'A', 'a', '%s', '%d', '%n', '%x', '%p', '-1', '0', '0xfffffffe', '0xffffffff', 'A/', '//', '/..', '//..',
+      'A%20', './A', '.A', ',A', 'A:', '!A', '&A', '?A', '\A', '../A/', '..?', '//A:', '\\A', '{A', '$A', 'A*',
+      'cmd', 'A@a.com', '#A', 'A/../', '~', '~A', '~A/', 'A`/', '>A', '<A', 'A%n', 'A../', '.././', 'A../',
+      '....//', '~?*/', '.\../', '\.//A', '-%A', '%Y', '%H', '/1', '!', '@', '%', '&', '/?(*', '*', '(', ')',
+      '`', ',', '~/', '/.', '\$:', '/A~%n', '=', '=:;)}', '1.2.', '41414141', '-1234', '999999,', '%00', '+A',
+      '+123', '..\'', '??.', '..\.\'', '.../', '1234123+',
+      '%Y%%Y%/', '%FC%80%80%80%80%AE%FC%80%80%80%80%AE/', '????/', '\uff0e/', '%%32%65%%32%65/',
+      '+B./', '%%32%65%%32%65/', '..%c0%af', '..%e0%80%af', '..%c1%9c'
     ]
     @commands = [
-      'ABOR','ACCT','ALLO','APPE','AUTH','CWD','CDUP','DELE','FEAT','HELP','HOST','LANG','LIST',
-      'MDTM','MKD','MLST','MODE','NLST','NLST -al','NOOP','OPTS','PASV','PORT','PROT','PWD','REIN',
-      'REST','RETR','RMD','RNFR','RNTO','SIZE','SITE','SITE CHMOD','SITE CHOWN','SITE EXEC','SITE MSG',
-      'SITE PSWD','SITE ZONE','SITE WHO','SMNT','STAT','STOR','STOU','STRU','SYST','TYPE','XCUP',
-      'XCRC','XCWD','XMKD','XPWD','XRMD'
+      'ABOR', 'ACCT', 'ALLO', 'APPE', 'AUTH', 'CWD', 'CDUP', 'DELE', 'FEAT', 'HELP', 'HOST', 'LANG', 'LIST',
+      'MDTM', 'MKD', 'MLST', 'MODE', 'NLST', 'NLST -al', 'NOOP', 'OPTS', 'PASV', 'PORT', 'PROT', 'PWD', 'REIN',
+      'REST', 'RETR', 'RMD', 'RNFR', 'RNTO', 'SIZE', 'SITE', 'SITE CHMOD', 'SITE CHOWN', 'SITE EXEC', 'SITE MSG',
+      'SITE PSWD', 'SITE ZONE', 'SITE WHO', 'SMNT', 'STAT', 'STOR', 'STOU', 'STRU', 'SYST', 'TYPE', 'XCUP',
+      'XCRC', 'XCWD', 'XMKD', 'XPWD', 'XRMD'
     ]
     @emax = @evilchars.length
 
     register_advanced_options(
       [
-        OptString.new('FtpCommands', [ false, "Commands to fuzz at stages 4 and 5",@commands.join(" ")]),
-        OptBool.new('ExpandCrash', [ false, "Expand any crash strings",false]),
-    ])
+        OptString.new('FtpCommands', [ false, "Commands to fuzz at stages 4 and 5", @commands.join(" ")]),
+        OptBool.new('ExpandCrash', [ false, "Expand any crash strings", false]),
+      ]
+    )
   end
-
 
   def get_pkt
     buf = sock.get_once(-1, 10)
@@ -71,12 +72,10 @@ class MetasploitModule < Msf::Auxiliary
     get_pkt if get_resp
   end
 
-
   def process_phase(phase_num, phase_name, prepend = '', initial_cmds = [])
     print_status("[Phase #{phase_num}] #{phase_name} - #{Time.now.localtime}")
     ecount = 1
     @evilchars.each do |evilstr|
-
       if datastore['FASTFUZZ']
         evilstr = "Cyclic"
         @emax = 1
@@ -105,7 +104,6 @@ class MetasploitModule < Msf::Auxiliary
             disconnect
 
             count += datastore['STEPSIZE']
-
           rescue ::Exception => e
             @error_cnt += 1
             print_status("Exception #{@error_cnt} of #{@nr_errors}")
@@ -122,7 +120,7 @@ class MetasploitModule < Msf::Auxiliary
                 return
               else
                 print_status("Exception triggered, need #{@nr_errors - @error_cnt} more exception(s) before interrupting process")
-                select(nil,nil,nil,3)  #wait 3 seconds
+                select(nil, nil, nil, 3) # wait 3 seconds
               end
             end
             if @error_cnt >= @nr_errors
@@ -144,7 +142,6 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def run_host(ip)
-
     startstage = datastore['STARTATSTAGE']
 
     @nr_errors = datastore['STOPAFTER']
@@ -169,7 +166,7 @@ class MetasploitModule < Msf::Auxiliary
 
     if (startstage == 3) and (@stopprocess == false)
       process_phase(3, "Fuzzing PASS", 'PASS ',
-        [ "USER " + datastore['USER'] + "\r\n" ])
+                    [ "USER " + datastore['USER'] + "\r\n" ])
       startstage += 1
     end
 
@@ -178,14 +175,14 @@ class MetasploitModule < Msf::Auxiliary
       ftp_commands().each do |cmd|
         if (@stopprocess == false)
           process_phase(4, "Fuzzing command: #{cmd}", "#{cmd} ",
-            [
-              "USER " + datastore['USER'] + "\r\n",
-              "PASS " + datastore['PASS'] + "\r\n"
-            ])
+                        [
+                          "USER " + datastore['USER'] + "\r\n",
+                          "PASS " + datastore['PASS'] + "\r\n"
+                        ])
         end
       end
       # Don't progress into stage 5, it must be selected manually.
-      #startstage += 1
+      # startstage += 1
     end
 
     # Fuzz other commands, all command combinations in one session
@@ -195,7 +192,7 @@ class MetasploitModule < Msf::Auxiliary
         if (@stopprocess == false)
           ecount = 1
           count = datastore['STARTSIZE']
-          print_status("Fuzzing command #{cmd} - #{Time.now.localtime}" )
+          print_status("Fuzzing command #{cmd} - #{Time.now.localtime}")
 
           connect
           pkt = "USER " + datastore['USER'] + "\r\n"
@@ -233,7 +230,7 @@ class MetasploitModule < Msf::Auxiliary
                   return
                 else
                   print_status("Exception triggered, need #{@nr_errors - @error_cnt} more exception(s) before interrupting process")
-                  select(nil,nil,nil,3)  #wait 3 seconds
+                  select(nil, nil, nil, 3)  # wait 3 seconds
                 end
               end
               if @error_cnt >= @nr_errors

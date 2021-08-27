@@ -9,35 +9,31 @@ require 'net/dns'
 
 class MetasploitModule < Msf::Auxiliary
 
-include Msf::Exploit::Capture
+  include Msf::Exploit::Capture
 
-attr_accessor :sock, :thread
-
+  attr_accessor :sock, :thread
 
   def initialize
     super(
-      'Name'        => 'LLMNR Spoofer',
+      'Name' => 'LLMNR Spoofer',
       'Description' => %q{
           LLMNR (Link-local Multicast Name Resolution) is the successor of NetBIOS (Windows Vista and up) and is used to
           resolve the names of neighboring computers. This module forges LLMNR responses by listening for LLMNR requests
           sent to the LLMNR multicast address (224.0.0.252) and responding with a user-defined spoofed IP address.
       },
-      'Author'     => [ 'Robin Francois <rof[at]navixia.com>' ],
-      'License'    => MSF_LICENSE,
-      'References' =>
-        [
-          [ 'URL', 'http://www.ietf.org/rfc/rfc4795.txt' ]
-        ],
+      'Author' => [ 'Robin Francois <rof[at]navixia.com>' ],
+      'License' => MSF_LICENSE,
+      'References' => [
+        [ 'URL', 'http://www.ietf.org/rfc/rfc4795.txt' ]
+      ],
 
-        'Actions'     =>
-        [
-          [ 'Service', 'Description' => 'Run LLMNR spoofing service' ]
-        ],
-      'PassiveActions' =>
-        [
-          'Service'
-        ],
-      'DefaultAction'  => 'Service'
+      'Actions' => [
+        [ 'Service', 'Description' => 'Run LLMNR spoofing service' ]
+      ],
+      'PassiveActions' => [
+        'Service'
+      ],
+      'DefaultAction' => 'Service'
     )
 
     register_options([
@@ -162,7 +158,7 @@ attr_accessor :sock, :thread
       wds = []
       eds = [self.sock]
 
-      r,_,_ = ::IO.select(rds,wds,eds,0.25)
+      r, _, _ = ::IO.select(rds, wds, eds, 0.25)
 
       if (r != nil and r[0] == self.sock)
         packet, host, port = self.sock.recvfrom(65535)
@@ -170,7 +166,6 @@ attr_accessor :sock, :thread
       end
     end
   end
-
 
   # Don't spam with success, just throttle to every 10 seconds
   # per host
@@ -188,10 +183,10 @@ attr_accessor :sock, :thread
 
   def run
     check_pcaprub_loaded()
-    ::Socket.do_not_reverse_lookup = true  # Mac OS X workaround
+    ::Socket.do_not_reverse_lookup = true # Mac OS X workaround
 
     # Avoid receiving extraneous traffic on our send socket
-    open_pcap({'FILTER' => 'ether host f0:f0:f0:f0:f0:f0'})
+    open_pcap({ 'FILTER' => 'ether host f0:f0:f0:f0:f0:f0' })
 
     # Multicast Address for LLMNR
     multicast_addr = ::IPAddr.new("224.0.0.252")
@@ -207,7 +202,7 @@ attr_accessor :sock, :thread
       # This must be INADDR_ANY to receive multicast packets
       'LocalHost' => "0.0.0.0",
       'LocalPort' => 5355,
-      'Context'   => { 'Msf' => framework, 'MsfExploit' => self }
+      'Context' => { 'Msf' => framework, 'MsfExploit' => self }
     )
     self.sock.setsockopt(::Socket::SOL_SOCKET, ::Socket::SO_REUSEADDR, 1)
     self.sock.setsockopt(::Socket::IPPROTO_IP, ::Socket::IP_ADD_MEMBERSHIP, optval)

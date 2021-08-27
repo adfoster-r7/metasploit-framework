@@ -18,21 +18,18 @@ class MetasploitModule < Msf::Auxiliary
       },
       'Author' => ['ddz', 'hdm', 'h00die'],
       'License' => MSF_LICENSE,
-      'Actions' =>
-        [
-          [ 'Capture', 'Description' => 'Run SMTP capture server' ]
-        ],
-      'PassiveActions' =>
-        [
-          'Capture'
-        ],
+      'Actions' => [
+        [ 'Capture', 'Description' => 'Run SMTP capture server' ]
+      ],
+      'PassiveActions' => [
+        'Capture'
+      ],
       'DefaultAction' => 'Capture',
-      'References' =>
-        [
-          [ 'URL', 'https://www.samlogic.net/articles/smtp-commands-reference-auth.htm' ],
-          [ 'URL', 'tools.ietf.org/html/rfc5321' ],
-          [ 'URL', 'http://fehcom.de/qmail/smtpauth.html' ]
-        ],
+      'References' => [
+        [ 'URL', 'https://www.samlogic.net/articles/smtp-commands-reference-auth.htm' ],
+        [ 'URL', 'tools.ietf.org/html/rfc5321' ],
+        [ 'URL', 'http://fehcom.de/qmail/smtpauth.html' ]
+      ],
     )
 
     register_options(
@@ -249,7 +246,6 @@ class MetasploitModule < Msf::Auxiliary
       vprint_error("Unknown command: #{arg}")
     end
     client.put "503 Server Error\r\n"
-
   end
 
   def report_cred(opts)

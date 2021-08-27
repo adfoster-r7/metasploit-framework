@@ -10,34 +10,34 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'           => 'UPnP IGD SOAP Port Mapping Utility',
-      'Description'    => %q{
+      'Name' => 'UPnP IGD SOAP Port Mapping Utility',
+      'Description' => %q{
         Manage port mappings on UPnP IGD-capable device using the AddPortMapping and
         DeletePortMapping SOAP requests
       },
-      'Author'         =>
+      'Author' => [
+        'St0rn <fabien[at]anbu-pentest.com>', # initial module
+        'Jon Hart <jon_hart[at]rapid7.com>'   # module cleanup and refactoring
+      ],
+      'License' => MSF_LICENSE,
+      'References' => [['URL', 'http://www.upnp-hacks.org/igd.html']],
+      'DefaultAction' => 'ADD',
+      'Actions' => [
         [
-          'St0rn <fabien[at]anbu-pentest.com>', # initial module
-          'Jon Hart <jon_hart[at]rapid7.com>'   # module cleanup and refactoring
+          'ADD',
+          {
+            'Description' => 'Use the AddPortMapping SOAP command to open and forward a port',
+            'SOAP_ACTION' => 'AddPortMapping'
+          }
         ],
-      'License'        => MSF_LICENSE,
-      'References'     => [['URL', 'http://www.upnp-hacks.org/igd.html']],
-      'DefaultAction'  => 'ADD',
-      'Actions'        =>
         [
-          [ 'ADD',
-            {
-              'Description' => 'Use the AddPortMapping SOAP command to open and forward a port',
-              'SOAP_ACTION' => 'AddPortMapping'
-            }
-          ],
-          [ 'DELETE',
-            {
-              'Description' => 'Use the DeletePortMapping SOAP command to remove a port forwarding',
-              'SOAP_ACTION' => 'DeletePortMapping'
-            }
-          ]
-        ],
+          'DELETE',
+          {
+            'Description' => 'Use the DeletePortMapping SOAP command to remove a port forwarding',
+            'SOAP_ACTION' => 'DeletePortMapping'
+          }
+        ]
+      ],
     )
 
     register_options(
@@ -111,12 +111,12 @@ class MetasploitModule < Msf::Auxiliary
 
   def run
     res = send_request_cgi(
-      'uri'           => normalize_uri(target_uri.path),
-      'method'        => 'POST',
-      'content-type'  => 'text/xml;charset="utf-8"',
-      'data'          => build_soap,
-      'headers'       => {
-        'SoapAction'  => "urn:schemas-upnp-org:service:WANIPConnection:1##{soap_action}"
+      'uri' => normalize_uri(target_uri.path),
+      'method' => 'POST',
+      'content-type' => 'text/xml;charset="utf-8"',
+      'data' => build_soap,
+      'headers' => {
+        'SoapAction' => "urn:schemas-upnp-org:service:WANIPConnection:1##{soap_action}"
       }
     )
 

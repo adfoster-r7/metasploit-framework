@@ -13,19 +13,19 @@ class MetasploitModule < Msf::Post
     super(
       update_info(
         info,
-        'Name'           => "Create an AWS IAM User",
-        'Description'    => %q{
+        'Name' => "Create an AWS IAM User",
+        'Description' => %q{
           This module will attempt to create an AWS (Amazon Web Services) IAM
           (Identity and Access Management) user with Admin privileges.
         },
-        'License'        => MSF_LICENSE,
-        'Platform'       => %w(unix),
-        'SessionTypes'   => %w(shell meterpreter),
-        'Author'         => [
+        'License' => MSF_LICENSE,
+        'Platform' => %w(unix),
+        'SessionTypes' => %w(shell meterpreter),
+        'Author' => [
           'Javier Godinez <godinezj[at]gmail.com>',
           'Jon Hart <jon_hart@rapid7.com>'
         ],
-        'References'     => [
+        'References' => [
           [ 'URL', 'https://github.com/devsecops/bootcamp/raw/master/Week-6/slides/june-DSO-bootcamp-week-six-lesson-three.pdf' ]
         ]
       )
@@ -109,7 +109,6 @@ class MetasploitModule < Msf::Post
     doc = call_iam(creds, 'Action' => action, 'UserName' => username, 'GroupName' => groupname)
     print_results(doc, action)
 
-
     if datastore['CREATE_API']
       # create API keys
       print_status("Creating API Keys for #{username}")
@@ -135,6 +134,7 @@ class MetasploitModule < Msf::Post
     response = call_iam(creds, 'Action' => action, 'UserName' => username)
     doc = print_results(response, action)
     return if doc.nil?
+
     arn = doc['Arn']
     results['AccountId'] = arn[/^arn:aws:iam::(\d+):/, 1]
 

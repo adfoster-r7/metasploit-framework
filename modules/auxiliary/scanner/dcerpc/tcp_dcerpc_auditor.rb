@@ -15,16 +15,17 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'DCERPC TCP Service Auditor',
+      'Name' => 'DCERPC TCP Service Auditor',
       'Description' => 'Determine what DCERPC services are accessible over a TCP port',
-      'Author'      => 'hdm',
-      'License'     => MSF_LICENSE
+      'Author' => 'hdm',
+      'License' => MSF_LICENSE
     )
 
     register_options(
       [
         Opt::RPORT(135)
-      ])
+      ]
+    )
   end
 
   @@target_uuids = [
@@ -244,14 +245,11 @@ class MetasploitModule < Msf::Auxiliary
     [ 'fdb3a030-065f-11d1-bb9b-00a024ea5525', '1.0' ],
     [ 'ffe561b8-bf15-11cf-8c5e-08002bb49649', '2.0' ]
 
-
-]
+  ]
 
   # Fingerprint a single host
   def run_host(ip)
-
     begin
-
       @@target_uuids.each do |uuid|
         connect()
         handle = dcerpc_handle(
@@ -275,21 +273,20 @@ class MetasploitModule < Msf::Auxiliary
           end
           access = call ? "GRANTED" : "DENIED"
           print_line("#{ip} - UUID #{uuid[0]} #{uuid[1]} OPEN VIA #{datastore['RPORT']} ACCESS #{access} #{data.unpack("H*")[0]}")
-          data_report="OPEN VIA #{datastore['RPORT']} ACCESS #{access} #{data.unpack("H*")[0]}"
+          data_report = "OPEN VIA #{datastore['RPORT']} ACCESS #{access} #{data.unpack("H*")[0]}"
 
           ## Add Report
           report_note(
-            :host   => ip,
-            :proto  => 'tcp',
-            :port   => datastore['RPORT'],
-            :type   => "DCERPC Service: UUID #{uuid[0]} #{uuid[1]}",
-            :data   => data_report
+            :host => ip,
+            :proto => 'tcp',
+            :port => datastore['RPORT'],
+            :type => "DCERPC Service: UUID #{uuid[0]} #{uuid[1]}",
+            :data => data_report
           )
-
         rescue ::Interrupt
           raise $!
         rescue ::Exception => e
-          #print_line("UUID #{uuid[0]} #{uuid[1]} ERROR #{$!}")
+          # print_line("UUID #{uuid[0]} #{uuid[1]} ERROR #{$!}")
         end
         disconnect()
       end
@@ -299,6 +296,5 @@ class MetasploitModule < Msf::Auxiliary
       print_line($!.to_s)
     end
   end
-
 
 end

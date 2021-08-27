@@ -3,9 +3,7 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 module MetasploitModule
-
   CachedSize = 810096
 
   include Msf::Payload::Single
@@ -16,18 +14,18 @@ module MetasploitModule
     super(
       update_info(
         info,
-        'Name'          => 'OSX Meterpreter, Reverse TCP Inline',
-        'Description'   => 'Run the Meterpreter / Mettle server payload (stageless)',
-        'Author'        => [
+        'Name' => 'OSX Meterpreter, Reverse TCP Inline',
+        'Description' => 'Run the Meterpreter / Mettle server payload (stageless)',
+        'Author' => [
           'Adam Cammack <adam_cammack[at]rapid7.com>',
           'Brent Cook <brent_cook[at]rapid7.com>',
           'timwr'
         ],
-        'Platform'      => 'osx',
-        'Arch'          => ARCH_X64,
-        'License'       => MSF_LICENSE,
-        'Handler'       => Msf::Handler::ReverseTcp,
-        'Session'       => Msf::Sessions::Meterpreter_x64_OSX
+        'Platform' => 'osx',
+        'Arch' => ARCH_X64,
+        'License' => MSF_LICENSE,
+        'Handler' => Msf::Handler::ReverseTcp,
+        'Session' => Msf::Sessions::Meterpreter_x64_OSX
       )
     )
   end

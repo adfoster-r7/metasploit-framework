@@ -3,14 +3,13 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 class MetasploitModule < Msf::Auxiliary
   include Rex::Proto::TFTP
   include Msf::Auxiliary::Report
 
   def initialize
     super(
-      'Name'        => 'TFTP File Transfer Utility',
+      'Name' => 'TFTP File Transfer Utility',
       'Description' => %q{
           This module will transfer a file to or from a remote TFTP server.
           Note that the target must be able to connect back to the Metasploit system,
@@ -24,27 +23,26 @@ class MetasploitModule < Msf::Auxiliary
           a source file, or FILEDATA must be populated. FILENAME may be a fully qualified path,
           or the name of a file in the Msf::Config.local_directory or Msf::Config.data_directory.
         },
-      'Author'      => [ 'todb' ],
-      'References'  =>
-        [
-          ['URL', 'http://www.faqs.org/rfcs/rfc1350.html'],
-          ['URL', 'http://www.networksorcery.com/enp/protocol/tftp.htm']
-        ],
+      'Author' => [ 'todb' ],
+      'References' => [
+        ['URL', 'http://www.faqs.org/rfcs/rfc1350.html'],
+        ['URL', 'http://www.networksorcery.com/enp/protocol/tftp.htm']
+      ],
       'Actions' => [
-          [ 'Download', 'Description' => "Download REMOTE_FILENAME as FILENAME from the server."],
-          [ 'Upload',   'Description' => "Upload FILENAME as REMOTE_FILENAME to the server."]
-        ],
+        [ 'Download', 'Description' => "Download REMOTE_FILENAME as FILENAME from the server."],
+        [ 'Upload', 'Description' => "Upload FILENAME as REMOTE_FILENAME to the server."]
+      ],
       'DefaultAction' => 'Upload',
-      'License'     => MSF_LICENSE
+      'License' => MSF_LICENSE
     )
     register_options([
-      OptString.new( 'FILENAME', [false, "The local filename" ]),
-      OptString.new( 'FILEDATA', [false, "Data to upload in lieu of a real local file." ]),
-      OptString.new( 'REMOTE_FILENAME', [false, "The remote filename"]),
-      OptAddress.new('RHOST',    [true, "The remote TFTP server"]),
-      OptPort.new(   'LPORT',    [false, "The local port the TFTP client should listen on (default is random)" ]),
-      OptAddressLocal.new('LHOST',    [false, "The local address the TFTP client should bind to"]),
-      OptString.new( 'MODE',     [false, "The TFTP mode; usual choices are netascii and octet.", "octet"]),
+      OptString.new('FILENAME', [false, "The local filename" ]),
+      OptString.new('FILEDATA', [false, "Data to upload in lieu of a real local file." ]),
+      OptString.new('REMOTE_FILENAME', [false, "The remote filename"]),
+      OptAddress.new('RHOST', [true, "The remote TFTP server"]),
+      OptPort.new('LPORT', [false, "The local port the TFTP client should listen on (default is random)" ]),
+      OptAddressLocal.new('LHOST', [false, "The local address the TFTP client should bind to"]),
+      OptString.new('MODE', [false, "The TFTP mode; usual choices are netascii and octet.", "octet"]),
       Opt::RPORT(69)
     ])
   end
@@ -86,10 +84,11 @@ class MetasploitModule < Msf::Auxiliary
       elsif ::File.readable? fname
         fname
       else
-        fname_local = ::File.join(Msf::Config.local_directory,fname)
-        fname_data  = ::File.join(Msf::Config.data_directory,fname)
+        fname_local = ::File.join(Msf::Config.local_directory, fname)
+        fname_data = ::File.join(Msf::Config.data_directory, fname)
         return fname_local if ::File.file?(fname_local) and ::File.readable?(fname_local)
-        return fname_data  if ::File.file?(fname_data)  and ::File.readable?(fname_data)
+        return fname_data if ::File.file?(fname_data) and ::File.readable?(fname_data)
+
         return nil # Couldn't find it, giving up.
       end
     else # "Download"
@@ -99,9 +98,9 @@ class MetasploitModule < Msf::Auxiliary
 
   # Experimental message prepending thinger. Might make it up into the
   # standard Metasploit lib like vprint_status and friends.
-  def rtarget(ip=nil)
+  def rtarget(ip = nil)
     if (ip or rhost) and rport
-      [(ip || rhost),rport].map {|x| x.to_s}.join(":") << " "
+      [(ip || rhost), rport].map { |x| x.to_s }.join(":") << " "
     elsif (ip or rhost)
       "#{rhost} "
     else
@@ -115,21 +114,21 @@ class MetasploitModule < Msf::Auxiliary
   # file data, set it to either :upload or :download, then kick off the
   # transfer as you like.
   def setup
-    @lport = datastore['LPORT'] || (1025 + rand(0xffff-1025))
+    @lport = datastore['LPORT'] || (1025 + rand(0xffff - 1025))
     @lhost = datastore['LHOST'] || "0.0.0.0"
     @local_file = file
     @remote_file = remote_file
 
     @tftp_client = Rex::Proto::TFTP::Client.new(
-      "LocalHost"  => @lhost,
-      "LocalPort"  => @lport,
-      "PeerHost"   => rhost,
-      "PeerPort"   => rport,
-      "LocalFile"  => @local_file,
+      "LocalHost" => @lhost,
+      "LocalPort" => @lport,
+      "PeerHost" => rhost,
+      "PeerPort" => rport,
+      "LocalFile" => @local_file,
       "RemoteFile" => @remote_file,
-      "Mode"       => mode,
-      "Context"    => {'Msf' => self.framework, 'MsfExploit' => self},
-      "Action"     => action.name.to_s.downcase.intern
+      "Mode" => mode,
+      "Context" => { 'Msf' => self.framework, 'MsfExploit' => self },
+      "Action" => action.name.to_s.downcase.intern
     )
   end
 
@@ -153,8 +152,8 @@ class MetasploitModule < Msf::Auxiliary
       print_error "Unknown action: '#{action.name}'"
     end
     while not @tftp_client.complete
-      select(nil,nil,nil,1)
-      print_status [rtarget,"TFTP transfer operation complete."].join
+      select(nil, nil, nil, 1)
+      print_status [rtarget, "TFTP transfer operation complete."].join
       save_downloaded_file() if action.name == 'Download'
       break
     end
@@ -167,7 +166,7 @@ class MetasploitModule < Msf::Auxiliary
   def cleanup
     if @tftp_client and @tftp_client.respond_to? :complete
       while not @tftp_client.complete
-        select(nil,nil,nil,1)
+        select(nil, nil, nil, 1)
         vprint_status "Cleaning up the TFTP client ports and threads."
         @tftp_client.stop
       end
@@ -187,7 +186,7 @@ class MetasploitModule < Msf::Auxiliary
   def save_downloaded_file
     print_status "Saving #{remote_file} as '#{file}'"
     fh = @tftp_client.recv_tempfile
-    data = File.open(fh,"rb") {|f| f.read f.stat.size} rescue nil
+    data = File.open(fh, "rb") { |f| f.read f.stat.size } rescue nil
     if data and not data.empty?
       unless framework.db.active
         print_status "No database connected, so not actually saving the data:"
@@ -199,9 +198,9 @@ class MetasploitModule < Msf::Auxiliary
         :name => "tftp",
         :proto => "udp"
       )
-      store_loot("tftp.file",datatype,rhost,data,file,remote_file,this_service)
+      store_loot("tftp.file", datatype, rhost, data, file, remote_file, this_service)
     else
-      print_status [rtarget,"Did not find any data, so nothing to save."].join
+      print_status [rtarget, "Did not find any data, so nothing to save."].join
     end
     fh.unlink rescue nil # Windows often complains about unlinking tempfiles
   end
@@ -209,11 +208,11 @@ class MetasploitModule < Msf::Auxiliary
   def print_tftp_status(msg)
     case msg
     when /Aborting/, /errors.$/
-      print_error [rtarget,msg].join
+      print_error [rtarget, msg].join
     when /^WRQ accepted/, /^Sending/, /complete!$/
-      print_good [rtarget,msg].join
+      print_good [rtarget, msg].join
     else
-      vprint_status [rtarget,msg].join
+      vprint_status [rtarget, msg].join
     end
   end
 end

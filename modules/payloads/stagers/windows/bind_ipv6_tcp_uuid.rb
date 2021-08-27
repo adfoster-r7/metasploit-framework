@@ -4,7 +4,6 @@
 ##
 
 module MetasploitModule
-
   CachedSize = 331
 
   include Msf::Payload::Stager
@@ -15,17 +14,20 @@ module MetasploitModule
   end
 
   def initialize(info = {})
-    super(merge_info(info,
-      'Name'        => 'Bind IPv6 TCP Stager with UUID Support (Windows x86)',
-      'Description' => 'Listen for an IPv6 connection with UUID Support (Windows x86)',
-      'Author'      => [ 'hdm', 'skape', 'sf', 'OJ Reeves' ],
-      'License'     => MSF_LICENSE,
-      'Platform'    => 'win',
-      'Arch'        => ARCH_X86,
-      'Handler'     => Msf::Handler::BindTcp,
-      'Convention'  => 'sockedi',
-      'Stager'      => { 'RequiresMidstager' => false }
-    ))
+    super(
+      merge_info(
+        info,
+        'Name' => 'Bind IPv6 TCP Stager with UUID Support (Windows x86)',
+        'Description' => 'Listen for an IPv6 connection with UUID Support (Windows x86)',
+        'Author' => [ 'hdm', 'skape', 'sf', 'OJ Reeves' ],
+        'License' => MSF_LICENSE,
+        'Platform' => 'win',
+        'Arch' => ARCH_X86,
+        'Handler' => Msf::Handler::BindTcp,
+        'Convention' => 'sockedi',
+        'Stager' => { 'RequiresMidstager' => false }
+      )
+    )
   end
 
   def use_ipv6
@@ -36,4 +38,3 @@ module MetasploitModule
     true
   end
 end
-

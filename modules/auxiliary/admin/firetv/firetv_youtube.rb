@@ -7,26 +7,29 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::HttpClient
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name' => 'Amazon Fire TV YouTube Remote Control',
-      'Description' => %q{
-        This module acts as a simple remote control for the Amazon Fire TV's
-        YouTube app.
+    super(
+      update_info(
+        info,
+        'Name' => 'Amazon Fire TV YouTube Remote Control',
+        'Description' => %q{
+          This module acts as a simple remote control for the Amazon Fire TV's
+          YouTube app.
 
-        Tested on the Amazon Fire TV Stick.
-      },
-      'Author' => ['wvu'],
-      'References' => [
-        ['URL', 'http://www.amazon.com/dp/B00CX5P8FC?_encoding=UTF8&showFS=1'],
-        ['URL', 'http://www.amazon.com/dp/B00GDQ0RMG/ref=fs_ftvs']
-      ],
-      'License' => MSF_LICENSE,
-      'Actions' => [
-        ['Play', 'Description' => 'Play video'],
-        ['Stop', 'Description' => 'Stop video']
-      ],
-      'DefaultAction' => 'Play'
-    ))
+          Tested on the Amazon Fire TV Stick.
+        },
+        'Author' => ['wvu'],
+        'References' => [
+          ['URL', 'http://www.amazon.com/dp/B00CX5P8FC?_encoding=UTF8&showFS=1'],
+          ['URL', 'http://www.amazon.com/dp/B00GDQ0RMG/ref=fs_ftvs']
+        ],
+        'License' => MSF_LICENSE,
+        'Actions' => [
+          ['Play', 'Description' => 'Play video'],
+          ['Stop', 'Description' => 'Stop video']
+        ],
+        'DefaultAction' => 'Play'
+      )
+    )
 
     register_options([
       Opt::RPORT(8008),

@@ -27,25 +27,26 @@ class MetasploitModule < Msf::Auxiliary
         Framework (ICF) to obtain the operating system version, SAP version, IP address
         and other information.
       },
-      'Author' =>
-        [
-          'Agnivesh Sathasivam', # original sap_soap_rfc_system_info module
-          'nmonkee', # original sap_soap_rfc_system_info module
-          'ChrisJohnRiley' # repurposed for /sap/public/info (non-RFC)
-        ],
+      'Author' => [
+        'Agnivesh Sathasivam', # original sap_soap_rfc_system_info module
+        'nmonkee', # original sap_soap_rfc_system_info module
+        'ChrisJohnRiley' # repurposed for /sap/public/info (non-RFC)
+      ],
       'License' => MSF_LICENSE
       )
     register_options(
       [
         Opt::RPORT(8000),
         OptString.new('TARGETURI', [true, 'Path to SAP Application Server', '/'])
-      ])
+      ]
+    )
   end
 
   def extract_field(data, elem)
     if data =~ /<#{elem}>([^<]+)<\/#{elem}>/i
       return $1
     end
+
     nil
   end
 
@@ -64,7 +65,6 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def run_host(ip)
-
     print_status("[SAP] #{ip}:#{rport} - Sending request to SAP Application Server")
     uri = normalize_uri(target_uri.path, '/sap/public/info')
     begin
@@ -115,36 +115,35 @@ class MetasploitModule < Msf::Auxiliary
     rfcipv6addr = extract_field(response, 'rfcipv6addr')
 
     # report notes / create saptbl output
-    report_note_sap('sap.version.release','Release Status of SAP System: ',rfcsaprl) if rfcsaprl
-    report_note_sap('sap.version.rfc_log','RFC Log Version: ',rfcproto) if rfcproto
-    report_note_sap('sap.version.kernel','Kernel Release: ',rfckernrl) if rfckernrl
-    report_note_sap('system.os','Operating System: ',rfcopsys) if rfcopsys
-    report_note_sap('sap.db.hostname','Database Host: ',rfcdbhost) if rfcdbhost
-    report_note_sap('sap.db_system','Central Database System: ',rfcdbsys) if rfcdbsys
-    report_note_sap('system.hostname','Hostname: ',rfchost) if rfchost
-    report_note_sap('system.ip.v4','IPv4 Address: ',rfcipaddr) if rfcipaddr
-    report_note_sap('system.ip.v6','IPv6 Address: ',rfcipv6addr) if rfcipv6addr
-    report_note_sap('sap.instance','System ID: ',rfcsysid) if rfcsysid
-    report_note_sap('sap.rfc.destination','RFC Destination: ',rfcdest) if rfcdest
-    report_note_sap('system.timezone','Timezone (diff from UTC in seconds): ',rfctzone.gsub(/\s+/, "")) if rfctzone
-    report_note_sap('system.charset','Character Set: ',rfcchartyp) if rfcchartyp
-    report_note_sap('sap.daylight_saving_time','Daylight Saving Time: ',rfcdayst) if rfcdayst
-    report_note_sap('sap.machine_id','Machine ID: ',rfcmach.gsub(/\s+/,"")) if rfcmach
+    report_note_sap('sap.version.release', 'Release Status of SAP System: ', rfcsaprl) if rfcsaprl
+    report_note_sap('sap.version.rfc_log', 'RFC Log Version: ', rfcproto) if rfcproto
+    report_note_sap('sap.version.kernel', 'Kernel Release: ', rfckernrl) if rfckernrl
+    report_note_sap('system.os', 'Operating System: ', rfcopsys) if rfcopsys
+    report_note_sap('sap.db.hostname', 'Database Host: ', rfcdbhost) if rfcdbhost
+    report_note_sap('sap.db_system', 'Central Database System: ', rfcdbsys) if rfcdbsys
+    report_note_sap('system.hostname', 'Hostname: ', rfchost) if rfchost
+    report_note_sap('system.ip.v4', 'IPv4 Address: ', rfcipaddr) if rfcipaddr
+    report_note_sap('system.ip.v6', 'IPv6 Address: ', rfcipv6addr) if rfcipv6addr
+    report_note_sap('sap.instance', 'System ID: ', rfcsysid) if rfcsysid
+    report_note_sap('sap.rfc.destination', 'RFC Destination: ', rfcdest) if rfcdest
+    report_note_sap('system.timezone', 'Timezone (diff from UTC in seconds): ', rfctzone.gsub(/\s+/, "")) if rfctzone
+    report_note_sap('system.charset', 'Character Set: ', rfcchartyp) if rfcchartyp
+    report_note_sap('sap.daylight_saving_time', 'Daylight Saving Time: ', rfcdayst) if rfcdayst
+    report_note_sap('sap.machine_id', 'Machine ID: ', rfcmach.gsub(/\s+/, "")) if rfcmach
 
     if rfcinttyp == 'LIT'
-      report_note_sap('system.endianness','Integer Format: ', 'Little Endian')
+      report_note_sap('system.endianness', 'Integer Format: ', 'Little Endian')
     elsif rfcinttyp
-      report_note_sap('system.endianness','Integer Format: ', 'Big Endian')
+      report_note_sap('system.endianness', 'Integer Format: ', 'Big Endian')
     end
 
     if rfcflotyp == 'IE3'
-      report_note_sap('system.float_type','Float Type Format: ', 'IEEE')
+      report_note_sap('system.float_type', 'Float Type Format: ', 'IEEE')
     elsif rfcflotyp
-      report_note_sap('system.float_type','Float Type Format: ', 'IBM/370')
+      report_note_sap('system.float_type', 'Float Type Format: ', 'IBM/370')
     end
 
     # output table
     print(@saptbl.to_s)
-
   end
 end

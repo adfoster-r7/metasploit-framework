@@ -8,29 +8,33 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Dos
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'		=> 'MS02-063 PPTP Malformed Control Data Kernel Denial of Service',
-      'Description'	=> %q{
-      This module exploits a kernel based overflow when sending abnormal PPTP Control Data
-      packets	to Microsoft Windows 2000 SP0-3 and XP SP0-1 based PPTP RAS servers
-      (Remote Access Services). Kernel memory is overwritten resulting in a BSOD.
-      Code execution may be possible however this module is only a DoS.
-      },
-      'Author' 	=> [ 'aushack' ],
-      'License'       => MSF_LICENSE,
-      'References'    =>
-      [
-        [ 'BID', '5807' ],
-        [ 'CVE', '2002-1214' ],
-        [ 'OSVDB', '13422' ],
-        [ 'MSB', 'MS02-063' ],
-      ],
-      'DisclosureDate' => '2002-09-26'))
+    super(
+      update_info(
+        info,
+        'Name'	=> 'MS02-063 PPTP Malformed Control Data Kernel Denial of Service',
+        'Description'	=> %q{
+          This module exploits a kernel based overflow when sending abnormal PPTP Control Data
+          packets	to Microsoft Windows 2000 SP0-3 and XP SP0-1 based PPTP RAS servers
+          (Remote Access Services). Kernel memory is overwritten resulting in a BSOD.
+          Code execution may be possible however this module is only a DoS.
+        },
+        'Author' => [ 'aushack' ],
+        'License' => MSF_LICENSE,
+        'References' => [
+          [ 'BID', '5807' ],
+          [ 'CVE', '2002-1214' ],
+          [ 'OSVDB', '13422' ],
+          [ 'MSB', 'MS02-063' ],
+        ],
+        'DisclosureDate' => '2002-09-26'
+      )
+    )
 
-      register_options(
+    register_options(
       [
         Opt::RPORT(1723),
-      ])
+      ]
+    )
   end
 
   def run

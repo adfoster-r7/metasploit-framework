@@ -12,43 +12,45 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
   include Msf::Auxiliary::Scanner
 
-  def initialize(info={})
-    super(update_info(info,
-      'Name'        => 'Cisco Firepower Management Console 6.0 Login',
-      'Description' => %q{
-        This module attempts to authenticate to a Cisco Firepower Management console via HTTPS.
-        The credentials are also used for SSH, which could allow remote code execution.
-      },
-      'Author'      => [ 'sinn3r' ],
-      'License'     => MSF_LICENSE,
-      'DefaultOptions' =>
-        {
-          'RPORT'      => 443,
-          'SSL'        => true,
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Cisco Firepower Management Console 6.0 Login',
+        'Description' => %q{
+          This module attempts to authenticate to a Cisco Firepower Management console via HTTPS.
+          The credentials are also used for SSH, which could allow remote code execution.
+        },
+        'Author' => [ 'sinn3r' ],
+        'License' => MSF_LICENSE,
+        'DefaultOptions' => {
+          'RPORT' => 443,
+          'SSL' => true,
           'SSLVersion' => 'Auto'
         }
-    ))
+      )
+    )
 
     register_options(
       [
         OptString.new('TARGETURI', [true, 'The base path to Cisco Firepower Management console', '/']),
         OptBool.new('TRYDEFAULT', [false, 'Try the default credential admin:Admin123', false])
-      ])
+      ]
+    )
 
     deregister_options('PASSWORD_SPRAY')
   end
-
 
   def scanner(ip)
     @scanner ||= lambda {
       cred_collection = Metasploit::Framework::CredentialCollection.new(
         blank_passwords: datastore['BLANK_PASSWORDS'],
-        pass_file:       datastore['PASS_FILE'],
-        password:        datastore['PASSWORD'],
-        user_file:       datastore['USER_FILE'],
-        userpass_file:   datastore['USERPASS_FILE'],
-        username:        datastore['USERNAME'],
-        user_as_pass:    datastore['USER_AS_PASS']
+        pass_file: datastore['PASS_FILE'],
+        password: datastore['PASSWORD'],
+        user_file: datastore['USER_FILE'],
+        userpass_file: datastore['USERPASS_FILE'],
+        username: datastore['USERNAME'],
+        user_as_pass: datastore['USER_AS_PASS']
       )
 
       if datastore['TRYDEFAULT']
@@ -61,17 +63,17 @@ class MetasploitModule < Msf::Auxiliary
         configure_http_login_scanner(
           host: ip,
           port: datastore['RPORT'],
-          cred_details:       cred_collection,
-          stop_on_success:    datastore['STOP_ON_SUCCESS'],
-          bruteforce_speed:   datastore['BRUTEFORCE_SPEED'],
+          cred_details: cred_collection,
+          stop_on_success: datastore['STOP_ON_SUCCESS'],
+          bruteforce_speed: datastore['BRUTEFORCE_SPEED'],
           connection_timeout: 5,
-          http_username:      datastore['HttpUsername'],
-          http_password:      datastore['HttpPassword'],
-          uri:                target_uri.path
-        ))
+          http_username: datastore['HttpUsername'],
+          http_password: datastore['HttpPassword'],
+          uri: target_uri.path
+        )
+      )
     }.call
   end
-
 
   def report_good_cred(ip, port, result)
     service_data = {
@@ -99,7 +101,6 @@ class MetasploitModule < Msf::Auxiliary
 
     create_credential_login(login_data)
   end
-
 
   def report_bad_cred(ip, rport, result)
     invalidate_login(

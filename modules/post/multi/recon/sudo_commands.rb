@@ -10,25 +10,28 @@ class MetasploitModule < Msf::Post
   include Msf::Auxiliary::Report
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'          => 'Sudo Commands',
-      'Description'   => %q{
-        This module examines the sudoers configuration for the session user
-        and lists the commands executable via sudo.
+    super(
+      update_info(
+        info,
+        'Name' => 'Sudo Commands',
+        'Description' => %q{
+          This module examines the sudoers configuration for the session user
+          and lists the commands executable via sudo.
 
-        This module also inspects each command and reports potential avenues
-        for privileged code execution due to poor file system permissions or
-        permitting execution of executables known to be useful for privesc,
-        such as utilities designed for file read/write, user modification,
-        or execution of arbitrary operating system commands.
+          This module also inspects each command and reports potential avenues
+          for privileged code execution due to poor file system permissions or
+          permitting execution of executables known to be useful for privesc,
+          such as utilities designed for file read/write, user modification,
+          or execution of arbitrary operating system commands.
 
-        Note, you may need to provide the password for the session user.
-      },
-      'License'       => MSF_LICENSE,
-      'Author'        => [ 'bcoles' ],
-      'Platform'      => [ 'bsd', 'linux', 'osx', 'solaris', 'unix' ],
-      'SessionTypes'  => [ 'meterpreter', 'shell' ]
-    ))
+          Note, you may need to provide the password for the session user.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [ 'bcoles' ],
+        'Platform' => [ 'bsd', 'linux', 'osx', 'solaris', 'unix' ],
+        'SessionTypes' => [ 'meterpreter', 'shell' ]
+      )
+    )
     register_options [
       OptString.new('SUDO_PATH', [ true, 'Path to sudo executable', '/usr/bin/sudo' ]),
       OptString.new('PASSWORD', [ false, 'Password for the current user', '' ])
@@ -76,7 +79,7 @@ class MetasploitModule < Msf::Post
       return true
     end
 
-    base_dir  = File.dirname cmd
+    base_dir = File.dirname cmd
     base_name = File.basename cmd
 
     if file_exist? cmd
@@ -215,8 +218,8 @@ class MetasploitModule < Msf::Post
     end
 
     @results = Rex::Text::Table.new(
-      'Header'  => 'Sudo Commands',
-      'Indent'  => 2,
+      'Header' => 'Sudo Commands',
+      'Indent' => 2,
       'Columns' =>
         [
           'Command',

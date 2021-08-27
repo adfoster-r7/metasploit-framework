@@ -5,23 +5,27 @@
 
 class MetasploitModule < Msf::Post
 
-  def initialize(info={})
-    super( update_info( info,
-        'Name'          => 'Multi Gather DNS Reverse Lookup Scan',
-        'Description'   => %q{
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Multi Gather DNS Reverse Lookup Scan',
+        'Description' => %q{
           Performs DNS reverse lookup using the OS included DNS query command.
         },
-        'License'       => MSF_LICENSE,
-        'Author'        => [ 'Carlos Perez <carlos_perez[at]darkoperator.com>'],
-        'Platform'      => %w{ bsd linux osx solaris win },
-        'SessionTypes'  => [ 'meterpreter', 'shell' ]
-      ))
+        'License' => MSF_LICENSE,
+        'Author' => [ 'Carlos Perez <carlos_perez[at]darkoperator.com>'],
+        'Platform' => %w{bsd linux osx solaris win},
+        'SessionTypes' => [ 'meterpreter', 'shell' ]
+      )
+    )
     register_options(
       [
 
         OptAddressRange.new('RHOSTS', [true, 'IP Range to perform reverse lookup against.'])
 
-      ])
+      ]
+    )
   end
 
   # Run Method for when run command is issued
@@ -38,6 +42,7 @@ class MetasploitModule < Msf::Post
       if (not ipa)
         break
       end
+
       iplst << ipa
     end
 
@@ -54,6 +59,7 @@ class MetasploitModule < Msf::Post
       1.upto session.max_threads do
         a << framework.threads.spawn("Module(#{self.refname})", false, iplst.shift) do |ip_add|
           next if ip_add.nil?
+
           r = cmd_exec(cmd, " #{ip_add}")
           case session.platform
           when 'windows'
@@ -64,7 +70,7 @@ class MetasploitModule < Msf::Post
                 report_host({
                   :host => ip_add,
                   :name => hostname[1].strip
-                  })
+                })
               end
             else
               vprint_status("#{ip_add} does not have a Reverse Lookup Record")
@@ -74,15 +80,15 @@ class MetasploitModule < Msf::Post
               hostname = r.scan(/domain name pointer (\S*)\./).join
               print_good "\t #{ip_add} is #{hostname}"
               report_host({
-                  :host => ip_add,
-                  :name => hostname.strip
-                })
+                :host => ip_add,
+                :name => hostname.strip
+              })
             else
               vprint_status("#{ip_add} does not have a Reverse Lookup Record")
             end
           end
         end
-        a.map {|x| x.join }
+        a.map { |x| x.join }
       end
     end
   end

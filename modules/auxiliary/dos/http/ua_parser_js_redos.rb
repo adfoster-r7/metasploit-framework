@@ -9,7 +9,7 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'ua-parser-js npm module ReDoS',
+      'Name' => 'ua-parser-js npm module ReDoS',
       'Description' => %q{
         This module exploits a Regular Expression Denial of Service vulnerability
         in the npm module "ua-parser-js". Server-side applications that use
@@ -17,18 +17,16 @@ class MetasploitModule < Msf::Auxiliary
         if they call the "getOS" or "getResult" functions. This vulnerability was
         fixed as of version 0.7.16.
       },
-      'References'  =>
-        [
-          ['CVE', '2017-16086'],
-          ['URL', 'https://github.com/faisalman/ua-parser-js/commit/25e143ee7caba78c6405a57d1d06b19c1e8e2f79'],
-          ['CWE', '400'],
-        ],
-      'Author'      =>
-        [
-          'Ryan Knell,  Sonatype Security Research',
-          'Nick Starke, Sonatype Security Research',
-        ],
-      'License'     =>  MSF_LICENSE
+      'References' => [
+        ['CVE', '2017-16086'],
+        ['URL', 'https://github.com/faisalman/ua-parser-js/commit/25e143ee7caba78c6405a57d1d06b19c1e8e2f79'],
+        ['CWE', '400'],
+      ],
+      'Author' => [
+        'Ryan Knell,  Sonatype Security Research',
+        'Nick Starke, Sonatype Security Research',
+      ],
+      'License' => MSF_LICENSE
     )
 
     register_options([
@@ -62,7 +60,6 @@ class MetasploitModule < Msf::Auxiliary
       else
         fail_with(Failure::Unknown, "ReDoS request unsuccessful. Received status #{res.code} from #{peer}.")
       end
-
     rescue ::Rex::ConnectionRefused
       print_error("Unable to connect to #{peer}.")
     rescue ::Timeout::Error

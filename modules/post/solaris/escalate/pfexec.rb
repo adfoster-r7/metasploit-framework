@@ -9,22 +9,24 @@ class MetasploitModule < Msf::Post
   include Msf::Post::Solaris::Priv
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'         => 'Solaris pfexec Upgrade Shell',
-      'Description'  => %q{
-        This module attempts to upgrade a shell session to UID 0 using pfexec.
-      },
-      'License'      => MSF_LICENSE,
-      'Author'       => ['bcoles'],
-      'Platform'     => 'solaris',
-      'References'   =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'Solaris pfexec Upgrade Shell',
+        'Description' => %q{
+          This module attempts to upgrade a shell session to UID 0 using pfexec.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => ['bcoles'],
+        'Platform' => 'solaris',
+        'References' => [
           ['URL', 'https://docs.oracle.com/cd/E19253-01/816-4557/prbactm-1/index.html'],
           ['URL', 'http://www.c0t0d0s0.org/archives/4844-Less-known-Solaris-features-pfexec.html'],
           ['URL', 'http://solaris.wikia.com/wiki/Providing_root_privileges_with_pfexec']
         ],
-      'SessionTypes' => ['shell']
-    ))
+        'SessionTypes' => ['shell']
+      )
+    )
     register_options [
       OptString.new('PFEXEC_PATH', [true, 'Path to pfexec', '/usr/bin/pfexec']),
       OptString.new('SHELL_PATH', [true, 'Path to shell', '/bin/sh'])

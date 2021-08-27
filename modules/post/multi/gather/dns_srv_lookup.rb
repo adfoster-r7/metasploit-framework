@@ -6,23 +6,27 @@
 class MetasploitModule < Msf::Post
   include Msf::Auxiliary::Report
 
-  def initialize(info={})
-    super( update_info( info,
-        'Name'          => 'Multi Gather DNS Service Record Lookup Scan',
-        'Description'   => %q{
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Multi Gather DNS Service Record Lookup Scan',
+        'Description' => %q{
           Enumerates known SRV Records for a given domain using target host DNS query tool.
         },
-        'License'       => MSF_LICENSE,
-        'Author'        => [ 'Carlos Perez <carlos_perez[at]darkoperator.com>'],
-        'Platform'      => %w{ bsd linux osx solaris win },
-        'SessionTypes'  => [ 'meterpreter','shell' ]
-      ))
+        'License' => MSF_LICENSE,
+        'Author' => [ 'Carlos Perez <carlos_perez[at]darkoperator.com>'],
+        'Platform' => %w{bsd linux osx solaris win},
+        'SessionTypes' => [ 'meterpreter', 'shell' ]
+      )
+    )
     register_options(
       [
 
         OptString.new('DOMAIN', [true, 'Domain to perform SRV query against.'])
 
-      ])
+      ]
+    )
   end
 
   # Run Method for when run command is issued
@@ -68,6 +72,7 @@ class MetasploitModule < Msf::Post
       1.upto session.max_threads do
         a << framework.threads.spawn("Module(#{self.refname})", false, srvrcd.shift) do |srv|
           next if srv.nil?
+
           r = cmd_exec(cmd, ns_opt + "#{srv}#{domain}")
 
           case session.platform
@@ -86,13 +91,12 @@ class MetasploitModule < Msf::Post
             end
           end
         end
-        a.map {|x| x.join }
+        a.map { |x| x.join }
       end
     end
   end
 
-
-  def nslookup_srv_consume(srv,ns_out)
+  def nslookup_srv_consume(srv, ns_out)
     srv_records = []
     records = ns_out.split(srv)
 
@@ -100,7 +104,7 @@ class MetasploitModule < Msf::Post
     ip_map = {}
     records.last.each_line do |e|
       if e =~ /internet\saddress/i
-        host,ip = e.split(/\s*internet\saddress\s\=\s/)
+        host, ip = e.split(/\s*internet\saddress\s\=\s/)
         ip_map[host.strip] = ip.strip
       end
     end
@@ -108,7 +112,7 @@ class MetasploitModule < Msf::Post
     # Get SRV parameter for each record
     records.each do |r|
       if r =~ /svr hostname/
-        rcrd ={}
+        rcrd = {}
         rcrd[:srv] = srv
         rcrd[:port] = r.scan(/port\s*=\s(\d*)/).join
         rcrd[:target] = r.scan(/svr hostname\s*=\s(\S*)/).join
@@ -120,12 +124,11 @@ class MetasploitModule < Msf::Post
             # Report on the service found
             srv_info = rcrd[:srv].scan(/^_(\S*)\._(\w*)\./)[0]
 
-            report_service(:host=> rcrd[:ip].strip,
-              :port => rcrd[:port].to_i,
-              :proto => srv_info[1],
-              :name => srv_info[0],
-              :host_name => rcrd[:target]
-            )
+            report_service(:host => rcrd[:ip].strip,
+                           :port => rcrd[:port].to_i,
+                           :proto => srv_info[1],
+                           :name => srv_info[0],
+                           :host_name => rcrd[:target])
             srv_records << rcrd
           end
         else
@@ -137,12 +140,11 @@ class MetasploitModule < Msf::Post
           # Report on the service found
           srv_info = rcrd[:srv].scan(/^_(\S*)\._(\w*)\./)[0]
 
-          report_service(:host=> "1.2.3.4",
-            :port => rcrd[:port].to_i,
-            :proto => srv_info[1],
-            :name => srv_info[0],
-            :host_name => rcrd[:target]
-          )
+          report_service(:host => "1.2.3.4",
+                         :port => rcrd[:port].to_i,
+                         :proto => srv_info[1],
+                         :name => srv_info[0],
+                         :host_name => rcrd[:target])
           srv_records << rcrd
         end
       end
@@ -153,8 +155,8 @@ class MetasploitModule < Msf::Post
   # Get I{ for a given host using host, returns array
   def get_ip(host)
     ip_add = []
-    cmd_exec("host"," #{host}").each_line do |l|
-      ip =""
+    cmd_exec("host", " #{host}").each_line do |l|
+      ip = ""
       ip = l.scan(/has address (\S*)$/).join
       ip_add << ip if ip != ""
     end
@@ -163,13 +165,13 @@ class MetasploitModule < Msf::Post
 
   # Get IP for given host with nslookup, return array
   def w_get_ip(host)
-    ips =[]
+    ips = []
     data = cmd_exec("nslookup #{host}")
     if data =~ /Name/
       # Remove unnecessary data and get the section with the addresses
       returned_data = data.split(/Name:/)[1]
       # check each element of the array to see if they are IP
-      returned_data.gsub(/\r\n\t |\r\n|Aliases:|Addresses:|Address:/," ").split(" ").each do |e|
+      returned_data.gsub(/\r\n\t |\r\n|Aliases:|Addresses:|Address:/, " ").split(" ").each do |e|
         if Rex::Socket.dotted_ip?(e)
           ips << e
         end
@@ -183,9 +185,9 @@ class MetasploitModule < Msf::Post
     # Parse for SRV Records
     host_out.each_line do |l|
       if l =~ /has SRV/
-        record,port,target = l.scan(/(\S*) has SRV record \d*\s\d*\s(\d*)\s(\S*)/)[0]
+        record, port, target = l.scan(/(\S*) has SRV record \d*\s\d*\s(\d*)\s(\S*)/)[0]
         if Rex::Socket.dotted_ip?(target)
-          rcrd ={}
+          rcrd = {}
           rcrd[:srv] = record
           rcrd[:port] = port
           rcrd[:target] = target
@@ -197,15 +199,14 @@ class MetasploitModule < Msf::Post
 
           # Report on the service found
           srv_info = rcrd[:srv].scan(/^_(\S*)\._(\w*)\./)[0]
-          report_service(:host=> rcrd[:ip],
-              :port => rcrd[:port],
-              :proto => srv_info[1],
-              :name => srv_info[0],
-              :host_name => rcrd[:target]
-            )
+          report_service(:host => rcrd[:ip],
+                         :port => rcrd[:port],
+                         :proto => srv_info[1],
+                         :name => srv_info[0],
+                         :host_name => rcrd[:target])
         else
           get_ip(target).each do |i|
-            rcrd ={}
+            rcrd = {}
             rcrd[:srv] = record
             rcrd[:port] = port
             rcrd[:target] = target
@@ -217,12 +218,11 @@ class MetasploitModule < Msf::Post
 
             # Report on the service found
             srv_info = rcrd[:srv].scan(/^_(\S*)\._(\w*)\./)[0]
-            report_service(:host=> rcrd[:ip],
-                :port => rcrd[:port].to_i,
-                :proto => srv_info[1],
-                :name => srv_info[0],
-                :host_name => rcrd[:target]
-              )
+            report_service(:host => rcrd[:ip],
+                           :port => rcrd[:port].to_i,
+                           :proto => srv_info[1],
+                           :name => srv_info[0],
+                           :host_name => rcrd[:target])
           end
         end
       end

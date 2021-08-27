@@ -7,15 +7,18 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Mms
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'MMS Client',
-      'Description'    => %q{
-        This module sends an MMS message to multiple phones of the same carrier.
-        You can use it to send a malicious attachment to phones.
-      },
-      'Author'         => [ 'sinn3r' ],
-      'License'        => MSF_LICENSE
-    ))
+    super(
+      update_info(
+        info,
+        'Name' => 'MMS Client',
+        'Description' => %q{
+          This module sends an MMS message to multiple phones of the same carrier.
+          You can use it to send a malicious attachment to phones.
+        },
+        'Author' => [ 'sinn3r' ],
+        'License' => MSF_LICENSE
+      )
+    )
   end
 
   def run

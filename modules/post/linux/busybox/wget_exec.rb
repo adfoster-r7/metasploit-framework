@@ -9,21 +9,22 @@ class MetasploitModule < Msf::Post
 
   def initialize
     super(
-      'Name'         => 'BusyBox Download and Execute',
-      'Description'  => %q{
+      'Name' => 'BusyBox Download and Execute',
+      'Description' => %q{
         This module will be applied on a session connected to a BusyBox shell. It will use wget to
         download and execute a file from the device running BusyBox.
       },
-      'Author'       => 'Javier Vicente Vallejo',
-      'License'      => MSF_LICENSE,
-      'Platform'      => ['linux'],
-      'SessionTypes'  => ['shell']
+      'Author' => 'Javier Vicente Vallejo',
+      'License' => MSF_LICENSE,
+      'Platform' => ['linux'],
+      'SessionTypes' => ['shell']
     )
 
     register_options(
       [
         OptString.new('URL', [true, 'Full URL of file to download'])
-      ])
+      ]
+    )
   end
 
   def run

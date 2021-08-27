@@ -7,24 +7,27 @@ require 'metasploit/framework/compiler/windows'
 
 class MetasploitModule < Msf::Evasion
 
-  def initialize(info={})
-    super(merge_info(info,
-      'Name'        => 'Microsoft Windows Defender Evasive Executable',
-      'Description' => %q{
-        This module allows you to generate a Windows EXE that evades against Microsoft
-        Windows Defender. Multiple techniques such as shellcode encryption, source code
-        obfuscation, Metasm, and anti-emulation are used to achieve this.
+  def initialize(info = {})
+    super(
+      merge_info(
+        info,
+        'Name' => 'Microsoft Windows Defender Evasive Executable',
+        'Description' => %q{
+          This module allows you to generate a Windows EXE that evades against Microsoft
+          Windows Defender. Multiple techniques such as shellcode encryption, source code
+          obfuscation, Metasm, and anti-emulation are used to achieve this.
 
-        For best results, please try to use payloads that use a more secure channel
-        such as HTTPS or RC4 in order to avoid the payload network traffic getting
-        caught by antivirus better.
-      },
-      'Author'      => [ 'sinn3r' ],
-      'License'     => MSF_LICENSE,
-      'Platform'    => 'win',
-      'Arch'        => ARCH_X86,
-      'Targets'     => [ ['Microsoft Windows', {}] ]
-    ))
+          For best results, please try to use payloads that use a more secure channel
+          such as HTTPS or RC4 in order to avoid the payload network traffic getting
+          caught by antivirus better.
+        },
+        'Author' => [ 'sinn3r' ],
+        'License' => MSF_LICENSE,
+        'Platform' => 'win',
+        'Arch' => ARCH_X86,
+        'Targets' => [ ['Microsoft Windows', {}] ]
+      )
+    )
   end
 
   def rc4_key

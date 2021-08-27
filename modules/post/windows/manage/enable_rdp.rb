@@ -14,15 +14,16 @@ class MetasploitModule < Msf::Post
     super(
       update_info(
         info,
-        'Name'          => 'Windows Manage Enable Remote Desktop',
-        'Description'   => %q{
-            This module enables the Remote Desktop Service (RDP). It provides the options to create
+        'Name' => 'Windows Manage Enable Remote Desktop',
+        'Description' => %q{
+          This module enables the Remote Desktop Service (RDP). It provides the options to create
           an account and configure it to be a member of the Local Administrators and
-          Remote Desktop Users group. It can also forward the target's port 3389/tcp.},
-        'License'       => BSD_LICENSE,
-        'Author'        => [ 'Carlos Perez <carlos_perez[at]darkoperator.com>'],
-        'Platform'      => [ 'win' ],
-        'SessionTypes'  => [ 'meterpreter' ]
+          Remote Desktop Users group. It can also forward the target's port 3389/tcp.
+        },
+        'License' => BSD_LICENSE,
+        'Author' => [ 'Carlos Perez <carlos_perez[at]darkoperator.com>'],
+        'Platform' => [ 'win' ],
+        'SessionTypes' => [ 'meterpreter' ]
       )
     )
 

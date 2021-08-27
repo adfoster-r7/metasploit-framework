@@ -3,8 +3,6 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
-
 class MetasploitModule < Msf::Auxiliary
 
   # Exploit mixins should be called first
@@ -14,7 +12,7 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'HTTP SSL/TLS Version Detection (POODLE scanner)',
+      'Name' => 'HTTP SSL/TLS Version Detection (POODLE scanner)',
       'Description' => %q{
         Check if an HTTP server supports a given version of SSL/TLS.
 
@@ -22,15 +20,13 @@ class MetasploitModule < Msf::Auxiliary
         likely to be vulnerable to the POODLE attack described on
         October 14, 2014, as a patch against the attack is unlikely.
       },
-      'Author'      => 'todb',
-      'License'     => MSF_LICENSE,
-      'DefaultOptions' =>
-      {
+      'Author' => 'todb',
+      'License' => MSF_LICENSE,
+      'DefaultOptions' => {
         'SSL' => true,
         'RPORT' => 443,
       },
-      'References'  =>
-      [
+      'References' => [
         [ 'URL', 'http://googleonlinesecurity.blogspot.com/2014/10/this-poodle-bites-exploiting-ssl-30.html'],
         [ 'OSVDB', '113251'],
         [ 'CVE', '2014-3566']
@@ -43,7 +39,6 @@ class MetasploitModule < Msf::Auxiliary
         Opt::SSLVersion
       ]
     )
-
   end
 
   # Fingerprint a single host
@@ -68,12 +63,12 @@ class MetasploitModule < Msf::Auxiliary
 
   def report_poodle_vuln(ip)
     report_vuln(
-      :host         => ip,
-      :port         => rport,
-      :proto        => 'tcp',
-      :name         => self.name,
-      :info         => "Module #{self.fullname} confirmed SSLv3 is available",
-      :refs         => self.references,
+      :host => ip,
+      :port => rport,
+      :proto => 'tcp',
+      :name => self.name,
+      :info => "Module #{self.fullname} confirmed SSLv3 is available",
+      :refs => self.references,
       :exploited_at => Time.now.utc
     )
   end

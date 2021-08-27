@@ -9,24 +9,26 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Scanner
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'        => 'HP LaserJet Printer SNMP Enumeration',
-      'Description' => %q{
-        This module allows enumeration of files previously printed.
-        It provides details as filename, client, timestamp and username information.
-        The default community used is "public".
-      },
-      'References'  =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'HP LaserJet Printer SNMP Enumeration',
+        'Description' => %q{
+          This module allows enumeration of files previously printed.
+          It provides details as filename, client, timestamp and username information.
+          The default community used is "public".
+        },
+        'References' => [
           [ 'URL', 'http://en.wikipedia.org/wiki/Simple_Network_Management_Protocol' ],
           [ 'URL', 'http://net-snmp.sourceforge.net/docs/man/snmpwalk.html' ],
           [ 'URL', 'http://www.nothink.org/perl/snmpcheck/' ],
           [ 'URL', 'http://www.securiteam.com/securitynews/5AP0S2KGVS.html' ],
           [ 'URL', 'http://stuff.mit.edu/afs/athena/dept/cron/tools/share/mibs/290923.mib' ],
         ],
-      'Author'      => 'Matteo Cantoni <goony[at]nothink.org>',
-      'License'     => MSF_LICENSE
-      ))
+        'Author' => 'Matteo Cantoni <goony[at]nothink.org>',
+        'License' => MSF_LICENSE
+      )
+    )
   end
 
   def run_host(ip)
@@ -63,8 +65,7 @@ class MetasploitModule < Msf::Auxiliary
         "1.3.6.1.4.1.11.2.3.9.4.2.1.1.6.5.23.4", # job-info-attr-4 - timestamp
         "1.3.6.1.4.1.11.2.3.9.4.2.1.1.6.5.23.6", # job-info-attr-6 - application name
         "1.3.6.1.4.1.11.2.3.9.4.2.1.1.6.5.23.7", # job-info-attr-7 - application command
-      ]) do |name1,name2,username,client,domain,timestamp,app_name,app_command|
-
+      ]) do |name1, name2, username, client, domain, timestamp, app_name, app_command|
         filename = name1.value.to_s + name2.value.to_s
 
         if (username.value.to_s !~ /noSuchInstance/)
@@ -131,7 +132,6 @@ class MetasploitModule < Msf::Auxiliary
       end
 
       disconnect_snmp
-
     rescue SNMP::RequestTimeout
       print_error("#{ip}, SNMP request timeout.")
     rescue Errno::ECONNREFUSED
@@ -139,7 +139,7 @@ class MetasploitModule < Msf::Auxiliary
     rescue SNMP::InvalidIpAddress
       print_error("#{ip}, Invalid IP Address. Check it with 'snmpwalk tool'.")
     rescue ::Interrupt
-    raise $!
+      raise $!
     rescue ::Exception => e
       print_error("#{ip}, Unknown error: #{e.class} #{e}")
     end

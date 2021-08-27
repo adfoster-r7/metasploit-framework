@@ -8,10 +8,10 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'           => 'DECT Call Scanner',
-      'Description'    => 'This module scans for active DECT calls',
-      'Author'         => [ 'DK <privilegedmode[at]gmail.com>' ],
-      'License'        => MSF_LICENSE
+      'Name' => 'DECT Call Scanner',
+      'Description' => 'This module scans for active DECT calls',
+      'Author' => [ 'DK <privilegedmode[at]gmail.com>' ],
+      'License' => MSF_LICENSE
     )
   end
 
@@ -21,7 +21,6 @@ class MetasploitModule < Msf::Auxiliary
       print_line("#{data['time']}\t#{data['rfpi']}\t#{data['channel']}")
     end
   end
-
 
 =begin
   def record_call(data)
@@ -43,7 +42,6 @@ class MetasploitModule < Msf::Auxiliary
     open_coa
 
     begin
-
       print_status("Changing to call scan mode.")
       call_scan_mode
       print_status("Scanning...")
@@ -60,7 +58,7 @@ class MetasploitModule < Msf::Auxiliary
         next_channel
 
         vprint_status("Switching to channel: #{channel}")
-        select(nil,nil,nil,1)
+        select(nil, nil, nil, 1)
       end
     ensure
       print_status("Closing interface")

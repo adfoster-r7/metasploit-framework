@@ -9,24 +9,27 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Scanner
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'        => 'SNMP Enumeration Module',
-      'Description' => 'This module allows enumeration of any devices with SNMP
-        protocol support. It supports hardware, software, and network information.
-        The default community used is "public".',
-      'References'  =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'SNMP Enumeration Module',
+        'Description' => %q{
+          This module allows enumeration of any devices with SNMP
+          protocol support. It supports hardware, software, and network information.
+          The default community used is "public".
+        },
+        'References' => [
           [ 'URL', 'http://en.wikipedia.org/wiki/Simple_Network_Management_Protocol' ],
           [ 'URL', 'http://net-snmp.sourceforge.net/docs/man/snmpwalk.html' ],
           [ 'URL', 'http://www.nothink.org/perl/snmpcheck/' ],
         ],
-      'Author'      => 'Matteo Cantoni <goony[at]nothink.org>',
-      'License'     => MSF_LICENSE
-    ))
+        'Author' => 'Matteo Cantoni <goony[at]nothink.org>',
+        'License' => MSF_LICENSE
+      )
+    )
   end
 
   def run_host(ip)
-
     begin
       snmp = connect_snmp
 
@@ -44,7 +47,7 @@ class MetasploitModule < Msf::Auxiliary
       ]
 
       output_data = {}
-      output_data = {"Host IP"=>ip}
+      output_data = { "Host IP" => ip }
 
       sysName = snmp.get_value('1.3.6.1.2.1.1.5.0').to_s
       output_data["Hostname"] = sysName.strip
@@ -85,13 +88,13 @@ class MetasploitModule < Msf::Auxiliary
 
         systemDate = systemDate.unpack('C*')
 
-        year    = systemDate[0] * 256 + systemDate[1]
-        month   = systemDate[2] || 0
-        day     = systemDate[3] || 0
-        hour    = systemDate[4] || 0
+        year = systemDate[0] * 256 + systemDate[1]
+        month = systemDate[2] || 0
+        day = systemDate[3] || 0
+        hour = systemDate[4] || 0
         minutes = systemDate[5] || 0
         seconds = systemDate[6] || 0
-        tenths  = systemDate[7] || 0
+        tenths = systemDate[7] || 0
         output_data["System date"] = sprintf("%d-%d-%d %02d:%02d:%02d.%d", year, month, day, hour, minutes, seconds, tenths)
       end
 
@@ -102,7 +105,7 @@ class MetasploitModule < Msf::Auxiliary
 
         users = []
 
-        snmp.walk(["1.3.6.1.4.1.77.1.2.25.1.1","1.3.6.1.4.1.77.1.2.25.1"]) do |user,entry|
+        snmp.walk(["1.3.6.1.4.1.77.1.2.25.1.1", "1.3.6.1.4.1.77.1.2.25.1"]) do |user, entry|
           users.push([[user.value]])
         end
 
@@ -150,12 +153,12 @@ class MetasploitModule < Msf::Auxiliary
 
       ipInDelivers = snmp.get_value('1.3.6.1.2.1.4.9.0')
       if ipInDelivers.to_s !~ /Null/
-        network_information["Delivered datagrams"]=ipInDelivers
+        network_information["Delivered datagrams"] = ipInDelivers
       end
 
       ipOutRequests = snmp.get_value('1.3.6.1.2.1.4.10.0')
       if ipOutRequests.to_s !~ /Null/
-        network_information["Output datagrams"]=ipOutRequests
+        network_information["Output datagrams"] = ipOutRequests
       end
 
       if not network_information.empty?
@@ -168,16 +171,15 @@ class MetasploitModule < Msf::Auxiliary
         "1.3.6.1.2.1.2.2.1.1", "1.3.6.1.2.1.2.2.1.2", "1.3.6.1.2.1.2.2.1.6",
         "1.3.6.1.2.1.2.2.1.3", "1.3.6.1.2.1.2.2.1.4", "1.3.6.1.2.1.2.2.1.5",
         "1.3.6.1.2.1.2.2.1.10", "1.3.6.1.2.1.2.2.1.16", "1.3.6.1.2.1.2.2.1.7"
-      ]) do |index,descr,mac,type,mtu,speed,inoc,outoc,status|
-
-        ifindex  = index.value
-        ifdescr  = descr.value
-        ifmac    = mac.value.to_s =~ /noSuchInstance/ ? 'unknown' : mac.value.unpack("H2H2H2H2H2H2").join(":")
-        iftype   = type.value
-        ifmtu    = mtu.value
-        ifspeed  = speed.value.to_s =~ /noSuchInstance/ ? 'unknown' : speed.value.to_i / 1000000
-        ifinoc   = inoc.value
-        ifoutoc  = outoc.value
+      ]) do |index, descr, mac, type, mtu, speed, inoc, outoc, status|
+        ifindex = index.value
+        ifdescr = descr.value
+        ifmac = mac.value.to_s =~ /noSuchInstance/ ? 'unknown' : mac.value.unpack("H2H2H2H2H2H2").join(":")
+        iftype = type.value
+        ifmtu = mtu.value
+        ifspeed = speed.value.to_s =~ /noSuchInstance/ ? 'unknown' : speed.value.to_i / 1000000
+        ifinoc = inoc.value
+        ifoutoc = outoc.value
         ifstatus = status.value
 
         case iftype
@@ -281,20 +283,20 @@ class MetasploitModule < Msf::Auxiliary
       snmp.walk([
         "1.3.6.1.2.1.4.20.1.2", "1.3.6.1.2.1.4.20.1.1",
         "1.3.6.1.2.1.4.20.1.3", "1.3.6.1.2.1.4.20.1.4"
-      ]) do |ifid,ipaddr,netmask,bcast|
+      ]) do |ifid, ipaddr, netmask, bcast|
         network_ip.push([ifid.value, ipaddr.value, netmask.value, bcast.value])
       end
 
       if not network_ip.empty?
-        output_data["Network IP"] = [["Id","IP Address","Netmask","Broadcast"]] + network_ip
+        output_data["Network IP"] = [["Id", "IP Address", "Netmask", "Broadcast"]] + network_ip
       end
 
       routing = []
 
       snmp.walk([
         "1.3.6.1.2.1.4.21.1.1", "1.3.6.1.2.1.4.21.1.7",
-        "1.3.6.1.2.1.4.21.1.11","1.3.6.1.2.1.4.21.1.3"
-      ]) do |dest,hop,mask,metric|
+        "1.3.6.1.2.1.4.21.1.11", "1.3.6.1.2.1.4.21.1.3"
+      ]) do |dest, hop, mask, metric|
         if (metric.value.to_s.empty?)
           metric.value = '-'
         end
@@ -302,20 +304,19 @@ class MetasploitModule < Msf::Auxiliary
       end
 
       if not routing.empty?
-        output_data["Routing information"] = [["Destination","Next hop","Mask","Metric"]] + routing
+        output_data["Routing information"] = [["Destination", "Next hop", "Mask", "Metric"]] + routing
       end
 
       tcp = []
 
       snmp.walk([
-        "1.3.6.1.2.1.6.13.1.2","1.3.6.1.2.1.6.13.1.3","1.3.6.1.2.1.6.13.1.4",
-        "1.3.6.1.2.1.6.13.1.5","1.3.6.1.2.1.6.13.1.1"
-      ]) do |ladd,lport,radd,rport,state|
-
-        if (ladd.value.to_s.empty?  or ladd.value.to_s =~ /noSuchInstance/)
+        "1.3.6.1.2.1.6.13.1.2", "1.3.6.1.2.1.6.13.1.3", "1.3.6.1.2.1.6.13.1.4",
+        "1.3.6.1.2.1.6.13.1.5", "1.3.6.1.2.1.6.13.1.1"
+      ]) do |ladd, lport, radd, rport, state|
+        if (ladd.value.to_s.empty? or ladd.value.to_s =~ /noSuchInstance/)
           ladd = "-"
         else
-          ladd  = ladd.value
+          ladd = ladd.value
         end
 
         if (lport.value.to_s.empty? or lport.value.to_s =~ /noSuchInstance/)
@@ -324,10 +325,10 @@ class MetasploitModule < Msf::Auxiliary
           lport = lport.value
         end
 
-        if (radd.value.to_s.empty?  or radd.value.to_s =~ /noSuchInstance/)
+        if (radd.value.to_s.empty? or radd.value.to_s =~ /noSuchInstance/)
           radd = "-"
         else
-          radd  = radd.value
+          radd = radd.value
         end
 
         if (rport.value.to_s.empty? or rport.value.to_s =~ /noSuchInstance/)
@@ -369,37 +370,37 @@ class MetasploitModule < Msf::Auxiliary
       end
 
       if not tcp.empty?
-        output_data["TCP connections and listening ports"] = [["Local address","Local port","Remote address","Remote port","State"]] + tcp
+        output_data["TCP connections and listening ports"] = [["Local address", "Local port", "Remote address", "Remote port", "State"]] + tcp
       end
 
       udp = []
 
-      snmp.walk(["1.3.6.1.2.1.7.5.1.1","1.3.6.1.2.1.7.5.1.2"]) do |ladd,lport|
+      snmp.walk(["1.3.6.1.2.1.7.5.1.1", "1.3.6.1.2.1.7.5.1.2"]) do |ladd, lport|
         udp.push([ladd.value, lport.value])
       end
 
       if not udp.empty?
-        output_data["Listening UDP ports"] = [["Local address","Local port"]] + udp
+        output_data["Listening UDP ports"] = [["Local address", "Local port"]] + udp
       end
 
       if (sysDesc =~ /Windows/)
         network_services = []
         n = 0
-        snmp.walk(["1.3.6.1.4.1.77.1.2.3.1.1","1.3.6.1.4.1.77.1.2.3.1.2"]) do |name,installed|
-          network_services.push([n,name.value])
-          n+=1
+        snmp.walk(["1.3.6.1.4.1.77.1.2.3.1.1", "1.3.6.1.4.1.77.1.2.3.1.2"]) do |name, installed|
+          network_services.push([n, name.value])
+          n += 1
         end
 
         if not network_services.empty?
-          output_data["Network services"] = [["Index","Name"]] + network_services
+          output_data["Network services"] = [["Index", "Name"]] + network_services
         end
 
         share = []
 
         snmp.walk([
-          "1.3.6.1.4.1.77.1.2.27.1.1","1.3.6.1.4.1.77.1.2.27.1.2","1.3.6.1.4.1.77.1.2.27.1.3"
-        ]) do |name,path,comment|
-          share.push({" Name"=>name.value, "  Path"=>path.value, "  Comment"=>comment.value})
+          "1.3.6.1.4.1.77.1.2.27.1.1", "1.3.6.1.4.1.77.1.2.27.1.2", "1.3.6.1.4.1.77.1.2.27.1.3"
+        ]) do |name, path, comment|
+          share.push({ " Name" => name.value, "  Path" => path.value, "  Comment" => comment.value })
         end
 
         if not share.empty?
@@ -518,8 +519,7 @@ class MetasploitModule < Msf::Auxiliary
       snmp.walk([
         "1.3.6.1.2.1.25.2.3.1.1", "1.3.6.1.2.1.25.2.3.1.2", "1.3.6.1.2.1.25.2.3.1.3",
         "1.3.6.1.2.1.25.2.3.1.4", "1.3.6.1.2.1.25.2.3.1.5", "1.3.6.1.2.1.25.2.3.1.6"
-      ]) do |index,type,descr,allocation,size,used|
-
+      ]) do |index, type, descr, allocation, size, used|
         case type.value.to_s
         when /^1.3.6.1.2.1.25.2.1.1$/
           type.value = "Other"
@@ -546,21 +546,21 @@ class MetasploitModule < Msf::Auxiliary
         end
 
         allocation.value = "unknown" if allocation.value.to_s =~ /noSuchInstance/
-        size.value       = "unknown" if size.value.to_s =~ /noSuchInstance/
-        used.value       = "unknown" if used.value.to_s =~ /noSuchInstance/
+        size.value = "unknown" if size.value.to_s =~ /noSuchInstance/
+        used.value = "unknown" if used.value.to_s =~ /noSuchInstance/
 
-        storage_information.push([[descr.value],[index.value],[type.value],[allocation.value],[size.value],[used.value]])
+        storage_information.push([[descr.value], [index.value], [type.value], [allocation.value], [size.value], [used.value]])
       end
 
       if not storage_information.empty?
         storage = []
-        storage_information.each {|a,b,c,d,e,f|
+        storage_information.each { |a, b, c, d, e, f|
           s = {}
 
-          e = number_to_human_size(e,d)
-          f = number_to_human_size(f,d)
+          e = number_to_human_size(e, d)
+          f = number_to_human_size(f, d)
 
-          s["Description"]= a
+          s["Description"] = a
           s["Device id"] = b
           s["Filesystem type"] = c
           s["Device unit"] = d
@@ -668,8 +668,7 @@ class MetasploitModule < Msf::Auxiliary
       snmp.walk([
         "1.3.6.1.2.1.25.3.2.1.1", "1.3.6.1.2.1.25.3.2.1.2",
         "1.3.6.1.2.1.25.3.2.1.5", "1.3.6.1.2.1.25.3.2.1.3"
-      ]) do |index,type,status,descr|
-
+      ]) do |index, type, status, descr|
         case type.value.to_s
         when /^1.3.6.1.2.1.25.3.1.1$/
           type.value = "Other"
@@ -732,17 +731,17 @@ class MetasploitModule < Msf::Auxiliary
       end
 
       if not device_information.empty?
-        output_data["Device information"] = [["Id","Type","Status","Descr"]] + device_information
+        output_data["Device information"] = [["Id", "Type", "Status", "Descr"]] + device_information
       end
 
       software_list = []
 
-      snmp.walk(["1.3.6.1.2.1.25.6.3.1.1","1.3.6.1.2.1.25.6.3.1.2"]) do |index,name|
-        software_list.push([index.value,name.value])
+      snmp.walk(["1.3.6.1.2.1.25.6.3.1.1", "1.3.6.1.2.1.25.6.3.1.2"]) do |index, name|
+        software_list.push([index.value, name.value])
       end
 
       if not software_list.empty?
-        output_data["Software components"] = [["Index","Name"]] + software_list
+        output_data["Software components"] = [["Index", "Name"]] + software_list
       end
 
       process_interfaces = []
@@ -750,8 +749,7 @@ class MetasploitModule < Msf::Auxiliary
       snmp.walk([
         "1.3.6.1.2.1.25.4.2.1.1", "1.3.6.1.2.1.25.4.2.1.2", "1.3.6.1.2.1.25.4.2.1.4",
         "1.3.6.1.2.1.25.4.2.1.5", "1.3.6.1.2.1.25.4.2.1.7"
-      ]) do |id,name,path,param,status|
-
+      ]) do |id, name, path, param, status|
         if status.value == 1
           status.value = "running"
         elsif status.value == 2
@@ -764,7 +762,7 @@ class MetasploitModule < Msf::Auxiliary
       end
 
       if not process_interfaces.empty?
-        output_data["Processes"] = [["Id","Status","Name","Path","Parameters"]] + process_interfaces
+        output_data["Processes"] = [["Id", "Status", "Name", "Path", "Parameters"]] + process_interfaces
       end
 
       print_line("\n[*] System information:\n")
@@ -773,7 +771,7 @@ class MetasploitModule < Msf::Auxiliary
       width = 30  # name field width
       twidth = 32 # table like display cell width
 
-      fields_order.each {|k|
+      fields_order.each { |k|
         if not output_data.has_key?(k)
           next
         end
@@ -784,19 +782,19 @@ class MetasploitModule < Msf::Auxiliary
         when Array
           content = ""
 
-          v.each{ |a|
+          v.each { |a|
             case a
             when Hash
-              a.each{ |sk, sv|
+              a.each { |sk, sv|
                 sk = truncate_to_twidth(sk, twidth)
-                content << sprintf("%s%s: %s\n", sk, " "*([0,width-sk.length].max), sv)
+                content << sprintf("%s%s: %s\n", sk, " " * ([0, width - sk.length].max), sv)
               }
               content << "\n"
             when Array
               a.each { |sv|
                 sv = sv.to_s.strip
                 # I don't like cutting info
-                #sv = truncate_to_twidth(sv, twidth)
+                # sv = truncate_to_twidth(sv, twidth)
                 content << sprintf("%-20s", sv)
               }
               content << "\n"
@@ -807,30 +805,30 @@ class MetasploitModule < Msf::Auxiliary
           }
 
           report_note(
-            :host  => ip,
+            :host => ip,
             :proto => 'udp',
             :sname => 'snmp',
-            :port  => datastore['RPORT'].to_i,
-            :type  => "snmp.#{k}",
-            :data  => content
+            :port => datastore['RPORT'].to_i,
+            :type => "snmp.#{k}",
+            :data => content
           )
 
           line << "\n[*] #{k}:\n\n#{content}"
 
         when Hash
           content = ""
-          v.each{ |sk, sv|
-            sk = truncate_to_twidth(sk,twidth)
-            content << sprintf("%s%s: %s\n", sk, " "*([0,width-sk.length].max), sv)
+          v.each { |sk, sv|
+            sk = truncate_to_twidth(sk, twidth)
+            content << sprintf("%s%s: %s\n", sk, " " * ([0, width - sk.length].max), sv)
           }
 
           report_note(
-            :host  => ip,
+            :host => ip,
             :proto => 'udp',
             :sname => 'snmp',
-            :port  => datastore['RPORT'].to_i,
-            :type  => "snmp.#{k}",
-            :data  => content
+            :port => datastore['RPORT'].to_i,
+            :type => "snmp.#{k}",
+            :data => content
           )
 
           line << "\n[*] #{k}:\n\n#{content}"
@@ -841,22 +839,21 @@ class MetasploitModule < Msf::Auxiliary
           end
 
           report_note(
-            :host  => ip,
+            :host => ip,
             :proto => 'udp',
             :sname => 'snmp',
-            :port  => datastore['RPORT'].to_i,
-            :type  => "snmp.#{k}",
-            :data  => v
+            :port => datastore['RPORT'].to_i,
+            :type => "snmp.#{k}",
+            :data => v
           )
 
-          k = truncate_to_twidth(k,twidth)
-          line << sprintf("%s%s: %s\n", k, " "*([0,width-k.length].max), v)
+          k = truncate_to_twidth(k, twidth)
+          line << sprintf("%s%s: %s\n", k, " " * ([0, width - k.length].max), v)
         end
       }
 
       print_line(line)
       print_line('')
-
     rescue SNMP::RequestTimeout
       print_error("#{ip} SNMP request timeout.")
     rescue Rex::ConnectionError
@@ -875,11 +872,11 @@ class MetasploitModule < Msf::Auxiliary
     end
   end
 
-  def truncate_to_twidth(string,twidth)
-    string.slice(0..twidth-2)
+  def truncate_to_twidth(string, twidth)
+    string.slice(0..twidth - 2)
   end
 
-  def number_to_human_size(size,unit)
+  def number_to_human_size(size, unit)
     size = size.first.to_i * unit.first.to_i
 
     if size < 1024

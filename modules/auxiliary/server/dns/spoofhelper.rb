@@ -8,41 +8,38 @@ require 'resolv'
 class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
 
-
   def initialize
     super(
-      'Name'        => 'DNS Spoofing Helper Service',
-      'Description'    => %q{
+      'Name' => 'DNS Spoofing Helper Service',
+      'Description' => %q{
         This module provides a DNS service that returns TXT
       records indicating information about the querying service.
       Based on Dino Dai Zovi DNS code from Karma.
 
       },
-      'Author'      => ['hdm', 'ddz'],
-      'License'     => MSF_LICENSE,
-      'Actions'     =>
-        [
-          [ 'Service', 'Description' => 'Run DNS spoofing server' ]
-        ],
-      'PassiveActions' =>
-        [
-          'Service'
-        ],
-      'DefaultAction'  => 'Service'
+      'Author' => ['hdm', 'ddz'],
+      'License' => MSF_LICENSE,
+      'Actions' => [
+        [ 'Service', 'Description' => 'Run DNS spoofing server' ]
+      ],
+      'PassiveActions' => [
+        'Service'
+      ],
+      'DefaultAction' => 'Service'
     )
 
     register_options(
       [
-        OptAddress.new('SRVHOST',   [ true, "The local host to listen on.", '0.0.0.0' ]),
-        OptPort.new('SRVPORT',      [ true, "The local port to listen on.", 53 ]),
-      ])
+        OptAddress.new('SRVHOST', [ true, "The local host to listen on.", '0.0.0.0' ]),
+        OptPort.new('SRVPORT', [ true, "The local port to listen on.", 53 ]),
+      ]
+    )
   end
-
 
   def run
     @targ = datastore['TARGETHOST']
 
-    if(@targ and @targ.strip.length == 0)
+    if (@targ and @targ.strip.length == 0)
       @targ = nil
     end
 
@@ -68,7 +65,7 @@ class MetasploitModule < Msf::Auxiliary
         names = []
         request = Resolv::DNS::Message.decode(packet)
 
-        request.each_question {|name, typeclass|
+        request.each_question { |name, typeclass|
           tc_s = typeclass.to_s().gsub(/^Resolv::DNS::Resource::/, "")
 
           request.qr = 1
@@ -84,7 +81,7 @@ class MetasploitModule < Msf::Auxiliary
           end
         }
 
-        if(reply)
+        if (reply)
           @sock.send(request.encode(), 0, addr[3], addr[1])
         else
           print_status("#{Time.now} IGNORE #{addr[3]}:#{addr[1]} XID #{request.id} #{names.join(",")}")

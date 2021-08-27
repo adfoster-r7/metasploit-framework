@@ -15,30 +15,32 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'Endpoint Mapper Service Discovery',
+      'Name' => 'Endpoint Mapper Service Discovery',
       'Description' => %q{
         This module can be used to obtain information from the
         Endpoint Mapper service.
       },
-      'Author'      => 'hdm',
-      'License'     => MSF_LICENSE
+      'Author' => 'hdm',
+      'License' => MSF_LICENSE
     )
 
     register_options(
       [
         Opt::RPORT(135)
-      ])
+      ]
+    )
   end
 
   # Obtain information about a single host
   def run_host(ip)
     begin
-
       ids = dcerpc_endpoint_list()
       return if not ids
+
       name = nil
       ids.each do |id|
         next if not id[:prot]
+
         line = "#{id[:uuid]} v#{id[:vers]} "
         line << "#{id[:prot].upcase} "
         line << "(#{id[:port]}) " if id[:port]
@@ -46,7 +48,7 @@ class MetasploitModule < Msf::Auxiliary
         line << "#{id[:host]} " if id[:host]
         line << "[#{id[:note]}]" if id[:note]
         print_status(line)
-        if (id[:host] and id[:host][0,2] == "\\\\")
+        if (id[:host] and id[:host][0, 2] == "\\\\")
           name = id[:host][2..-1]
         end
         if id[:prot].downcase == "tcp" or id[:prot].downcase == "udp"
@@ -67,7 +69,6 @@ class MetasploitModule < Msf::Auxiliary
         :name => "dcerpc",
         :info => "Endpoint Mapper (#{ids.length} services)"
       )
-
     rescue ::Interrupt
       raise $!
     rescue ::Rex::Proto::DCERPC::Exceptions::Fault
@@ -75,6 +76,5 @@ class MetasploitModule < Msf::Auxiliary
       print_error("#{ip}:#{rport} error: #{e}")
     end
   end
-
 
 end

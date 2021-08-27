@@ -7,14 +7,17 @@ class MetasploitModule < Msf::Post
   include Msf::Post::File
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name' => 'Chrome Gather Cookies',
-      'Description' =>
-        "Read all cookies from the Default Chrome profile of the target user.",
-      'License' => MSF_LICENSE,
-      'Author' => ['mangopdf <mangodotpdf[at]gmail.com>'],
-      'Platform' => %w[linux unix bsd osx windows],
-      'SessionTypes' => %w[meterpreter shell]))
+    super(
+      update_info(
+        info,
+        'Name' => 'Chrome Gather Cookies',
+        'Description' => "Read all cookies from the Default Chrome profile of the target user.",
+        'License' => MSF_LICENSE,
+        'Author' => ['mangopdf <mangodotpdf[at]gmail.com>'],
+        'Platform' => %w[linux unix bsd osx windows],
+        'SessionTypes' => %w[meterpreter shell]
+      )
+    )
 
     register_options(
       [
@@ -195,7 +198,7 @@ class MetasploitModule < Msf::Post
     end
 
     cookies_msg = ''
-    chrome_output.each_line {|line|
+    chrome_output.each_line { |line|
       if line =~ /REMOTE_DEBUGGING/
         print_good('Found Match')
         cookies_msg = line

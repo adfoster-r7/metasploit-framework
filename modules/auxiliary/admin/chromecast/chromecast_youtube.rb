@@ -7,25 +7,28 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::HttpClient
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name' => 'Chromecast YouTube Remote Control',
-      'Description' => %q{
-        This module acts as a simple remote control for Chromecast YouTube.
+    super(
+      update_info(
+        info,
+        'Name' => 'Chromecast YouTube Remote Control',
+        'Description' => %q{
+          This module acts as a simple remote control for Chromecast YouTube.
 
-        Only the deprecated DIAL protocol is supported by this module.
-        Casting via the newer CASTV2 protocol is unsupported at this time.
-      },
-      'Author' => ['wvu'],
-      'References' => [
-        ['URL', 'http://www.google.com/intl/en/chrome/devices/chromecast/index.html'] # vendor website
-      ],
-      'License' => MSF_LICENSE,
-      'Actions' => [
-        ['Play', 'Description' => 'Play video'],
-        ['Stop', 'Description' => 'Stop video']
-      ],
-      'DefaultAction' => 'Play'
-    ))
+          Only the deprecated DIAL protocol is supported by this module.
+          Casting via the newer CASTV2 protocol is unsupported at this time.
+        },
+        'Author' => ['wvu'],
+        'References' => [
+          ['URL', 'http://www.google.com/intl/en/chrome/devices/chromecast/index.html'] # vendor website
+        ],
+        'License' => MSF_LICENSE,
+        'Actions' => [
+          ['Play', 'Description' => 'Play video'],
+          ['Stop', 'Description' => 'Stop video']
+        ],
+        'DefaultAction' => 'Play'
+      )
+    )
 
     register_options([
       Opt::RPORT(8008),

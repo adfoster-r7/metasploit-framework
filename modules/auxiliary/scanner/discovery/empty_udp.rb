@@ -9,10 +9,10 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'UDP Empty Prober',
+      'Name' => 'UDP Empty Prober',
       'Description' => 'Detect UDP services that reply to empty probes',
-      'Author'      => 'Jon Hart <jon_hart[at]rapid7.com>',
-      'License'     => MSF_LICENSE
+      'Author' => 'Jon Hart <jon_hart[at]rapid7.com>',
+      'License' => MSF_LICENSE
     )
     register_options([
       OptString.new('PORTS', [true, 'Ports to probe', '1-1024,1194,2000,2049,4353,5060,5061,5351,8443'])

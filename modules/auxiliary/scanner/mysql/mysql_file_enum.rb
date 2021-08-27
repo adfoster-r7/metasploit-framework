@@ -12,17 +12,17 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'           => 'MYSQL File/Directory Enumerator',
-      'Description'    => %Q{
+      'Name' => 'MYSQL File/Directory Enumerator',
+      'Description' => %Q{
           Enumerate files and directories using the MySQL load_file feature, for more
         information see the URL in the references.
       },
-      'Author'         => [ 'Robin Wood <robin[at]digininja.org>' ],
-      'References'  => [
+      'Author' => [ 'Robin Wood <robin[at]digininja.org>' ],
+      'References' => [
         [ 'URL', 'http://pauldotcom.com/2013/01/mysql-file-system-enumeration.html' ],
         [ 'URL', 'http://www.digininja.org/projects/mysql_file_enum.php' ]
       ],
-      'License'        => MSF_LICENSE
+      'License' => MSF_LICENSE
     )
 
     register_options([
@@ -31,7 +31,6 @@ class MetasploitModule < Msf::Auxiliary
       OptString.new('TABLE_NAME', [ true, "Name of table to use - Warning, if the table already exists its contents will be corrupted", Rex::Text.rand_text_alpha(8) ]),
       OptString.new('USERNAME', [ true, 'The username to authenticate as', "root" ])
     ])
-
   end
 
   # This function does not handle any errors, if you use this
@@ -84,20 +83,20 @@ class MetasploitModule < Msf::Auxiliary
     rescue ::RbMysql::TextfileNotReadable
       print_good("#{dir} is a directory and exists")
       report_note(
-        :host  => rhost,
-        :type  => "filesystem.dir",
-        :data  => "#{dir} is a directory and exists",
-        :port  => rport,
+        :host => rhost,
+        :type => "filesystem.dir",
+        :data => "#{dir} is a directory and exists",
+        :port => rport,
         :proto => 'tcp',
         :update => :unique_data
       )
     rescue ::RbMysql::DataTooLong, ::RbMysql::TruncatedWrongValueForField
       print_good("#{dir} is a file and exists")
       report_note(
-        :host  => rhost,
-        :type  => "filesystem.file",
-        :data  => "#{dir} is a file and exists",
-        :port  => rport,
+        :host => rhost,
+        :type => "filesystem.file",
+        :data => "#{dir} is a file and exists",
+        :port => rport,
         :proto => 'tcp',
         :update => :unique_data
       )
@@ -112,10 +111,10 @@ class MetasploitModule < Msf::Auxiliary
     else
       print_good("#{dir} is a file and exists")
       report_note(
-        :host  => rhost,
-        :type  => "filesystem.file",
-        :data  => "#{dir} is a file and exists",
-        :port  => rport,
+        :host => rhost,
+        :type => "filesystem.file",
+        :data => "#{dir} is a file and exists",
+        :port => rport,
         :proto => 'tcp',
         :update => :unique_data
       )

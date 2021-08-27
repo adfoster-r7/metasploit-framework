@@ -8,16 +8,15 @@ class MetasploitModule < Msf::Encoder
 
   def initialize
     super(
-      'Name'             => 'Echo Command Encoder',
-      'Description'      => %q{
+      'Name' => 'Echo Command Encoder',
+      'Description' => %q{
         This encoder uses echo and backlash escapes to avoid commonly restricted characters.
       },
-      'Author'           => 'hdm',
-      'Arch'             => ARCH_CMD,
-      'Platform'         => 'unix',
-      'EncoderType'      => Msf::Encoder::Type::CmdUnixEcho)
+      'Author' => 'hdm',
+      'Arch' => ARCH_CMD,
+      'Platform' => 'unix',
+      'EncoderType' => Msf::Encoder::Type::CmdUnixEcho)
   end
-
 
   #
   # Encodes the payload
@@ -36,7 +35,7 @@ class MetasploitModule < Msf::Encoder
       if state.badchars.include?("\\")
         raise EncodingError
       else
-        buf = encode_block_bash_echo(state,buf)
+        buf = encode_block_bash_echo(state, buf)
       end
     end
 
@@ -47,7 +46,6 @@ class MetasploitModule < Msf::Encoder
   # Uses bash's echo -ne command to hex encode the command string
   #
   def encode_block_bash_echo(state, buf)
-
     hex = ''
 
     # Can we use single quotes to enclose the echo arguments?

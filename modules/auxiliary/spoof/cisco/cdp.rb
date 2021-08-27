@@ -7,21 +7,20 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Capture
 
   def initialize
-
     super(
-      'Name'        => 'Send Cisco Discovery Protocol (CDP) Packets',
+      'Name' => 'Send Cisco Discovery Protocol (CDP) Packets',
       'Description' => %q{
         This module sends Cisco Discovery Protocol (CDP) packets. Note that any responses
         to the CDP packets broadcast from this module will need to be analyzed with an
         external packet analysis tool, such as tcpdump or Wireshark in order to learn more
         about the Cisco switch and router environment.
       },
-      'Author'      => 'Fatih Ozavci', # viproy.com/fozavci
-      'License'     =>  MSF_LICENSE,
-      'References'  => [
+      'Author' => 'Fatih Ozavci', # viproy.com/fozavci
+      'License' => MSF_LICENSE,
+      'References' => [
         [ 'URL', 'http://en.wikipedia.org/wiki/CDP_Spoofing' ]
       ],
-      'Actions'     => [
+      'Actions' => [
         ['Spoof', { 'Description' => 'Sends CDP packets' }]
       ],
       'DefaultAction' => 'Spoof'
@@ -34,11 +33,12 @@ class MetasploitModule < Msf::Auxiliary
         OptString.new('DEVICE_ID', [true, "Device ID (e.g. SIP00070EEA3156)", "SEP00070EEA3156"]),
         OptString.new('PORT', [true, "The CDP 'sent through interface' value", "Port 1"]),
         # XXX: this is not currently implemented
-        #OptString.new('CAPABILITIES',   [false, "Capabilities of the device (e.g. Router, Host, Switch)", "Router"]),
+        # OptString.new('CAPABILITIES',   [false, "Capabilities of the device (e.g. Router, Host, Switch)", "Router"]),
         OptString.new('PLATFORM', [true, "Platform of the device", "Cisco IP Phone 7975"]),
         OptString.new('SOFTWARE', [true, "Software of the device", "SCCP75.9-3-1SR2-1S"]),
         OptBool.new('FULL_DUPLEX', [true, 'True iff full-duplex, false otherwise', true])
-      ])
+      ]
+    )
 
     deregister_options('FILTER', 'PCAPFILE', 'RHOST', 'SNAPLEN', 'TIMEOUT')
   end
@@ -48,6 +48,7 @@ class MetasploitModule < Msf::Auxiliary
     unless smac
       fail ArgumentError, "Unable to get SMAC from #{interface} -- Set INTERFACE or SMAC"
     end
+
     open_pcap
     close_pcap
   end

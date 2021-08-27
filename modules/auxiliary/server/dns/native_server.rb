@@ -3,29 +3,31 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 class MetasploitModule < Msf::Auxiliary
 
   include Msf::Exploit::Remote::DNS::Client
   include Msf::Exploit::Remote::DNS::Server
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Native DNS Server (Example)',
-      'Description'    => %q{
-        This module provides a Rex based DNS service which can store static entries,
-        resolve names over pivots, and serve DNS requests across routed session comms.
-        DNS tunnels can operate across the the Rex switchboard, and DNS other modules
-        can use this as a template. Setting static records via hostfile allows for DNS
-        spoofing attacks without direct traffic manipulation at the handlers. handlers
-        for requests and responses provided here mimic the internal Rex functionality,
-        but utilize methods within this module's namespace to output content processed
-        in the Proc contexts via vprint_status.
-      },
-      'Author'         => 'RageLtMan <rageltman[at]sempervictus>',
-      'License'        => MSF_LICENSE,
-      'References'     => []
-    ))
+    super(
+      update_info(
+        info,
+        'Name' => 'Native DNS Server (Example)',
+        'Description' => %q{
+          This module provides a Rex based DNS service which can store static entries,
+          resolve names over pivots, and serve DNS requests across routed session comms.
+          DNS tunnels can operate across the the Rex switchboard, and DNS other modules
+          can use this as a template. Setting static records via hostfile allows for DNS
+          spoofing attacks without direct traffic manipulation at the handlers. handlers
+          for requests and responses provided here mimic the internal Rex functionality,
+          but utilize methods within this module's namespace to output content processed
+          in the Proc contexts via vprint_status.
+        },
+        'Author' => 'RageLtMan <rageltman[at]sempervictus>',
+        'License' => MSF_LICENSE,
+        'References' => []
+      )
+    )
   end
 
   #
@@ -45,8 +47,9 @@ class MetasploitModule < Msf::Auxiliary
   #
   # Creates Proc to handle incoming requests
   #
-  def on_dispatch_request(cli,data)
+  def on_dispatch_request(cli, data)
     return if data.strip.empty?
+
     req = Packet.encode_drb(data)
     peer = "#{cli.peerhost}:#{cli.peerport}"
     asked = req.question.map(&:qname).map(&:to_s).join(', ')
@@ -66,7 +69,7 @@ class MetasploitModule < Msf::Auxiliary
           else
             hit.name.to_s + ' ' + hit.type.to_s
           end
-        end.each {|h| vprint_status("Cache hit for #{h}")}
+        end.each { |h| vprint_status("Cache hit for #{h}") }
       end
     end unless service.cache.nil?
     # Forward remaining requests, cache responses
@@ -94,13 +97,12 @@ class MetasploitModule < Msf::Auxiliary
   #
   # Creates Proc to handle outbound responses
   #
-  def on_send_response(cli,data)
+  def on_send_response(cli, data)
     res = Packet.encode_drb(data)
     peer = "#{cli.peerhost}:#{cli.peerport}"
     asked = res.question.map(&:qname).map(&:to_s).join(', ')
     vprint_status("Sending response for #{asked} to #{peer}")
     cli.write(data)
   end
-
 
 end

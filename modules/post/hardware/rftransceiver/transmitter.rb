@@ -6,27 +6,28 @@
 class MetasploitModule < Msf::Post
   include Msf::Post::Hardware::RFTransceiver::RFTransceiver
 
-  def initialize(info={})
-    super( update_info( info,
-        'Name'          => 'RF Transceiver Transmitter',
-        'Description'   => %q{
-            This module powers an HWBridge-connected radio transceiver,
-            effectively transmitting on the frequency set by the FREQ option.
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'RF Transceiver Transmitter',
+        'Description' => %q{
+          This module powers an HWBridge-connected radio transceiver,
+          effectively transmitting on the frequency set by the FREQ option.
 
-            NOTE: Users of this module should be aware of their local laws,
-            regulations, and licensing requirements for transmitting on any
-            given radio frequency.
-
+          NOTE: Users of this module should be aware of their local laws,
+          regulations, and licensing requirements for transmitting on any
+          given radio frequency.
         },
-        'References'     =>
-        [
+        'References' => [
           ['URL', 'https://github.com/AndrewMohawk/RfCatHelpers']
         ],
-        'License'       => MSF_LICENSE,
-        'Author'        => ['Craig Smith'],
-        'Platform'      => ['hardware'],
-        'SessionTypes'  => ['hwbridge']
-      ))
+        'License' => MSF_LICENSE,
+        'Author' => ['Craig Smith'],
+        'Platform' => ['hardware'],
+        'SessionTypes' => ['hwbridge']
+      )
+    )
     register_options([
       OptInt.new('FREQ', [true, "Frequency to transmit on"]),
       OptInt.new('SECONDS', [false, "Seconds to transmit", 4]),
@@ -34,7 +35,6 @@ class MetasploitModule < Msf::Post
       OptInt.new('POWER', [false, "Power level", 100]),
       OptInt.new('INDEX', [false, "USB Index to use", 0])
     ])
-
   end
 
   def run

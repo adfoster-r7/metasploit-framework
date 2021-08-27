@@ -8,42 +8,43 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Dos
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'F5 BigIP Access Policy Manager Session Exhaustion Denial of Service',
-      'Description'    => %q{
-        This module exploits a resource exhaustion denial of service in F5 BigIP devices. An
-        unauthenticated attacker can establish multiple connections with BigIP Access Policy
-        Manager (APM) and exhaust all available sessions defined in customer license. In the
-        first step of the BigIP APM negotiation the client sends a HTTP request. The BigIP
-        system creates a session, marks it as pending and then redirects the client to an access
-        policy URI. Since BigIP allocates a new session after the first unauthenticated request,
-        and deletes the session only if an access policy timeout expires, the attacker can exhaust
-        all available sessions by repeatedly sending the initial HTTP request and leaving the
-        sessions as pending.
-      },
-      'Author'         =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'F5 BigIP Access Policy Manager Session Exhaustion Denial of Service',
+        'Description' => %q{
+          This module exploits a resource exhaustion denial of service in F5 BigIP devices. An
+          unauthenticated attacker can establish multiple connections with BigIP Access Policy
+          Manager (APM) and exhaust all available sessions defined in customer license. In the
+          first step of the BigIP APM negotiation the client sends a HTTP request. The BigIP
+          system creates a session, marks it as pending and then redirects the client to an access
+          policy URI. Since BigIP allocates a new session after the first unauthenticated request,
+          and deletes the session only if an access policy timeout expires, the attacker can exhaust
+          all available sessions by repeatedly sending the initial HTTP request and leaving the
+          sessions as pending.
+        },
+        'Author' => [
           'Denis Kolegov <dnkolegov[at]gmail.com>',
           'Oleg Broslavsky <ovbroslavsky[at]gmail.com>',
           'Nikita Oleksov <neoleksov[at]gmail.com>'
         ],
-      'References'     =>
-        [
+        'References' => [
           ['URL', 'https://support.f5.com/kb/en-us/products/big-ip_apm/releasenotes/product/relnote-apm-11-6-0.html']
         ],
-      'License'        => MSF_LICENSE,
-      'DefaultOptions' =>
-        {
+        'License' => MSF_LICENSE,
+        'DefaultOptions' => {
           'SSL' => true,
           'RPORT' => 443
         }
-    ))
+      )
+    )
 
     register_options(
       [
         OptInt.new('RLIMIT', [true, 'The number of requests to send', 10000]),
         OptBool.new('FORCE', [true, 'Proceed with attack even if a BigIP virtual server isn\'t detected', false])
-      ])
+      ]
+    )
   end
 
   def run
@@ -85,14 +86,13 @@ class MetasploitModule < Msf::Auxiliary
     else
       print_status("Result is undefined. Try to manually determine DoS attack result")
     end
-
-    rescue ::Errno::ECONNRESET
-      print_error("The connection was reset. Maybe BigIP 'Max In Progress Sessions Per Client IP' counter was reached")
-    rescue ::Rex::ConnectionRefused
-      print_error("Unable to connect to BigIP")
-    rescue ::Rex::ConnectionTimeout
-      print_error("Unable to connect to BigIP. Please check options")
-    rescue ::OpenSSL::SSL::SSLError
-      print_error("SSL/TLS connection error")
+  rescue ::Errno::ECONNRESET
+    print_error("The connection was reset. Maybe BigIP 'Max In Progress Sessions Per Client IP' counter was reached")
+  rescue ::Rex::ConnectionRefused
+    print_error("Unable to connect to BigIP")
+  rescue ::Rex::ConnectionTimeout
+    print_error("Unable to connect to BigIP. Please check options")
+  rescue ::OpenSSL::SSL::SSLError
+    print_error("SSL/TLS connection error")
   end
 end

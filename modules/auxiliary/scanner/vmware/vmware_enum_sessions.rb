@@ -3,7 +3,6 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::VIMSoap
   include Msf::Exploit::Remote::HttpClient
@@ -12,13 +11,13 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'           => 'VMWare Enumerate Active Sessions',
-      'Description'    => %Q{
+      'Name' => 'VMWare Enumerate Active Sessions',
+      'Description' => %Q{
         This module will log into the Web API of VMWare and try to enumerate
         all the login sessions.
       },
-      'Author'         => ['theLightCosine'],
-      'License'        => MSF_LICENSE,
+      'Author' => ['theLightCosine'],
+      'License' => MSF_LICENSE,
       'DefaultOptions' => { 'SSL' => true }
     )
 
@@ -27,9 +26,9 @@ class MetasploitModule < Msf::Auxiliary
         Opt::RPORT(443),
         OptString.new('USERNAME', [ true, "The username to Authenticate with.", 'root' ]),
         OptString.new('PASSWORD', [ true, "The password to Authenticate with.", 'password' ])
-      ])
+      ]
+    )
   end
-
 
   def run_host(ip)
     if vim_do_login(datastore['USERNAME'], datastore['PASSWORD']) == :success
@@ -45,7 +44,7 @@ class MetasploitModule < Msf::Auxiliary
         output = ''
         vim_sessions.each do |vsession|
           tmp_line = "Name: #{vsession['fullName']} \n\t"
-          is_active = vim_session_is_active(vsession['key'],vsession['userName'])
+          is_active = vim_session_is_active(vsession['key'], vsession['userName'])
           if is_active == :error
             tmp_line << "Active: N/A \n\t"
           else

@@ -9,22 +9,23 @@ class MetasploitModule < Msf::Post
 
   def initialize
     super(
-      'Name'         => 'BusyBox DNS Configuration',
-      'Description'  => %q{
+      'Name' => 'BusyBox DNS Configuration',
+      'Description' => %q{
         This module will be applied on a session connected to a BusyBox shell. It allows
         to set the DNS server on the device executing BusyBox so it will be sent by the
         DHCP server to network hosts.
       },
-      'Author'       => 'Javier Vicente Vallejo',
-      'License'      => MSF_LICENSE,
-      'Platform'      => ['linux'],
-      'SessionTypes'  => ['shell']
+      'Author' => 'Javier Vicente Vallejo',
+      'License' => MSF_LICENSE,
+      'Platform' => ['linux'],
+      'SessionTypes' => ['shell']
     )
 
     register_options(
       [
-        OptAddress.new('DNS',   [ true, 'The dns server address' ])
-      ])
+        OptAddress.new('DNS', [ true, 'The dns server address' ])
+      ]
+    )
   end
 
   def run

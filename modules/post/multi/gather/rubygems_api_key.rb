@@ -8,19 +8,22 @@ class MetasploitModule < Msf::Post
   include Msf::Post::Unix
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'         => 'Multi Gather RubyGems API Key',
-      'Description'  => %q{
-        This module obtains a user's RubyGems API key from ~/.gem/credentials.
-      },
-      'Author'       => [
-        'Jonathan Claudius <jclaudius[at]trustwave.com>',
-        'Brandon Myers <bmyers[at]trustwave.com>'
-      ],
-      'Platform'     => %w{bsd linux osx unix},
-      'SessionTypes' => %w{shell},
-      'License'      => MSF_LICENSE
-    ))
+    super(
+      update_info(
+        info,
+        'Name' => 'Multi Gather RubyGems API Key',
+        'Description' => %q{
+          This module obtains a user's RubyGems API key from ~/.gem/credentials.
+        },
+        'Author' => [
+          'Jonathan Claudius <jclaudius[at]trustwave.com>',
+          'Brandon Myers <bmyers[at]trustwave.com>'
+        ],
+        'Platform' => %w{bsd linux osx unix},
+        'SessionTypes' => %w{shell},
+        'License' => MSF_LICENSE
+      )
+    )
   end
 
   def run

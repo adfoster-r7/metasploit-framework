@@ -27,15 +27,13 @@ class MetasploitModule < Msf::Auxiliary
         This module attempts to brute force SAP username and passwords through the
         /sap/bc/soap/rfc SOAP service, using RFC_PING function.
       },
-      'References' =>
-        [
-          [ 'URL', 'http://labs.mwrinfosecurity.com/tools/2012/04/27/sap-metasploit-modules/' ]
-        ],
-      'Author' =>
-        [
-          'Agnivesh Sathasivam',
-          'nmonkee'
-        ],
+      'References' => [
+        [ 'URL', 'http://labs.mwrinfosecurity.com/tools/2012/04/27/sap-metasploit-modules/' ]
+      ],
+      'Author' => [
+        'Agnivesh Sathasivam',
+        'nmonkee'
+      ],
       'License' => MSF_LICENSE
     )
     register_options(
@@ -43,9 +41,12 @@ class MetasploitModule < Msf::Auxiliary
         Opt::RPORT(8000),
         OptString.new('CLIENT', [true, 'Client can be single (066), comma separated list (000,001,066) or range (000-999)', '000,001,066']),
         OptString.new('TARGETURI', [true, 'The base path to the SOAP RFC Service', '/sap/bc/soap/rfc']),
-        OptPath.new('USERPASS_FILE', [ false, "File containing users and passwords separated by space, one pair per line",
-          File.join(Msf::Config.data_directory, "wordlists", "sap_default.txt") ])
-      ])
+        OptPath.new('USERPASS_FILE', [
+          false, "File containing users and passwords separated by space, one pair per line",
+          File.join(Msf::Config.data_directory, "wordlists", "sap_default.txt")
+        ])
+      ]
+    )
 
     deregister_options('HttpUsername', 'HttpPassword')
   end
@@ -71,7 +72,7 @@ class MetasploitModule < Msf::Auxiliary
       'Header' => "[SAP] #{peer} Credentials",
       'Prefix' => "\n",
       'Postfix' => "\n",
-      'Indent'  => 1,
+      'Indent' => 1,
       'Columns' =>
         [
           "host",
@@ -79,7 +80,8 @@ class MetasploitModule < Msf::Auxiliary
           "client",
           "user",
           "pass"
-        ])
+        ]
+    )
 
     client_list.each do |c|
       print_status("#{peer} [SAP] Trying client: #{c}")
@@ -127,7 +129,7 @@ class MetasploitModule < Msf::Auxiliary
     create_credential_login(login_data)
   end
 
-  def bruteforce(username,password,client)
+  def bruteforce(username, password, client)
     uri = normalize_uri(target_uri.path)
 
     data = '<?xml version="1.0" encoding="utf-8" ?>'
@@ -172,4 +174,3 @@ class MetasploitModule < Msf::Auxiliary
     false
   end
 end
-

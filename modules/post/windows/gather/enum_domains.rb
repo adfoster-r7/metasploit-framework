@@ -3,22 +3,24 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 class MetasploitModule < Msf::Post
   include Msf::Post::Windows::NetAPI
 
-  def initialize(info={})
-    super( update_info( info,
-      'Name'          => 'Windows Gather Domain Enumeration',
-      'Description'   => %q{
-        This module enumerates currently the domains a host can see and the domain
-        controllers for that domain.
-      },
-      'License'       => MSF_LICENSE,
-      'Author'        => [ 'mubix' ],
-      'Platform'      => [ 'win' ],
-      'SessionTypes'  => [ 'meterpreter' ]
-    ))
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Windows Gather Domain Enumeration',
+        'Description' => %q{
+          This module enumerates currently the domains a host can see and the domain
+          controllers for that domain.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [ 'mubix' ],
+        'Platform' => [ 'win' ],
+        'SessionTypes' => [ 'meterpreter' ]
+      )
+    )
   end
 
   def run
@@ -37,9 +39,9 @@ class MetasploitModule < Msf::Post
         print_good("Domain Controller: #{dc[:name]}")
 
         report_note(
-          :host   => session,
-          :type   => 'domain.hostnames',
-          :data   => dc[:name],
+          :host => session,
+          :type => 'domain.hostnames',
+          :data => dc[:name],
           :update => :unique_data
         )
       end

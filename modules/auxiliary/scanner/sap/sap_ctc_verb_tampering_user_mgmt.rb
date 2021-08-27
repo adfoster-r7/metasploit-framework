@@ -34,16 +34,14 @@ class MetasploitModule < Msf::Auxiliary
         OS user management. Information about resolution should be available at SAP notes
         1589525 and 1624450 (authentication required).
       },
-      'References' =>
-        [
-          [ 'URL', 'http://erpscan.com/advisories/dsecrg-11-041-sap-netweaver-authentication-bypass-verb-tampering/' ],
-          [ 'URL', 'http://erpscan.com/wp-content/uploads/2012/11/Breaking-SAP-Portal-HackerHalted-2012.pdf' ]
-        ],
-      'Author' =>
-        [
-          'Alexandr Polyakov', # Vulnerability discovery
-          'nmonkee' # Metasploit module
-        ],
+      'References' => [
+        [ 'URL', 'http://erpscan.com/advisories/dsecrg-11-041-sap-netweaver-authentication-bypass-verb-tampering/' ],
+        [ 'URL', 'http://erpscan.com/wp-content/uploads/2012/11/Breaking-SAP-Portal-HackerHalted-2012.pdf' ]
+      ],
+      'Author' => [
+        'Alexandr Polyakov', # Vulnerability discovery
+        'nmonkee' # Metasploit module
+      ],
       'License' => MSF_LICENSE
     )
 

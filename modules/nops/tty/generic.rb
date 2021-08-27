@@ -12,12 +12,12 @@ class MetasploitModule < Msf::Nop
 
   def initialize
     super(
-      'Name'        => 'TTY Nop Generator',
-      'Alias'       => 'tty_generic',
+      'Name' => 'TTY Nop Generator',
+      'Alias' => 'tty_generic',
       'Description' => 'Generates harmless padding for TTY input',
-      'Author'      => 'hdm',
-      'License'     => MSF_LICENSE,
-      'Arch'        => ARCH_TTY)
+      'Author' => 'hdm',
+      'License' => MSF_LICENSE,
+      'Arch' => ARCH_TTY)
   end
 
   # Generate valid PHP code up to the requested length

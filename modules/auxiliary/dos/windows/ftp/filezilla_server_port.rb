@@ -8,24 +8,27 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Dos
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'		=> 'FileZilla FTP Server Malformed PORT Denial of Service',
-      'Description'	=> %q{
-        This module triggers a Denial of Service condition in the FileZilla FTP
-        Server versions 0.9.21 and earlier. By sending a malformed PORT command
-        then LIST command, the server attempts to write to a NULL pointer.
-      },
-      'Author' 		=> [ 'aushack' ],
-      'License'        	=> MSF_LICENSE,
-      'References'     =>
-        [
+    super(
+      update_info(
+        info,
+        'Name'	=> 'FileZilla FTP Server Malformed PORT Denial of Service',
+        'Description'	=> %q{
+          This module triggers a Denial of Service condition in the FileZilla FTP
+          Server versions 0.9.21 and earlier. By sending a malformed PORT command
+          then LIST command, the server attempts to write to a NULL pointer.
+        },
+        'Author' => [ 'aushack' ],
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'BID', '21542' ],
           [ 'BID', '21549' ],
           [ 'CVE', '2006-6565' ],
           [ 'EDB', '2914' ],
           [ 'OSVDB', '34435' ]
         ],
-      'DisclosureDate' => '2006-12-11'))
+        'DisclosureDate' => '2006-12-11'
+      )
+    )
   end
 
   def run

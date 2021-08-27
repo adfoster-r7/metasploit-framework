@@ -17,14 +17,13 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'SSH Version Scanner',
+      'Name' => 'SSH Version Scanner',
       'Description' => 'Detect SSH Version.',
-      'References'  =>
-        [
-          [ 'URL', 'http://en.wikipedia.org/wiki/SecureShell' ]
-        ],
-      'Author'      => [ 'Daniel van Eeden <metasploit[at]myname.nl>' ],
-      'License'     => MSF_LICENSE
+      'References' => [
+        [ 'URL', 'http://en.wikipedia.org/wiki/SecureShell' ]
+      ],
+      'Author' => [ 'Daniel van Eeden <metasploit[at]myname.nl>' ],
+      'License' => MSF_LICENSE
     )
 
     register_options(
@@ -46,7 +45,7 @@ class MetasploitModule < Msf::Auxiliary
 
       resp = sock.get_once(-1, timeout)
 
-      if ! resp
+      if !resp
         vprint_warning("No response")
         return Exploit::CheckCode::Unknown
       end
@@ -65,8 +64,9 @@ class MetasploitModule < Msf::Auxiliary
       recog_match = Recog::Nizer.match('ssh.banner', banner)
       if recog_match
         info << " ( "
-        recog_match.each_pair do |k,v|
+        recog_match.each_pair do |k, v|
           next if k == 'matched'
+
           info << "#{k}=#{v} "
         end
         info << ")"

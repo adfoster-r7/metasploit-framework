@@ -6,27 +6,30 @@
 class MetasploitModule < Msf::Post
   include Msf::Post::Windows::Registry
 
-  def initialize(info={})
-    super(update_info(info,
-      'Name'           => 'Windows Gather Hardware Enumeration',
-      'Description'    => %q{
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Windows Gather Hardware Enumeration',
+        'Description' => %q{
           Enumerate PCI hardware information from the registry. Please note this script
-        will run through registry subkeys such as: 'PCI', 'ACPI', 'ACPI_HAL', 'FDC', 'HID',
-        'HTREE', 'IDE', 'ISAPNP', 'LEGACY'', LPTENUM', 'PCIIDE', 'SCSI', 'STORAGE', 'SW',
-        and 'USB'; it will take time to finish. It is recommended to run this module as a
-        background job.
+          will run through registry subkeys such as: 'PCI', 'ACPI', 'ACPI_HAL', 'FDC', 'HID',
+          'HTREE', 'IDE', 'ISAPNP', 'LEGACY'', LPTENUM', 'PCIIDE', 'SCSI', 'STORAGE', 'SW',
+          and 'USB'; it will take time to finish. It is recommended to run this module as a
+          background job.
         },
-      'License'        => MSF_LICENSE,
-      'Author'         => [ 'Brandon Perry <bperry.volatile[at]gmail.com>' ],
-      'Platform'       => [ 'win' ],
-      'SessionTypes'   => [ 'meterpreter' ]
-    ))
+        'License' => MSF_LICENSE,
+        'Author' => [ 'Brandon Perry <bperry.volatile[at]gmail.com>' ],
+        'Platform' => [ 'win' ],
+        'SessionTypes' => [ 'meterpreter' ]
+      )
+    )
   end
 
   def list
     tbl = Rex::Text::Table.new(
-      'Header'  => "Device Information",
-      'Indent'  => 1,
+      'Header' => "Device Information",
+      'Indent' => 1,
       'Columns' =>
       [
         "Device Description",
@@ -34,7 +37,8 @@ class MetasploitModule < Msf::Post
         "Class",
         "Manufacturer",
         "Extra",
-      ])
+      ]
+    )
 
     keys = [
       "HKLM\\SYSTEM\\ControlSet001\\Enum\\PCI\\",
@@ -60,10 +64,11 @@ class MetasploitModule < Msf::Post
 
       t = []
 
-      while(not devices.nil? and not devices.empty?)
+      while (not devices.nil? and not devices.empty?)
         1.upto(3) do
           t << framework.threads.spawn("Module(#{self.refname})", false, devices.shift) do |device|
             next if device.nil?
+
             vprint_status("Enumerating #{device}")
 
             infos = registry_enumkeys(key + "\\" + device)
@@ -74,11 +79,11 @@ class MetasploitModule < Msf::Post
 
               info_key = key + "\\" + device + "\\" + info
 
-              desc         = registry_getvaldata(info_key, "DeviceDesc")
-              mfg          = registry_getvaldata(info_key, "Mfg")
+              desc = registry_getvaldata(info_key, "DeviceDesc")
+              mfg = registry_getvaldata(info_key, "Mfg")
               device_class = registry_getvaldata(info_key, "Class")
-              driver_guid  = registry_getvaldata(info_key, "Driver")
-              extra        = ""
+              driver_guid = registry_getvaldata(info_key, "Driver")
+              extra = ""
 
               if key =~ /USB/ or key =~ /LPTENUM/
                 extra = registry_getvaldata(info_key, "LocationInformation")
@@ -91,11 +96,11 @@ class MetasploitModule < Msf::Post
               desc = desc.split(';')[1] if desc =~ /^@/
               mfg = mfg.split(';')[1] if mfg =~ /^@/
 
-              desc         = '' if desc.nil?
-              mfg          = '' if mfg.nil?
+              desc = '' if desc.nil?
+              mfg = '' if mfg.nil?
               device_class = '' if device_class.nil?
-              driver_guid  = '' if driver_guid.nil?
-              extra        = '' if extra.nil?
+              driver_guid = '' if driver_guid.nil?
+              extra = '' if extra.nil?
 
               next if desc.empty? and mfg.empty?
 
@@ -113,10 +118,10 @@ class MetasploitModule < Msf::Post
 
               tbl.rows.each do |row|
                 if row[0] == desc and
-                  row[1] == driver_version and
-                  row[2] == device_class and
-                  row[3] == mfg and
-                  row[4] == extra
+                   row[1] == driver_version and
+                   row[2] == device_class and
+                   row[3] == mfg and
+                   row[4] == extra
                   done = true
                   break
                 end
@@ -125,7 +130,7 @@ class MetasploitModule < Msf::Post
               tbl << [desc, driver_version, device_class, mfg, extra] if not done
             end
           end
-          t.map {|x| x.join }
+          t.map { |x| x.join }
         end
       end
     end

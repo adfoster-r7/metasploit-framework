@@ -9,21 +9,22 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'           => 'Authentication Capture: PostgreSQL',
-      'Description'    => %q{
+      'Name' => 'Authentication Capture: PostgreSQL',
+      'Description' => %q{
         This module provides a fake PostgreSQL service that is designed to
         capture clear-text authentication credentials.},
-      'Author'         => 'Dhiru Kholia <dhiru[at]openwall.com>',
-      'License'        => MSF_LICENSE,
-      'Actions'        => [[ 'Capture', 'Description' => 'Run PostgreSQL capture server' ]],
+      'Author' => 'Dhiru Kholia <dhiru[at]openwall.com>',
+      'License' => MSF_LICENSE,
+      'Actions' => [[ 'Capture', 'Description' => 'Run PostgreSQL capture server' ]],
       'PassiveActions' => [ 'Capture' ],
-      'DefaultAction'  => 'Capture'
+      'DefaultAction' => 'Capture'
     )
 
     register_options(
       [
         OptPort.new('SRVPORT', [ true, "The local port to listen on.", 5432 ]),
-      ])
+      ]
+    )
   end
 
   # This module is based on MySQL capture module by Patrik Karlsson.
@@ -66,9 +67,9 @@ class MetasploitModule < Msf::Auxiliary
 
   def on_client_connect(c)
     @state[c] = {
-      :name    => "#{c.peerhost}:#{c.peerport}",
-      :ip      => c.peerhost,
-      :port    => c.peerport,
+      :name => "#{c.peerhost}:#{c.peerport}",
+      :ip => c.peerhost,
+      :port => c.peerport,
     }
     @state[c]["status"] = :init
   end
@@ -76,6 +77,7 @@ class MetasploitModule < Msf::Auxiliary
   def on_client_data(c)
     data = c.get_once
     return if not data
+
     length = data.slice(0, 4).unpack("N")[0]
     if length == 8 and @state[c]["status"] == :init
       # SSL request
@@ -122,7 +124,6 @@ class MetasploitModule < Msf::Auxiliary
       c.put sdata
       c.close
     end
-
   end
 
   def on_client_close(c)

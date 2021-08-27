@@ -16,25 +16,23 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'           => 'WinRM Login Utility',
-      'Description'    => %q{
+      'Name' => 'WinRM Login Utility',
+      'Description' => %q{
         This module attempts to authenticate to a WinRM service. It currently
         works only if the remote end allows Negotiate(NTLM) authentication.
         Kerberos is not currently supported.  Please note: in order to use this
         module without SSL, the 'AllowUnencrypted' winrm option must be set.
         Otherwise adjust the port and set the SSL options in the module as appropriate.
       },
-      'Author'         => [ 'thelightcosine' ],
-      'References'     =>
-        [
-          [ 'CVE', '1999-0502'] # Weak password
-        ],
-      'License'        => MSF_LICENSE
+      'Author' => [ 'thelightcosine' ],
+      'References' => [
+        [ 'CVE', '1999-0502'] # Weak password
+      ],
+      'License' => MSF_LICENSE
     )
 
     deregister_options('PASSWORD_SPRAY')
   end
-
 
   def run_host(ip)
     cred_collection = Metasploit::Framework::CredentialCollection.new(
@@ -65,8 +63,8 @@ class MetasploitModule < Msf::Auxiliary
     scanner.scan! do |result|
       credential_data = result.to_h
       credential_data.merge!(
-          module_fullname: self.fullname,
-          workspace_id: myworkspace_id
+        module_fullname: self.fullname,
+        workspace_id: myworkspace_id
       )
       if result.success?
         credential_core = create_credential(credential_data)
@@ -79,9 +77,7 @@ class MetasploitModule < Msf::Auxiliary
         vprint_error "#{ip}:#{rport} - LOGIN FAILED: #{result.credential} (#{result.status}: #{result.proof})"
       end
     end
-
   end
-
 
   def test_request
     return winrm_wql_msg("Select Name,Status from Win32_Service")

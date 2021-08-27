@@ -40,11 +40,10 @@ class MetasploitModule < Msf::Auxiliary
         [ 'OSVDB', '92732'],
         [ 'URL', 'http://erpscan.com/advisories/dsecrg-12-026-sap-netweaver-rzl_read_dir_local-missing-authorization-check-and-smb-relay-vulnerability/' ]
       ],
-      'Author' =>
-        [
-          'Alexey Tyurin', # Vulnerability discovery
-          'nmonkee' # Metasploit module
-        ],
+      'Author' => [
+        'Alexey Tyurin', # Vulnerability discovery
+        'nmonkee' # Metasploit module
+      ],
       'License' => MSF_LICENSE
     )
 
@@ -52,7 +51,7 @@ class MetasploitModule < Msf::Auxiliary
       OptString.new('CLIENT', [true, 'SAP Client', '001']),
       OptString.new('HttpUsername', [true, 'Username', 'SAP*']),
       OptString.new('HttpPassword', [true, 'Password', '06071992']),
-      OptString.new('DIR',[true,'Directory path (e.g. /etc)','/etc'])
+      OptString.new('DIR', [true, 'Directory path (e.g. /etc)', '/etc'])
     ])
   end
 

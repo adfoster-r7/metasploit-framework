@@ -16,26 +16,29 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::MSSQL
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Microsoft SQL Server Interesting Data Finder',
-      'Description'    => %q{
-        This module will search the specified MSSQL server for
-        'interesting' columns and data.
+    super(
+      update_info(
+        info,
+        'Name' => 'Microsoft SQL Server Interesting Data Finder',
+        'Description' => %q{
+          This module will search the specified MSSQL server for
+          'interesting' columns and data.
 
-        This module has been tested against the latest SQL Server 2019 docker container image (22/04/2021).
-      },
-      'Author'         => [ 'Robin Wood <robin[at]digininja.org>' ],
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+          This module has been tested against the latest SQL Server 2019 docker container image (22/04/2021).
+        },
+        'Author' => [ 'Robin Wood <robin[at]digininja.org>' ],
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'URL', 'http://www.digininja.org/metasploit/mssql_idf.php' ],
         ]
-    ))
+      )
+    )
 
     register_options(
       [
-        OptString.new('NAMES', [ true, 'Pipe separated list of column names',  'passw|bank|credit|card']),
-      ])
+        OptString.new('NAMES', [ true, 'Pipe separated list of column names', 'passw|bank|credit|card']),
+      ]
+    )
   end
 
   def print_with_underline(str)
@@ -106,7 +109,7 @@ class MetasploitModule < Msf::Auxiliary
       return
     end
 
-    (column_data|headings).each { |row|
+    (column_data | headings).each { |row|
       0.upto(4) { |col|
         widths[col] = row[col].length if row[col].length > widths[col]
       }

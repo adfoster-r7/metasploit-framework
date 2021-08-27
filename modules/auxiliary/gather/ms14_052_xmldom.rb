@@ -3,36 +3,36 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::HttpServer::HTML
   include Msf::Exploit::JSObfu
 
-  def initialize(info={})
-    super(update_info(info,
-      'Name'           => "MS14-052 Microsoft Internet Explorer XMLDOM Filename Disclosure",
-      'Description'    => %q{
-        This module will use the Microsoft XMLDOM object to enumerate a remote machine's filenames.
-        It will try to do so against Internet Explorer 8 and Internet Explorer 9. To use it, you
-        must supply your own list of file paths. Each file path should look like this:
-        c:\\\\windows\\\\system32\\\\calc.exe
-      },
-      'License'        => MSF_LICENSE,
-      'Author'         =>
-        [
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => "MS14-052 Microsoft Internet Explorer XMLDOM Filename Disclosure",
+        'Description' => %q{
+          This module will use the Microsoft XMLDOM object to enumerate a remote machine's filenames.
+          It will try to do so against Internet Explorer 8 and Internet Explorer 9. To use it, you
+          must supply your own list of file paths. Each file path should look like this:
+          c:\windows\system32\calc.exe
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [
           'Soroush Dalili', # @irsdl - Original discovery. MSF module is from his PoC
           'sinn3r'
         ],
-      'References'     =>
-        [
+        'References' => [
           [ 'CVE', '2013-7331'],
           [ 'MSB', 'MS14-052' ],
           [ 'URL', 'https://soroush.secproject.com/blog/2013/04/microsoft-xmldom-in-ie-can-divulge-information-of-local-drivenetwork-in-error-messages/' ],
           [ 'URL', 'https://www.alienvault.com/open-threat-exchange/blog/attackers-abusing-internet-explorer-to-enumerate-software-and-detect-securi' ]
         ],
-      'Platform'       => 'win',
-      'DisclosureDate' => '2014-09-09', # MSB. Used in the wild since Feb 2014
-      ))
+        'Platform' => 'win',
+        'DisclosureDate' => '2014-09-09',
+      ) # MSB. Used in the wild since Feb 2014
+    )
 
     register_options(
       [

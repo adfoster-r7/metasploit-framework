@@ -10,32 +10,32 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'         => 'SAP Management Console Instance Properties',
-      'Description'  => %q{
+      'Name' => 'SAP Management Console Instance Properties',
+      'Description' => %q{
         This module simply attempts to identify the instance properties
         through the SAP Management Console SOAP Interface.
         },
-      'References'   =>
-        [
-          # General
-          [ 'URL', 'http://blog.c22.cc' ]
-        ],
-      'Author'       => [ 'Chris John Riley' ],
-      'License'      => MSF_LICENSE
+      'References' => [
+        # General
+        [ 'URL', 'http://blog.c22.cc' ]
+      ],
+      'Author' => [ 'Chris John Riley' ],
+      'License' => MSF_LICENSE
     )
 
     register_options(
       [
         Opt::RPORT(50013),
         OptString.new('URI', [false, 'Path to the SAP Management Console ', '/']),
-      ])
+      ]
+    )
     register_autofilter_ports([ 50013 ])
   end
 
   def run_host(ip)
     res = send_request_cgi({
-      'uri'      => normalize_uri(datastore['URI']),
-      'method'   => 'GET'
+      'uri' => normalize_uri(datastore['URI']),
+      'method' => 'GET'
     }, 25)
 
     if not res
@@ -49,11 +49,11 @@ class MetasploitModule < Msf::Auxiliary
   def enum_instance(rhost)
     print_status("#{rhost}:#{rport} [SAP] Connecting to SAP Management Console SOAP Interface")
     success = false
-    soapenv='http://schemas.xmlsoap.org/soap/envelope/'
-    xsi='http://www.w3.org/2001/XMLSchema-instance'
-    xs='http://www.w3.org/2001/XMLSchema'
-    sapsess='http://www.sap.com/webas/630/soap/features/session/'
-    ns1='ns1:GetInstanceProperties'
+    soapenv = 'http://schemas.xmlsoap.org/soap/envelope/'
+    xsi = 'http://www.w3.org/2001/XMLSchema-instance'
+    xs = 'http://www.w3.org/2001/XMLSchema'
+    sapsess = 'http://www.sap.com/webas/630/soap/features/session/'
+    ns1 = 'ns1:GetInstanceProperties'
 
     data = '<?xml version="1.0" encoding="utf-8"?>' + "\r\n"
     data << '<SOAP-ENV:Envelope xmlns:SOAP-ENV="' + soapenv + '"  xmlns:xsi="' + xsi
@@ -70,14 +70,14 @@ class MetasploitModule < Msf::Auxiliary
 
     begin
       res = send_request_raw({
-        'uri'      => normalize_uri(datastore['URI']),
-        'method'   => 'POST',
-        'data'     => data,
-        'headers'  =>
+        'uri' => normalize_uri(datastore['URI']),
+        'method' => 'POST',
+        'data' => data,
+        'headers' =>
           {
             'Content-Length' => data.length,
-            'SOAPAction'     => '""',
-            'Content-Type'   => 'text/xml; charset=UTF-8',
+            'SOAPAction' => '""',
+            'Content-Type' => 'text/xml; charset=UTF-8',
           }
       }, 15)
 
@@ -139,7 +139,6 @@ class MetasploitModule < Msf::Auxiliary
           fault = true
         end
       end
-
     rescue ::Rex::ConnectionError
       print_error("#{rhost}:#{rport} [SAP] Unable to connect")
       return
@@ -153,84 +152,84 @@ class MetasploitModule < Msf::Auxiliary
       if sapsystem
         print_good("#{rhost}:#{rport} [SAP] SAP System Number: #{sapsystem}")
         report_note(:host => rhost,
-              :proto => 'tcp',
-              :port => rport,
-              :type => 'sap.sapsystem',
-              :data => {:proto => "soap", :sapsystem => sapsystem})
+                    :proto => 'tcp',
+                    :port => rport,
+                    :type => 'sap.sapsystem',
+                    :data => { :proto => "soap", :sapsystem => sapsystem })
       end
       if sapsystemname
         print_good("#{rhost}:#{rport} [SAP] SAP System Name: #{sapsystemname}")
         report_note(:host => rhost,
-              :proto => 'tcp',
-              :port => rport,
-              :type => 'sap.systemname',
-              :data => {:proto => "soap", :sapsystemname => sapsystemname})
+                    :proto => 'tcp',
+                    :port => rport,
+                    :type => 'sap.systemname',
+                    :data => { :proto => "soap", :sapsystemname => sapsystemname })
       end
       if saplocalhost
         print_good("#{rhost}:#{rport} [SAP] SAP Localhost: #{saplocalhost}")
         report_note(:host => rhost,
-              :proto => 'tcp',
-              :port => rport,
-              :type => 'sap.localhost',
-              :data => {:proto => "soap", :saplocalhost => saplocalhost})
+                    :proto => 'tcp',
+                    :port => rport,
+                    :type => 'sap.localhost',
+                    :data => { :proto => "soap", :saplocalhost => saplocalhost })
       end
       if instancename
         print_good("#{rhost}:#{rport} [SAP] Instance Name: #{instancename}")
         report_note(:host => rhost,
-              :proto => 'tcp',
-              :port => rport,
-              :type => 'sap.instancename',
-              :data => {:proto => "soap", :instancename => instancename})
+                    :proto => 'tcp',
+                    :port => rport,
+                    :type => 'sap.instancename',
+                    :data => { :proto => "soap", :instancename => instancename })
       end
       if icmurl
         print_good("#{rhost}:#{rport} [SAP] ICM URL: #{icmurl}")
         report_note(:host => rhost,
-              :proto => 'tcp',
-              :port => rport,
-              :type => 'sap.icm.url',
-              :data => {:proto => "soap", :icmurl => icmurl})
+                    :proto => 'tcp',
+                    :port => rport,
+                    :type => 'sap.icm.url',
+                    :data => { :proto => "soap", :icmurl => icmurl })
       end
       if igsurl
         print_good("#{rhost}:#{rport} [SAP] IGS URL: #{igsurl}")
         report_note(:host => rhost,
-              :proto => 'tcp',
-              :port => rport,
-              :type => 'sap.igs.url',
-              :data => {:proto => "soap", :igsurl => igsurl})
+                    :proto => 'tcp',
+                    :port => rport,
+                    :type => 'sap.igs.url',
+                    :data => { :proto => "soap", :igsurl => igsurl })
       end
       if dbstring
         print_good("#{rhost}:#{rport} [SAP] ABAP DATABASE: #{dbstring}")
         report_note(:host => rhost,
-              :proto => 'tcp',
-              :port => rport,
-              :type => 'sap.dbstring',
-              :data => {:proto => "soap", :dbstring => dbstring},
-              :update => :unique_data )
+                    :proto => 'tcp',
+                    :port => rport,
+                    :type => 'sap.dbstring',
+                    :data => { :proto => "soap", :dbstring => dbstring },
+                    :update => :unique_data)
       end
       if j2eedbstring
         print_good("#{rhost}:#{rport} [SAP] J2EE DATABASE: #{j2eedbstring}")
         report_note(:host => rhost,
-              :proto => 'tcp',
-              :port => rport,
-              :type => 'sap.j2eedbstring',
-              :data => {:proto => "soap", :j2eedbstring => j2eedbstring},
-              :update => :unique_data )
+                    :proto => 'tcp',
+                    :port => rport,
+                    :type => 'sap.j2eedbstring',
+                    :data => { :proto => "soap", :j2eedbstring => j2eedbstring },
+                    :update => :unique_data)
       end
       if protectedweb
         protectedweb_arr = protectedweb.split(",")
         print_good("#{rhost}:#{rport} [SAP] Protected Webmethods (auth required) :::")
         print_status("#{protectedweb}")
         report_note(:host => rhost,
-              :proto => 'tcp',
-              :port => rport,
-              :type => 'sap.protected.web.methods',
-              :data => {:proto => "soap", :protectedweb => protectedweb},
-              :update => :unique_data )
+                    :proto => 'tcp',
+                    :port => rport,
+                    :type => 'sap.protected.web.methods',
+                    :data => { :proto => "soap", :protectedweb => protectedweb },
+                    :update => :unique_data)
       end
       if webmethods
         webmethods_output = [] # create empty webmethods array
         webmethods_arr = webmethods.split(",")
-        webmethods_arr.each do | webm |
+        webmethods_arr.each do |webm|
           # Only add webmethods not found in protectedweb_arr
           webmethods_output << webm unless protectedweb_arr && protectedweb_arr.include?(webm)
         end
@@ -239,11 +238,11 @@ class MetasploitModule < Msf::Auxiliary
           print_status("#{webmethods_output.join(',')}")
         end
         report_note(:host => rhost,
-              :proto => 'tcp',
-              :port => rport,
-              :type => 'sap.web.methods',
-              :data => {:proto => "soap", :webmethods => webmethods},
-              :update => :unique_data )
+                    :proto => 'tcp',
+                    :port => rport,
+                    :type => 'sap.web.methods',
+                    :data => { :proto => "soap", :webmethods => webmethods },
+                    :update => :unique_data)
       end
       return
     elsif fault

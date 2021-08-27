@@ -8,35 +8,37 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Dos
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Yokogawa CENTUM CS 3000 BKCLogSvr.exe Heap Buffer Overflow',
-      'Description'    => %q{
-        This module abuses a buffer overflow vulnerability to trigger a Denial of Service
-        of the BKCLogSvr component in the Yokogaca CENTUM CS 3000 product. The vulnerability
-        exists in the handling of malformed log packets, with an unexpected long level field.
-        The root cause of the vulnerability is a combination of usage of uninitialized memory
-        from the stack and a dangerous string copy. This module has been tested successfully
-        on Yokogawa CENTUM CS 3000 R3.08.50.
-      },
-      'Author'         =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'Yokogawa CENTUM CS 3000 BKCLogSvr.exe Heap Buffer Overflow',
+        'Description' => %q{
+          This module abuses a buffer overflow vulnerability to trigger a Denial of Service
+          of the BKCLogSvr component in the Yokogaca CENTUM CS 3000 product. The vulnerability
+          exists in the handling of malformed log packets, with an unexpected long level field.
+          The root cause of the vulnerability is a combination of usage of uninitialized memory
+          from the stack and a dangerous string copy. This module has been tested successfully
+          on Yokogawa CENTUM CS 3000 R3.08.50.
+        },
+        'Author' => [
           'juan vazquez',
           'Redsadic <julian.vilas[at]gmail.com>'
         ],
-      'References'     =>
-        [
+        'References' => [
           [ 'URL', 'http://www.yokogawa.com/dcs/security/ysar/YSAR-14-0001E.pdf' ],
           [ 'URL', 'https://blog.rapid7.com/2014/03/10/yokogawa-centum-cs3000-vulnerabilities' ],
           [ 'CVE', '2014-0781']
         ],
-      'DisclosureDate' => '2014-03-10',
-    ))
+        'DisclosureDate' => '2014-03-10',
+      )
+    )
 
     register_options(
       [
         Opt::RPORT(52302),
-        OptInt.new('RLIMIT', [true,  "Number of packets to send", 10])
-      ])
+        OptInt.new('RLIMIT', [true, "Number of packets to send", 10])
+      ]
+    )
   end
 
   def run

@@ -18,36 +18,34 @@ class MetasploitModule < Msf::Encoder
 
   def initialize
     super(
-      'Name'             => 'printf(1) via PHP magic_quotes Utility Command Encoder',
-      'Description'      => %q{
+      'Name' => 'printf(1) via PHP magic_quotes Utility Command Encoder',
+      'Description' => %q{
           This encoder uses the printf(1) utility to avoid restricted
         characters. Some shell variable substitution may also be used
         if needed symbols are blacklisted. Some characters are intentionally
         left unescaped since it is assumed that PHP with magic_quotes_gpc
         enabled will escape them during request handling.
       },
-      'Author'           => 'jduck',
-      'Arch'             => ARCH_CMD,
-      'Platform'         => 'unix',
-      'EncoderType'      => Msf::Encoder::Type::PrintfPHPMagicQuotes)
+      'Author' => 'jduck',
+      'Arch' => ARCH_CMD,
+      'Platform' => 'unix',
+      'EncoderType' => Msf::Encoder::Type::PrintfPHPMagicQuotes)
   end
-
 
   #
   # Encodes the payload
   #
   def encode_block(state, buf)
-
     # Skip encoding for empty badchars
-    if(state.badchars.length == 0)
+    if (state.badchars.length == 0)
       return buf
     end
 
     # If backslash is bad, we are screwed.
     if (state.badchars.include?("\\")) or
-      (state.badchars.include?("|")) or
-      # We must have at least ONE of these two..
-      (state.badchars.include?("x") and state.badchars.include?("0"))
+       (state.badchars.include?("|")) or
+       # We must have at least ONE of these two..
+       (state.badchars.include?("x") and state.badchars.include?("0"))
       raise EncodingError
     end
 

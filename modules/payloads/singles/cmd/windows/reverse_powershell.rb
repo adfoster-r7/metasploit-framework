@@ -3,41 +3,39 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 module MetasploitModule
-
   CachedSize = 1588
 
   include Msf::Payload::Single
   include Msf::Sessions::CommandShellOptions
 
   def initialize(info = {})
-    super(merge_info(info,
-      'Name'          => 'Windows Command Shell, Reverse TCP (via Powershell)',
-      'Description'   => 'Connect back and create a command shell via Powershell',
-      'Author'        =>
-        [
+    super(
+      merge_info(
+        info,
+        'Name' => 'Windows Command Shell, Reverse TCP (via Powershell)',
+        'Description' => 'Connect back and create a command shell via Powershell',
+        'Author' => [
           'Dave Kennedy', # Original payload from trustedsec on SET
           'Ben Campbell' # Metasploit module
         ],
-      'References'    =>
-        [
+        'References' => [
           ['URL', 'https://github.com/trustedsec/social-engineer-toolkit/blob/master/src/powershell/reverse.powershell']
         ],
-      # The powershell code is from SET, copyrighted by TrustedSEC, LLC and BSD licensed -- see https://github.com/trustedsec/social-engineer-toolkit/blob/master/readme/LICENSE
-      'License'       => MSF_LICENSE,
-      'Platform'      => 'win',
-      'Arch'          => ARCH_CMD,
-      'Handler'       => Msf::Handler::ReverseTcp,
-      'Session'       => Msf::Sessions::CommandShell,
-      'PayloadType'   => 'cmd',
-      'RequiredCmd'   => 'powershell',
-      'Payload'       =>
-        {
-          'Offsets' => { },
+        # The powershell code is from SET, copyrighted by TrustedSEC, LLC and BSD licensed -- see https://github.com/trustedsec/social-engineer-toolkit/blob/master/readme/LICENSE
+        'License' => MSF_LICENSE,
+        'Platform' => 'win',
+        'Arch' => ARCH_CMD,
+        'Handler' => Msf::Handler::ReverseTcp,
+        'Session' => Msf::Sessions::CommandShell,
+        'PayloadType' => 'cmd',
+        'RequiredCmd' => 'powershell',
+        'Payload' => {
+          'Offsets' => {},
           'Payload' => ''
         }
-      ))
+      )
+    )
   end
 
   #

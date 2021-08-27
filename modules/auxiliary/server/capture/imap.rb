@@ -9,29 +9,28 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'Authentication Capture: IMAP',
-      'Description'    => %q{
+      'Name' => 'Authentication Capture: IMAP',
+      'Description' => %q{
         This module provides a fake IMAP service that
       is designed to capture authentication credentials.
       },
-      'Author'      => ['ddz', 'hdm'],
-      'License'     => MSF_LICENSE,
-      'Actions'     =>
-        [
-          [ 'Capture', 'Description' => 'Run IMAP capture server' ]
-        ],
-      'PassiveActions' =>
-        [
-          'Capture'
-        ],
-      'DefaultAction'  => 'Capture'
+      'Author' => ['ddz', 'hdm'],
+      'License' => MSF_LICENSE,
+      'Actions' => [
+        [ 'Capture', 'Description' => 'Run IMAP capture server' ]
+      ],
+      'PassiveActions' => [
+        'Capture'
+      ],
+      'DefaultAction' => 'Capture'
     )
 
     register_options(
       [
-        OptPort.new('SRVPORT',  [ true, "The local port to listen on.", 143 ]),
-        OptString.new('BANNER', [ true, "The server banner",  'IMAP4'])
-      ])
+        OptPort.new('SRVPORT', [ true, "The local port to listen on.", 143 ]),
+        OptString.new('BANNER', [ true, "The server banner", 'IMAP4'])
+      ]
+    )
   end
 
   def setup
@@ -44,21 +43,22 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def on_client_connect(c)
-    @state[c] = {:name => "#{c.peerhost}:#{c.peerport}", :ip => c.peerhost, :port => c.peerport, :user => nil, :pass => nil}
+    @state[c] = { :name => "#{c.peerhost}:#{c.peerport}", :ip => c.peerhost, :port => c.peerport, :user => nil, :pass => nil }
     c.put "* OK #{datastore['BANNER']}\r\n"
   end
 
   def on_client_data(c)
     data = c.get_once
     return unless data
+
     num, cmd, arg = data.strip.split(/\s+/, 3)
     arg ||= ""
 
     if cmd.upcase == 'CAPABILITY'
       c.put "* CAPABILITY IMAP4 IMAP4rev1 IDLE LOGIN-REFERRALS " +
-        "MAILBOX-REFERRALS NAMESPACE LITERAL+ UIDPLUS CHILDREN UNSELECT " +
-        "QUOTA XLIST XYZZY LOGIN-REFERRALS AUTH=XYMCOOKIE AUTH=XYMCOOKIEB64 " +
-        "AUTH=XYMPKI AUTH=XYMECOOKIE ID\r\n"
+            "MAILBOX-REFERRALS NAMESPACE LITERAL+ UIDPLUS CHILDREN UNSELECT " +
+            "QUOTA XLIST XYZZY LOGIN-REFERRALS AUTH=XYMCOOKIE AUTH=XYMCOOKIEB64 " +
+            "AUTH=XYMPKI AUTH=XYMECOOKIE ID\r\n"
       c.put "#{num} OK CAPABILITY completed.\r\n"
     end
 

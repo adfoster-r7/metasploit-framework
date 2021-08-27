@@ -22,12 +22,11 @@ class MetasploitModule < Msf::Auxiliary
         configuration file can then be downloaded without authentication. The module
         has been tested on Cambium ePMP versions 3.5 & prior.
       },
-      'References' =>
-        [
-          ['URL', 'https://ipositivesecurity.com/2017/04/07/cambium-snmp-security-vulnerabilities/'],
-          ['CVE', '2017-7918'],
-          ['CVE', '2017-7922']
-        ],
+      'References' => [
+        ['URL', 'https://ipositivesecurity.com/2017/04/07/cambium-snmp-security-vulnerabilities/'],
+        ['CVE', '2017-7918'],
+        ['CVE', '2017-7922']
+      ],
       'Author' => ['Karn Ganeshen'],
       'License' => MSF_LICENSE
     )
@@ -140,13 +139,12 @@ class MetasploitModule < Msf::Auxiliary
       end
 
       # Woot we got loot.
-      loot_name     = 'snmp_loot'
-      loot_type     = 'text/plain'
+      loot_name = 'snmp_loot'
+      loot_type = 'text/plain'
       loot_filename = 'epmp1000_snmp_loot.txt'
-      loot_desc     = 'Cambium ePMP configuration data'
+      loot_desc = 'Cambium ePMP configuration data'
       p = store_loot(loot_name, loot_type, datastore['RHOST'], epmp_info, loot_filename, loot_desc)
       print_good("Cambium ePMP loot saved at #{p}")
-
     rescue SNMP::RequestTimeout
       print_error("#{ip} SNMP request timeout.")
     rescue Rex::ConnectionError

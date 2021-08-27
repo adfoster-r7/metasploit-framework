@@ -8,8 +8,8 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize(info = {})
     super(
-      'Name'           => 'Extract zip from Modbus communication',
-      'Description'    => %q{
+      'Name' => 'Extract zip from Modbus communication',
+      'Description' => %q{
         This module is able to extract a zip file sent through Modbus from a pcap.
         Tested with Schneider TM221CE16R
       },
@@ -22,12 +22,13 @@ class MetasploitModule < Msf::Auxiliary
 
     register_options [
       Opt::RPORT(502),
-      OptEnum.new('MODE', [true, 'Extract zip from upload/download capture', 'UPLOAD',
-                  ['UPLOAD','DOWNLOAD']]),
+      OptEnum.new('MODE', [
+        true, 'Extract zip from upload/download capture', 'UPLOAD',
+        ['UPLOAD', 'DOWNLOAD']
+      ]),
       OptString.new('PCAPFILE', [ true, 'Pcap to read', '' ]),
       OptString.new('FILENAME', [ false, 'Zip file output name'])
     ]
-
   end
 
   FIRST_BYTE_UPLOAD = 12
@@ -67,11 +68,11 @@ class MetasploitModule < Msf::Auxiliary
     data = ''
     packets.each_with_index do |packet, i|
       if datastore['MODE'] == 'UPLOAD'
-        if  packet.respond_to?(:tcp_src) and packet.tcp_src == datastore['RPORT']
+        if packet.respond_to?(:tcp_src) and packet.tcp_src == datastore['RPORT']
           zip_packet, data = extract_zip(packet, zip_packet, FIRST_BYTE_UPLOAD, data, i)
         end
       elsif datastore['MODE'] == 'DOWNLOAD'
-        if  packet.respond_to?(:tcp_dst) and packet.tcp_dst == datastore['RPORT']
+        if packet.respond_to?(:tcp_dst) and packet.tcp_dst == datastore['RPORT']
           zip_packet, data = extract_zip(packet, zip_packet, FIRST_BYTE_DOWNLOAD, data, i)
         end
       end

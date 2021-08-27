@@ -20,15 +20,14 @@ class MetasploitModule < Msf::Auxiliary
         'Bruno Morisson <bm[at]integrity.pt>', # metasploit module
         'nmonkee' # saprouter packet building code from sapcat.rb and default sap ports information
       ],
-      'References' =>
-        [
-          # General
-          ['URL', 'http://help.sap.com/saphelp_nw70/helpdata/EN/4f/992dfe446d11d189700000e8322d00/frameset.htm'],
-          ['URL', 'http://help.sap.com/saphelp_dimp50/helpdata/En/f8/bb960899d743378ccb8372215bb767/content.htm'],
-          ['URL', 'http://labs.mwrinfosecurity.com/blog/2012/09/13/sap-smashing-internet-windows/'],
-          ['URL', 'http://conference.hitb.org/hitbsecconf2010ams/materials/D2T2%20-%20Mariano%20Nunez%20Di%20Croce%20-%20SAProuter%20.pdf'],
-          ['URL', 'http://scn.sap.com/docs/DOC-17124'] # SAP default ports
-        ],
+      'References' => [
+        # General
+        ['URL', 'http://help.sap.com/saphelp_nw70/helpdata/EN/4f/992dfe446d11d189700000e8322d00/frameset.htm'],
+        ['URL', 'http://help.sap.com/saphelp_dimp50/helpdata/En/f8/bb960899d743378ccb8372215bb767/content.htm'],
+        ['URL', 'http://labs.mwrinfosecurity.com/blog/2012/09/13/sap-smashing-internet-windows/'],
+        ['URL', 'http://conference.hitb.org/hitbsecconf2010ams/materials/D2T2%20-%20Mariano%20Nunez%20Di%20Croce%20-%20SAProuter%20.pdf'],
+        ['URL', 'http://scn.sap.com/docs/DOC-17124'] # SAP default ports
+      ],
       'License' => MSF_LICENSE
     )
 
@@ -46,9 +45,9 @@ class MetasploitModule < Msf::Auxiliary
         # 3NN11,3NN17,20003-20007,31596,31597,31602,31601,31604,2000-2002,
         # 8355,8357,8351-8353,8366,1090,1095,20201,1099,1089,443NN,444NN
         OptInt.new('CONCURRENCY', [true, 'The number of concurrent ports to check per host', 10]),
-        OptEnum.new('RESOLVE',[true,'Where to resolve TARGETS','local',['remote','local']])
-      ])
-
+        OptEnum.new('RESOLVE', [true, 'Where to resolve TARGETS', 'local', ['remote', 'local']])
+      ]
+    )
   end
 
   # Converts a instance specification like "4,21-23,33" into a sorted,
@@ -91,10 +90,9 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def build_ni_packet(routes)
+    mode = { 'SAP_PROTO' => 0, 'TCP' => 1 }[datastore['MODE']]
 
-    mode = {'SAP_PROTO' => 0, 'TCP' => 1}[datastore['MODE']]
-
-    route_data=''
+    route_data = ''
     ni_packet = [
       'NI_ROUTE',
       0,
@@ -124,7 +122,6 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def sap_port_info(port)
-
     case port.to_s
 
     when /^3299$/
@@ -254,12 +251,10 @@ class MetasploitModule < Msf::Auxiliary
     else
       service = ''
     end
-
   end
 
   def parse_response_packet(response, ip, port)
-
-    #vprint_error("#{ip}:#{port} - response packet: #{response}")
+    # vprint_error("#{ip}:#{port} - response packet: #{response}")
 
     case response
     when /NI_RTERR/
@@ -308,7 +303,6 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def run
-
     if datastore['RESOLVE'] == 'remote'
       range = datastore['TARGETS']
       unless validate(range)
@@ -326,7 +320,6 @@ class MetasploitModule < Msf::Auxiliary
         run_host(ip)
       end
     end
-
   end
 
   def run_host(ip)
@@ -350,16 +343,14 @@ class MetasploitModule < Msf::Auxiliary
 
     begin
       ports.each do |port|
-
         if thread.length >= datastore['CONCURRENCY']
           # Assume the first thread will be among the earliest to finish
           thread.first.join
         end
         thread << framework.threads.spawn("Module(#{self.refname})-#{ip}:#{port}", false) do
-
           begin
             # create ni_packet to send to saprouter
-            routes = {rhost => rport, ip => port}
+            routes = { rhost => rport, ip => port }
             ni_packet = build_ni_packet(routes)
 
             s = connect(false)
@@ -371,10 +362,8 @@ class MetasploitModule < Msf::Auxiliary
             if res
               r << res
             end
-
           rescue ::Rex::ConnectionRefused
             print_error("#{ip}:#{port} - Unable to connect to SAPRouter #{rhost}:#{rport} - Connection Refused")
-
           rescue ::Rex::ConnectionError, ::IOError, ::Timeout::Error
           rescue ::Rex::Post::Meterpreter::RequestError
           rescue ::Interrupt
@@ -385,7 +374,6 @@ class MetasploitModule < Msf::Auxiliary
         end
       end
       thread.each { |x| x.join }
-
     rescue ::Timeout::Error
     ensure
       thread.each { |x| x.kill rescue nil }
@@ -403,7 +391,8 @@ class MetasploitModule < Msf::Auxiliary
           "Port",
           "State",
           "Info",
-        ])
+        ]
+    )
 
     r.each do |res|
       tbl << [res[0], res[1], res[2], res[3]]
@@ -421,6 +410,5 @@ class MetasploitModule < Msf::Auxiliary
 
     print_warning("Warning: Service info could be inaccurate")
     print(tbl.to_s)
-
   end
 end

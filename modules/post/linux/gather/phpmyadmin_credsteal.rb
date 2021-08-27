@@ -9,21 +9,24 @@ class MetasploitModule < Msf::Post
   include Msf::Post::Linux::Priv
   include Msf::Post::Linux::System
 
-  def initialize(info={})
-    super(update_info(info,
-      'Name'         => "Phpmyadmin credentials stealer",
-      'Description'  => %q{
-        This module gathers Phpmyadmin creds from target linux machine.
-      },
-      'License'      => MSF_LICENSE,
-      'Platform'     => ['linux'],
-      'SessionTypes' => ['meterpreter'],
-      'Author'       => [
-        'Chaitanya Haritash [bofheaded]',
-        'Dhiraj Mishra <dhiraj@notsosecure.com>'
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => "Phpmyadmin credentials stealer",
+        'Description' => %q{
+          This module gathers Phpmyadmin creds from target linux machine.
+        },
+        'License' => MSF_LICENSE,
+        'Platform' => ['linux'],
+        'SessionTypes' => ['meterpreter'],
+        'Author' => [
+          'Chaitanya Haritash [bofheaded]',
+          'Dhiraj Mishra <dhiraj@notsosecure.com>'
         ]
-    ))
-   end
+      )
+    )
+  end
 
   def parse_creds(contents)
     db_user = contents.scan(/\$dbuser\s*=\s*['"](.*)['"];/).flatten.first

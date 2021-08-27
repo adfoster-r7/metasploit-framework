@@ -12,15 +12,15 @@ class MetasploitModule < Msf::Auxiliary
     super(
       update_info(
         info,
-        'Name'           => "Launches Hosts in AWS",
-        'Description'    => %q{
+        'Name' => "Launches Hosts in AWS",
+        'Description' => %q{
           This module will attempt to launch an AWS instances (hosts) in EC2.
         },
-        'License'        => MSF_LICENSE,
-        'Author'         => [
+        'License' => MSF_LICENSE,
+        'Author' => [
           'Javier Godinez <godinezj[at]gmail.com>',
         ],
-        'References'     => [
+        'References' => [
           [ 'URL', 'https://drive.google.com/open?id=0B2Ka7F_6TetSNFdfbkI1cnJHUTQ'],
           [ 'URL', 'https://published-prd.lanyonevents.com/published/rsaus17/sessionsFiles/4721/IDY-W10-DevSecOps-on-the-Offense-Automating-Amazon-Web-Services-Account-Takeover.pdf' ]
         ]
@@ -121,6 +121,7 @@ class MetasploitModule < Msf::Auxiliary
     doc = call_ec2(creds, opts(action, subnet, sg))
     doc = print_results(doc, action)
     return if doc.nil?
+
     # TODO: account for multiple instances
     if doc['instancesSet']['item'].instance_of?(Array)
       instance_id = doc['instancesSet']['item'].first['instanceId']
@@ -180,6 +181,7 @@ class MetasploitModule < Msf::Auxiliary
     vpc_route_table = doc['routeTableSet']['item'].select { |x| x['vpcId'] == vpc_id }
     vpc_route_table.each do |route_table|
       next if route_table['associationSet'].nil? || route_table['routeSet'].nil?
+
       entries = route_table['routeSet']['item']
       if entries.instance_of?(Hash)
         if entries['gatewayId'].start_with?('igw-')
@@ -202,6 +204,7 @@ class MetasploitModule < Msf::Auxiliary
     doc = call_ec2(creds, 'Action' => action, 'GroupName' => name, 'VpcId' => vpc_id, 'GroupDescription' => name)
     doc = print_results(doc, action)
     print_error("Could not create SG") && return if doc['groupId'].nil?
+
     sg = doc['groupId']
     proto, port = datastore['SEC_GROUP_PORT'].split(':')
     cidr = URI.encode(datastore['SEC_GROUP_CIDR'])
@@ -232,6 +235,7 @@ class MetasploitModule < Msf::Auxiliary
     item = doc['vpcSet']['item']
     return item['vpcId'] if item.instance_of?(Hash)
     return item.first['vpcId'] if item.instance_of?(Array) && !item.first['vpcId'].nil?
+
     print_error("Could not determine VPC ID for #{datastore['AccessKeyId']} in #{datastore['RHOST']}")
     nil
   end

@@ -17,20 +17,19 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'           => 'SSH Login Check Scanner',
-      'Description'    => %q{
+      'Name' => 'SSH Login Check Scanner',
+      'Description' => %q{
         This module will test ssh logins on a range of machines and
         report successful logins.  If you have loaded a database plugin
         and connected to a database this module will record successful
         logins and hosts so you can track your access.
       },
-      'Author'         => ['todb'],
-      'References'     =>
-        [
-          [ 'CVE', '1999-0502'] # Weak password
-        ],
-      'License'        => MSF_LICENSE,
-      'DefaultOptions' => {'VERBOSE' => false} # Disable annoying connect errors
+      'Author' => ['todb'],
+      'References' => [
+        [ 'CVE', '1999-0502'] # Weak password
+      ],
+      'License' => MSF_LICENSE,
+      'DefaultOptions' => { 'VERBOSE' => false } # Disable annoying connect errors
     )
 
     register_options(
@@ -65,12 +64,12 @@ class MetasploitModule < Msf::Auxiliary
 
     merge_me = {
       'USERPASS_FILE' => nil,
-      'USER_FILE'     => nil,
-      'PASS_FILE'     => nil,
-      'USERNAME'      => result.credential.public,
-      'PASSWORD'      => result.credential.private
+      'USER_FILE' => nil,
+      'PASS_FILE' => nil,
+      'USERNAME' => result.credential.public,
+      'PASSWORD' => result.credential.private
     }
-    info = "#{proto_from_fullname} #{result.credential} (#{ Rex::Socket.is_ipv6?(@ip) ? '[' + @ip + ']' : @ip }:#{rport})"
+    info = "#{proto_from_fullname} #{result.credential} (#{Rex::Socket.is_ipv6?(@ip) ? '[' + @ip + ']' : @ip}:#{rport})"
     s = start_session(self, info, merge_me, false, sess.rstream, sess)
     self.sockets.delete(scanner.ssh_socket.transport.socket)
 
@@ -78,7 +77,7 @@ class MetasploitModule < Msf::Auxiliary
     s.platform = platform
 
     # Create database host information
-    host_info = {host: scanner.host}
+    host_info = { host: scanner.host }
 
     unless s.platform == 'unknown'
       host_info[:os_name] = s.platform
@@ -88,7 +87,6 @@ class MetasploitModule < Msf::Auxiliary
 
     s
   end
-
 
   def run_host(ip)
     @ip = ip
@@ -124,8 +122,8 @@ class MetasploitModule < Msf::Auxiliary
     scanner.scan! do |result|
       credential_data = result.to_h
       credential_data.merge!(
-          module_fullname: self.fullname,
-          workspace_id: myworkspace_id
+        module_fullname: self.fullname,
+        workspace_id: myworkspace_id
       )
       case result.status
       when Metasploit::Model::Login::Status::SUCCESSFUL

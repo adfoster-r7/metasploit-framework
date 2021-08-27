@@ -11,24 +11,25 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::HttpClient
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name' => 'Shodan Search',
-      'Description' => %q{
-        This module uses the Shodan API to search Shodan. Accounts are free
-        and an API key is required to use this module. Output from the module
-        is displayed to the screen and can be saved to a file or the MSF database.
-        NOTE: SHODAN filters (i.e. port, hostname, os, geo, city) can be used in
-        queries, but there are limitations when used with a free API key. Please
-        see the Shodan site for more information.
-        Shodan website: https://www.shodan.io/
-        API: https://developer.shodan.io/api
-      },
-      'Author' =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'Shodan Search',
+        'Description' => %q{
+          This module uses the Shodan API to search Shodan. Accounts are free
+          and an API key is required to use this module. Output from the module
+          is displayed to the screen and can be saved to a file or the MSF database.
+          NOTE: SHODAN filters (i.e. port, hostname, os, geo, city) can be used in
+          queries, but there are limitations when used with a free API key. Please
+          see the Shodan site for more information.
+          Shodan website: https://www.shodan.io/
+          API: https://developer.shodan.io/api
+        },
+        'Author' => [
           'John H Sawyer <john[at]sploitlab.com>', # InGuardians, Inc.
-          'sinn3r'  # Metasploit-fu plus other features
+          'sinn3r' # Metasploit-fu plus other features
         ],
-      'License' => MSF_LICENSE
+        'License' => MSF_LICENSE
       )
     )
 
@@ -41,7 +42,8 @@ class MetasploitModule < Msf::Auxiliary
         OptInt.new('MAXPAGE', [true, 'Max amount of pages to collect', 1]),
         OptRegexp.new('REGEX', [true, 'Regex search for a specific IP/City/Country/Hostname', '.*'])
 
-      ])
+      ]
+    )
 
     deregister_http_client_options
   end
@@ -143,10 +145,11 @@ class MetasploitModule < Msf::Auxiliary
     if results[0]['total'] > 100
       page = 1
       while page < maxpage
-        page_result = shodan_query(apikey, query, page+1)
+        page_result = shodan_query(apikey, query, page + 1)
         if page_result['matches'].nil?
           next
         end
+
         results[page] = page_result
         page += 1
       end
@@ -154,8 +157,8 @@ class MetasploitModule < Msf::Auxiliary
 
     # Save the results to this table
     tbl = Rex::Text::Table.new(
-      'Header'  => 'Search Results',
-      'Indent'  => 1,
+      'Header' => 'Search Results',
+      'Indent' => 1,
       'Columns' => ['IP:Port', 'City', 'Country', 'Hostname']
     )
 
@@ -164,35 +167,33 @@ class MetasploitModule < Msf::Auxiliary
     results.each do |page|
       page['matches'].each do |host|
         city = host['location']['city'] || 'N/A'
-        ip   = host['ip_str'] || 'N/A'
+        ip = host['ip_str'] || 'N/A'
         port = host['port'] || ''
         country = host['location']['country_name'] || 'N/A'
         hostname = host['hostnames'][0]
         data = host['data']
 
-        report_host(:host     => ip,
-                    :name     => hostname,
+        report_host(:host => ip,
+                    :name => hostname,
                     :comments => 'Added from Shodan',
-                    :info     => host['info']
-                    ) if datastore['DATABASE']
+                    :info => host['info']) if datastore['DATABASE']
 
         report_service(:host => ip,
                        :port => port,
-                       :info => 'Added from Shodan'
-                       ) if datastore['DATABASE']
+                       :info => 'Added from Shodan') if datastore['DATABASE']
 
         if ip =~ regex ||
-          city =~ regex ||
-          country =~ regex ||
-          hostname =~ regex ||
-          data =~ regex
+           city =~ regex ||
+           country =~ regex ||
+           hostname =~ regex ||
+           data =~ regex
           # Unfortunately we cannot display the banner properly,
           # because it messes with our output format
           tbl << ["#{ip}:#{port}", city, country, hostname]
         end
       end
     end
-    #Show data and maybe save it if needed
+    # Show data and maybe save it if needed
     print_line()
     print_line("#{tbl}")
     save_output(tbl) if datastore['OUTFILE']

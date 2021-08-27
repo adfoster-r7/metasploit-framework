@@ -13,13 +13,12 @@ class MetasploitModule < Msf::Auxiliary
 
   # Aliases for common classes
   SIMPLE = Rex::Proto::SMB::SimpleClient
-  XCEPT  = Rex::Proto::SMB::Exceptions
-  CONST  = Rex::Proto::SMB::Constants
-
+  XCEPT = Rex::Proto::SMB::Exceptions
+  CONST = Rex::Proto::SMB::Constants
 
   def initialize
     super(
-      'Name'        => 'SMB Scanner Check File/Directory Utility',
+      'Name' => 'SMB Scanner Check File/Directory Utility',
       'Description' => %Q{
         This module is useful when checking an entire network
         of SMB hosts for the presence of a known file or directory.
@@ -27,22 +26,19 @@ class MetasploitModule < Msf::Auxiliary
         antivirus or known malware outbreak. Typically you must set
         RPATH, SMBUser, SMBDomain and SMBPass to operate correctly.
       },
-      'Author'      =>
-        [
-          'aushack',
-          'j0hn__f'
-        ],
-      'References'  =>
-        [
-        ],
-      'License'     => MSF_LICENSE
+      'Author' => [
+        'aushack',
+        'j0hn__f'
+      ],
+      'References' => [
+      ],
+      'License' => MSF_LICENSE
     )
 
     register_options([
       OptString.new('SMBSHARE', [true, 'The name of an accessible share on the server', 'C$']),
       OptString.new('RPATH', [true, 'The name of the remote file/directory relative to the share'])
     ])
-
   end
 
   def check_path(path)
@@ -91,7 +87,7 @@ class MetasploitModule < Msf::Auxiliary
 
       datastore['RPATH'].each_line do |path|
         check_path(path.chomp)
-      end #end do
+      end # end do
     rescue ::Rex::HostUnreachable
       vprint_error("Host offline.")
     rescue ::Rex::Proto::SMB::Exceptions::LoginError

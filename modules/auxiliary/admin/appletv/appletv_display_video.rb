@@ -9,31 +9,32 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::HttpClient
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Apple TV Video Remote Control',
-      'Description'    => %q(
-        This module plays a video on an AppleTV device. Note that
-        AppleTV can be somewhat picky about the server that hosts the video.
-        Tested servers include default IIS, default Apache, and Ruby's WEBrick.
-        For WEBrick, the default MIME list may need to be updated, depending on
-        what media file is to be played. Python SimpleHTTPServer is not
-        recommended. Also, if you're playing a video, the URL must be an IP
-        address. Some AppleTV devices are actually password-protected; in that
-        case please set the PASSWORD datastore option. For password
-        brute forcing, please see the module auxiliary/scanner/http/appletv_login.
-      ),
-      'Author'         =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'Apple TV Video Remote Control',
+        'Description' => %q{
+          This module plays a video on an AppleTV device. Note that
+          AppleTV can be somewhat picky about the server that hosts the video.
+          Tested servers include default IIS, default Apache, and Ruby's WEBrick.
+          For WEBrick, the default MIME list may need to be updated, depending on
+          what media file is to be played. Python SimpleHTTPServer is not
+          recommended. Also, if you're playing a video, the URL must be an IP
+          address. Some AppleTV devices are actually password-protected; in that
+          case please set the PASSWORD datastore option. For password
+          brute forcing, please see the module auxiliary/scanner/http/appletv_login.
+        },
+        'Author' => [
           '0a29406d9794e4f9b30b3c5d6702c708', # Original work
-          'sinn3r'                            # Make myself liable to mistakes since I made significant changes
+          'sinn3r' # Make myself liable to mistakes since I made significant changes
         ],
-      'References'     =>
-        [
+        'References' => [
           ['URL', 'http://nto.github.io/AirPlay.html']
         ],
-      'DefaultOptions' => { 'HttpUsername' => 'AirPlay' },
-      'License'        => MSF_LICENSE
-    ))
+        'DefaultOptions' => { 'HttpUsername' => 'AirPlay' },
+        'License' => MSF_LICENSE
+      )
+    )
 
     register_options([
       Opt::RPORT(7000),
@@ -56,7 +57,6 @@ class MetasploitModule < Msf::Auxiliary
       'NTLM::SendSPN', 'NTLM::UseLMKey', 'DOMAIN', 'DigestAuthIIS', 'VHOST'
     )
   end
-
 
   #
   # Sends a video request to AppleTV. HttpClient isn't used because we actually need to keep
@@ -90,7 +90,6 @@ class MetasploitModule < Msf::Auxiliary
     res
   end
 
-
   #
   # Checks the URI datastore option. AppleTV is sort of picky about the URI. It's better to
   # always supply an IP instead of a domain.
@@ -101,7 +100,6 @@ class MetasploitModule < Msf::Auxiliary
     end
   end
 
-
   #
   # Plays a video as a new thread
   #
@@ -109,17 +107,17 @@ class MetasploitModule < Msf::Auxiliary
     uri = datastore['URL']
     validate_source!(uri)
 
-    body  = "Content-Location: #{uri}\n"
+    body = "Content-Location: #{uri}\n"
     body << "Start-Position: 0.0\n"
 
     opts = {
-      'method'  => 'POST',
-      'uri'     => '/play',
+      'method' => 'POST',
+      'uri' => '/play',
       'headers' => {
         'Content-Length' => body.length.to_s,
-        'Content-Type'   => 'text/parameters'
+        'Content-Type' => 'text/parameters'
       },
-      'data'    => body
+      'data' => body
     }
 
     res = send_video_request(opts)
@@ -133,7 +131,6 @@ class MetasploitModule < Msf::Auxiliary
     end
   end
 
-
   #
   # Maybe it's just me not understanding the /stop API correctly, but when I send a request to
   # /stop, it doesn't actually do anything. It is sort of possible to stop my video by looking
@@ -145,7 +142,6 @@ class MetasploitModule < Msf::Auxiliary
   def stop_play
     raise NotImplementedError
   end
-
 
   def run
     print_status("Video request sent. Duration set: #{datastore['TIME']} seconds")

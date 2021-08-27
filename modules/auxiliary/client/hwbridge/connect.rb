@@ -3,42 +3,42 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
   include Msf::Exploit::Remote::HttpClient
 
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        {
+          'Name' => 'Hardware Bridge Session Connector',
+          'Description' => %q{
+            The Hardware Bridge (HWBridge) is a standardized method for
+            Metasploit to interact with Hardware Devices.  This extends
+            the normal exploit capabilities to the non-ethernet realm and
+            enables direct hardware and alternative bus manipulations.  You
+            must have compatible bridging hardware attached to this machine or
+            reachable on your network to use any HWBridge exploits.
 
-  def initialize(info={})
-    super( update_info( info, {
-        'Name'          => 'Hardware Bridge Session Connector',
-        'Description'   => %q{
-          The Hardware Bridge (HWBridge) is a standardized method for
-          Metasploit to interact with Hardware Devices.  This extends
-          the normal exploit capabilities to the non-ethernet realm and
-          enables direct hardware and alternative bus manipulations.  You
-          must have compatible bridging hardware attached to this machine or
-          reachable on your network to use any HWBridge exploits.
-
-          Use this exploit module to connect the physical HWBridge which
-          will start an interactive hwbridge session.  You can launch a hwbridge
-          server locally by using compliant hardware and executing the local_hwbridge
-          module.  After that module has started, pass the HWBRIDGE_BASE_URL
-          options to this connector module.
-        },
-        'License'       => MSF_LICENSE,
-        'Author'        =>
-          [
-            'Craig Smith'                       # hwbridge metaspliot module
+            Use this exploit module to connect the physical HWBridge which
+            will start an interactive hwbridge session.  You can launch a hwbridge
+            server locally by using compliant hardware and executing the local_hwbridge
+            module.  After that module has started, pass the HWBRIDGE_BASE_URL
+            options to this connector module.
+          },
+          'License' => MSF_LICENSE,
+          'Author' => [
+            'Craig Smith' # hwbridge metaspliot module
           ],
-        'Session'       => Msf::Sessions::HWBridge,
-        'SessionTypes'  => [ 'hwbridge' ],
-        'References'    =>
-          [
-            [ 'URL', 'http://opengarages.org/hwbridge' ]  # TODO
+          'Session' => Msf::Sessions::HWBridge,
+          'SessionTypes' => [ 'hwbridge' ],
+          'References' => [
+            [ 'URL', 'http://opengarages.org/hwbridge' ] # TODO
           ]
-      }
-      ))
+        }
+      )
+    )
     register_options(
       [
         Opt::RPORT(8080),
@@ -61,6 +61,7 @@ class MetasploitModule < Msf::Auxiliary
       'method' => 'GET'
     })
     return nil if !res || !res.body || !res.code
+
     if res.code == 200
       print_status res.body if datastore['DEBUGJSON'] == true
       return JSON.parse(res.body)
@@ -68,17 +69,15 @@ class MetasploitModule < Msf::Auxiliary
       print_error "Access Denied: #{res.body}"
     end
     return nil
-
-    rescue OpenSSL::SSL::SSLError
-      vprint_error("SSL error")
-      return nil
-    rescue Errno::ENOPROTOOPT, Errno::ECONNRESET, ::Rex::ConnectionRefused, ::Rex::HostUnreachable, ::Rex::ConnectionTimeout, ::ArgumentError
-      vprint_error("Unable to Connect")
-      return nil
-    rescue ::Timeout::Error, ::Errno::EPIPE
-      vprint_error("Timeout error")
-      return nil
-
+  rescue OpenSSL::SSL::SSLError
+    vprint_error("SSL error")
+    return nil
+  rescue Errno::ENOPROTOOPT, Errno::ECONNRESET, ::Rex::ConnectionRefused, ::Rex::HostUnreachable, ::Rex::ConnectionTimeout, ::ArgumentError
+    vprint_error("Unable to Connect")
+    return nil
+  rescue ::Timeout::Error, ::Errno::EPIPE
+    vprint_error("Timeout error")
+    return nil
   end
 
   #

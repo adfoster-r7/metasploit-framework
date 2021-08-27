@@ -10,12 +10,12 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'MySQL Server Version Enumeration',
+      'Name' => 'MySQL Server Version Enumeration',
       'Description' => %q{
         Enumerates the version of MySQL servers.
       },
-      'Author'      => 'kris katterjohn',
-      'License'     => MSF_LICENSE
+      'Author' => 'kris katterjohn',
+      'License' => MSF_LICENSE
     )
 
     register_options([
@@ -27,7 +27,7 @@ class MetasploitModule < Msf::Auxiliary
   def run_host(ip)
     begin
       s = connect(false)
-      data = s.get_once(-1,10)
+      data = s.get_once(-1, 10)
       disconnect(s)
       if data.nil?
         print_error "The connection to #{rhost}:#{rport} timed out"

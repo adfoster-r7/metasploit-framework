@@ -9,19 +9,18 @@ class MetasploitModule < Msf::Post
 
   def initialize
     super(
-      'Name'         => 'IPTABLES rules removal',
-      'Description'  => %q{
+      'Name' => 'IPTABLES rules removal',
+      'Description' => %q{
         This module will be applied on a session connected to a shell. It will remove all IPTABLES rules.
       },
-      'Author'       => 'Alberto Rafael Rodriguez Iglesias <albertocysec[at]gmail.com>',
-      'License'      => MSF_LICENSE,
-      'Platform'     => ['linux'],
+      'Author' => 'Alberto Rafael Rodriguez Iglesias <albertocysec[at]gmail.com>',
+      'License' => MSF_LICENSE,
+      'Platform' => ['linux'],
       'SessionTypes' => ['shell', 'meterpreter']
     )
   end
 
   def run
-
     if command_exists?("iptables")
       print_good("Deleting IPTABLES rules...")
       cmd_exec("iptables -P INPUT ACCEPT")

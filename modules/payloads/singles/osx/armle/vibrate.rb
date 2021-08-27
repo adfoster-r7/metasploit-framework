@@ -4,23 +4,26 @@
 ##
 
 module MetasploitModule
-
   CachedSize = 16
 
   include Msf::Payload::Single
   include Msf::Payload::Osx
 
   def initialize(info = {})
-    super(merge_info(info,
-      'Name'          => 'Apple iOS iPhone Vibrate',
-      'Description'   => %q|
-        Causes the iPhone to vibrate, only works when the AudioToolkit library has been loaded.
-        Based on work by Charlie Miller <cmiller[at]securityevaluators.com>.
-      |,
-      'Author'        => 'hdm',
-      'License'       => MSF_LICENSE,
-      'Platform'      => 'osx',
-      'Arch'          => ARCH_ARMLE))
+    super(
+      merge_info(
+        info,
+        'Name' => 'Apple iOS iPhone Vibrate',
+        'Description' => %q{
+          Causes the iPhone to vibrate, only works when the AudioToolkit library has been loaded.
+          Based on work by Charlie Miller <cmiller[at]securityevaluators.com>.
+        },
+        'Author' => 'hdm',
+        'License' => MSF_LICENSE,
+        'Platform' => 'osx',
+        'Arch' => ARCH_ARMLE
+      )
+    )
   end
 
   def generate

@@ -13,35 +13,35 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'           => 'DNS and DNSSEC Fuzzer',
-      'Description'    => %q{
+      'Name' => 'DNS and DNSSEC Fuzzer',
+      'Description' => %q{
         This module will connect to a DNS server and perform DNS and
         DNSSEC protocol-level fuzzing. Note that this module may inadvertently
         crash the target server.
       },
-    'Author'         => [ 'pello <fropert[at]packetfault.org>' ],
-    'License'        => MSF_LICENSE
+      'Author' => [ 'pello <fropert[at]packetfault.org>' ],
+      'License' => MSF_LICENSE
     )
 
     register_options([
       Opt::RPORT(53),
-      OptInt.new('STARTSIZE', [ false, "Fuzzing string startsize.",0]),
-      OptInt.new('ENDSIZE', [ false, "Max Fuzzing string size. (L2 Frame size)",500]),
-      OptInt.new('STEPSIZE', [ false, "Increment fuzzing string each attempt.",100]),
+      OptInt.new('STARTSIZE', [ false, "Fuzzing string startsize.", 0]),
+      OptInt.new('ENDSIZE', [ false, "Max Fuzzing string size. (L2 Frame size)", 500]),
+      OptInt.new('STEPSIZE', [ false, "Increment fuzzing string each attempt.", 100]),
       OptInt.new('ERRORHDR', [ false, "Introduces byte error in the DNS header.", 0]),
-      OptBool.new('CYCLIC', [ false, "Use Cyclic pattern instead of A's (fuzzing payload).",true]),
+      OptBool.new('CYCLIC', [ false, "Use Cyclic pattern instead of A's (fuzzing payload).", true]),
       OptInt.new("ITERATIONS", [true, "Number of iterations to run by test case", 5]),
       OptString.new('DOMAIN', [ false, "Force DNS zone domain name."]),
       OptString.new('IMPORTENUM', [ false, "Import dns_enum database output and automatically use existing RR."]),
       OptEnum.new('METHOD', [false, 'Underlayer protocol to use', 'UDP', ['UDP', 'TCP', 'AUTO']]),
-      OptBool.new('DNSSEC', [ false, "Add DNSsec to each question (UDP payload size, EDNS0, ...)",false]),
-      OptBool.new('TRAILINGNUL', [ false, "NUL byte terminate DNS names",true]),
-      OptBool.new('RAWPADDING', [ false, "Generate totally random data from STARTSIZE to ENDSIZE",false]),
-      OptString.new('OPCODE', [ false, "Comma separated list of opcodes to fuzz. Leave empty to fuzz all fields.",'' ]),
+      OptBool.new('DNSSEC', [ false, "Add DNSsec to each question (UDP payload size, EDNS0, ...)", false]),
+      OptBool.new('TRAILINGNUL', [ false, "NUL byte terminate DNS names", true]),
+      OptBool.new('RAWPADDING', [ false, "Generate totally random data from STARTSIZE to ENDSIZE", false]),
+      OptString.new('OPCODE', [ false, "Comma separated list of opcodes to fuzz. Leave empty to fuzz all fields.", '' ]),
       # OPCODE accepted values: QUERY,IQUERY,STATUS,UNASSIGNED,NOTIFY,UPDATE
-      OptString.new('CLASS', [ false, "Comma separated list of classes to fuzz. Leave empty to fuzz all fields.",'' ]),
+      OptString.new('CLASS', [ false, "Comma separated list of classes to fuzz. Leave empty to fuzz all fields.", '' ]),
       # CLASS accepted values: IN,CH,HS,NONE,ANY
-      OptString.new('RR', [ false, "Comma separated list of requests to fuzz. Leave empty to fuzz all fields.",'' ])
+      OptString.new('RR', [ false, "Comma separated list of requests to fuzz. Leave empty to fuzz all fields.", '' ])
       # RR accepted values: A,CNAME,MX,PTR,TXT,AAAA,HINFO,SOA,NS,WKS,RRSIG,DNSKEY,DS,NSEC,NSEC3,NSEC3PARAM
       # RR accepted values: AFSDB,ISDN,RP,RT,X25,PX,SRV,NAPTR,MD,MF,MB,MG,MR,NULL,MINFO,NSAP,NSAP-PTR,SIG
       # RR accepted values: KEY,GPOS,LOC,NXT,EID,NIMLOC,ATMA,KX,CERT,A6,DNAME,SINK,OPT,APL,SSHFP,IPSECKEY
@@ -101,19 +101,19 @@ class MetasploitModule < Msf::Auxiliary
     payload = ""
     domain = ""
     if @domain == nil
-      domain << Rex::Text.rand_text_alphanumeric(rand(2)+2)
+      domain << Rex::Text.rand_text_alphanumeric(rand(2) + 2)
       domain << "."
-      domain << Rex::Text.rand_text_alphanumeric(rand(6)+3)
+      domain << Rex::Text.rand_text_alphanumeric(rand(6) + 3)
       domain << "."
       domain << Rex::Text.rand_text_alphanumeric(2)
     else
-      domain << Rex::Text.rand_text_alphanumeric(rand(2)+2)
+      domain << Rex::Text.rand_text_alphanumeric(rand(2) + 2)
       domain << "."
       domain << @domain
     end
 
     splitFQDN = domain.split('.')
-    payload = splitFQDN.inject("") { |a,x| a + [x.length,x].pack("CA*") }
+    payload = splitFQDN.inject("") { |a, x| a + [x.length, x].pack("CA*") }
     pkt = Dns_header.new
     pkt.txid = rand(0xffff)
     pkt.opcode = 0x0000
@@ -141,6 +141,7 @@ class MetasploitModule < Msf::Auxiliary
   def fuzz_padding(payload, size)
     padding = size - payload.length
     if padding <= 0 then return payload end
+
     if datastore['CYCLIC']
       @fuzzdata = Rex::Text.rand_text_alphanumeric(padding)
     else
@@ -150,7 +151,7 @@ class MetasploitModule < Msf::Auxiliary
     return payload
   end
 
-  def corrupt_header(pkt,nb)
+  def corrupt_header(pkt, nb)
     len = pkt.length - 1
     for i in 0..nb - 1
       selectByte = rand(len)
@@ -167,26 +168,26 @@ class MetasploitModule < Msf::Auxiliary
     return pkt
   end
 
-  def setup_fqdn(domain,entry)
+  def setup_fqdn(domain, entry)
     if domain == nil
       domain = ""
-      domain << Rex::Text.rand_text_alphanumeric(rand(62)+2)
+      domain << Rex::Text.rand_text_alphanumeric(rand(62) + 2)
       domain << "."
-      domain << Rex::Text.rand_text_alphanumeric(rand(61)+3)
+      domain << Rex::Text.rand_text_alphanumeric(rand(61) + 3)
       domain << "."
-      domain << Rex::Text.rand_text_alphanumeric(rand(62)+2)
+      domain << Rex::Text.rand_text_alphanumeric(rand(62) + 2)
     elsif @dnsfile
       domain = entry + "." + domain
     else
-      domain = Rex::Text.rand_text_alphanumeric(rand(62)+2) + "." + domain
+      domain = Rex::Text.rand_text_alphanumeric(rand(62) + 2) + "." + domain
     end
     return domain
   end
 
   def import_enum_data(dnsfile)
-    enumdata = Array.new(count = File.foreach(dnsfile).inject(0) {|c, line| c+1}, 0)
+    enumdata = Array.new(count = File.foreach(dnsfile).inject(0) { |c, line| c + 1 }, 0)
     idx = 0
-    File.open(dnsfile,"rb").each_line do |line|
+    File.open(dnsfile, "rb").each_line do |line|
       line = line.split(",")
       enumdata[idx] = Hash.new
       enumdata[idx][:name] = line[0].strip
@@ -220,7 +221,7 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def setup_reqns(nsreq)
-    reqns= ""
+    reqns = ""
     for idx in nsreq
       reqns << {
         "A" => 0x0001, "NS" => 0x0002, "MD" => 0x0003, "MF" => 0x0004,
@@ -246,7 +247,7 @@ class MetasploitModule < Msf::Auxiliary
     return reqns
   end
 
-  def build_packet(dnsOpcode,dnssec,trailingnul,reqns,classns,payload)
+  def build_packet(dnsOpcode, dnssec, trailingnul, reqns, classns, payload)
     pkt = Dns_header.new
     pkt.opcode = dnsOpcode
     if trailingnul
@@ -270,7 +271,7 @@ class MetasploitModule < Msf::Auxiliary
     return pkt.to_binary_s
   end
 
-  def dns_send(data,method)
+  def dns_send(data, method)
     method = "UDP" if (method == "AUTO" && data.length < 512)
     method = "TCP" if (method == "AUTO" && data.length >= 512)
 
@@ -279,8 +280,8 @@ class MetasploitModule < Msf::Auxiliary
     udp_sock.put(data) if method == "UDP"
     sock.put(data) if method == "TCP"
 
-    res, addr = udp_sock.recvfrom(65535,1) if method == "UDP"
-    res, addr = sock.get_once(-1,1) if method == "TCP"
+    res, addr = udp_sock.recvfrom(65535, 1) if method == "UDP"
+    res, addr = sock.get_once(-1, 1) if method == "TCP"
 
     disconnect_udp if method == "UDP"
     disconnect if method == "TCP"
@@ -326,16 +327,16 @@ class MetasploitModule < Msf::Auxiliary
 
   def fix_variables
     @fuzz_opcode = datastore['OPCODE'].blank? ? "QUERY,IQUERY,STATUS,UNASSIGNED,NOTIFY,UPDATE" : datastore['OPCODE']
-    @fuzz_class  = datastore['CLASS'].blank? ? "IN,CH,HS,NONE,ANY" : datastore['CLASS']
+    @fuzz_class = datastore['CLASS'].blank? ? "IN,CH,HS,NONE,ANY" : datastore['CLASS']
     fuzz_rr_queries = "A,NS,MD,MF,CNAME,SOA,MB,MG,MR,NULL,WKS,PTR," <<
-      "HINFO,MINFO,MX,TXT,RP,AFSDB,X25,ISDN,RT," <<
-      "NSAP,NSAP-PTR,SIG,KEY,PX,GPOS,AAAA,LOC,NXT," <<
-      "EID,NIMLOC,SRV,ATMA,NAPTR,KX,CERT,A6,DNAME," <<
-      "SINK,OPT,APL,DS,SSHFP,IPSECKEY,RRSIG,NSEC," <<
-      "DNSKEY,DHCID,NSEC3,NSEC3PARAM,HIP,NINFO,RKEY," <<
-      "TALINK,SPF,UINFO,UID,GID,UNSPEC,TKEY,TSIG," <<
-      "IXFR,AXFR,MAILA,MAILB,*,TA,DLV,RESERVED"
-    @fuzz_rr     = datastore['RR'].blank? ? fuzz_rr_queries : datastore['RR']
+                      "HINFO,MINFO,MX,TXT,RP,AFSDB,X25,ISDN,RT," <<
+                      "NSAP,NSAP-PTR,SIG,KEY,PX,GPOS,AAAA,LOC,NXT," <<
+                      "EID,NIMLOC,SRV,ATMA,NAPTR,KX,CERT,A6,DNAME," <<
+                      "SINK,OPT,APL,DS,SSHFP,IPSECKEY,RRSIG,NSEC," <<
+                      "DNSKEY,DHCID,NSEC3,NSEC3PARAM,HIP,NINFO,RKEY," <<
+                      "TALINK,SPF,UINFO,UID,GID,UNSPEC,TKEY,TSIG," <<
+                      "IXFR,AXFR,MAILA,MAILB,*,TA,DLV,RESERVED"
+    @fuzz_rr = datastore['RR'].blank? ? fuzz_rr_queries : datastore['RR']
   end
 
   def run_host(ip)
@@ -371,7 +372,7 @@ class MetasploitModule < Msf::Auxiliary
         if @domain == nil
           print_status("DNS Fuzzer: DOMAIN could be set for health check but not mandatory.")
         end
-        nsopcode=@fuzz_opcode.split(",")
+        nsopcode = @fuzz_opcode.split(",")
         opcode = setup_opcode(nsopcode)
         opcode.unpack("n*").each do |dnsOpcode|
           1.upto(iter) do
@@ -379,7 +380,8 @@ class MetasploitModule < Msf::Auxiliary
               data = random_payload(@startsize).to_s
               data[2] = 0x0
               data[3] = dnsOpcode
-              if !dns_send(data,@underlayerProtocol) then return false end
+              if !dns_send(data, @underlayerProtocol) then return false end
+
               @lastdata = data
               @startsize += @stepsize
             end
@@ -404,16 +406,18 @@ class MetasploitModule < Msf::Auxiliary
           nsclass << req[:class]
           nsentry << req[:name]
         end
-        nsopcode=@fuzz_opcode.split(",")
+        nsopcode = @fuzz_opcode.split(",")
       else
-        nsreq=@fuzz_rr.split(",")
-        nsopcode=@fuzz_opcode.split(",")
-        nsclass=@fuzz_class.split(",")
+        nsreq = @fuzz_rr.split(",")
+        nsopcode = @fuzz_opcode.split(",")
+        nsclass = @fuzz_class.split(",")
         begin
           classns = setup_nsclass(nsclass)
           raise ArgumentError, "Invalid CLASS: #{nsclass.inspect}" unless classns
+
           opcode = setup_opcode(nsopcode)
           raise ArgumentError, "Invalid OPCODE: #{opcode.inspect}" unless nsopcode
+
           reqns = setup_reqns(nsreq)
           raise ArgumentError, "Invalid RR: #{nsreq.inspect}" unless nsreq
         rescue ::Exception => e
@@ -439,17 +443,18 @@ class MetasploitModule < Msf::Auxiliary
             classns = setup_nsclass(nsclass[i])
             1.upto(iter) do
               payload = ""
-              nsdomain = setup_fqdn(@domain,nsentry[i])
+              nsdomain = setup_fqdn(@domain, nsentry[i])
               splitFQDN = nsdomain.split('.')
-              payload = splitFQDN.inject("") { |a,x| a + [x.length,x].pack("CA*") }
-              pkt = build_packet(dnsOpcode,dnssec,trailingnul,reqns,classns,payload)
-              pkt = corrupt_header(pkt,errorhdr) if errorhdr > 0
+              payload = splitFQDN.inject("") { |a, x| a + [x.length, x].pack("CA*") }
+              pkt = build_packet(dnsOpcode, dnssec, trailingnul, reqns, classns, payload)
+              pkt = corrupt_header(pkt, errorhdr) if errorhdr > 0
               if @startsize == 0
-                if !dns_send(pkt,@underlayerProtocol) then return end
+                if !dns_send(pkt, @underlayerProtocol) then return end
               else
                 while @startsize <= @endsize
                   pkt = fuzz_padding(pkt, @startsize)
-                  if !dns_send(pkt,@underlayerProtocol) then return end
+                  if !dns_send(pkt, @underlayerProtocol) then return end
+
                   @startsize += @stepsize
                 end
                 @startsize = datastore['STARTSIZE']
@@ -463,17 +468,18 @@ class MetasploitModule < Msf::Auxiliary
             reqns.unpack("n*").each do |dnsReq|
               1.upto(iter) do
                 payload = ""
-                nsdomain = setup_fqdn(@domain,"")
+                nsdomain = setup_fqdn(@domain, "")
                 splitFQDN = nsdomain.split('.')
-                payload = splitFQDN.inject("") { |a,x| a + [x.length,x].pack("CA*") }
-                pkt = build_packet(dnsOpcode,dnssec,trailingnul,dnsReq,dnsClass,payload)
-                pkt = corrupt_header(pkt,errorhdr) if errorhdr > 0
+                payload = splitFQDN.inject("") { |a, x| a + [x.length, x].pack("CA*") }
+                pkt = build_packet(dnsOpcode, dnssec, trailingnul, dnsReq, dnsClass, payload)
+                pkt = corrupt_header(pkt, errorhdr) if errorhdr > 0
                 if @startsize == 0
-                  if !dns_send(pkt,@underlayerProtocol) then return end # If then return end?
+                  if !dns_send(pkt, @underlayerProtocol) then return end # If then return end?
                 else
                   while @startsize <= @endsize
                     pkt = fuzz_padding(pkt, @startsize)
-                    if !dns_send(pkt,@underlayerProtocol) then return end
+                    if !dns_send(pkt, @underlayerProtocol) then return end
+
                     @startsize += @stepsize
                   end
                   @startsize = datastore['STARTSIZE']

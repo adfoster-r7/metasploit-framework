@@ -3,29 +3,28 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
   include Msf::Auxiliary::UDPScanner
 
   def initialize
     super(
-      'Name'        => 'Digi ADDP Remote Reboot Initiator',
+      'Name' => 'Digi ADDP Remote Reboot Initiator',
       'Description' => 'Reboot Digi International based equipment through the ADDP service',
-      'Author'      => 'hdm',
-      'References'  =>
-        [
-          ['URL', 'http://qbeukes.blogspot.com/2009/11/advanced-digi-discovery-protocol_21.html'],
-          ['URL', 'http://www.digi.com/wiki/developer/index.php/Advanced_Device_Discovery_Protocol_%28ADDP%29'],
-        ],
-      'License'     => MSF_LICENSE
+      'Author' => 'hdm',
+      'References' => [
+        ['URL', 'http://qbeukes.blogspot.com/2009/11/advanced-digi-discovery-protocol_21.html'],
+        ['URL', 'http://www.digi.com/wiki/developer/index.php/Advanced_Device_Discovery_Protocol_%28ADDP%29'],
+      ],
+      'License' => MSF_LICENSE
     )
 
     register_options(
-    [
-      Opt::RPORT(2362),
-      OptString.new('ADDP_PASSWORD', [true, 'The ADDP protocol password for each target', 'dbps'])
-    ])
+      [
+        Opt::RPORT(2362),
+        OptString.new('ADDP_PASSWORD', [true, 'The ADDP protocol password for each target', 'dbps'])
+      ]
+    )
   end
 
   def scanner_prescan(batch)
@@ -41,7 +40,7 @@ class MetasploitModule < Msf::Auxiliary
 
   def scanner_postscan(batch)
     queue = {}
-    @results.each_pair do |ip,res|
+    @results.each_pair do |ip, res|
       queue[ip] = res
     end
 

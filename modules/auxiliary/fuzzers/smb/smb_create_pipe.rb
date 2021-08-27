@@ -8,18 +8,21 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Fuzzer
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'SMB Create Pipe Request Fuzzer',
-      'Description'    => %q{
-        This module sends a series of SMB create pipe
-      requests using malicious strings.
-      },
-      'Author'         => [ 'hdm' ],
-      'License'        => MSF_LICENSE
-    ))
+    super(
+      update_info(
+        info,
+        'Name' => 'SMB Create Pipe Request Fuzzer',
+        'Description' => %q{
+          This module sends a series of SMB create pipe
+          requests using malicious strings.
+        },
+        'Author' => [ 'hdm' ],
+        'License' => MSF_LICENSE
+      )
+    )
   end
 
-  def do_smb_create(pkt,opts={})
+  def do_smb_create(pkt, opts = {})
     @connected = false
     connect
     smb_login
@@ -37,7 +40,7 @@ class MetasploitModule < Msf::Auxiliary
     fuzz_strings do |str|
       cnt += 1
 
-      if(cnt % 100 == 0)
+      if (cnt % 100 == 0)
         print_status("Fuzzing with iteration #{cnt} using #{@last_fuzzer_input}")
       end
 
@@ -52,9 +55,9 @@ class MetasploitModule < Msf::Auxiliary
         disconnect
       end
 
-      if(not @connected)
-        if(last_str)
-          print_status("The service may have crashed: iteration:#{cnt-1} method=#{last_inp} string=#{last_str.unpack("H*")[0]} error=#{last_err}")
+      if (not @connected)
+        if (last_str)
+          print_status("The service may have crashed: iteration:#{cnt - 1} method=#{last_inp} string=#{last_str.unpack("H*")[0]} error=#{last_err}")
         else
           print_status("Could not connect to the service: #{last_err}")
         end

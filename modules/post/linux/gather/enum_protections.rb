@@ -9,23 +9,26 @@ class MetasploitModule < Msf::Post
   include Msf::Post::Linux::System
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'          => 'Linux Gather Protection Enumeration',
-      'Description'   => %q{
-        This module checks whether popular system hardening mechanisms are
-        in place, such as SMEP, SMAP, SELinux, PaX and grsecurity. It also
-        tries to find installed applications that can be used to hinder,
-        prevent, or detect attacks, such as tripwire, snort, and apparmor.
+    super(
+      update_info(
+        info,
+        'Name' => 'Linux Gather Protection Enumeration',
+        'Description' => %q{
+          This module checks whether popular system hardening mechanisms are
+          in place, such as SMEP, SMAP, SELinux, PaX and grsecurity. It also
+          tries to find installed applications that can be used to hinder,
+          prevent, or detect attacks, such as tripwire, snort, and apparmor.
 
-        This module is meant to identify Linux Secure Modules (LSM) in addition
-        to various antivirus, IDS/IPS, firewalls, sandboxes and other security
-        related software.
-      },
-      'License'       => MSF_LICENSE,
-      'Author'        => 'ohdae <bindshell[at]live.com>',
-      'Platform'      => ['linux'],
-      'SessionTypes'  => ['shell', 'meterpreter']
-    ))
+          This module is meant to identify Linux Secure Modules (LSM) in addition
+          to various antivirus, IDS/IPS, firewalls, sandboxes and other security
+          related software.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => 'ohdae <bindshell[at]live.com>',
+        'Platform' => ['linux'],
+        'SessionTypes' => ['shell', 'meterpreter']
+      )
+    )
   end
 
   def run
@@ -49,9 +52,9 @@ class MetasploitModule < Msf::Post
 
   def report(data)
     report_note(
-      :host   => session,
-      :type   => 'linux.protection',
-      :data   => data,
+      :host => session,
+      :type => 'linux.protection',
+      :data => data,
       :update => :unique_data
     )
   end

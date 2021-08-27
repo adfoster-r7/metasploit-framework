@@ -9,19 +9,22 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name' => 'Chromecast Web Server Scanner',
-      'Description' => %q{
-        This module scans for the Chromecast web server on port 8008/TCP, and
-        can be used to discover devices which can be targeted by other Chromecast
-        modules, such as chromecast_youtube.
-      },
-      'Author' => ['wvu'],
-      'References' => [
-        ['URL', 'https://www.google.com/chrome/devices/chromecast/']
-      ],
-      'License' => MSF_LICENSE
-    ))
+    super(
+      update_info(
+        info,
+        'Name' => 'Chromecast Web Server Scanner',
+        'Description' => %q{
+          This module scans for the Chromecast web server on port 8008/TCP, and
+          can be used to discover devices which can be targeted by other Chromecast
+          modules, such as chromecast_youtube.
+        },
+        'Author' => ['wvu'],
+        'References' => [
+          ['URL', 'https://www.google.com/chrome/devices/chromecast/']
+        ],
+        'License' => MSF_LICENSE
+      )
+    )
 
     register_options([
       Opt::RPORT(8008)

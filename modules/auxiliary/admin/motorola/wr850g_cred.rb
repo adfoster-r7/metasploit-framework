@@ -7,23 +7,27 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::Tcp
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Motorola WR850G v4.03 Credentials',
-      'Description'    => %q{
+    super(
+      update_info(
+        info,
+        'Name' => 'Motorola WR850G v4.03 Credentials',
+        'Description' => %q{
           Login credentials to the Motorola WR850G router with
-        firmware v4.03 can be obtained via a simple GET request
-        if issued while the administrator is logged in.  A lot
-        more information is available through this request, but
-        you can get it all and more after logging in.
-      },
-      'Author'         => 'kris katterjohn',
-      'License'        => MSF_LICENSE,
-      'References'     => [
+          firmware v4.03 can be obtained via a simple GET request
+          if issued while the administrator is logged in.  A lot
+          more information is available through this request, but
+          you can get it all and more after logging in.
+        },
+        'Author' => 'kris katterjohn',
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'CVE', '2004-1550' ],
           [ 'OSVDB', '10232' ],
           [ 'URL', 'https://seclists.org/bugtraq/2004/Sep/0339.html'],
-      ],
-      'DisclosureDate' => '2004-09-24'))
+        ],
+        'DisclosureDate' => '2004-09-24'
+      )
+    )
 
     register_options([
       Opt::RPORT(80)

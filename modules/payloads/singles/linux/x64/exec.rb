@@ -4,34 +4,41 @@
 ##
 
 module MetasploitModule
-
   CachedSize = 44
 
   include Msf::Payload::Single
   include Msf::Payload::Linux
 
   def initialize(info = {})
-    super(merge_info(info,
-      'Name'          => 'Linux Execute Command',
-      'Description'   => 'Execute an arbitrary command or just a /bin/sh shell',
-      'Author'        => ['ricky',
-                          'Geyslan G. Bem <geyslan[at]gmail.com>'],
-      'License'       => MSF_LICENSE,
-      'Platform'      => 'linux',
-      'Arch'          => ARCH_X64))
+    super(
+      merge_info(
+        info,
+        'Name' => 'Linux Execute Command',
+        'Description' => 'Execute an arbitrary command or just a /bin/sh shell',
+        'Author' => [
+          'ricky',
+          'Geyslan G. Bem <geyslan[at]gmail.com>'
+        ],
+        'License' => MSF_LICENSE,
+        'Platform' => 'linux',
+        'Arch' => ARCH_X64
+      )
+    )
 
     register_options(
       [
-        OptString.new('CMD',  [ false,  "The command string to execute" ]),
-      ])
+        OptString.new('CMD', [ false, "The command string to execute" ]),
+      ]
+    )
     register_advanced_options(
       [
         OptBool.new('NullFreeVersion', [ true, "Null-free shellcode version", false ])
-      ])
+      ]
+    )
   end
 
-  def generate_stage(opts={})
-    cmd             = datastore['CMD'] || ''
+  def generate_stage(opts = {})
+    cmd = datastore['CMD'] || ''
     nullfreeversion = datastore['NullFreeVersion']
 
     if cmd.empty?
@@ -89,6 +96,7 @@ module MetasploitModule
         if cmd.length > 0xffff
           raise RangeError, "CMD length has to be smaller than %d" % 0xffff, caller()
         end
+
         if cmd.length <= 0xff # 255
           breg = "bl"
         else

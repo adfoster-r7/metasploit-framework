@@ -7,36 +7,38 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
   include Msf::Exploit::Remote::HttpClient
 
-  def initialize(info={})
-    super(update_info(info,
-      'Name'           => "ManageEngine Multiple Products Arbitrary Directory Listing",
-      'Description'    => %q{
-        This module exploits a directory listing information disclosure vulnerability in the
-        FailOverHelperServlet on ManageEngine OpManager, Applications Manager and IT360. It
-        makes a recursive listing, so it will list the whole drive if you ask it to list / in
-        Linux or C:\ in Windows. This vulnerability is unauthenticated on OpManager and
-        Applications Manager, but authenticated in IT360. This module will attempt to login
-        using the default credentials for the administrator and guest accounts; alternatively
-        you can provide a pre-authenticated cookie or a username / password combo. For IT360
-        targets enter the RPORT of the OpManager instance (usually 8300). This module has been
-        tested on both Windows and Linux with several different versions. Windows paths have to
-        be escaped with 4 backslashes on the command line. There is a companion module that
-        allows for arbitrary file download. This vulnerability has been fixed in Applications
-        Manager v11.9 b11912 and OpManager 11.6.
-      },
-      'Author'         =>
-        [
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => "ManageEngine Multiple Products Arbitrary Directory Listing",
+        'Description' => %q{
+          This module exploits a directory listing information disclosure vulnerability in the
+          FailOverHelperServlet on ManageEngine OpManager, Applications Manager and IT360. It
+          makes a recursive listing, so it will list the whole drive if you ask it to list / in
+          Linux or C:\ in Windows. This vulnerability is unauthenticated on OpManager and
+          Applications Manager, but authenticated in IT360. This module will attempt to login
+          using the default credentials for the administrator and guest accounts; alternatively
+          you can provide a pre-authenticated cookie or a username / password combo. For IT360
+          targets enter the RPORT of the OpManager instance (usually 8300). This module has been
+          tested on both Windows and Linux with several different versions. Windows paths have to
+          be escaped with 4 backslashes on the command line. There is a companion module that
+          allows for arbitrary file download. This vulnerability has been fixed in Applications
+          Manager v11.9 b11912 and OpManager 11.6.
+        },
+        'Author' => [
           'Pedro Ribeiro <pedrib[at]gmail.com>', # Vulnerability Discovery and Metasploit module
         ],
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+        'License' => MSF_LICENSE,
+        'References' => [
           ['CVE', '2014-7863'],
           ['OSVDB', '117696'],
           ['URL', 'https://seclists.org/fulldisclosure/2015/Jan/114'],
           ['URL', 'https://github.com/pedrib/PoC/blob/master/advisories/ManageEngine/me_failservlet.txt']
         ],
-      'DisclosureDate' => '2015-01-28'))
+        'DisclosureDate' => '2015-01-28'
+      )
+    )
 
     register_options(
       [
@@ -47,7 +49,8 @@ class MetasploitModule < Msf::Auxiliary
         OptString.new('USERNAME', [false, 'The username to login as (IT360 target only)']),
         OptString.new('PASSWORD', [false, 'Password for the specified username (IT360 target only)']),
         OptString.new('DOMAIN_NAME', [false, 'Name of the domain to logon to (IT360 target only)'])
-      ])
+      ]
+    )
   end
 
   def post_auth?
@@ -70,7 +73,7 @@ class MetasploitModule < Msf::Auxiliary
 
   def detect_it360
     res = send_request_cgi({
-      'uri'    => '/',
+      'uri' => '/',
       'method' => 'GET'
     })
 
@@ -131,7 +134,6 @@ class MetasploitModule < Msf::Auxiliary
 
     nil
   end
-
 
   def login_it360
     # Do we already have a valid cookie? If yes, just return that.

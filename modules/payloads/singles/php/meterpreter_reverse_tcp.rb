@@ -3,10 +3,7 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
-
 module MetasploitModule
-
   CachedSize = 34282
 
   include Msf::Payload::Single
@@ -14,15 +11,19 @@ module MetasploitModule
   include Msf::Sessions::MeterpreterOptions
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'          => 'PHP Meterpreter, Reverse TCP Inline',
-      'Description'   => 'Connect back to attacker and spawn a Meterpreter server (PHP)',
-      'Author'        => ['egypt'],
-      'Platform'      => 'php',
-      'Arch'          => ARCH_PHP,
-      'License'       => MSF_LICENSE,
-      'Handler'       => Msf::Handler::ReverseTcp,
-      'Session'       => Msf::Sessions::Meterpreter_Php_Php))
+    super(
+      update_info(
+        info,
+        'Name' => 'PHP Meterpreter, Reverse TCP Inline',
+        'Description' => 'Connect back to attacker and spawn a Meterpreter server (PHP)',
+        'Author' => ['egypt'],
+        'Platform' => 'php',
+        'Arch' => ARCH_PHP,
+        'License' => MSF_LICENSE,
+        'Handler' => Msf::Handler::ReverseTcp,
+        'Session' => Msf::Sessions::Meterpreter_Php_Php
+      )
+    )
   end
 
   def generate

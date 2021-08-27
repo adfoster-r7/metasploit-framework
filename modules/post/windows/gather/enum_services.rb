@@ -6,35 +6,37 @@
 class MetasploitModule < Msf::Post
   include Msf::Post::Windows::Services
 
-  def initialize(info={})
-    super(update_info(info,
-      'Name'                 => "Windows Gather Service Info Enumeration",
-      'Description'          => %q{
-        This module will query the system for services and display name and
-        configuration info for each returned service. It allows you to
-        optionally search the credentials, path, or start type for a string
-        and only return the results that match. These query operations are
-        cumulative and if no query strings are specified, it just returns all
-        services.  NOTE: If the script hangs, windows firewall is most likely
-        on and you did not migrate to a safe process (explorer.exe for
-        example).
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => "Windows Gather Service Info Enumeration",
+        'Description' => %q{
+          This module will query the system for services and display name and
+          configuration info for each returned service. It allows you to
+          optionally search the credentials, path, or start type for a string
+          and only return the results that match. These query operations are
+          cumulative and if no query strings are specified, it just returns all
+          services.  NOTE: If the script hangs, windows firewall is most likely
+          on and you did not migrate to a safe process (explorer.exe for
+          example).
         },
-      'License'              => MSF_LICENSE,
-      'Platform'             => ['win'],
-      'SessionTypes'         => ['meterpreter'],
-      'Author'               => ['Keith Faber', 'Kx499']
-    ))
+        'License' => MSF_LICENSE,
+        'Platform' => ['win'],
+        'SessionTypes' => ['meterpreter'],
+        'Author' => ['Keith Faber', 'Kx499']
+      )
+    )
     register_options(
       [
         OptString.new('CRED', [ false, 'String to search credentials for' ]),
         OptString.new('PATH', [ false, 'String to search path for' ]),
         OptEnum.new('TYPE', [true, 'Service startup Option', 'All', ['All', 'Auto', 'Manual', 'Disabled' ]])
-      ])
+      ]
+    )
   end
 
-
   def run
-
     # set vars
     credentialCount = {}
     qcred = datastore["CRED"] || nil
@@ -61,10 +63,10 @@ class MetasploitModule < Msf::Post
     end
 
     results_table = Rex::Text::Table.new(
-        'Header'     => 'Services',
-        'Indent'     => 1,
-        'SortIndex'  => 0,
-        'Columns'    => ['Name', 'Credentials', 'Command', 'Startup']
+      'Header' => 'Services',
+      'Indent' => 1,
+      'SortIndex' => 0,
+      'Columns' => ['Name', 'Credentials', 'Command', 'Startup']
     )
 
     print_status("Listing Service Info for matching services, please wait...")
@@ -103,12 +105,13 @@ class MetasploitModule < Msf::Post
               end
             end
 
-            results_table << [srv[:name],
-                              srv_conf[:startname],
-                              START_TYPE[srv_conf[:starttype]],
-                              srv_conf[:path]]
+            results_table << [
+              srv[:name],
+              srv_conf[:startname],
+              START_TYPE[srv_conf[:starttype]],
+              srv_conf[:path]
+            ]
           end
-
         rescue RuntimeError => e
           print_error("An error occurred enumerating service: #{srv[:name]}: #{e}")
         end

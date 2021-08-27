@@ -7,54 +7,57 @@ class MetasploitModule < Msf::Post
   include Msf::Post::Windows::Registry
   include Msf::Post::Windows::Accounts
 
-  def initialize(info={})
-    super( update_info( info,
-        'Name'          => 'Windows Gather Logged On User Enumeration (Registry)',
-        'Description'   => %q{ This module will enumerate current and recently logged on Windows users},
-        'License'       => MSF_LICENSE,
-        'Author'        => [ 'Carlos Perez <carlos_perez[at]darkoperator.com>'],
-        'Platform'      => [ 'win' ],
-        'SessionTypes'  => [ 'meterpreter' ]
-      ))
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Windows Gather Logged On User Enumeration (Registry)',
+        'Description' => %q{ This module will enumerate current and recently logged on Windows users},
+        'License' => MSF_LICENSE,
+        'Author' => [ 'Carlos Perez <carlos_perez[at]darkoperator.com>'],
+        'Platform' => [ 'win' ],
+        'SessionTypes' => [ 'meterpreter' ]
+      )
+    )
     register_options(
       [
         OptBool.new('CURRENT', [ true, 'Enumerate currently logged on users', true]),
-        OptBool.new('RECENT' , [ true, 'Enumerate Recently logged on users' , true])
-      ])
-
+        OptBool.new('RECENT', [ true, 'Enumerate Recently logged on users', true])
+      ]
+    )
   end
-
 
   def ls_logged
     sids = []
     sids << registry_enumkeys("HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\ProfileList")
     tbl = Rex::Text::Table.new(
-      'Header'  => "Recently Logged Users",
-      'Indent'  => 1,
+      'Header' => "Recently Logged Users",
+      'Indent' => 1,
       'Columns' =>
       [
         "SID",
         "Profile Path"
-      ])
+      ]
+    )
     sids.flatten.map do |sid|
-      profile_path = registry_getvaldata("HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\ProfileList\\#{sid}","ProfileImagePath")
-      tbl << [sid,profile_path]
+      profile_path = registry_getvaldata("HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\ProfileList\\#{sid}", "ProfileImagePath")
+      tbl << [sid, profile_path]
     end
     print_line("\n" + tbl.to_s + "\n")
     store_loot("host.users.recent", "text/plain", session, tbl.to_s, "recent_users.txt", "Recent Users")
   end
 
-
   def ls_current
-    key_base, username = "",""
+    key_base, username = "", ""
     tbl = Rex::Text::Table.new(
-      'Header'  => "Current Logged Users",
-      'Indent'  => 1,
+      'Header' => "Current Logged Users",
+      'Indent' => 1,
       'Columns' =>
       [
         "SID",
         "User"
-      ])
+      ]
+    )
     registry_enumkeys("HKU").each do |maybe_sid|
       # There is junk like .DEFAULT we want to avoid
       if maybe_sid =~ /^S(?:-\d+){2,}$/
@@ -63,7 +66,7 @@ class MetasploitModule < Msf::Post
         if !info.nil? && info[:type] == :user
           username = info[:domain] << '\\' << info[:name]
 
-          tbl << [maybe_sid,username]
+          tbl << [maybe_sid, username]
         end
       end
     end
@@ -83,6 +86,5 @@ class MetasploitModule < Msf::Post
     if datastore['RECENT']
       ls_logged
     end
-
   end
 end

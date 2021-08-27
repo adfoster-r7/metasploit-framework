@@ -42,14 +42,12 @@ class MetasploitModule < Msf::Evasion
 
           The source code is based on Johnny Shaw's PoC (https://github.com/jxy-s/herpaderping).
         },
-        'Author' =>
-        [
+        'Author' => [
           'Johnny Shaw', # Research and PoC
           'Christophe De La Fuente' # MSF Module
         ],
         'License' => MSF_LICENSE,
-        'References' =>
-        [
+        'References' => [
           [ 'URL', 'https://jxy-s.github.io/herpaderping/' ],
           [ 'URL', 'https://github.com/jxy-s/herpaderping' ],
         ],
@@ -93,7 +91,7 @@ class MetasploitModule < Msf::Evasion
       OptString.new('REPLACED_WITH_FILE', [
         false,
         'File to replace the target with. If not set, the target file will be '\
-          'filled with random bytes (WARNING! it is likely to be catched by AV).',
+        'filled with random bytes (WARNING! it is likely to be catched by AV).',
         '%SystemRoot%\\System32\\calc.exe'
       ])
     ])

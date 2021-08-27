@@ -9,32 +9,36 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Scanner
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'        => 'ARRIS / Motorola SBG6580 Cable Modem SNMP Enumeration Module',
-      'Description' => 'This module allows SNMP enumeration of the ARRIS / Motorola
-        SURFboard SBG6580 Series Wi-Fi Cable Modem Gateway. It supports the username
-        and password for the device user interface as well as wireless network keys
-        and information.
-        The default community used is "public".',
-      'References'  =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'ARRIS / Motorola SBG6580 Cable Modem SNMP Enumeration Module',
+        'Description' => %q{
+          This module allows SNMP enumeration of the ARRIS / Motorola
+          SURFboard SBG6580 Series Wi-Fi Cable Modem Gateway. It supports the username
+          and password for the device user interface as well as wireless network keys
+          and information.
+          The default community used is "public".
+        },
+        'References' => [
           [ 'URL', 'https://seclists.org/fulldisclosure/2014/May/79' ],
           [ 'URL', 'http://www.arrisi.com/modems/datasheet/SBG6580/SBG6580_UserGuide.pdf' ],
           [ 'OSVDB', '110555' ]
         ],
-      'Author'      => 'Matthew Kienow <mkienow[at]inokii.com>',
-      'License'     => MSF_LICENSE
-    ))
+        'Author' => 'Matthew Kienow <mkienow[at]inokii.com>',
+        'License' => MSF_LICENSE
+      )
+    )
 
     # change SNMP version option to match device specification
     register_options(
       [
         OptString.new('VERSION', [ true, 'SNMP Version <1/2c>', '2c' ])
-      ])
+      ]
+    )
   end
 
   def run_host(ip)
-
     begin
       snmp = connect_snmp
 
@@ -47,7 +51,7 @@ class MetasploitModule < Msf::Auxiliary
         "RADIUS Server", "RADIUS Port", "RADIUS Key"
       ]
 
-      output_data = {"Host IP" => ip}
+      output_data = { "Host IP" => ip }
 
       sys_descr = snmp.get_value('sysDescr.0')
       if is_valid_snmp_value(sys_descr) and sys_descr.to_s =~ /SBG6580/
@@ -176,9 +180,9 @@ class MetasploitModule < Msf::Auxiliary
         print_line("")
         print_status("Device information:\n")
         line = ""
-        width = 30  # name field width
+        width = 30 # name field width
 
-        fields_order.each {|k|
+        fields_order.each { |k|
           if not output_data.has_key?(k)
             next
           end
@@ -189,22 +193,21 @@ class MetasploitModule < Msf::Auxiliary
           end
 
           report_note(
-            :host  => ip,
+            :host => ip,
             :proto => 'udp',
             :sname => 'snmp',
-            :port  => datastore['RPORT'].to_i,
-            :type  => "snmp.#{k}",
-            :data  => v
+            :port => datastore['RPORT'].to_i,
+            :type => "snmp.#{k}",
+            :data => v
           )
 
-          line << sprintf("%s%s: %s\n", k, " "*([0,width-k.length].max), v)
+          line << sprintf("%s%s: %s\n", k, " " * ([0, width - k.length].max), v)
         }
 
         print_line(line)
       else
         print_error("#{ip} does not appear to be a SBG6580.")
       end
-
     rescue SNMP::RequestTimeout
       print_error("#{ip} SNMP request timeout.")
     rescue Rex::ConnectionError
@@ -241,6 +244,7 @@ class MetasploitModule < Msf::Auxiliary
     if value.nil? or value.to_s =~ /Null/ or value.to_s =~ /^noSuch/
       return false
     end
+
     return true
   end
 

@@ -9,14 +9,14 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'Avahi Source Port 0 DoS',
+      'Name' => 'Avahi Source Port 0 DoS',
       'Description' => %q{
         Avahi-daemon versions prior to 0.6.24 can be DoS'd
         with an mDNS packet with a source port of 0.
       },
-      'Author'      => 'kris katterjohn',
-      'License'     => MSF_LICENSE,
-      'References'  => [
+      'Author' => 'kris katterjohn',
+      'License' => MSF_LICENSE,
+      'References' => [
         [ 'CVE', '2008-5081' ],
         [ 'OSVDB', '50929' ],
       ],
@@ -26,7 +26,7 @@ class MetasploitModule < Msf::Auxiliary
       OptInt.new('RPORT', [true, 'The destination port', 5353])
     ])
 
-    deregister_options('FILTER','PCAPFILE')
+    deregister_options('FILTER', 'PCAPFILE')
   end
 
   def run

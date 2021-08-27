@@ -4,7 +4,6 @@
 ##
 
 module MetasploitModule
-
   CachedSize = 1337
 
   include Msf::Payload::Stager
@@ -15,16 +14,19 @@ module MetasploitModule
   end
 
   def initialize(info = {})
-    super(merge_info(info,
-      'Name'        => 'Bind TCP Stager IPv6',
-      'Description' => 'Listen for a connection over IPv6',
-      'Author'      => ['egypt'],
-      'License'     => MSF_LICENSE,
-      'Platform'    => 'php',
-      'Arch'        => ARCH_PHP,
-      'Handler'     => Msf::Handler::BindTcp,
-      'Stager'      => { 'Payload' => "" }
-      ))
+    super(
+      merge_info(
+        info,
+        'Name' => 'Bind TCP Stager IPv6',
+        'Description' => 'Listen for a connection over IPv6',
+        'Author' => ['egypt'],
+        'License' => MSF_LICENSE,
+        'Platform' => 'php',
+        'Arch' => ARCH_PHP,
+        'Handler' => Msf::Handler::BindTcp,
+        'Stager' => { 'Payload' => "" }
+      )
+    )
   end
 
   def use_ipv6

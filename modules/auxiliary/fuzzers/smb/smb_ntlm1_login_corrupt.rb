@@ -8,15 +8,18 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Fuzzer
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'SMB NTLMv1 Login Request Corruption',
-      'Description'    => %q{
-        This module sends a series of SMB login requests using
-      the NTLMv1 protocol with corrupted bytes.
-      },
-      'Author'         => [ 'hdm' ],
-      'License'        => MSF_LICENSE
-    ))
+    super(
+      update_info(
+        info,
+        'Name' => 'SMB NTLMv1 Login Request Corruption',
+        'Description' => %q{
+          This module sends a series of SMB login requests using
+          the NTLMv1 protocol with corrupted bytes.
+        },
+        'Author' => [ 'hdm' ],
+        'License' => MSF_LICENSE
+      )
+    )
     register_options([
       Opt::RPORT(445),
       OptInt.new('MAXDEPTH', [false, 'Specify a maximum byte depth to test'])
@@ -24,7 +27,7 @@ class MetasploitModule < Msf::Auxiliary
     deregister_options('SMB::ProtocolVersion')
   end
 
-  def do_smb_login(pkt,opts={})
+  def do_smb_login(pkt, opts = {})
     @connected = false
     connect(versions: [1])
     simple.client.negotiate(false)
@@ -44,13 +47,13 @@ class MetasploitModule < Msf::Auxiliary
 
     max = datastore['MAXDEPTH'].to_i
     max = nil if max == 0
-    tot = ( max ? [max,pkt.length].min : pkt.length) * 256
+    tot = (max ? [max, pkt.length].min : pkt.length) * 256
 
     print_status("Fuzzing SMB login with #{tot} requests")
-    fuzz_string_corrupt_byte_reverse(pkt,max) do |str|
+    fuzz_string_corrupt_byte_reverse(pkt, max) do |str|
       cnt += 1
 
-      if(cnt % 100 == 0)
+      if (cnt % 100 == 0)
         print_status("Fuzzing with iteration #{cnt}/#{tot} using #{@last_fuzzer_input}")
       end
 
@@ -65,9 +68,9 @@ class MetasploitModule < Msf::Auxiliary
         disconnect
       end
 
-      if(not @connected)
-        if(last_str)
-          print_status("The service may have crashed: iteration:#{cnt-1} method=#{last_inp} string=#{last_str.unpack("H*")[0]} error=#{last_err}")
+      if (not @connected)
+        if (last_str)
+          print_status("The service may have crashed: iteration:#{cnt - 1} method=#{last_inp} string=#{last_str.unpack("H*")[0]} error=#{last_err}")
         else
           print_status("Could not connect to the service: #{last_err}")
         end
@@ -80,7 +83,6 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def make_smb_login
-
     user = "USER"
     domain = "DOMAIN"
     hash_lm = Rex::Proto::NTLM::Crypt.lanman_des("X", "X" * 8)

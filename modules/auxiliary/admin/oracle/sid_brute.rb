@@ -8,32 +8,34 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::TNS
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Oracle TNS Listener SID Brute Forcer',
-      'Description'    => %q{
-        This module simply attempts to discover the protected SID.
-      },
-      'Author'         => [ 'MC' ],
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'Oracle TNS Listener SID Brute Forcer',
+        'Description' => %q{
+          This module simply attempts to discover the protected SID.
+        },
+        'Author' => [ 'MC' ],
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'URL', 'https://www.metasploit.com/users/mc' ],
-          [ 'URL' , 'http://www.red-database-security.com/scripts/sid.txt' ],
+          [ 'URL', 'http://www.red-database-security.com/scripts/sid.txt' ],
         ],
-      'DisclosureDate' => '2009-01-07'))
+        'DisclosureDate' => '2009-01-07'
+      )
+    )
 
     register_options(
       [
         Opt::RPORT(1521),
-        OptString.new('SLEEP', [ false,   'Sleep() amount between each request.', '1']),
+        OptString.new('SLEEP', [ false, 'Sleep() amount between each request.', '1']),
         OptString.new('SIDFILE', [ false, 'The file that contains a list of sids.', File.join(Msf::Config.install_root, 'data', 'wordlists', 'sid.txt')]),
-      ])
-
+      ]
+    )
   end
 
   def run
-
-    s    = datastore['SLEEP']
+    s = datastore['SLEEP']
     list = datastore['SIDFILE']
 
     print_status("Starting brute force on #{rhost}, using sids from #{list}...")
@@ -53,7 +55,7 @@ class MetasploitModule < Msf::Auxiliary
       end
 
       sock.put(pkt)
-      select(nil,nil,nil,s.to_i)
+      select(nil, nil, nil, s.to_i)
       res = sock.get_once
       disconnect
 
@@ -67,11 +69,9 @@ class MetasploitModule < Msf::Auxiliary
         )
         print_good("#{rhost}:#{rport} Found SID '#{sid.strip}'")
       end
-
     end
 
     print_status("Done with brute force...")
     fd.close
-
   end
 end

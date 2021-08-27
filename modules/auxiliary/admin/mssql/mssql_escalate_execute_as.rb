@@ -3,22 +3,24 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::MSSQL
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'        => 'Microsoft SQL Server Escalate EXECUTE AS',
-      'Description' => %q{
-        This module can be used escalate privileges if the IMPERSONATION privilege has been
-        assigned to the user. In most cases, this results in additional data access, but in
-        some cases it can be used to gain sysadmin privileges.
-      },
-      'Author'      => ['nullbind <scott.sutherland[at]netspi.com>'],
-      'License'     => MSF_LICENSE,
-      'References'  => [['URL','http://msdn.microsoft.com/en-us/library/ms178640.aspx']]
-    ))
+    super(
+      update_info(
+        info,
+        'Name' => 'Microsoft SQL Server Escalate EXECUTE AS',
+        'Description' => %q{
+          This module can be used escalate privileges if the IMPERSONATION privilege has been
+          assigned to the user. In most cases, this results in additional data access, but in
+          some cases it can be used to gain sysadmin privileges.
+        },
+        'Author' => ['nullbind <scott.sutherland[at]netspi.com>'],
+        'License' => MSF_LICENSE,
+        'References' => [['URL', 'http://msdn.microsoft.com/en-us/library/ms178640.aspx']]
+      )
+    )
   end
 
   def run

@@ -14,12 +14,11 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'HTTP Options Detection',
+      'Name' => 'HTTP Options Detection',
       'Description' => 'Display available HTTP options for each system',
-      'Author'       => ['CG'],
-      'License'     => MSF_LICENSE,
-      'References' =>
-      [
+      'Author' => ['CG'],
+      'License' => MSF_LICENSE,
+      'References' => [
         [ 'CVE', '2005-3398'],
         [ 'CVE', '2005-3498'],
         [ 'OSVDB', '877'],
@@ -31,12 +30,11 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def run_host(target_host)
-
     begin
       res = send_request_raw({
-        'version'      => '1.0',
-        'uri'          => '/',
-        'method'       => 'OPTIONS'
+        'version' => '1.0',
+        'uri' => '/',
+        'method' => 'OPTIONS'
       }, 10)
 
       if (res and res.headers['Allow'])
@@ -51,7 +49,7 @@ class MetasploitModule < Msf::Auxiliary
           :data	=> res.headers['Allow']
         )
 
-        if(res.headers['Allow'].index('TRACE'))
+        if (res.headers['Allow'].index('TRACE'))
           print_good "#{target_host}:#{rport} - TRACE method allowed."
           report_vuln(
             :host	=> target_host,
@@ -60,12 +58,11 @@ class MetasploitModule < Msf::Auxiliary
             :sname => (ssl ? 'https' : 'http'),
             :name	=> "HTTP Trace Method Allowed",
             :info	=> "Module #{self.fullname} detected TRACE access through the Allow header: #{res.headers['Allow']}",
-            :refs   => self.references,
+            :refs => self.references,
             :exploited_at => Time.now.utc
           )
         end
       end
-
     rescue ::Rex::ConnectionRefused, ::Rex::HostUnreachable, ::Rex::ConnectionTimeout
     rescue ::Timeout::Error, ::Errno::EPIPE
     end

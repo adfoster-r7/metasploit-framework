@@ -10,12 +10,12 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'           => 'VMWare Power Off Virtual Machine',
-      'Description'    => %Q{
+      'Name' => 'VMWare Power Off Virtual Machine',
+      'Description' => %Q{
         This module will log into the Web API of VMWare and try to power off
         a specified Virtual Machine.},
-      'Author'         => ['theLightCosine'],
-      'License'        => MSF_LICENSE,
+      'Author' => ['theLightCosine'],
+      'License' => MSF_LICENSE,
       'DefaultOptions' => { 'SSL' => true }
     )
 
@@ -25,7 +25,8 @@ class MetasploitModule < Msf::Auxiliary
         OptString.new('USERNAME', [ true, "The username to Authenticate with.", 'root' ]),
         OptString.new('PASSWORD', [ true, "The password to Authenticate with.", 'password' ]),
         OptString.new('VM', [true, "The VM to try to Power Off"])
-      ])
+      ]
+    )
   end
 
   def run

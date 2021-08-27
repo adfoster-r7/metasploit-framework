@@ -3,7 +3,6 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Brocade
   include Msf::Exploit::Deprecated
@@ -29,7 +28,6 @@ class MetasploitModule < Msf::Auxiliary
         Opt::RPORT(22)
       ]
     )
-
   end
 
   def run

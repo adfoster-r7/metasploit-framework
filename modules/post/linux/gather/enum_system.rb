@@ -8,25 +8,27 @@ class MetasploitModule < Msf::Post
   include Msf::Post::Linux::System
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'          => 'Linux Gather System and User Information',
-      'Description'   => %q{
-        This module gathers system information. We collect
-        installed packages, installed services, mount information,
-        user list, user bash history and cron jobs
-      },
-      'License'       => MSF_LICENSE,
-      'Author'        =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'Linux Gather System and User Information',
+        'Description' => %q{
+          This module gathers system information. We collect
+          installed packages, installed services, mount information,
+          user list, user bash history and cron jobs
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [
           'Carlos Perez <carlos_perez[at]darkoperator.com>', # get_packages and get_services
           'Stephen Haywood <averagesecurityguy[at]gmail.com>', # get_cron and original enum_linux
           'sinn3r', # Testing and modification of original enum_linux
           'ohdae <bindshell[at]live.com>', # Combined separate mods, modifications and testing
           'Roberto Espreto <robertoespreto[at]gmail.com>', # log files and setuid/setgid
         ],
-      'Platform'      => ['linux'],
-      'SessionTypes'  => ['shell', 'meterpreter']
-    ))
+        'Platform' => ['linux'],
+        'SessionTypes' => ['shell', 'meterpreter']
+      )
+    )
   end
 
   def run
@@ -37,7 +39,8 @@ class MetasploitModule < Msf::Post
       session,
       "Distro: #{distro[:distro]},Version: #{distro[:version]}, Kernel: #{distro[:kernel]}",
       "linux_info.txt",
-      "Linux Version")
+      "Linux Version"
+    )
 
     # Print the info
     print_good("Info:")

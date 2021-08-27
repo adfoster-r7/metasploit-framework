@@ -9,22 +9,24 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Scanner
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'        => 'SNMP Set Module',
-      'Description' => %q{
+    super(
+      update_info(
+        info,
+        'Name' => 'SNMP Set Module',
+        'Description' => %q{
           This module, similar to snmpset tool, uses the SNMP SET request
           to set information on a network entity. A OID (numeric notation)
           and a value are required. Target device must permit write access.
-      },
-      'References'  =>
-        [
+        },
+        'References' => [
           [ 'URL', 'http://en.wikipedia.org/wiki/Simple_Network_Management_Protocol' ],
           [ 'URL', 'http://www.net-snmp.org/docs/man/snmpset.html' ],
           [ 'URL', 'http://www.oid-info.com/' ],
         ],
-      'Author'      => 'Matteo Cantoni <goony[at]nothink.org>',
-      'License'     => MSF_LICENSE
-    ))
+        'Author' => 'Matteo Cantoni <goony[at]nothink.org>',
+        'License' => MSF_LICENSE
+      )
+    )
 
     register_options([
       OptString.new('OID', [ true, "The object identifier (numeric notation)"]),
@@ -33,12 +35,10 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def run_host(ip)
-
     begin
-
-      oid      = datastore['OID'].to_s
+      oid = datastore['OID'].to_s
       oidvalue = datastore['OIDVALUE'].to_s
-      comm     = datastore['COMMUNITY'].to_s
+      comm = datastore['COMMUNITY'].to_s
 
       snmp = connect_snmp
 
@@ -54,7 +54,7 @@ class MetasploitModule < Msf::Auxiliary
       print_status("Check initial value : OID #{oid} => #{check}")
 
       # set request
-      varbind = SNMP::VarBind.new(oid,SNMP::OctetString.new(oidvalue))
+      varbind = SNMP::VarBind.new(oid, SNMP::OctetString.new(oidvalue))
       resp = snmp.set(varbind)
 
       if resp.error_status == :noError
@@ -73,7 +73,6 @@ class MetasploitModule < Msf::Auxiliary
       else
         print_status("#{ip} - OID not writable or does not provide WRITE access with community '#{comm}'")
       end
-
     rescue ::SNMP::RequestTimeout
       print_error("#{ip} - SNMP request timeout with community '#{comm}'.")
     rescue ::Rex::ConnectionError

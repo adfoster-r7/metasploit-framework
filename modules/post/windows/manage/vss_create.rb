@@ -8,33 +8,35 @@ class MetasploitModule < Msf::Post
   include Msf::Post::Windows::ShadowCopy
 
   include Msf::Module::Deprecated
-  deprecated(Date.new(2021, 4, 11), reason="Use post/windows/manage/vss and the VSS_CREATE action")
+  deprecated(Date.new(2021, 4, 11), reason = "Use post/windows/manage/vss and the VSS_CREATE action")
 
-  def initialize(info={})
-    super(update_info(info,
-      'Name'                 => "Windows Manage Create Shadow Copy",
-      'Description'          => %q{
-        This module will attempt to create a new volume shadow copy.
-        This is based on the VSSOwn Script originally posted by
-        Tim Tomes and Mark Baggett.
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => "Windows Manage Create Shadow Copy",
+        'Description' => %q{
+          This module will attempt to create a new volume shadow copy.
+          This is based on the VSSOwn Script originally posted by
+          Tim Tomes and Mark Baggett.
 
-        Works on win2k3 and later.
+          Works on win2k3 and later.
         },
-      'License'              => MSF_LICENSE,
-      'Platform'             => ['win'],
-      'SessionTypes'         => ['meterpreter'],
-      'Author'               => ['theLightCosine'],
-      'References'    => [
-        [ 'URL', 'http://pauldotcom.com/2011/11/safely-dumping-hashes-from-liv.html' ]
-      ]
-    ))
+        'License' => MSF_LICENSE,
+        'Platform' => ['win'],
+        'SessionTypes' => ['meterpreter'],
+        'Author' => ['theLightCosine'],
+        'References' => [
+          [ 'URL', 'http://pauldotcom.com/2011/11/safely-dumping-hashes-from-liv.html' ]
+        ]
+      )
+    )
     register_options(
       [
         OptString.new('VOLUME', [ true, 'Volume to make a copy of.', 'C:\\'])
-      ])
-
+      ]
+    )
   end
-
 
   def run
     unless is_admin?
@@ -48,12 +50,11 @@ class MetasploitModule < Msf::Post
     unless start_vss
       return
     end
+
     id = create_shadowcopy(datastore['VOLUME'])
     if id
       print_good "Shadow Copy #{id} created!"
     end
   end
-
-
 
 end

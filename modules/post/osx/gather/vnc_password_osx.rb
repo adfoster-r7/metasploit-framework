@@ -3,23 +3,24 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 class MetasploitModule < Msf::Post
   include Msf::Post::OSX::Priv
   include Msf::Post::File
 
-  def initialize(info={})
-    super( update_info( info,
-        'Name'          => 'OS X Display Apple VNC Password',
-        'Description'   => %q{
-            This module shows Apple VNC Password from Mac OS X High Sierra.
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'OS X Display Apple VNC Password',
+        'Description' => %q{
+          This module shows Apple VNC Password from Mac OS X High Sierra.
         },
-        'License'       => MSF_LICENSE,
-        'Author'        => [ 'Kevin Gonzalvo <interhack[at]gmail.com>'],
-        'Platform'      => [ 'osx' ],
-        'SessionTypes'  => [ "meterpreter", "shell" ]
-      ))
-
+        'License' => MSF_LICENSE,
+        'Author' => [ 'Kevin Gonzalvo <interhack[at]gmail.com>'],
+        'Platform' => [ 'osx' ],
+        'SessionTypes' => [ "meterpreter", "shell" ]
+      )
+    )
   end
 
   def decrypt_hash(hash)

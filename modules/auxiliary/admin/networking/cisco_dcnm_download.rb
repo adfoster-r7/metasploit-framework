@@ -23,20 +23,18 @@ class MetasploitModule < Msf::Auxiliary
           work on a few versions below 10.4(2). Only version 11.0(1) requires authentication to exploit
           (see References to understand why).
         },
-        'Author' =>
-          [
-            'Pedro Ribeiro <pedrib[at]gmail.com>' # Vulnerability discovery and Metasploit module
-          ],
+        'Author' => [
+          'Pedro Ribeiro <pedrib[at]gmail.com>' # Vulnerability discovery and Metasploit module
+        ],
         'License' => MSF_LICENSE,
-        'References' =>
-          [
-            [ 'CVE', '2019-1619' ],
-            [ 'CVE', '2019-1621' ],
-            [ 'URL', 'https://tools.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-20190626-dcnm-bypass' ],
-            [ 'URL', 'https://tools.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-20190626-dcnm-file-dwnld' ],
-            [ 'URL', 'https://raw.githubusercontent.com/pedrib/PoC/master/exploits/metasploit/cisco_dcnm_download.rb' ],
-            [ 'URL', 'https://seclists.org/fulldisclosure/2019/Jul/7' ]
-          ],
+        'References' => [
+          [ 'CVE', '2019-1619' ],
+          [ 'CVE', '2019-1621' ],
+          [ 'URL', 'https://tools.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-20190626-dcnm-bypass' ],
+          [ 'URL', 'https://tools.cisco.com/security/center/content/CiscoSecurityAdvisory/cisco-sa-20190626-dcnm-file-dwnld' ],
+          [ 'URL', 'https://raw.githubusercontent.com/pedrib/PoC/master/exploits/metasploit/cisco_dcnm_download.rb' ],
+          [ 'URL', 'https://seclists.org/fulldisclosure/2019/Jul/7' ]
+        ],
         'DisclosureDate' => '2019-06-26'
       )
     )

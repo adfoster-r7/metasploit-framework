@@ -92,17 +92,16 @@ class MetasploitModule < Msf::Encoder
 
   def initialize
     super(
-      'Name'             => 'Avoid UTF8/tolower',
-      'Description'      => 'UTF8 Safe, tolower Safe Encoder',
-      'Author'           => 'skape',
-      'Arch'             => ARCH_X86,
-      'License'          => MSF_LICENSE,
-      'EncoderType'      => Msf::Encoder::Type::NonUpperUtf8Safe,
-      'Decoder'          =>
-        {
-          'KeySize'    => 4,
-          'BlockSize'  => 4,
-        })
+      'Name' => 'Avoid UTF8/tolower',
+      'Description' => 'UTF8 Safe, tolower Safe Encoder',
+      'Author' => 'skape',
+      'Arch' => ARCH_X86,
+      'License' => MSF_LICENSE,
+      'EncoderType' => Msf::Encoder::Type::NonUpperUtf8Safe,
+      'Decoder' => {
+        'KeySize' => 4,
+        'BlockSize' => 4,
+      })
   end
 
   #
@@ -122,13 +121,13 @@ class MetasploitModule < Msf::Encoder
     end
 
     decoder =
-      "\x6a" + [len].pack('C')      +  # push len
-      "\x6b\x3c\x24\x0b"            +  # imul 0xb
-      "\x60"                        +  # pusha
-      "\x03\x0c\x24"                +  # add ecx, [esp]
-      "\x6a" + [0x11+off].pack('C') +  # push byte 0x11 + off
-      "\x03\x0c\x24"                +  # add ecx, [esp]
-      "\x6a\x04"                       # push byte 0x4
+      "\x6a" + [len].pack('C') + # push len
+      "\x6b\x3c\x24\x0b" + # imul 0xb
+      "\x60" + # pusha
+      "\x03\x0c\x24" + # add ecx, [esp]
+      "\x6a" + [0x11 + off].pack('C') + # push byte 0x11 + off
+      "\x03\x0c\x24" + # add ecx, [esp]
+      "\x6a\x04" # push byte 0x4
 
     # encoded sled
     state.context = ''
@@ -163,9 +162,9 @@ class MetasploitModule < Msf::Encoder
   # two UTF8/tolower safe values.
   #
   def try_sub(state, block)
-    buf   = "\x68";
-    vbuf  = ''
-    ctx   = ''
+    buf = "\x68";
+    vbuf = ''
+    ctx = ''
     carry = 0
 
     block.each_byte { |b|
@@ -173,23 +172,23 @@ class MetasploitModule < Msf::Encoder
       # of a value that is < 0x80 without NULLs.
       return nil if (b == 0x80 or b == 0x81 or b == 0x7f)
 
-      x          = 0
-      y          = 0
-      attempts   = 0
+      x = 0
+      y = 0
+      attempts = 0
       prev_carry = carry
 
       begin
         carry = prev_carry
 
         if (b > 0x80)
-          diff  = 0x100 - b
-          y     = rand(0x80 - diff - 1).to_i + 1
-          x     = (0x100 - (b - y + carry))
+          diff = 0x100 - b
+          y = rand(0x80 - diff - 1).to_i + 1
+          x = (0x100 - (b - y + carry))
           carry = 1
         else
-          diff  = 0x7f - b
-          x     = rand(diff - 1) + 1
-          y     = (b + x + carry) & 0xff
+          diff = 0x7f - b
+          x = rand(diff - 1) + 1
+          y = (b + x + carry) & 0xff
           carry = 0
         end
 
@@ -197,11 +196,10 @@ class MetasploitModule < Msf::Encoder
 
         # Lame.
         return nil if (attempts > 512)
-
       end while (is_badchar(state, x) or is_badchar(state, y))
 
       vbuf += [x].pack('C')
-      ctx  += [y].pack('C')
+      ctx += [y].pack('C')
     }
 
     buf += vbuf + "\x5f\x29\x39\x03\x0c\x24"
@@ -209,7 +207,6 @@ class MetasploitModule < Msf::Encoder
     state.context += ctx
 
     return buf
-
   end
 
   #
@@ -218,9 +215,9 @@ class MetasploitModule < Msf::Encoder
   # safe values.
   #
   def try_add(state, block)
-    buf  = "\x68"
+    buf = "\x68"
     vbuf = ''
-    ctx  = ''
+    ctx = ''
 
     block.each_byte { |b|
       # It's impossible to produce 0xff and 0x01 using two non-NULL,
@@ -236,11 +233,10 @@ class MetasploitModule < Msf::Encoder
 
         # Lame.
         return nil if (attempts > 512)
-
       end while (is_badchar(state, xv) or is_badchar(state, b - xv))
 
       vbuf += [xv].pack('C')
-      ctx  += [b - xv].pack('C')
+      ctx += [b - xv].pack('C')
     }
 
     buf += vbuf + "\x5f\x01\x39\x03\x0c\x24"

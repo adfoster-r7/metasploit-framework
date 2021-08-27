@@ -27,8 +27,8 @@ metadata = {
     continuously until stopped.
   },
   authors: [
-      'thelightcosine',
-      'Adam Cammack <adam_cammack[at]rapid7.com>'
+    'thelightcosine',
+    'Adam Cammack <adam_cammack[at]rapid7.com>'
   ],
   date: '2017-06-29',
   references: [
@@ -36,8 +36,8 @@ metadata = {
   ],
   type: 'dos',
   options: {
-    rhost: {type: 'address', description: 'The target address', required: true, default: nil},
-    rport: {type: 'port', description: 'SMB port on the target', required: true, default: 445},
+    rhost: { type: 'address', description: 'The target address', required: true, default: nil },
+    rport: { type: 'port', description: 'SMB port on the target', required: true, default: 445 },
   }
 }
 
@@ -69,7 +69,7 @@ def run(args)
       sockets << nsock
 
       n_loops += 1
-      if  last_reported != sockets.length
+      if last_reported != sockets.length
         if n_loops % 100 == 0
           last_reported = sockets.length
           Metasploit.log "#{sockets.length} socket(s) open", level: 'info'

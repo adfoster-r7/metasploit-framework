@@ -32,21 +32,21 @@ class MetasploitModule < Msf::Auxiliary
         Display the remote connection table from a SAPRouter.
       },
       'References' => [
-          [ 'URL', 'http://labs.mwrinfosecurity.com/tools/2012/04/27/sap-metasploit-modules/' ],
-          [ 'URL', 'http://help.sap.com/saphelp_nw70ehp3/helpdata/en/48/6c68b01d5a350ce10000000a42189d/content.htm'],
-          [ 'URL', 'http://conference.hitb.org/hitbsecconf2010ams/materials/D2T2%20-%20Mariano%20Nunez%20Di%20Croce%20-%20SAProuter%20.pdf' ]
-        ],
-      'Author' =>
-        [
-          'Mariano Nunez', # Disclosure about SAPRouter abuses
-          'nmonkee' # Metasploit module
-        ],
+        [ 'URL', 'http://labs.mwrinfosecurity.com/tools/2012/04/27/sap-metasploit-modules/' ],
+        [ 'URL', 'http://help.sap.com/saphelp_nw70ehp3/helpdata/en/48/6c68b01d5a350ce10000000a42189d/content.htm'],
+        [ 'URL', 'http://conference.hitb.org/hitbsecconf2010ams/materials/D2T2%20-%20Mariano%20Nunez%20Di%20Croce%20-%20SAProuter%20.pdf' ]
+      ],
+      'Author' => [
+        'Mariano Nunez', # Disclosure about SAPRouter abuses
+        'nmonkee' # Metasploit module
+      ],
       'License' => BSD_LICENSE
       )
     register_options(
       [
         Opt::RPORT(3299)
-      ])
+      ]
+    )
   end
 
   def get_data(size, packet_len)
@@ -76,20 +76,21 @@ class MetasploitModule < Msf::Auxiliary
     source = ''
     destination = ''
     service = ''
-    ni_packet = type + [0,version,cmd,0,0].pack("c*")
+    ni_packet = type + [0, version, cmd, 0, 0].pack("c*")
     ni_packet = [ni_packet.length].pack('N') << ni_packet
     saptbl = Msf::Ui::Console::Table.new(
       Msf::Ui::Console::Table::Style::Default,
-        'Header' => "[SAP] SAProuter Connection Table for #{ip}",
-        'Prefix' => "\n",
-        'Postfix' => "\n",
-        'Indent' => 1,
-        'Columns' =>
-          [
-            "Source",
-            "Destination",
-            "Service"
-          ])
+      'Header' => "[SAP] SAProuter Connection Table for #{ip}",
+      'Prefix' => "\n",
+      'Postfix' => "\n",
+      'Indent' => 1,
+      'Columns' =>
+        [
+          "Source",
+          "Destination",
+          "Service"
+        ]
+    )
     begin
       connect
     rescue ::Rex::ConnectionRefused
@@ -112,29 +113,29 @@ class MetasploitModule < Msf::Auxiliary
       end
       packet_len = sock_res.unpack('H*')[0].to_i 16
       print_good("#{host_port} - Got INFO response")
-      while packet_len !=0
+      while packet_len != 0
         count += 1
         case count
         when 1
           if packet_len > 150
-            if sock.recv(150)  =~ /access denied/
+            if sock.recv(150) =~ /access denied/
               print_error("#{host_port} - Access denied")
               sock.recv(packet_len)
               packet_len = sock.recv(4).unpack('H*')[0].to_i 16
             else
               packet_len -= 150
-              source, packet_len = get_data(46,packet_len)
-              destination, packet_len = get_data(46,packet_len)
-              service, packet_len = get_data(30,packet_len)
+              source, packet_len = get_data(46, packet_len)
+              destination, packet_len = get_data(46, packet_len)
+              service, packet_len = get_data(30, packet_len)
               sock.recv(2)
               packet_len -= 2
               saptbl << [source, destination, service]
               while packet_len > 0
                 sock.recv(13)
                 packet_len -= 13
-                source, packet_len = get_data(46,packet_len)
-                destination, packet_len = get_data(46,packet_len)
-                service, packet_len = get_data(30,packet_len)
+                source, packet_len = get_data(46, packet_len)
+                destination, packet_len = get_data(46, packet_len)
+                service, packet_len = get_data(30, packet_len)
                 term = sock.recv(2)
                 packet_len -= 2
                 saptbl << [source, destination, service]
@@ -170,8 +171,8 @@ class MetasploitModule < Msf::Auxiliary
         end
       end
       disconnect
-    # TODO: This data should be saved somewhere. A note on the host would be nice.
-    print_line(saptbl.to_s)
+      # TODO: This data should be saved somewhere. A note on the host would be nice.
+      print_line(saptbl.to_s)
     end
   end
 end

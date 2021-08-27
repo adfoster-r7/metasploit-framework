@@ -8,22 +8,20 @@ class MetasploitModule < Msf::Encoder
 
   def initialize
     super(
-      'Name'             => 'Perl Command Encoder',
-      'Description'      => %q{
+      'Name' => 'Perl Command Encoder',
+      'Description' => %q{
         This encoder uses perl to avoid commonly restricted characters.
       },
-      'Author'           => 'hdm',
-      'Arch'             => ARCH_CMD,
-      'Platform'         => 'unix',
-      'EncoderType'      => Msf::Encoder::Type::CmdUnixPerl)
+      'Author' => 'hdm',
+      'Arch' => ARCH_CMD,
+      'Platform' => 'unix',
+      'EncoderType' => Msf::Encoder::Type::CmdUnixPerl)
   end
-
 
   #
   # Encodes the payload
   #
   def encode_block(state, buf)
-
     # Skip encoding for empty badchars
     if state.badchars.length == 0
       return buf
@@ -32,7 +30,7 @@ class MetasploitModule < Msf::Encoder
     if state.badchars.include?("-")
       raise EncodingError
     else
-      buf = encode_block_perl(state,buf)
+      buf = encode_block_perl(state, buf)
     end
 
     return buf
@@ -42,7 +40,6 @@ class MetasploitModule < Msf::Encoder
   # Uses the perl command to hex encode the command string
   #
   def encode_block_perl(state, buf)
-
     hex = buf.unpack("H*").join
     cmd = 'perl -e '
     qot = ',-:.=+!@#$%^&'
@@ -52,6 +49,7 @@ class MetasploitModule < Msf::Encoder
       if state.badchars.match(/[${IFS}]/n)
         raise EncodingError
       end
+
       cmd.gsub!(/\s/, '${IFS}')
     end
 
@@ -108,7 +106,6 @@ class MetasploitModule < Msf::Encoder
   end
 
   def perl_qq(state, qot, hex)
-
     # Find a quoting character to use
     state.badchars.unpack('C*') { |c| qot.delete(c.chr) }
 
