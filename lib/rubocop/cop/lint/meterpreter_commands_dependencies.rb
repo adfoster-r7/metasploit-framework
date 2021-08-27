@@ -289,6 +289,10 @@ module RuboCop
               'core_channel_read',
               'core_channel_write',
               'core_channel_eof'
+            ],
+            "session.sys.process.open": [
+              'stdapi_sys_process_attach',
+              'stdapi_sys_process_close'
             ]
           }
 
@@ -585,7 +589,6 @@ module RuboCop
               'client.sys.process.open'
             ],
             stdapi_sys_process_close: [
-              'process.close'
             ],
             stdapi_sys_process_execute: [
               'client.sys.process.execute'
@@ -615,7 +618,6 @@ module RuboCop
             ],
             stdapi_sys_process_kill: [
               'client.sys.process.kill',
-              'process.kill'
             ],
             stdapi_sys_process_memory_allocate: [
               'process.memory.allocate'
@@ -1058,7 +1060,6 @@ module RuboCop
           lambda do |corrector|
             # Removes the railgun_api call if we are already calling railgun in its entirety.
             if @current_frame.identified_commands.include?("stdapi_railgun_*") && @current_frame.identified_commands.include?("stdapi_railgun_api*")
-              require "pry"; binding.pry
               array_node = nodes[:commands_node].children[1]
               commands_whitespace = offset(nodes[:commands_node])
               array_whitespace = commands_whitespace + '  '
