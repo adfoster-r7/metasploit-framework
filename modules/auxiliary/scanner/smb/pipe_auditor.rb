@@ -16,10 +16,10 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'SMB Session Pipe Auditor',
+      'Name' => 'SMB Session Pipe Auditor',
       'Description' => 'Determine what named pipes are accessible over SMB',
-      'Author'      => 'hdm',
-      'License'     => MSF_LICENSE
+      'Author' => 'hdm',
+      'License' => MSF_LICENSE
     )
 
     deregister_options('RPORT', 'SMBDirect')
@@ -27,11 +27,9 @@ class MetasploitModule < Msf::Auxiliary
 
   # Fingerprint a single host
   def run_host(ip)
-
     pipes = []
 
     [[139, false], [445, true]].each do |info|
-
       datastore['RPORT'] = info[0]
       datastore['SMBDirect'] = info[1]
 
@@ -50,7 +48,7 @@ class MetasploitModule < Msf::Auxiliary
       end
     end
 
-    if(pipes.length > 0)
+    if (pipes.length > 0)
       print_good("Pipes: #{pipes.join(", ")}")
       # Add Report
       report_note(
@@ -63,6 +61,5 @@ class MetasploitModule < Msf::Auxiliary
       )
     end
   end
-
 
 end

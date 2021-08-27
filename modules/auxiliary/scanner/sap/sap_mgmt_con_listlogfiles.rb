@@ -10,34 +10,34 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'         => 'SAP Management Console List Logfiles',
-      'Description'  => %q{
+      'Name' => 'SAP Management Console List Logfiles',
+      'Description' => %q{
         This module simply attempts to output a list of available
         logfiles and developer tracefiles through the SAP Management
         Console SOAP Interface.
         },
-      'References'   =>
-        [
-          # General
-          [ 'URL', 'http://blog.c22.cc' ]
-        ],
-      'Author'       => [ 'Chris John Riley' ],
-      'License'      => MSF_LICENSE
+      'References' => [
+        # General
+        [ 'URL', 'http://blog.c22.cc' ]
+      ],
+      'Author' => [ 'Chris John Riley' ],
+      'License' => MSF_LICENSE
     )
 
     register_options(
       [
         Opt::RPORT(50013),
         OptString.new('URI', [false, 'Path to the SAP Management Console ', '/']),
-        OptEnum.new('FILETYPE', [true, 'Specify LOGFILE or TRACEFILE', 'TRACEFILE', ['TRACEFILE','LOGFILE']])
-      ])
+        OptEnum.new('FILETYPE', [true, 'Specify LOGFILE or TRACEFILE', 'TRACEFILE', ['TRACEFILE', 'LOGFILE']])
+      ]
+    )
     register_autofilter_ports([ 50013 ])
   end
 
   def run_host(ip)
     res = send_request_cgi({
-      'uri'      => normalize_uri(datastore['URI']),
-      'method'   => 'GET'
+      'uri' => normalize_uri(datastore['URI']),
+      'method' => 'GET'
     }, 25)
 
     if not res
@@ -77,14 +77,14 @@ class MetasploitModule < Msf::Auxiliary
 
     begin
       res = send_request_raw({
-        'uri'      => normalize_uri(datastore['URI']),
-        'method'   => 'POST',
-        'data'     => data,
-        'headers'  =>
+        'uri' => normalize_uri(datastore['URI']),
+        'method' => 'POST',
+        'data' => data,
+        'headers' =>
           {
             'Content-Length' => data.length,
-            'SOAPAction'     => '""',
-            'Content-Type'   => 'text/xml; charset=UTF-8',
+            'SOAPAction' => '""',
+            'Content-Type' => 'text/xml; charset=UTF-8',
           }
       }, 30)
 
@@ -106,7 +106,6 @@ class MetasploitModule < Msf::Auxiliary
           fault = true
         end
       end
-
     rescue ::Rex::ConnectionError
       print_error("#{rhost}:#{rport} [SAP] Unable to attempt authentication")
       return
@@ -117,24 +116,25 @@ class MetasploitModule < Msf::Auxiliary
 
       saptbl = Msf::Ui::Console::Table.new(
         Msf::Ui::Console::Table::Style::Default,
-      'Header'    => "[SAP] Log Files",
-      'Prefix'  => "\n",
-      'Postfix' => "\n",
-      'Indent'    => 1,
-      'Columns'   =>
-      [
-        "Filename",
-        "Size",
-        "Timestamp"
-      ])
+        'Header' => "[SAP] Log Files",
+        'Prefix' => "\n",
+        'Postfix' => "\n",
+        'Indent' => 1,
+        'Columns' =>
+        [
+          "Filename",
+          "Size",
+          "Timestamp"
+        ]
+      )
 
       f = store_loot(
         "sap.#{datastore['FILETYPE'].downcase}file",
         "text/xml",
-          rhost,
-          saptbl.to_s,
-          "sap_listlogfiles.xml",
-          "SAP #{datastore['FILETYPE'].downcase}"
+        rhost,
+        saptbl.to_s,
+        "sap_listlogfiles.xml",
+        "SAP #{datastore['FILETYPE'].downcase}"
       )
       vprint_status("sap_listlogfiles.xml stored in: #{f}")
 

@@ -22,33 +22,31 @@ class MetasploitModule < Msf::Auxiliary
   def proto
     'smb'
   end
+
   def initialize
     super(
-      'Name'           => 'SMB Login Check Scanner',
-      'Description'    => %q{
+      'Name' => 'SMB Login Check Scanner',
+      'Description' => %q{
         This module will test a SMB login on a range of machines and
         report successful logins.  If you have loaded a database plugin
         and connected to a database this module will record successful
         logins and hosts so you can track your access.
       },
-      'Author'         =>
-        [
-          'tebo <tebo[at]attackresearch.com>', # Original
-          'Ben Campbell', # Refactoring
-          'Brandon McCann "zeknox" <bmccann[at]accuvant.com>', # admin check
-          'Tom Sellers <tom[at]fadedcode.net>' # admin check/bug fix
-        ],
-      'References'     =>
-        [
-          [ 'CVE', '1999-0506'], # Weak password
-        ],
-      'License'     => MSF_LICENSE,
-      'DefaultOptions' =>
-        {
-          'DB_ALL_CREDS'    => false,
-          'BLANK_PASSWORDS' => false,
-          'USER_AS_PASS'    => false
-        }
+      'Author' => [
+        'tebo <tebo[at]attackresearch.com>', # Original
+        'Ben Campbell', # Refactoring
+        'Brandon McCann "zeknox" <bmccann[at]accuvant.com>', # admin check
+        'Tom Sellers <tom[at]fadedcode.net>' # admin check/bug fix
+      ],
+      'References' => [
+        [ 'CVE', '1999-0506'], # Weak password
+      ],
+      'License' => MSF_LICENSE,
+      'DefaultOptions' => {
+        'DB_ALL_CREDS' => false,
+        'BLANK_PASSWORDS' => false,
+        'USER_AS_PASS' => false
+      }
     )
 
     # These are normally advanced options, but for this module they have a
@@ -61,9 +59,10 @@ class MetasploitModule < Msf::Auxiliary
         OptBool.new('RECORD_GUEST', [ false, "Record guest-privileged random logins to the database", false ]),
         OptBool.new('DETECT_ANY_AUTH', [false, 'Enable detection of systems accepting any authentication', false]),
         OptBool.new('DETECT_ANY_DOMAIN', [false, 'Detect if domain is required for the specified user', false])
-      ])
+      ]
+    )
 
-    deregister_options('USERNAME','PASSWORD', 'PASSWORD_SPRAY')
+    deregister_options('USERNAME', 'PASSWORD', 'PASSWORD_SPRAY')
   end
 
   def run_host(ip)
@@ -139,15 +138,15 @@ class MetasploitModule < Msf::Auxiliary
           print_brute :level => :verror, :ip => ip, :msg => "Could not connect"
         end
         invalidate_login(
-            address: ip,
-            port: rport,
-            protocol: 'tcp',
-            public: result.credential.public,
-            private: result.credential.private,
-            realm_key: Metasploit::Model::Realm::Key::ACTIVE_DIRECTORY_DOMAIN,
-            realm_value: result.credential.realm,
-            last_attempted_at: DateTime.now,
-            status: result.status
+          address: ip,
+          port: rport,
+          protocol: 'tcp',
+          public: result.credential.public,
+          private: result.credential.private,
+          realm_key: Metasploit::Model::Realm::Key::ACTIVE_DIRECTORY_DOMAIN,
+          realm_value: result.credential.realm,
+          last_attempted_at: DateTime.now,
+          status: result.status
         )
         :abort
       when Metasploit::Model::Login::Status::INCORRECT
@@ -167,9 +166,7 @@ class MetasploitModule < Msf::Auxiliary
         )
       end
     end
-
   end
-
 
   # This logic is not universal ie a local account will not care about workgroup
   # but remote domain authentication will so check each instance

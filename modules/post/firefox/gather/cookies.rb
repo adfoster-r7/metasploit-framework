@@ -8,16 +8,19 @@ require 'json'
 class MetasploitModule < Msf::Post
   include Msf::Exploit::Remote::FirefoxPrivilegeEscalation
 
-  def initialize(info={})
-    super(update_info(info,
-      'Name'          => 'Firefox Gather Cookies from Privileged Javascript Shell',
-      'Description'   => %q{
-        This module allows collection of cookies from a Firefox Privileged Javascript Shell.
-      },
-      'License'       => MSF_LICENSE,
-      'Author'        => [ 'joev' ],
-      'DisclosureDate' => '2014-03-26'
-    ))
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Firefox Gather Cookies from Privileged Javascript Shell',
+        'Description' => %q{
+          This module allows collection of cookies from a Firefox Privileged Javascript Shell.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [ 'joev' ],
+        'DisclosureDate' => '2014-03-26'
+      )
+    )
 
     register_options([
       OptInt.new('TIMEOUT', [true, "Maximum time (seconds) to wait for a response", 90])

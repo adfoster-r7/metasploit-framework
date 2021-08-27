@@ -10,16 +10,15 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'           => 'Xerox WorkCentre User Enumeration (SNMP)',
-      'Description'    => %q{
+      'Name' => 'Xerox WorkCentre User Enumeration (SNMP)',
+      'Description' => %q{
           This module will do user enumeration based on the Xerox WorkCentre present on the network.
           SNMP is used to extract the usernames.
       },
-      'Author'         =>
-        [
-          'pello <fropert[at]packetfault.org>'
-        ],
-      'License'        => MSF_LICENSE
+      'Author' => [
+        'pello <fropert[at]packetfault.org>'
+      ],
+      'License' => MSF_LICENSE
     )
   end
 
@@ -38,13 +37,14 @@ class MetasploitModule < Msf::Auxiliary
 
         @users.each do |user|
           report_note(
-          :host => rhost,
-          :port => datastore['RPORT'],
-          :proto => 'udp',
-          :sname => 'snmp',
-          :update => :unique_data,
-          :type => 'xerox.workcenter.user',
-          :data => user)
+            :host => rhost,
+            :port => datastore['RPORT'],
+            :proto => 'udp',
+            :sname => 'snmp',
+            :update => :unique_data,
+            :type => 'xerox.workcenter.user',
+            :data => user
+          )
         end
       end
 

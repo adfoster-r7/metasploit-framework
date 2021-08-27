@@ -3,32 +3,35 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::MSSQL
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'        => 'Microsoft SQL Server SUSER_SNAME SQL Logins Enumeration',
-      'Description' => %q{
-        This module can be used to obtain a list of all logins from a SQL Server with any login.
-        Selecting all of the logins from the master..syslogins table is restricted to sysadmins.
-        However, logins with the PUBLIC role (everyone) can quickly enumerate all SQL Server
-        logins using the SUSER_SNAME function by fuzzing the principal_id parameter. This is
-        pretty simple, because the principal IDs assigned to logins are incremental.  Once logins
-        have been enumerated they can be verified via sp_defaultdb error analysis. This is
-        important, because not all of the principal IDs resolve to SQL logins (some resolve to
-        roles instead). Once logins have been enumerated, they can be used in dictionary attacks.
-      },
-      'Author'      => ['nullbind <scott.sutherland[at]netspi.com>'],
-      'License'     => MSF_LICENSE,
-      'References'  => [['URL','http://msdn.microsoft.com/en-us/library/ms174427.aspx']]
-    ))
+    super(
+      update_info(
+        info,
+        'Name' => 'Microsoft SQL Server SUSER_SNAME SQL Logins Enumeration',
+        'Description' => %q{
+          This module can be used to obtain a list of all logins from a SQL Server with any login.
+          Selecting all of the logins from the master..syslogins table is restricted to sysadmins.
+          However, logins with the PUBLIC role (everyone) can quickly enumerate all SQL Server
+          logins using the SUSER_SNAME function by fuzzing the principal_id parameter. This is
+          pretty simple, because the principal IDs assigned to logins are incremental.  Once logins
+          have been enumerated they can be verified via sp_defaultdb error analysis. This is
+          important, because not all of the principal IDs resolve to SQL logins (some resolve to
+          roles instead). Once logins have been enumerated, they can be used in dictionary attacks.
+        },
+        'Author' => ['nullbind <scott.sutherland[at]netspi.com>'],
+        'License' => MSF_LICENSE,
+        'References' => [['URL', 'http://msdn.microsoft.com/en-us/library/ms174427.aspx']]
+      )
+    )
 
     register_options(
       [
         OptInt.new('FuzzNum', [true, 'Number of principal_ids to fuzz.', 300]),
-      ])
+      ]
+    )
   end
 
   def run
@@ -84,7 +87,7 @@ class MetasploitModule < Msf::Auxiliary
       # Display list verified SQL Server logins
       print_good("#{sql_logins_list_verified.length} SQL Server logins were verified:")
       sql_logins_list_verified.sort.each do |sql_login|
-          print_status(" - #{sql_login}")
+        print_status(" - #{sql_login}")
       end
     end
 
@@ -134,7 +137,6 @@ class MetasploitModule < Msf::Auxiliary
 
   # Checks if user has the db_owner role
   def verify_logins(sql_logins_list)
-
     # Create array for later use
     verified_sql_logins = []
 

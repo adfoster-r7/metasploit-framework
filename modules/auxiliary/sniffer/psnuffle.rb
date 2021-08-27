@@ -17,30 +17,29 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'pSnuffle Packet Sniffer',
+      'Name' => 'pSnuffle Packet Sniffer',
       'Description' => 'This module sniffs passwords like dsniff did in the past',
-      'Author'	    => 'Max Moser <mmo[at]remote-exploit.org>',
-      'License'	    => MSF_LICENSE,
-      'Actions'	    =>
-        [
-          [ 'Sniffer', 'Description' => 'Run sniffer' ],
-          [ 'List', 'Description' => 'List protocols' ]
-        ],
+      'Author'	=> 'Max Moser <mmo[at]remote-exploit.org>',
+      'License'	=> MSF_LICENSE,
+      'Actions' => [
+        [ 'Sniffer', 'Description' => 'Run sniffer' ],
+        [ 'List', 'Description' => 'List protocols' ]
+      ],
       'PassiveActions' => [ 'Sniffer' ],
-      'DefaultAction'  => 'Sniffer'
+      'DefaultAction' => 'Sniffer'
     )
     register_options [
       OptString.new('PROTOCOLS', [true, 'A comma-delimited list of protocols to sniff or "all".', 'all']),
     ]
 
     register_advanced_options [
-      OptPath.new('ProtocolBase', [true, 'The base directory containing the protocol decoders',
+      OptPath.new('ProtocolBase', [
+        true, 'The base directory containing the protocol decoders',
         File.join(Msf::Config.data_directory, 'exploits', 'psnuffle')
       ]),
     ]
     deregister_options('RHOSTS')
   end
-
 
   def load_protocols
     base = datastore['ProtocolBase']
@@ -48,7 +47,7 @@ class MetasploitModule < Msf::Auxiliary
       raise RuntimeError, 'The ProtocolBase parameter is set to an invalid directory'
     end
 
-    allowed = datastore['PROTOCOLS'].split(',').map{|x| x.strip.downcase}
+    allowed = datastore['PROTOCOLS'].split(',').map { |x| x.strip.downcase }
     @protos = {}
     decoders = Dir.new(base).entries.grep(/\.rb$/).sort
     decoders.each do |n|
@@ -88,6 +87,7 @@ class MetasploitModule < Msf::Auxiliary
       p = PacketFu::Packet.parse(pkt)
       next unless p.is_tcp?
       next if p.payload.empty?
+
       @protos.each_key do |k|
         @protos[k].parse(p)
       end
@@ -107,9 +107,9 @@ class BaseProtocolParser
 
   def initialize(framework, mod)
     self.framework = framework
-    self.module    = mod
-    self.sessions  = {}
-    self.dport     = 0
+    self.module = mod
+    self.sessions = {}
+    self.dport = 0
     register_sigs
   end
 
@@ -154,7 +154,7 @@ class BaseProtocolParser
         purge_keys << ses
       end
     end
-    purge_keys.each {|ses| sessions.delete(ses) }
+    purge_keys.each { |ses| sessions.delete(ses) }
 
     # Does this session already exist?
     if (sessions[sessionid])
@@ -166,11 +166,11 @@ class BaseProtocolParser
         sessions[sessionid] = {
           :client_host => $1,
           :client_port => $2,
-          :host        => $3,
-          :port        => $4,
-          :session     => sessionid,
-          :ctime       => Time.now,
-          :mtime       => Time.now
+          :host => $3,
+          :port => $4,
+          :session => sessionid,
+          :ctime => Time.now,
+          :mtime => Time.now
         }
       end
     end
@@ -179,14 +179,16 @@ class BaseProtocolParser
   end
 
   def get_session_src(pkt)
-    return "%s:%d-%s:%d" % [pkt.ip_daddr,pkt.tcp_dport,pkt.ip_saddr,pkt.tcp_sport] if pkt.is_tcp?
-    return "%s:%d-%s:%d" % [pkt.ip_daddr,pkt.udp_dport,pkt.ip_saddr,pkt.udp_sport] if pkt.is_udp?
-    return "%s:%d-%s:%d" % [pkt.ip_daddr,0,pkt.ip_saddr,0]
+    return "%s:%d-%s:%d" % [pkt.ip_daddr, pkt.tcp_dport, pkt.ip_saddr, pkt.tcp_sport] if pkt.is_tcp?
+    return "%s:%d-%s:%d" % [pkt.ip_daddr, pkt.udp_dport, pkt.ip_saddr, pkt.udp_sport] if pkt.is_udp?
+
+    return "%s:%d-%s:%d" % [pkt.ip_daddr, 0, pkt.ip_saddr, 0]
   end
 
   def get_session_dst(pkt)
-    return "%s:%d-%s:%d" % [pkt.ip_saddr,pkt.tcp_sport,pkt.ip_daddr,pkt.tcp_dport] if pkt.is_tcp?
-    return "%s:%d-%s:%d" % [pkt.ip_saddr,pkt.udp_sport,pkt.ip_daddr,pkt.udp_dport] if pkt.is_udp?
-    return "%s:%d-%s:%d" % [pkt.ip_saddr,0,pkt.ip_daddr,0]
+    return "%s:%d-%s:%d" % [pkt.ip_saddr, pkt.tcp_sport, pkt.ip_daddr, pkt.tcp_dport] if pkt.is_tcp?
+    return "%s:%d-%s:%d" % [pkt.ip_saddr, pkt.udp_sport, pkt.ip_daddr, pkt.udp_dport] if pkt.is_udp?
+
+    return "%s:%d-%s:%d" % [pkt.ip_saddr, 0, pkt.ip_daddr, 0]
   end
 end

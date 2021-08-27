@@ -124,7 +124,6 @@ class MetasploitModule < Msf::Post
 
   # The sauce starts here
   def run
-
     hostname = sysinfo['Computer']
     print_status("Executing module against #{hostname}")
 

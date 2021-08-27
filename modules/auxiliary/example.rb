@@ -14,12 +14,12 @@ class MetasploitModule < Msf::Auxiliary
     super(
       update_info(
         info,
-        'Name'           => 'Sample Auxiliary Module',
+        'Name' => 'Sample Auxiliary Module',
         # The description can be multiple lines, but does not preserve formatting.
-        'Description'    => 'Sample Auxiliary Module',
-        'Author'         => ['Joe Module <joem@example.com>'],
-        'License'        => MSF_LICENSE,
-        'Actions'        => [
+        'Description' => 'Sample Auxiliary Module',
+        'Author' => ['Joe Module <joem@example.com>'],
+        'License' => MSF_LICENSE,
+        'Actions' => [
           [ 'Default Action', 'Description' => 'This does something' ],
           [ 'Another Action', 'Description' => 'This does a different thing' ]
         ],
@@ -27,7 +27,7 @@ class MetasploitModule < Msf::Auxiliary
         'PassiveActions' => [
           'Another Action'
         ],
-        'DefaultAction'  => 'Default Action'
+        'DefaultAction' => 'Default Action'
       )
     )
   end

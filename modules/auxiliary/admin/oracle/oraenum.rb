@@ -8,18 +8,20 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::ORACLE
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Oracle Database Enumeration',
-      'Description'    => %q{
-        This module provides a simple way to scan an Oracle database server
-        for configuration parameters that may be useful during a penetration
-        test. Valid database credentials must be provided for this module to
-        run.
-      },
-      'Author'         => [ 'Carlos Perez <carlos_perez[at]darkoperator.com>' ],
-      'License'        => MSF_LICENSE
-    ))
-
+    super(
+      update_info(
+        info,
+        'Name' => 'Oracle Database Enumeration',
+        'Description' => %q{
+          This module provides a simple way to scan an Oracle database server
+          for configuration parameters that may be useful during a penetration
+          test. Valid database credentials must be provided for this module to
+          run.
+        },
+        'Author' => [ 'Carlos Perez <carlos_perez[at]darkoperator.com>' ],
+        'License' => MSF_LICENSE
+      )
+    )
   end
 
   def run
@@ -31,7 +33,7 @@ class MetasploitModule < Msf::Auxiliary
       vparm = {}
       params = prepare_exec(query)
       params.each do |l|
-        name,value = l.split(",")
+        name, value = l.split(",")
         vparm["#{name}"] = value
       end
     rescue => e
@@ -45,7 +47,7 @@ class MetasploitModule < Msf::Auxiliary
     print_status("Running Oracle Enumeration....")
 
     # Version Check
-    query =  'select * from v$version'
+    query = 'select * from v$version'
     ver = prepare_exec(query)
     print_status("The versions of the Components are:")
     ver.each do |v|
@@ -115,14 +117,12 @@ class MetasploitModule < Msf::Auxiliary
           :update => :unique_data
         )
       end
-
     end
 
     #-------------------------------------------------------
     # Security Settings
     print_status("Security Settings:")
     begin
-
       if vparm["sql92_security"] == "FALSE"
         print_status("\tSQL92 Security restriction on SELECT is not Enabled")
         report_note(
@@ -182,8 +182,8 @@ class MetasploitModule < Msf::Auxiliary
         :sname => 'oracle',
         :port => datastore['RPORT'],
         :type => 'ORA_ENUM',
-        :data => "UTL_DIR: #{ vparm["utl_file_dir"]}"
-      ) if not vparm["utl_file_dir"]#.empty?
+        :data => "UTL_DIR: #{vparm["utl_file_dir"]}"
+      ) if not vparm["utl_file_dir"] # .empty?
 
       print_status("\tAudit log is saved at #{vparm["audit_file_dest"]}")
       report_note(
@@ -192,9 +192,8 @@ class MetasploitModule < Msf::Auxiliary
         :sname => 'oracle',
         :port => datastore['RPORT'],
         :type => 'ORA_ENUM',
-        :data => "Audit Log Location: #{ vparm["audit_file_dest"]}"
-      ) if not vparm["audit_file_dest"]#.empty?
-
+        :data => "Audit Log Location: #{vparm["audit_file_dest"]}"
+      ) if not vparm["audit_file_dest"] # .empty?
     end
 
     #-------------------------------------------------------
@@ -218,7 +217,6 @@ class MetasploitModule < Msf::Auxiliary
         :data => "Account Lockout Time: #{lockout[0].chomp}",
         :update => :unique_data
       )
-
     rescue => e
       if e.to_s =~ /ORA-00942: table or view does not exist/
         print_error("It appears you do not have sufficient rights to perform the check")
@@ -245,7 +243,6 @@ class MetasploitModule < Msf::Auxiliary
         :data => "Account Fail Logins Permitted: #{failed_logins[0].chomp}",
         :update => :unique_data
       )
-
     rescue => e
       if e.to_s =~ /ORA-00942: table or view does not exist/
         print_error("It appears you do not have sufficient rights to perform the check")
@@ -272,7 +269,6 @@ class MetasploitModule < Msf::Auxiliary
         :data => "Account Password Grace Time: #{grace_time[0].chomp}",
         :update => :unique_data
       )
-
     rescue => e
       if e.to_s =~ /ORA-00942: table or view does not exist/
         print_error("It appears you do not have sufficient rights to perform the check")
@@ -299,7 +295,6 @@ class MetasploitModule < Msf::Auxiliary
         :data => "Password Life Time: #{passlife_time[0].chomp}",
         :update => :unique_data
       )
-
     rescue => e
       if e.to_s =~ /ORA-00942: table or view does not exist/
         print_error("It appears you do not have sufficient rights to perform the check")
@@ -326,7 +321,6 @@ class MetasploitModule < Msf::Auxiliary
         :data => "Password Reuse Time: #{passreuse[0].chomp}",
         :update => :unique_data
       )
-
     rescue => e
       if e.to_s =~ /ORA-00942: table or view does not exist/
         print_error("It appears you do not have sufficient rights to perform the check")
@@ -354,7 +348,6 @@ class MetasploitModule < Msf::Auxiliary
         :update => :unique_data
       )
       print_status("\tThe Number of Times a Password can be reused is set to #{passreuse[0].chomp}")
-
     rescue => e
       if e.to_s =~ /ORA-00942: table or view does not exist/
         print_error("It appears you do not have sufficient rights to perform the check")
@@ -394,7 +387,6 @@ class MetasploitModule < Msf::Auxiliary
           :update => :unique_data
         )
       end
-
     rescue => e
       if e.to_s =~ /ORA-00942: table or view does not exist/
         print_error("It appears you do not have sufficient rights to perform the check")
@@ -406,7 +398,6 @@ class MetasploitModule < Msf::Auxiliary
     #-------------------------------------------------------
 
     begin
-
       if majorrel.join.to_i < 11
 
         query = %Q|
@@ -449,7 +440,6 @@ class MetasploitModule < Msf::Auxiliary
           )
         end
       end
-
     rescue => e
       if e.to_s =~ /ORA-00942: table or view does not exist/
         print_error("It appears you do not have sufficient rights to perform the check")
@@ -500,7 +490,6 @@ class MetasploitModule < Msf::Auxiliary
           )
         end
       end
-
     rescue => e
       if e.to_s =~ /ORA-00942: table or view does not exist/
         print_error("It appears you do not have sufficient rights to perform the check")
@@ -529,7 +518,6 @@ class MetasploitModule < Msf::Auxiliary
           :update => :unique_data
         )
       end
-
     rescue => e
       if e.to_s =~ /ORA-00942: table or view does not exist/
         print_error("It appears you do not have sufficient rights to perform the check")
@@ -555,9 +543,9 @@ class MetasploitModule < Msf::Auxiliary
           :port => datastore['RPORT'],
           :type => 'ORA_ENUM',
           :data => "Account with ALTER SYSTEM Priv  #{as.chomp}",
-          :update => :unique_data)
+          :update => :unique_data
+        )
       end
-
     rescue => e
       if e.to_s =~ /ORA-00942: table or view does not exist/
         print_error("It appears you do not have sufficient rights to perform the check")
@@ -586,7 +574,6 @@ class MetasploitModule < Msf::Auxiliary
           :update => :unique_data
         )
       end
-
     rescue => e
       if e.to_s =~ /ORA-00942: table or view does not exist/
         print_error("It appears you do not have sufficient rights to perform the check")
@@ -616,7 +603,6 @@ class MetasploitModule < Msf::Auxiliary
           :update => :unique_data
         )
       end
-
     rescue => e
       if e.to_s =~ /ORA-00942: table or view does not exist/
         print_error("It appears you do not have sufficient rights to perform the check")
@@ -625,7 +611,7 @@ class MetasploitModule < Msf::Auxiliary
       end
     end
 
-    #Default Password Check
+    # Default Password Check
     begin
       print_status("Default password check:")
       if majorrel.join.to_i == 11
@@ -656,11 +642,11 @@ class MetasploitModule < Msf::Auxiliary
         returnedstring = prepare_exec(query)
         accts = {}
         returnedstring.each do |record|
-          user,pass = record.split(",")
+          user, pass = record.split(",")
           accts["#{pass.chomp}"] = user
         end
-        ::File.open(ordfltpss, "rb").each_line do  |l|
-          accrcrd =  l.split(",")
+        ::File.open(ordfltpss, "rb").each_line do |l|
+          accrcrd = l.split(",")
           if accts.has_key?(accrcrd[2])
             print_status("\tDefault pass for account #{accrcrd[0]} is #{accrcrd[1]} ")
             report_note(

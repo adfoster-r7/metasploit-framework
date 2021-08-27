@@ -8,21 +8,24 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Fuzzer
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'SMB Negotiate Dialect Corruption',
-      'Description'    => %q{
-        This module sends a series of SMB negotiate requests with corrupted bytes
-      },
-      'Author'         => [ 'hdm' ],
-      'License'        => MSF_LICENSE
-    ))
+    super(
+      update_info(
+        info,
+        'Name' => 'SMB Negotiate Dialect Corruption',
+        'Description' => %q{
+          This module sends a series of SMB negotiate requests with corrupted bytes
+        },
+        'Author' => [ 'hdm' ],
+        'License' => MSF_LICENSE
+      )
+    )
     register_options([
       Opt::RPORT(445),
       OptInt.new('MAXDEPTH', [false, 'Specify a maximum byte depth to test'])
     ])
   end
 
-  def do_smb_negotiate(pkt,opts={})
+  def do_smb_negotiate(pkt, opts = {})
     @connected = false
     connect
     @connected = true
@@ -40,13 +43,13 @@ class MetasploitModule < Msf::Auxiliary
 
     max = datastore['MAXDEPTH'].to_i
     max = nil if max == 0
-    tot = ( max ? [max,pkt.length].min : pkt.length) * 256
+    tot = (max ? [max, pkt.length].min : pkt.length) * 256
 
     print_status("Fuzzing SMB negotiate packet with #{tot} requests")
-    fuzz_string_corrupt_byte_reverse(pkt,max) do |str|
+    fuzz_string_corrupt_byte_reverse(pkt, max) do |str|
       cnt += 1
 
-      if(cnt % 100 == 0)
+      if (cnt % 100 == 0)
         print_status("Fuzzing with iteration #{cnt}/#{tot} using #{@last_fuzzer_input}")
       end
 
@@ -61,9 +64,9 @@ class MetasploitModule < Msf::Auxiliary
         disconnect
       end
 
-      if(not @connected)
-        if(last_str)
-          print_status("The service may have crashed: iteration:#{cnt-1} method=#{last_inp} string=#{last_str.unpack("H*")[0]} error=#{last_err}")
+      if (not @connected)
+        if (last_str)
+          print_status("The service may have crashed: iteration:#{cnt - 1} method=#{last_inp} string=#{last_str.unpack("H*")[0]} error=#{last_err}")
         else
           print_status("Could not connect to the service: #{last_err}")
         end
@@ -78,13 +81,13 @@ class MetasploitModule < Msf::Auxiliary
   def make_smb_negotiate
     # The SMB 2 dialect must be there
     dialects = ['PC NETWORK PROGRAM 1.0', 'LANMAN1.0', 'Windows for Workgroups 3.1a', 'LM1.2X002', 'LANMAN2.1', 'NT LM 0.12']
-    data     = dialects.collect { |dialect| "\x02" + dialect + "\x00" }.join('')
+    data = dialects.collect { |dialect| "\x02" + dialect + "\x00" }.join('')
 
     pkt = Rex::Proto::SMB::Constants::SMB_NEG_PKT.make_struct
     pkt['Payload']['SMB'].v['Command'] = Rex::Proto::SMB::Constants::SMB_COM_NEGOTIATE
     pkt['Payload']['SMB'].v['Flags1'] = 0x18
     pkt['Payload']['SMB'].v['Flags2'] = 0xc853
-    pkt['Payload'].v['Payload']       = data
+    pkt['Payload'].v['Payload'] = data
     pkt.to_s
   end
 end

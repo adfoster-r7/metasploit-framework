@@ -10,14 +10,17 @@ class MetasploitModule < Msf::Post
   include Msf::Post::Linux::Priv
 
   def initialize(info = {})
-    super( update_info( info,
-      'Name'          => 'Linux Gather Dump Password Hashes for Linux Systems',
-      'Description'   => %q{ Post Module to dump the password hashes for all users on a Linux System},
-      'License'       => MSF_LICENSE,
-      'Author'        => ['Carlos Perez <carlos_perez[at]darkoperator.com>'],
-      'Platform'      => ['linux'],
-      'SessionTypes'  => ['shell', 'meterpreter']
-    ))
+    super(
+      update_info(
+        info,
+        'Name' => 'Linux Gather Dump Password Hashes for Linux Systems',
+        'Description' => %q{ Post Module to dump the password hashes for all users on a Linux System},
+        'License' => MSF_LICENSE,
+        'Author' => ['Carlos Perez <carlos_perez[at]darkoperator.com>'],
+        'Platform' => ['linux'],
+        'SessionTypes' => ['shell', 'meterpreter']
+      )
+    )
   end
 
   # Run Method for when run command is issued
@@ -52,7 +55,7 @@ class MetasploitModule < Msf::Post
       hash_parts = l.split(':')
       jtr_format = identify_hash hash_parts[1]
 
-      if jtr_format.empty? #overide the default
+      if jtr_format.empty? # overide the default
         jtr_format = 'des,bsdi,crypt'
       end
 
@@ -86,7 +89,8 @@ class MetasploitModule < Msf::Post
       user = sl.scan(/(^\w*):/).join
       pf.each_line do |pl|
         next unless pl.match(/^#{user}:/)
-        unshadowed << pl.gsub(/:x:/,":#{pass}:")
+
+        unshadowed << pl.gsub(/:x:/, ":#{pass}:")
       end
     end
 

@@ -13,15 +13,14 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'HTTP SSL Certificate Information',
+      'Name' => 'HTTP SSL Certificate Information',
       'Description' => 'Parse the server SSL certificate to obtain the common name and signature algorithm',
-      'Author'      =>
-        [
-          'et', #original module
-          'Chris John Riley', #additions
-          'Veit Hailperin <hailperv[at]gmail.com>', # checks for public key size, valid time
-        ],
-      'License'     => MSF_LICENSE
+      'Author' => [
+        'et', # original module
+        'Chris John Riley', # additions
+        'Veit Hailperin <hailperv[at]gmail.com>', # checks for public key size, valid time
+      ],
+      'License' => MSF_LICENSE
     )
     register_options([
       Opt::RPORT(443)
@@ -30,10 +29,8 @@ class MetasploitModule < Msf::Auxiliary
 
   # Fingerprint a single host
   def run_host(ip)
-
     begin
-
-      connect(true, {"SSL" => true}) #Force SSL
+      connect(true, { "SSL" => true }) # Force SSL
 
       if sock.respond_to? :peer_cert
         cert = OpenSSL::X509::Certificate.new(sock.peer_cert)
@@ -99,20 +96,20 @@ class MetasploitModule < Msf::Auxiliary
           report_note(
             :host	=> ip,
             :port	=> rport,
-            :proto  => 'tcp',
+            :proto => 'tcp',
             :type	=> 'http.vhost',
-            :data	=> {:name => vhostn}
+            :data	=> { :name => vhostn }
           )
 
           # Store the SSL certificate itself
           report_note(
             :host	=> ip,
-            :proto  => 'tcp',
+            :proto => 'tcp',
             :port	=> rport,
             :type	=> 'ssl.certificate',
             :data	=> {
-              :cn        => vhostn,
-              :subject   => cert.subject.to_a,
+              :cn => vhostn,
+              :subject => cert.subject.to_a,
               :algorithm => alg,
               :valid_from => cert.not_before,
               :valid_after => cert.not_after,

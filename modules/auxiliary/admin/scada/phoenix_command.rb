@@ -8,36 +8,41 @@ class MetasploitModule < Msf::Auxiliary
   include Rex::Socket::Tcp
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'          => 'PhoenixContact PLC Remote START/STOP Command',
-      'Version'       => '1',
-      'Description'   => %q{
-        PhoenixContact Programmable Logic Controllers are built upon a variant of
-        ProConOS. Communicating using a proprietary protocol over ports TCP/1962
-        and TCP/41100 or TCP/20547.
-        It allows a remote user to read out the PLC Type, Firmware and
-         Build number on port TCP/1962.
-        And also to read out the CPU State (Running or Stopped) AND start
-         or stop the CPU on port TCP/41100 (confirmed ILC 15x and 17x series)
-         or on port TCP/20547 (confirmed ILC 39x series)
-      },
-      'Author'         => 'Tijl Deneut <tijl.deneut[at]howest.be>',
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'PhoenixContact PLC Remote START/STOP Command',
+        'Version' => '1',
+        'Description' => %q{
+          PhoenixContact Programmable Logic Controllers are built upon a variant of
+          ProConOS. Communicating using a proprietary protocol over ports TCP/1962
+          and TCP/41100 or TCP/20547.
+          It allows a remote user to read out the PLC Type, Firmware and
+          Build number on port TCP/1962.
+          And also to read out the CPU State (Running or Stopped) AND start
+          or stop the CPU on port TCP/41100 (confirmed ILC 15x and 17x series)
+          or on port TCP/20547 (confirmed ILC 39x series)
+        },
+        'Author' => 'Tijl Deneut <tijl.deneut[at]howest.be>',
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'URL', 'https://github.com/tijldeneut/ICSSecurityScripts' ],
           [ 'CVE', '2014-9195']
         ],
-      'DisclosureDate' => '2015-05-20'))
+        'DisclosureDate' => '2015-05-20'
+      )
+    )
     register_options(
       [
-        OptEnum.new('ACTION', [true, 'PLC CPU action, REV means reverse current CPU state', 'NOOP',
+        OptEnum.new('ACTION', [
+          true, 'PLC CPU action, REV means reverse current CPU state', 'NOOP',
           [
             'STOP',
             'START',
             'REV',
             'NOOP'
-          ]]),
+          ]
+        ]),
         OptPort.new('RINFOPORT', [true, 'Set info port', 1962 ]),
         OptPort.new('RPORT', [false, 'Set action port, will try autodetect when not set' ])
       ], self.class

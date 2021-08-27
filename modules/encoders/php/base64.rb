@@ -8,15 +8,15 @@ class MetasploitModule < Msf::Encoder
 
   def initialize
     super(
-      'Name'             => 'PHP Base64 Encoder',
-      'Description'      => %q{
+      'Name' => 'PHP Base64 Encoder',
+      'Description' => %q{
         This encoder returns a base64 string encapsulated in
         eval(base64_decode()), increasing the size by a bit more than
         one third.
       },
-      'Author'           => 'egypt',
-      'License'          => BSD_LICENSE,
-      'Arch'             => ARCH_PHP)
+      'Author' => 'egypt',
+      'License' => BSD_LICENSE,
+      'Arch' => ARCH_PHP)
   end
 
   def encode_block(state, buf)
@@ -65,7 +65,7 @@ class MetasploitModule < Msf::Encoder
       while (b64[i].chr =~ %r{[0-9/+]})
         i += 1
       end
-      b64.insert(i,'.')
+      b64.insert(i, '.')
       i += 900
     end
 

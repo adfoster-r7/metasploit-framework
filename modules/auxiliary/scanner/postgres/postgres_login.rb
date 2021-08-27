@@ -14,51 +14,59 @@ class MetasploitModule < Msf::Auxiliary
 
   # Creates an instance of this module.
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'PostgreSQL Login Utility',
-      'Description'    => %q{
-        This module attempts to authenticate against a PostgreSQL
-        instance using username and password combinations indicated
-        by the USER_FILE, PASS_FILE, and USERPASS_FILE options. Note that
-        passwords may be either plaintext or MD5 formatted hashes.
-      },
-      'Author'         => [ 'todb' ],
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'PostgreSQL Login Utility',
+        'Description' => %q{
+          This module attempts to authenticate against a PostgreSQL
+          instance using username and password combinations indicated
+          by the USER_FILE, PASS_FILE, and USERPASS_FILE options. Note that
+          passwords may be either plaintext or MD5 formatted hashes.
+        },
+        'Author' => [ 'todb' ],
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'URL', 'http://www.postgresql.org' ],
           [ 'CVE', '1999-0502'], # Weak password
           [ 'URL', 'https://hashcat.net/forum/archive/index.php?thread-4148.html' ] # Pass the Hash
         ]
-    ))
+      )
+    )
 
     register_options(
       [
         Opt::Proxies,
-        OptPath.new('USERPASS_FILE',  [ false, "File containing (space-separated) users and passwords, one pair per line",
-          File.join(Msf::Config.data_directory, "wordlists", "postgres_default_userpass.txt") ]),
-        OptPath.new('USER_FILE',      [ false, "File containing users, one per line",
-          File.join(Msf::Config.data_directory, "wordlists", "postgres_default_user.txt") ]),
-        OptPath.new('PASS_FILE',      [ false, "File containing passwords, one per line",
-          File.join(Msf::Config.data_directory, "wordlists", "postgres_default_pass.txt") ]),
-      ])
+        OptPath.new('USERPASS_FILE', [
+          false, "File containing (space-separated) users and passwords, one pair per line",
+          File.join(Msf::Config.data_directory, "wordlists", "postgres_default_userpass.txt")
+        ]),
+        OptPath.new('USER_FILE', [
+          false, "File containing users, one per line",
+          File.join(Msf::Config.data_directory, "wordlists", "postgres_default_user.txt")
+        ]),
+        OptPath.new('PASS_FILE', [
+          false, "File containing passwords, one per line",
+          File.join(Msf::Config.data_directory, "wordlists", "postgres_default_pass.txt")
+        ]),
+      ]
+    )
 
     deregister_options('SQL', 'PASSWORD_SPRAY')
-
   end
 
   # Loops through each host in turn. Note the current IP address is both
   # ip and datastore['RHOST']
   def run_host(ip)
     cred_collection = Metasploit::Framework::CredentialCollection.new(
-        blank_passwords: datastore['BLANK_PASSWORDS'],
-        pass_file: datastore['PASS_FILE'],
-        password: datastore['PASSWORD'],
-        user_file: datastore['USER_FILE'],
-        userpass_file: datastore['USERPASS_FILE'],
-        username: datastore['USERNAME'],
-        user_as_pass: datastore['USER_AS_PASS'],
-        realm: datastore['DATABASE']
+      blank_passwords: datastore['BLANK_PASSWORDS'],
+      pass_file: datastore['PASS_FILE'],
+      password: datastore['PASSWORD'],
+      user_file: datastore['USER_FILE'],
+      userpass_file: datastore['USERPASS_FILE'],
+      username: datastore['USERNAME'],
+      user_as_pass: datastore['USER_AS_PASS'],
+      realm: datastore['DATABASE']
     )
 
     cred_collection = prepend_db_passwords(cred_collection)
@@ -78,8 +86,8 @@ class MetasploitModule < Msf::Auxiliary
     scanner.scan! do |result|
       credential_data = result.to_h
       credential_data.merge!(
-          module_fullname: self.fullname,
-          workspace_id: myworkspace_id
+        module_fullname: self.fullname,
+        workspace_id: myworkspace_id
       )
       if result.success?
         credential_core = create_credential(credential_data)
@@ -92,7 +100,6 @@ class MetasploitModule < Msf::Auxiliary
         vprint_error "#{ip}:#{rport} - LOGIN FAILED: #{result.credential} (#{result.status}: #{result.proof})"
       end
     end
-
   end
 
   # Alias for RHOST
@@ -104,7 +111,5 @@ class MetasploitModule < Msf::Auxiliary
   def rport
     datastore['RPORT']
   end
-
-
 
 end

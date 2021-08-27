@@ -34,17 +34,15 @@ class MetasploitModule < Msf::Auxiliary
         The module can also be used to capture SMB hashes by using a fake SMB share as
         FILEPATH.
       },
-      'References' =>
-        [
-          [ 'OSVDB', '78537' ],
-          [ 'BID', '51645' ],
-          [ 'URL','http://erpscan.com/advisories/dsecrg-12-009-sap-netweaver-pfl_check_os_file_existence-missing-authorisation-check-and-smb-relay-vulnerability/' ]
-        ],
-      'Author' =>
-        [
-          'lexey Tyurin', # Vulnerability discovery
-          'nmonkee' # Metasploit module
-        ],
+      'References' => [
+        [ 'OSVDB', '78537' ],
+        [ 'BID', '51645' ],
+        [ 'URL', 'http://erpscan.com/advisories/dsecrg-12-009-sap-netweaver-pfl_check_os_file_existence-missing-authorisation-check-and-smb-relay-vulnerability/' ]
+      ],
+      'Author' => [
+        'lexey Tyurin', # Vulnerability discovery
+        'nmonkee' # Metasploit module
+      ],
       'License' => MSF_LICENSE
     )
 
@@ -52,7 +50,7 @@ class MetasploitModule < Msf::Auxiliary
       OptString.new('CLIENT', [true, 'SAP Client', '001']),
       OptString.new('HttpUsername', [true, 'Username', 'SAP*']),
       OptString.new('HttpPassword', [true, 'Password', '06071992']),
-      OptString.new('FILEPATH',[true,'File Path to check for  (e.g. /etc)','/etc/passwd'])
+      OptString.new('FILEPATH', [true, 'File Path to check for  (e.g. /etc)', '/etc/passwd'])
     ])
   end
 

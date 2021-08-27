@@ -13,7 +13,7 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'Chargen Probe Utility',
+      'Name' => 'Chargen Probe Utility',
       'Description' => %q{
         Chargen is a debugging and measurement tool and a character
         generator service. A character generator service simply sends
@@ -26,18 +26,17 @@ class MetasploitModule < Msf::Auxiliary
         This can result in traffic loops and service degradation with
         large amounts of network traffic.
       },
-      'Author'      => 'Matteo Cantoni <goony[at]nothink.org>',
-      'License'     => MSF_LICENSE,
-      'References'  =>
-        [
-          [ 'CVE', '1999-0103' ], # Note, does not actually trigger a flood.
-          [ 'URL', 'http://tools.ietf.org/html/rfc864' ]
-        ],
+      'Author' => 'Matteo Cantoni <goony[at]nothink.org>',
+      'License' => MSF_LICENSE,
+      'References' => [
+        [ 'CVE', '1999-0103' ], # Note, does not actually trigger a flood.
+        [ 'URL', 'http://tools.ietf.org/html/rfc864' ]
+      ],
       'DisclosureDate' => 'Feb 08 1996')
 
-      register_options([
-        Opt::RPORT(19)
-      ])
+    register_options([
+      Opt::RPORT(19)
+    ])
   end
 
   def run_host(rhost)

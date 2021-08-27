@@ -16,34 +16,37 @@ class MetasploitModule < Msf::Post
 
   include Msf::Post::File
 
-  def initialize(info={})
-    super( update_info( info,
-        'Name'          => 'OSX Network Share Mounter',
-        'Description'   => %q{
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'OSX Network Share Mounter',
+        'Description' => %q{
           This module lists saved network shares and tries to connect to them using stored
           credentials. This does not require root privileges.
         },
-        'License'       => MSF_LICENSE,
-        'Author'        =>
-          [
-            'Peter Toth <globetother[at]gmail.com>',
-            'joev'
-          ],
-        'Platform'      => [ 'osx' ],
-        'SessionTypes'  => [ 'meterpreter', 'shell' ],
-        'Actions'       => [
-          [ 'LIST',    { 'Description' => 'Show a list of stored network share credentials' } ],
-          [ 'MOUNT',   { 'Description' => 'Mount a network shared volume using stored credentials' } ],
-          [ 'UMOUNT',  { 'Description' => 'Unmount a mounted volume' } ]
+        'License' => MSF_LICENSE,
+        'Author' => [
+          'Peter Toth <globetother[at]gmail.com>',
+          'joev'
+        ],
+        'Platform' => [ 'osx' ],
+        'SessionTypes' => [ 'meterpreter', 'shell' ],
+        'Actions' => [
+          [ 'LIST', { 'Description' => 'Show a list of stored network share credentials' } ],
+          [ 'MOUNT', { 'Description' => 'Mount a network shared volume using stored credentials' } ],
+          [ 'UMOUNT', { 'Description' => 'Unmount a mounted volume' } ]
         ],
         'DefaultAction' => 'LIST'
-      ))
+      )
+    )
 
     register_options(
       [
         OptString.new('VOLUME', [true, 'Name of network share volume. `set ACTION LIST` to get a list.', 'localhost']),
         OptEnum.new('PROTOCOL', [true, 'Network share protocol.', 'smb', FILE_SHARE_PROTOCOLS])
-      ])
+      ]
+    )
 
     register_advanced_options(
       [
@@ -132,12 +135,12 @@ class MetasploitModule < Msf::Post
     # and their corresponding ptcl and srvr attributes
     list = []
     lines.each_with_index do |line, x|
-      if line =~ /"desc"<blob>=("Network Password"|<NULL>)/ && x < lines.length-2
+      if line =~ /"desc"<blob>=("Network Password"|<NULL>)/ && x < lines.length - 2
         # Remove everything up to the double-quote after the equal sign,
         # and also the trailing double-quote
-        if lines[x+1].match "^.*\=\"(.*)\w*\"\w*$"
+        if lines[x + 1].match "^.*\=\"(.*)\w*\"\w*$"
           protocol = $1
-          if protocol.start_with?(*FILE_SHARE_PROTOCOLS) && lines[x+2].match("^.*\=\"(.*)\"\w*$")
+          if protocol.start_with?(*FILE_SHARE_PROTOCOLS) && lines[x + 2].match("^.*\=\"(.*)\"\w*$")
             server = $1
             list.push(protocol + "\t" + server)
           end
@@ -161,8 +164,8 @@ class MetasploitModule < Msf::Post
 
     # Go through the list, find the rows with EntryType 8 and their corresponding name
     lines.each_with_index do |line, x|
-      if line =~ /EntryType = 8;/ && x < lines.length-1
-        if NAME_REGEXES.any? { |r| lines[x+1].strip =~ r }
+      if line =~ /EntryType = 8;/ && x < lines.length - 1
+        if NAME_REGEXES.any? { |r| lines[x + 1].strip =~ r }
           list.push($1)
         end
       end

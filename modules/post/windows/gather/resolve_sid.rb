@@ -6,21 +6,24 @@
 class MetasploitModule < Msf::Post
   include Msf::Post::Windows::Accounts
 
-  def initialize(info={})
-    super( update_info( info,
-        'Name'          => 'Windows Gather Local User Account SID Lookup',
-        'Description'   => %q{ This module prints information about a given SID from the perspective of this session },
-        'License'       => MSF_LICENSE,
-        'Author'        => [ 'chao-mu'],
-        'Platform'      => [ 'win' ],
-        'SessionTypes'  => [ 'meterpreter' ]
-      ))
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Windows Gather Local User Account SID Lookup',
+        'Description' => %q{ This module prints information about a given SID from the perspective of this session },
+        'License' => MSF_LICENSE,
+        'Author' => [ 'chao-mu'],
+        'Platform' => [ 'win' ],
+        'SessionTypes' => [ 'meterpreter' ]
+      )
+    )
     register_options(
       [
         OptString.new('SID', [ true, 'SID to lookup' ]),
         OptString.new('SYSTEM_NAME', [ false, 'Where to search. If undefined, first local then trusted DCs' ]),
-      ])
-
+      ]
+    )
   end
 
   def run

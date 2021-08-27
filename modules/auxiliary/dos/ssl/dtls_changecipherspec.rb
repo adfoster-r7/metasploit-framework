@@ -8,32 +8,34 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Capture
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'		=> 'OpenSSL DTLS ChangeCipherSpec Remote DoS',
-      'Description'	=> %q{
+    super(
+      update_info(
+        info,
+        'Name'	=> 'OpenSSL DTLS ChangeCipherSpec Remote DoS',
+        'Description'	=> %q{
           This module performs a Denial of Service Attack against Datagram TLS in OpenSSL
-        version 0.9.8i and earlier. OpenSSL crashes under these versions when it receives a
-        ChangeCipherspec Datagram before a ClientHello.
-      },
-      'Author'	=> [
-            'Jon Oberheide <jon[at]oberheide.org>', #original code
-            'theLightCosine' # metasploit module
-            ],
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+          version 0.9.8i and earlier. OpenSSL crashes under these versions when it receives a
+          ChangeCipherspec Datagram before a ClientHello.
+        },
+        'Author'	=> [
+          'Jon Oberheide <jon[at]oberheide.org>', # original code
+          'theLightCosine' # metasploit module
+        ],
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'CVE', '2009-1386' ],
           [ 'OSVDB', '55073'],
         ],
-      'DisclosureDate' => '2000-04-26'))
-
-    register_options([
-        Opt::RPORT(80),
-        Opt::RHOST
-      ]
+        'DisclosureDate' => '2000-04-26'
+      )
     )
 
-    deregister_options('FILTER','PCAPFILE', 'INTERFACE', 'SNAPLEN', 'TIMEOUT')
+    register_options([
+      Opt::RPORT(80),
+      Opt::RHOST
+    ])
+
+    deregister_options('FILTER', 'PCAPFILE', 'INTERFACE', 'SNAPLEN', 'TIMEOUT')
   end
 
   def run

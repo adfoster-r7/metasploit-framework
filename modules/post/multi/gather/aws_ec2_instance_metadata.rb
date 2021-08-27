@@ -8,22 +8,21 @@ class MetasploitModule < Msf::Post
     super(
       update_info(
         info,
-        'Name'          => 'Gather AWS EC2 Instance Metadata',
-        'Description'   => %q(
+        'Name' => 'Gather AWS EC2 Instance Metadata',
+        'Description' => %q{
           This module will attempt to connect to the AWS EC2 instance metadata service
           and crawl and collect all metadata known about the session'd host.
-        ),
-        'License'       => MSF_LICENSE,
-        'Author'        => [
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [
           'Jon Hart <jon_hart[at]rapid7.com>' # original metasploit module
         ],
         # TODO: is there a way to do this on Windows?
-        'Platform'      => %w(unix),
-        'SessionTypes'  => %w(shell meterpreter),
-        'References'    =>
-          [
-            [ 'URL', 'http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html' ]
-          ]
+        'Platform' => %w(unix),
+        'SessionTypes' => %w(shell meterpreter),
+        'References' => [
+          [ 'URL', 'http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/ec2-instance-metadata.html' ]
+        ]
       )
     )
 
@@ -57,7 +56,7 @@ class MetasploitModule < Msf::Post
         r[l.gsub(%r{/$}, '')] = get_aws_metadata(new_uri, simple_get(new_uri))
       elsif new_uri.to_s =~ %r{/public-keys/} && /^(?<key_id>\d+)=/ =~ l
         # special case handling of the public-keys endpoint
-        new_uri = new_uri.slice(0..(new_uri.index(%r{/public-keys/})+'/public-keys'.length))
+        new_uri = new_uri.slice(0..(new_uri.index(%r{/public-keys/}) + '/public-keys'.length))
         key_uri = "#{new_uri}#{key_id}/"
         key_resp = simple_get(key_uri)
         r[key_id] = get_aws_metadata(key_uri, key_resp)

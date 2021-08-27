@@ -11,30 +11,27 @@ class MetasploitModule < Msf::Auxiliary
 
   # Aliases for common classes
   SIMPLE = Rex::Proto::SMB::SimpleClient
-  XCEPT  = Rex::Proto::SMB::Exceptions
-  CONST  = Rex::Proto::SMB::Constants
-
+  XCEPT = Rex::Proto::SMB::Exceptions
+  CONST = Rex::Proto::SMB::Constants
 
   def initialize
     super(
-      'Name'        => 'Samba Symlink Directory Traversal',
+      'Name' => 'Samba Symlink Directory Traversal',
       'Description' => %Q{
         This module exploits a directory traversal flaw in the Samba
       CIFS server. To exploit this flaw, a writeable share must be specified.
       The newly created directory will link to the root filesystem.
       },
-      'Author'      =>
-        [
-          'kcope', # http://lists.grok.org.uk/pipermail/full-disclosure/2010-February/072927.html
-          'hdm'    # metasploit module
-        ],
-      'References'  =>
-        [
-          ['CVE', '2010-0926'],
-          ['OSVDB', '62145'],
-          ['URL', 'http://www.samba.org/samba/news/symlink_attack.html']
-        ],
-      'License'     => MSF_LICENSE
+      'Author' => [
+        'kcope', # http://lists.grok.org.uk/pipermail/full-disclosure/2010-February/072927.html
+        'hdm'    # metasploit module
+      ],
+      'References' => [
+        ['CVE', '2010-0926'],
+        ['OSVDB', '62145'],
+        ['URL', 'http://www.samba.org/samba/news/symlink_attack.html']
+      ],
+      'License' => MSF_LICENSE
     )
 
     register_options([
@@ -44,7 +41,6 @@ class MetasploitModule < Msf::Auxiliary
 
     deregister_options('SMB::ProtocolVersion')
   end
-
 
   def run
     print_status("Connecting to the server...")

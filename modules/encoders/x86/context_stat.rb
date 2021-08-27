@@ -14,27 +14,29 @@ class MetasploitModule < Msf::Encoder::XorAdditiveFeedback
 
   def initialize
     super(
-      'Name'             => 'stat(2)-based Context Keyed Payload Encoder',
-      'Description'      => %q{
+      'Name' => 'stat(2)-based Context Keyed Payload Encoder',
+      'Description' => %q{
         This is a Context-Keyed Payload Encoder based on stat(2)
         and Shikata Ga Nai.
       },
-      'Author'           => 'Dimitris Glynos',
-      'Arch'             => ARCH_X86,
-      'License'          => MSF_LICENSE,
-      'Decoder'          =>
-        {
-          'KeySize'    => 4,
-          'BlockSize'  => 4
-        })
+      'Author' => 'Dimitris Glynos',
+      'Arch' => ARCH_X86,
+      'License' => MSF_LICENSE,
+      'Decoder' => {
+        'KeySize' => 4,
+        'BlockSize' => 4
+      })
 
     register_options(
       [
-        OptString.new('STAT_KEY', [ true,
+        OptString.new('STAT_KEY', [
+          true,
           "STAT key from target host (see tools/context/stat-key utility)",
-          "0x00000000" ]),
+          "0x00000000"
+        ]),
         OptString.new('STAT_FILE', [ true, "name of file to stat(2)", "/bin/ls" ]),
-      ])
+      ]
+    )
   end
 
   def obtain_key(buf, badchars, state)
@@ -67,7 +69,8 @@ class MetasploitModule < Msf::Encoder::XorAdditiveFeedback
     state.decoder_stub
   end
 
-protected
+  protected
+
   def keygen_stub
     fname = datastore['STAT_FILE']
     flen = fname.length
@@ -76,12 +79,12 @@ protected
       "\xd9\xee" +            # fldz
       "\xd9\x74\x24\xf4" +    # fnstenv -0xc(%esp)
       "\x5b" +                # pop %ebx
-      Rex::Arch::X86.jmp_short(flen) +    # jmp over
+      Rex::Arch::X86.jmp_short(flen) + # jmp over
       fname +                 # the filename
       "\x83\xc3\x09" +        # over: add $9, %ebx
       "\x8d\x53" +  	         # lea filelen(%ebx), %edx
-      Rex::Arch::X86.pack_lsb(flen) +    #
-      "\x31\xc0" +	         # xor %eax,%eax
+      Rex::Arch::X86.pack_lsb(flen) + #
+      "\x31\xc0" + # xor %eax,%eax
       "\x88\x02" +            # mov %al,(%edx)
       "\x8d\x4c\x24\xa8" +    # lea -0x58(%esp),%ecx
       "\xb0\xc3" +            # mov $0xc3, %al
@@ -110,7 +113,7 @@ protected
     fpus << "\xd9\xe5"
 
     # This FPU instruction seems to fail consistently on Linux
-    #fpus << "\xdb\xe1"
+    # fpus << "\xdb\xe1"
 
     fpus
   end
@@ -123,7 +126,7 @@ protected
     # Declare logical registers
     key_reg = Rex::Poly::LogicalRegister::X86.new('key', 'eax')
     count_reg = Rex::Poly::LogicalRegister::X86.new('count', 'ecx')
-    addr_reg  = Rex::Poly::LogicalRegister::X86.new('addr')
+    addr_reg = Rex::Poly::LogicalRegister::X86.new('addr')
 
     # Declare individual blocks
     endb = Rex::Poly::SymbolicBlock::End.new
@@ -134,14 +137,14 @@ protected
 
     # Get EIP off the stack
     popeip = Rex::Poly::LogicalBlock.new('popeip',
-      Proc.new { |b| (0x58 + b.regnum_of(addr_reg)).chr })
+                                         Proc.new { |b| (0x58 + b.regnum_of(addr_reg)).chr })
 
     # Clear the counter register
     clear_register = Rex::Poly::LogicalBlock.new('clear_register',
-      "\x31\xc9",
-      "\x29\xc9",
-      "\x33\xc9",
-      "\x2b\xc9")
+                                                 "\x31\xc9",
+                                                 "\x29\xc9",
+                                                 "\x33\xc9",
+                                                 "\x2b\xc9")
 
     # Initialize the counter after zeroing it
     init_counter = Rex::Poly::LogicalBlock.new('init_counter')
@@ -162,10 +165,10 @@ protected
     # Decoder loop block
     loop_block = Rex::Poly::LogicalBlock.new('loop_block')
 
-    xor  = Proc.new { |b| "\x31" + (0x40 + b.regnum_of(addr_reg) + (8 * b.regnum_of(key_reg))).chr }
+    xor = Proc.new { |b| "\x31" + (0x40 + b.regnum_of(addr_reg) + (8 * b.regnum_of(key_reg))).chr }
     xor1 = Proc.new { |b| xor.call(b) + [ (b.offset_of(endb) - b.offset_of(fpu) - cutoff) ].pack('c') }
     xor2 = Proc.new { |b| xor.call(b) + [ (b.offset_of(endb) - b.offset_of(fpu) - 4 - cutoff) ].pack('c') }
-    add  = Proc.new { |b| "\x03" + (0x40 + b.regnum_of(addr_reg) + (8 * b.regnum_of(key_reg))).chr }
+    add = Proc.new { |b| "\x03" + (0x40 + b.regnum_of(addr_reg) + (8 * b.regnum_of(key_reg))).chr }
     add1 = Proc.new { |b| add.call(b) + [ (b.offset_of(endb) - b.offset_of(fpu) - cutoff) ].pack('c') }
     add2 = Proc.new { |b| add.call(b) + [ (b.offset_of(endb) - b.offset_of(fpu) - 4 - cutoff) ].pack('c') }
     sub4 = Proc.new { |b| "\x83" + (0xe8 + b.regnum_of(addr_reg)).chr + "\xfc" }
@@ -177,11 +180,12 @@ protected
       Proc.new { |b| sub4.call(b) + xor2.call(b) + add2.call(b) },
       Proc.new { |b| xor1.call(b) + add1.call(b) + add4.call(b) },
       Proc.new { |b| xor1.call(b) + add4.call(b) + add2.call(b) },
-      Proc.new { |b| add4.call(b) + xor2.call(b) + add2.call(b) })
+      Proc.new { |b| add4.call(b) + xor2.call(b) + add2.call(b) }
+    )
 
     # Loop instruction block
     loop_inst = Rex::Poly::LogicalBlock.new('loop_inst',
-      "\xe2\xf5")
+                                            "\xe2\xf5")
 
     # Define block dependencies
     fnstenv.depends_on(fpu)
@@ -194,6 +198,7 @@ protected
     loop_inst.generate([
       Rex::Arch::X86::EAX,
       Rex::Arch::X86::ESP,
-      Rex::Arch::X86::ECX ], nil, state.badchars)
+      Rex::Arch::X86::ECX
+    ], nil, state.badchars)
   end
 end

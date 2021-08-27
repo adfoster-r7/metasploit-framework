@@ -11,13 +11,13 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'           => 'VMWare Enumerate Host Details',
-      'Description'    => %Q{
+      'Name' => 'VMWare Enumerate Host Details',
+      'Description' => %Q{
         This module attempts to enumerate information about the host systems through the VMWare web API.
         This can include information about the hardware installed on the host machine.
       },
-      'Author'         => ['theLightCosine'],
-      'License'        => MSF_LICENSE,
+      'Author' => ['theLightCosine'],
+      'License' => MSF_LICENSE,
       'DefaultOptions' => { 'SSL' => true }
     )
 
@@ -27,11 +27,11 @@ class MetasploitModule < Msf::Auxiliary
         OptString.new('USERNAME', [ true, "The username to Authenticate with.", 'root' ]),
         OptString.new('PASSWORD', [ true, "The password to Authenticate with.", 'password' ]),
         OptBool.new('HW_DETAILS', [true, "Enumerate the Hardware on the system as well?", false])
-      ])
+      ]
+    )
   end
 
   def run_host(ip)
-
     if vim_do_login(datastore['USERNAME'], datastore['PASSWORD']) == :success
       output = "VMWare Host at #{ip} details\n"
       host_summary = vim_get_all_host_summary(datastore['HW_DETAILS'])

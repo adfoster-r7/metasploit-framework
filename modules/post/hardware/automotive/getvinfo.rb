@@ -3,22 +3,26 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 class MetasploitModule < Msf::Post
   include Msf::Post::Hardware::Automotive::UDS
   include Msf::Post::Hardware::Automotive::DTC
 
-  def initialize(info={})
-    super( update_info( info,
-        'Name'          => 'Get the Vehicle Information Such as the VIN from the Target Module',
-        'Description'   => %q{ Post Module to query DTCs, Some common engine info and Vehicle Info.
-                               It returns such things as engine speed, coolant temp, Diagnostic
-                               Trouble Codes as well as All info stored by Mode $09 Vehicle Info, VIN, etc},
-        'License'       => MSF_LICENSE,
-        'Author'        => ['Craig Smith'],
-        'Platform'      => ['hardware'],
-        'SessionTypes'  => ['hwbridge']
-      ))
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Get the Vehicle Information Such as the VIN from the Target Module',
+        'Description' => %q{
+          Post Module to query DTCs, Some common engine info and Vehicle Info.
+          It returns such things as engine speed, coolant temp, Diagnostic
+          Trouble Codes as well as All info stored by Mode $09 Vehicle Info, VIN, etc
+        },
+        'License' => MSF_LICENSE,
+        'Author' => ['Craig Smith'],
+        'Platform' => ['hardware'],
+        'SessionTypes' => ['hwbridge']
+      )
+    )
     register_options([
       OptInt.new('SRCID', [true, "Module ID to query", 0x7e0]),
       OptInt.new('DSTID', [false, "Expected reponse ID, defaults to SRCID + 8", 0x7e8]),
@@ -27,7 +31,6 @@ class MetasploitModule < Msf::Post
       OptBool.new('CLEAR_DTCS', [false, "Clear any DTCs and reset MIL if errors are present", false]),
       OptString.new('CANBUS', [false, "CAN Bus to perform scan on, defaults to connected bus", nil])
     ])
-
   end
 
   def run

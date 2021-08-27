@@ -8,22 +8,24 @@ class MetasploitModule < Msf::Post
   include Msf::Post::Unix
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'         => 'Gather GRUB Password',
-      'Description'  => %q(
-        This module gathers GRUB passwords from GRUB bootloader config files.
-      ),
-      'License'      => MSF_LICENSE,
-      'Author'       =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'Gather GRUB Password',
+        'Description' => %q{
+          This module gathers GRUB passwords from GRUB bootloader config files.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [
           'Garvit Dewan <d.garvit[at]gmail.com>', # @dgarvit
           'Taeber Rapczak <taeber[at]rapczak.com>',
           'Shelby Pace'
         ],
-      'Platform'     => ['linux', 'osx', 'unix', 'solaris', 'bsd'],
-      'SessionTypes' => ['meterpreter', 'shell'],
-      'References'   => [ ['URL', 'https://help.ubuntu.com/community/Grub2/Passwords#Password_Encryption'] ]
-    ))
+        'Platform' => ['linux', 'osx', 'unix', 'solaris', 'bsd'],
+        'SessionTypes' => ['meterpreter', 'shell'],
+        'References' => [ ['URL', 'https://help.ubuntu.com/community/Grub2/Passwords#Password_Encryption'] ]
+      )
+    )
 
     register_options(
       [
@@ -111,20 +113,20 @@ class MetasploitModule < Msf::Post
       print_good("Found credentials")
 
       cred_table = Rex::Text::Table.new(
-        'Header'  =>  'Grub Credential Table',
-        'Indent'  =>  1,
-        'Columns' =>  [ 'Username', 'Password' ]
+        'Header' => 'Grub Credential Table',
+        'Indent' => 1,
+        'Columns' => [ 'Username', 'Password' ]
       )
 
       @creds_hash.each do |user, pass|
         credential_data = {
-          origin_type:          :session,
-          post_reference_name:  self.refname,
-          private_type:         :nonreplayable_hash,
-          private_data:         pass,
-          session_id:           session_db_id,
-          username:             user,
-          workspace_id:         myworkspace_id
+          origin_type: :session,
+          post_reference_name: self.refname,
+          private_type: :nonreplayable_hash,
+          private_data: pass,
+          session_id: session_db_id,
+          username: user,
+          workspace_id: myworkspace_id
         }
 
         cred_table << [ user, pass ]
@@ -133,13 +135,13 @@ class MetasploitModule < Msf::Post
 
       @pass_hash.each do |_index, pass|
         credential_data = {
-          origin_type:          :session,
-          post_reference_name:  self.refname,
-          private_type:         :nonreplayable_hash,
-          private_data:         pass,
-          session_id:           session_db_id,
-          username:             '',
-          workspace_id:         myworkspace_id
+          origin_type: :session,
+          post_reference_name: self.refname,
+          private_type: :nonreplayable_hash,
+          private_data: pass,
+          session_id: session_db_id,
+          username: '',
+          workspace_id: myworkspace_id
         }
 
         cred_table << [ '', pass ]

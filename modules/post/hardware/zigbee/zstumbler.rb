@@ -3,20 +3,24 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 class MetasploitModule < Msf::Post
   include Msf::Post::Hardware::Zigbee::Utils
 
-  def initialize(info={})
-    super( update_info( info,
-        'Name'          => 'Sends Beacons to Scan for Active ZigBee Networks',
-        'Description'   => %q{ Post Module to send beacon signals to the broadcast address while
-                               channel hopping},
-        'License'       => MSF_LICENSE,
-        'Author'        => ['Craig Smith'],
-        'Platform'      => ['hardware'],
-        'SessionTypes'  => ['hwbridge']
-      ))
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Sends Beacons to Scan for Active ZigBee Networks',
+        'Description' => %q{
+          Post Module to send beacon signals to the broadcast address while
+          channel hopping
+        },
+        'License' => MSF_LICENSE,
+        'Author' => ['Craig Smith'],
+        'Platform' => ['hardware'],
+        'SessionTypes' => ['hwbridge']
+      )
+    )
     register_options([
       OptInt.new('CHANNEL', [false, "Disable channel hopping by forcing a channel (11-26)", nil]),
       OptInt.new('LOOP', [false, "How many times to loop over the channels (-1 will run in an endless loop)", 1]),
@@ -30,14 +34,18 @@ class MetasploitModule < Msf::Post
   end
 
   def display_details(routerdata)
-    stackprofile_map = {0 => "Network Specific",
-                        1 => "ZigBee Standard",
-                        2 => "ZigBee Enterprise"}
-    stackver_map = {0 => "ZigBee Prototype",
-                    1 => "ZigBee 2004",
-                    2 => "ZigBee 2006/2007"}
+    stackprofile_map = {
+      0 => "Network Specific",
+      1 => "ZigBee Standard",
+      2 => "ZigBee Enterprise"
+    }
+    stackver_map = {
+      0 => "ZigBee Prototype",
+      1 => "ZigBee 2004",
+      2 => "ZigBee 2006/2007"
+    }
     spanid, source, extpanid, stackprofilever, channel = routerdata
-    stackprofilever =  stackprofilever.unpack("H*")[0].hex
+    stackprofilever = stackprofilever.unpack("H*")[0].hex
     stackprofile = stackprofilever & 0x0f
     stackver = (stackprofilever & 0xf0) >> 4
     profile = "Unknown"
@@ -65,8 +73,8 @@ class MetasploitModule < Msf::Post
           key = "#{pktdecode["SPAN_ID"]}#{pktdecode["SOURCE"]}"
           value = [pktdecode["SPAN_ID"], pktdecode["SOURCE"], pktdecode["EXT_PAN_ID"], pktdecode["STACK_PROFILE"], @channel]
           if not @stumbled.has_key? key
-              @stumbled[key] = value
-              display_details(value)
+            @stumbled[key] = value
+            display_details(value)
           end
         end
       end
@@ -86,11 +94,11 @@ class MetasploitModule < Msf::Post
     @channel = datastore["CHANNEL"] if datastore["CHANNEL"]
     @channel = 11 if @channel > 26
     if datastore["LOOP"] == -1
-      while(1) do
+      while (1) do
         scan
       end
     else
-      while(@loop_count < datastore["LOOP"])
+      while (@loop_count < datastore["LOOP"])
         scan
       end
     end

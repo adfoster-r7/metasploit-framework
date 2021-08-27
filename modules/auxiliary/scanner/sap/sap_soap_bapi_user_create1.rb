@@ -26,15 +26,13 @@ class MetasploitModule < Msf::Auxiliary
           This module makes use of the BAPI_USER_CREATE1 function, through the SOAP
         /sap/bc/soap/rfc service, for creating/modifying users on a SAP.
       },
-      'References' =>
-        [
-          [ 'URL', 'http://labs.mwrinfosecurity.com/tools/2012/04/27/sap-metasploit-modules/' ]
-        ],
-      'Author' =>
-        [
-          'Agnivesh Sathasivam',
-          'nmonkee'
-        ],
+      'References' => [
+        [ 'URL', 'http://labs.mwrinfosecurity.com/tools/2012/04/27/sap-metasploit-modules/' ]
+      ],
+      'Author' => [
+        'Agnivesh Sathasivam',
+        'nmonkee'
+      ],
       'License' => MSF_LICENSE
     )
     register_options([
@@ -42,11 +40,11 @@ class MetasploitModule < Msf::Auxiliary
       OptString.new('CLIENT', [true, 'SAP client', '001']),
       OptString.new('HttpUsername', [true, 'Username', 'SAP*']),
       OptString.new('HttpPassword', [true, 'Password', '06071992']),
-      OptString.new('BAPI_FIRST',[true,'First name','John']),
-      OptString.new('BAPI_LAST',[true,'Last name','Doe']),
-      OptString.new('BAPI_PASSWORD',[true,'Password for the account (Default is msf1234)','msf1234']),
-      OptString.new('BAPI_USER',[true,'Username for the account (Username in upper case only. Default is MSF)', 'MSF'])
-      ])
+      OptString.new('BAPI_FIRST', [true, 'First name', 'John']),
+      OptString.new('BAPI_LAST', [true, 'Last name', 'Doe']),
+      OptString.new('BAPI_PASSWORD', [true, 'Password for the account (Default is msf1234)', 'msf1234']),
+      OptString.new('BAPI_USER', [true, 'Username for the account (Username in upper case only. Default is MSF)', 'MSF'])
+    ])
   end
 
   def report_cred(opts)
@@ -106,8 +104,8 @@ class MetasploitModule < Msf::Auxiliary
         },
         'encode_params' => false,
         'vars_get' => {
-          'sap-client'    => datastore['CLIENT'],
-          'sap-language'  => 'EN'
+          'sap-client' => datastore['CLIENT'],
+          'sap-language' => 'EN'
         }
       })
       if res and res.code == 200

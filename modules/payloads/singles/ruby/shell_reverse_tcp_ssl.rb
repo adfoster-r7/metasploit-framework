@@ -3,9 +3,7 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 module MetasploitModule
-
   CachedSize = 444
 
   include Msf::Payload::Single
@@ -13,18 +11,21 @@ module MetasploitModule
   include Msf::Sessions::CommandShellOptions
 
   def initialize(info = {})
-    super(merge_info(info,
-      'Name'        => 'Ruby Command Shell, Reverse TCP SSL',
-      'Description' => 'Connect back and create a command shell via Ruby, uses SSL',
-      'Author'      => 'RageLtMan <rageltman[at]sempervictus>',
-      'License'     => MSF_LICENSE,
-      'Platform'    => 'ruby',
-      'Arch'        => ARCH_RUBY,
-      'Handler'     => Msf::Handler::ReverseTcpSsl,
-      'Session'     => Msf::Sessions::CommandShell,
-      'PayloadType' => 'ruby',
-      'Payload'     => { 'Offsets' => {}, 'Payload' => '' }
-    ))
+    super(
+      merge_info(
+        info,
+        'Name' => 'Ruby Command Shell, Reverse TCP SSL',
+        'Description' => 'Connect back and create a command shell via Ruby, uses SSL',
+        'Author' => 'RageLtMan <rageltman[at]sempervictus>',
+        'License' => MSF_LICENSE,
+        'Platform' => 'ruby',
+        'Arch' => ARCH_RUBY,
+        'Handler' => Msf::Handler::ReverseTcpSsl,
+        'Session' => Msf::Sessions::CommandShell,
+        'PayloadType' => 'ruby',
+        'Payload' => { 'Offsets' => {}, 'Payload' => '' }
+      )
+    )
   end
 
   def generate

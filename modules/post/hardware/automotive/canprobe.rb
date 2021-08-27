@@ -5,20 +5,23 @@
 
 class MetasploitModule < Msf::Post
 
-  def initialize(info={})
-    super( update_info( info,
-        'Name'          => 'Module to Probe Different Data Points in a CAN Packet',
-        'Description'   => %q{
-                               Scans between two CAN IDs and writes data at each byte position. It will
-                               either write a set byte value (Default 0xFF) or iterate through all possible values
-                               of that byte position (takes much longer). Does not check for responses and is
-                               basically a simple blind fuzzer.
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Module to Probe Different Data Points in a CAN Packet',
+        'Description' => %q{
+          Scans between two CAN IDs and writes data at each byte position. It will
+          either write a set byte value (Default 0xFF) or iterate through all possible values
+          of that byte position (takes much longer). Does not check for responses and is
+          basically a simple blind fuzzer.
         },
-        'License'       => MSF_LICENSE,
-        'Author'        => ['Craig Smith'],
-        'Platform'      => ['hardware'],
-        'SessionTypes'  => ['hwbridge']
-      ))
+        'License' => MSF_LICENSE,
+        'Author' => ['Craig Smith'],
+        'Platform' => ['hardware'],
+        'SessionTypes' => ['hwbridge']
+      )
+    )
     register_options([
       OptInt.new('STARTID', [false, "CAN ID to start scan", 0x300]),
       OptInt.new('STOPID', [false, "CAN ID to stop scan", nil]),
@@ -42,7 +45,7 @@ class MetasploitModule < Msf::Post
       (0..7).each do |pos|
         padding = "00" * pos
         endpadding = ""
-        endpadding = ("%02X" % datastore['PADDING']) * (7-pos) if not datastore['PADDING'].nil?
+        endpadding = ("%02X" % datastore['PADDING']) * (7 - pos) if not datastore['PADDING'].nil?
         if datastore['FUZZ'] then
           (0..255).each do |fuzzdata|
             client.automotive.cansend(datastore['CANBUS'], id.to_s(16), padding + ("%02X" % fuzzdata) + endpadding)

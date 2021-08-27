@@ -15,8 +15,10 @@ class MetasploitModule < Msf::Post
       update_info(
         info,
         'Name' => 'NTDS Grabber',
-        'Description' => %q(This module uses a powershell script to obtain a copy of the ntds,dit SAM and SYSTEM files on a domain controller.
-                            It compresses all these files in a cabinet file called All.cab.),
+        'Description' => %q{
+          This module uses a powershell script to obtain a copy of the ntds,dit SAM and SYSTEM files on a domain controller.
+          It compresses all these files in a cabinet file called All.cab.
+        },
         'License' => MSF_LICENSE,
         'Author' => ['Koen Riepe (koen.riepe@fox-it.com)'],
         'References' => [''],

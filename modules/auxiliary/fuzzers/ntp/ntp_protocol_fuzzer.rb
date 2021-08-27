@@ -12,7 +12,7 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'NTP Protocol Fuzzer',
+      'Name' => 'NTP Protocol Fuzzer',
       'Description' => %q(
         A simplistic fuzzer for the Network Time Protocol that sends the
         following probes to understand NTP and look for anomalous NTP behavior:
@@ -36,8 +36,8 @@ class MetasploitModule < Msf::Auxiliary
         * Filter out the 12-byte mode 6 unsupported opcode errors.
         * Fuzz the control message payload offset/size/etc.  There be bugs
       ),
-      'Author'      => 'Jon Hart <jon_hart[at]rapid7.com>',
-      'License'     => MSF_LICENSE
+      'Author' => 'Jon Hart <jon_hart[at]rapid7.com>',
+      'License' => MSF_LICENSE
       )
 
     register_options(
@@ -45,7 +45,8 @@ class MetasploitModule < Msf::Auxiliary
         Opt::RPORT(123),
         OptInt.new('SLEEP', [true, 'Sleep for this many ms between requests', 0]),
         OptInt.new('WAIT', [true, 'Wait this many ms for responses', 250])
-      ])
+      ]
+    )
 
     register_advanced_options(
       [
@@ -54,7 +55,8 @@ class MetasploitModule < Msf::Auxiliary
         OptString.new('MODE_6_OPERATIONS', [false, 'Mode 6 operations to fuzz (csv)']),
         OptString.new('MODE_7_IMPLEMENTATIONS', [false, 'Mode 7 implementations to fuzz (csv)']),
         OptString.new('MODE_7_REQUEST_CODES', [false, 'Mode 7 request codes to fuzz (csv)'])
-      ])
+      ]
+    )
   end
 
   def sleep_time
@@ -196,6 +198,7 @@ class MetasploitModule < Msf::Auxiliary
     request = request.to_binary_s if request.respond_to?('to_binary_s')
     responses.select! { |r| r[1] }
     return if responses.empty?
+
     responses.each do |response|
       data = response[0]
       descriptions << Rex::Proto::NTP.describe(data)

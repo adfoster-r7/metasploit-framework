@@ -8,19 +8,19 @@ class MetasploitModule < Msf::Encoder
 
   ASM_SUBESP20 = "\x83\xEC\x20"
 
-  SET_ALPHA    = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
-  SET_SYM      = '!@#$%^&*()_+\\-=[]{};\'":<>,.?/|~'
-  SET_NUM      = '0123456789'
-  SET_FILESYM  = '()_+-=\\/.,[]{}@!$%^&='
+  SET_ALPHA = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+  SET_SYM = '!@#$%^&*()_+\\-=[]{};\'":<>,.?/|~'
+  SET_NUM = '0123456789'
+  SET_FILESYM = '()_+-=\\/.,[]{}@!$%^&='
 
-  CHAR_SET_ALPHA         = SET_ALPHA + SET_SYM
-  CHAR_SET_ALPHANUM      = SET_ALPHA + SET_NUM + SET_SYM
-  CHAR_SET_FILEPATH      = SET_ALPHA + SET_NUM + SET_FILESYM
+  CHAR_SET_ALPHA = SET_ALPHA + SET_SYM
+  CHAR_SET_ALPHANUM = SET_ALPHA + SET_NUM + SET_SYM
+  CHAR_SET_FILEPATH = SET_ALPHA + SET_NUM + SET_FILESYM
 
   def initialize
     super(
-      'Name'             => 'Sub Encoder (optimised)',
-      'Description'      => %q{
+      'Name' => 'Sub Encoder (optimised)',
+      'Description' => %q{
         Encodes a payload using a series of SUB instructions and writing the
         encoded value to ESP. This concept is based on the known SUB encoding
         approach that is widely used to manually encode payloads with very
@@ -40,18 +40,19 @@ class MetasploitModule < Msf::Encoder
         This adds 3-bytes to the start of the payload to bump ESP by 32 bytes
         so that it's clear of the top of the payload.
       },
-      'Author'           => 'OJ Reeves <oj[at]buffered.io>',
-      'Arch'             => ARCH_X86,
-      'License'          => MSF_LICENSE,
-      'Decoder'          => { 'BlockSize'  => 4 }
+      'Author' => 'OJ Reeves <oj[at]buffered.io>',
+      'Arch' => ARCH_X86,
+      'License' => MSF_LICENSE,
+      'Decoder' => { 'BlockSize' => 4 }
     )
 
     register_options(
       [
-        OptString.new( 'ValidCharSet', [ false, "Specify a known set of valid chars (ALPHA, ALPHANUM, FILEPATH)" ]),
-        OptBool.new( 'OverwriteProtect', [ false, "Indicate if the encoded payload requires protection against being overwritten", false])
+        OptString.new('ValidCharSet', [ false, "Specify a known set of valid chars (ALPHA, ALPHANUM, FILEPATH)" ]),
+        OptBool.new('OverwriteProtect', [ false, "Indicate if the encoded payload requires protection against being overwritten", false])
       ],
-      self.class)
+      self.class
+    )
   end
 
   #
@@ -122,11 +123,11 @@ class MetasploitModule < Msf::Encoder
 
     # determine the required bytes
     @required_bytes =
-      @asm['AND']['EAX']  +
-      @asm['SUB']['EAX']  +
+      @asm['AND']['EAX'] +
+      @asm['SUB']['EAX'] +
       @asm['PUSH']['EAX'] +
-      @asm['POP']['ESP']  +
-      @asm['POP']['EAX']  +
+      @asm['POP']['ESP'] +
+      @asm['POP']['EAX'] +
       @asm['PUSH'][@base_reg]
 
     # generate a sorted list of valid characters
@@ -139,7 +140,7 @@ class MetasploitModule < Msf::Encoder
     when 'FILEPATH'
       char_set = CHAR_SET_FILEPATH
     else
-      for i in 0 .. 255
+      for i in 0..255
         char_set += i.chr.to_s
       end
     end
@@ -284,6 +285,7 @@ class MetasploitModule < Msf::Encoder
     # the base register, we'll update this later on when we know how big our payload is.
     encoded, _ = sub_3(0, 0)
     raise EncodingError, "Couldn't offset base register." if encoded.nil?
+
     data << create_sub(encoded)
 
     # finally push the value of EAX back into ESP
@@ -320,13 +322,13 @@ class MetasploitModule < Msf::Encoder
 
     # if we're still nil here, then we have an issue
     raise EncodingError, "Couldn't encode protection" if encoded.nil?
+
     patch = create_sub(encoded)
 
     # patch in the correct offset back at the start of our payload
-    data[base_reg_offset .. base_reg_offset + patch.length] = patch
+    data[base_reg_offset..base_reg_offset + patch.length] = patch
 
     # and we're done finally!
     data
   end
 end
-

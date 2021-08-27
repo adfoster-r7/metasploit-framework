@@ -3,24 +3,25 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 module MetasploitModule
-
   CachedSize = :dynamic
 
   include Msf::Payload::Php
   include Msf::Payload::Single
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'          => 'PHP Executable Download and Execute',
-      'Description'   => 'Download an EXE from an HTTP URL and execute it',
-      'Author'        => [ 'egypt' ],
-      'License'       => BSD_LICENSE,
-      'Platform'      => 'php',
-      'Arch'          => ARCH_PHP,
-      'Privileged'    => false
-      ))
+    super(
+      update_info(
+        info,
+        'Name' => 'PHP Executable Download and Execute',
+        'Description' => 'Download an EXE from an HTTP URL and execute it',
+        'Author' => [ 'egypt' ],
+        'License' => BSD_LICENSE,
+        'Platform' => 'php',
+        'Arch' => ARCH_PHP,
+        'Privileged' => false
+      )
+    )
 
     # EXITFUNC is not supported :/
     deregister_options('EXITFUNC')
@@ -29,7 +30,8 @@ module MetasploitModule
     register_options(
       [
         OptString.new('URL', [ true, "The pre-encoded URL to the executable" ])
-      ])
+      ]
+    )
   end
 
   def php_exec_file
@@ -66,7 +68,7 @@ module MetasploitModule
     @unlink($fname);
     END_OF_PHP_CODE
 
-    #return Rex::Text.compress(shell)
+    # return Rex::Text.compress(shell)
     return shell
   end
 

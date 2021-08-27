@@ -11,10 +11,10 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'NAT-PMP Port Mapper',
+      'Name' => 'NAT-PMP Port Mapper',
       'Description' => 'Map (forward) TCP and UDP ports on NAT devices using NAT-PMP',
-      'Author'      => 'Jon Hart <jhart[at]spoofed.org>',
-      'License'     => MSF_LICENSE
+      'Author' => 'Jon Hart <jhart[at]spoofed.org>',
+      'License' => MSF_LICENSE
     )
 
     register_options(
@@ -48,13 +48,13 @@ class MetasploitModule < Msf::Auxiliary
 
     if @external_ports.size > @internal_ports.size
       fail ArgumentError, "Too many external ports specified (#{@external_ports.size}); " +
-        "must be one port (0) or #{@internal_ports.size} ports"
+                          "must be one port (0) or #{@internal_ports.size} ports"
     end
 
     if @external_ports.size < @internal_ports.size
       if @external_ports != [0]
         fail ArgumentError, "Incorrect number of external ports specified (#{@external_ports.size}); " +
-          "must be one port (0) or #{@internal_ports.size} ports"
+                            "must be one port (0) or #{@internal_ports.size} ports"
       else
         @external_ports = [0] * @internal_ports.size
       end
@@ -63,10 +63,9 @@ class MetasploitModule < Msf::Auxiliary
 
   def run_host(host)
     begin
-
       udp_sock = Rex::Socket::Udp.create({
         'LocalHost' => datastore['CHOST'] || nil,
-        'Context'   => {'Msf' => framework, 'MsfExploit' => self}
+        'Context' => { 'Msf' => framework, 'MsfExploit' => self }
       })
       add_socket(udp_sock)
 
@@ -79,13 +78,13 @@ class MetasploitModule < Msf::Auxiliary
         actual_ext_port = map_port(udp_sock, host, datastore['RPORT'], internal_port, external_port, Rex::Proto::NATPMP.const_get(protocol), lifetime)
         map_target = Rex::Socket.source_address(host)
         requested_forwarding = "#{external_address}:#{external_port}/#{protocol}" +
-                              " -> " +
-                              "#{map_target}:#{internal_port}/#{protocol}"
+                               " -> " +
+                               "#{map_target}:#{internal_port}/#{protocol}"
         if actual_ext_port
           map_target = datastore['CHOST'] ? datastore['CHOST'] : Rex::Socket.source_address(host)
           actual_forwarding = "#{external_address}:#{actual_ext_port}/#{protocol}" +
-                                " -> " +
-                                "#{map_target}:#{internal_port}/#{protocol}"
+                              " -> " +
+                              "#{map_target}:#{internal_port}/#{protocol}"
           if external_port == 0
             print_good("#{actual_forwarding} forwarded")
           else
@@ -100,10 +99,10 @@ class MetasploitModule < Msf::Auxiliary
         end
 
         report_service(
-          :host   => host,
-          :port   => datastore['RPORT'],
-          :proto  => 'udp',
-          :name  => 'natpmp',
+          :host => host,
+          :port => datastore['RPORT'],
+          :proto => 'udp',
+          :name => 'natpmp',
           :state => Msf::ServiceState::Open
         )
       end

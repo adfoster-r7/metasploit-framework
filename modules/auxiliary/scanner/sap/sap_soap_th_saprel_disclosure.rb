@@ -26,15 +26,13 @@ class MetasploitModule < Msf::Auxiliary
           This module attempts to identify software, OS and DB versions through the SAP
         function TH_SAPREL using the /sap/bc/soap/rfc SOAP service.
       },
-      'References' =>
-        [
-          [ 'URL', 'http://labs.mwrinfosecurity.com/tools/2012/04/27/sap-metasploit-modules/' ]
-        ],
-      'Author' =>
-        [
-          'Agnivesh Sathasivam',
-          'nmonkee'
-        ],
+      'References' => [
+        [ 'URL', 'http://labs.mwrinfosecurity.com/tools/2012/04/27/sap-metasploit-modules/' ]
+      ],
+      'Author' => [
+        'Agnivesh Sathasivam',
+        'nmonkee'
+      ],
       'License' => MSF_LICENSE
       )
 
@@ -44,11 +42,11 @@ class MetasploitModule < Msf::Auxiliary
         OptString.new('CLIENT', [true, 'SAP Client', '001']),
         OptString.new('HttpUsername', [true, 'Username', 'SAP*']),
         OptString.new('HttpPassword', [true, 'Password', '06071992'])
-      ])
+      ]
+    )
   end
 
   def run_host(ip)
-
     data = '<?xml version="1.0" encoding="utf-8" ?>'
     data << '<env:Envelope xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:env="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'
     data << '<env:Body>'
@@ -72,8 +70,8 @@ class MetasploitModule < Msf::Auxiliary
           'SOAPAction' => 'urn:sap-com:document:sap:rfc:functions',
         },
         'vars_get' => {
-          'sap-client'    => datastore['CLIENT'],
-          'sap-language'  => 'EN'
+          'sap-client' => datastore['CLIENT'],
+          'sap-language' => 'EN'
         }
       })
       if res and res.code == 200
@@ -81,7 +79,7 @@ class MetasploitModule < Msf::Auxiliary
         kern_comp_time = $1 if res.body =~ /<KERN_COMP_TIME>(.*)<\/KERN_COMP_TIME>/i
         kern_dblib = $1 if res.body =~ /<KERN_DBLIB>(.*)<\/KERN_DBLIB>/i
         kern_patchlevel = $1 if res.body =~ /<KERN_PATCHLEVEL>(.*)<\/KERN_PATCHLEVEL>/i
-        kern_rel =  $1 if res.body =~ /<KERN_REL>(.*)<\/KERN_REL>/i
+        kern_rel = $1 if res.body =~ /<KERN_REL>(.*)<\/KERN_REL>/i
         saptbl = Msf::Ui::Console::Table.new(
           Msf::Ui::Console::Table::Style::Default,
           'Header' => "[SAP] System Info",
@@ -92,7 +90,8 @@ class MetasploitModule < Msf::Auxiliary
             [
               "Info",
               "Value"
-            ])
+            ]
+        )
         saptbl << [ "OS Kernel version", kern_comp_on ]
         saptbl << [ "SAP compile time", kern_comp_time ]
         saptbl << [ "DB version", kern_dblib ]
@@ -148,7 +147,7 @@ class MetasploitModule < Msf::Auxiliary
         response = res.body
         error.push(response.scan(%r{<message>(.*?)</message>}))
         err = error.join().chomp
-        print_error("[SAP] #{ip}:#{rport} - #{err.gsub('&#39;','\'')}")
+        print_error("[SAP] #{ip}:#{rport} - #{err.gsub('&#39;', '\'')}")
         return
       else
         print_error("[SAP] #{ip}:#{rport} - error message: " + res.code.to_s + " " + res.message) if res
@@ -158,6 +157,5 @@ class MetasploitModule < Msf::Auxiliary
       print_error("[SAP] #{ip}:#{rport} - Unable to connect")
       return
     end
-
   end
 end

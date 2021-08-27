@@ -39,21 +39,21 @@ class MetasploitModule < Msf::Auxiliary
         [ 'URL', 'http://erpscan.com/advisories/dsecrg-12-033-sap-basis-6-407-02-xml-external-entity/' ],
         [ 'URL', 'https://service.sap.com/sap/support/notes/1597066' ]
       ],
-      'Author' =>
-        [
-          'Alexey Tyurin', # xmla service SMB relay abuse discovery
-          'nmonkee' # Metasploit module
-        ],
+      'Author' => [
+        'Alexey Tyurin', # xmla service SMB relay abuse discovery
+        'nmonkee' # Metasploit module
+      ],
       'License' => MSF_LICENSE
     )
 
     register_options([
       Opt::RPORT(8000),
-      OptString.new('CLIENT',   [true,  'SAP client', '001']),
+      OptString.new('CLIENT', [true, 'SAP client', '001']),
       OptString.new('HttpUsername', [false, 'Username (Ex SAP*)']),
       OptString.new('HttpPassword', [false, 'Password (Ex 06071992)']),
-      OptAddressLocal.new('LHOST',   [true,  'Server IP or hostname of the SMB Capture system']),
-      OptEnum.new('ABUSE',      [true,  'SMB Relay abuse to use', "MMR",
+      OptAddressLocal.new('LHOST', [true, 'Server IP or hostname of the SMB Capture system']),
+      OptEnum.new('ABUSE', [
+        true, 'SMB Relay abuse to use', "MMR",
         [
           "MMR",
           "BW",
@@ -62,7 +62,6 @@ class MetasploitModule < Msf::Auxiliary
         ]
       ]),
     ])
-
   end
 
   def valid_credentials?
@@ -73,11 +72,11 @@ class MetasploitModule < Msf::Auxiliary
     if datastore['HttpPassword'].blank?
       return false
     end
+
     return true
   end
 
   def run_xmla
-
     if not valid_credentials?
       vprint_error("#{rhost}:#{rport} - Credentials needed in order to abuse the SAP BW service")
       return
@@ -238,14 +237,14 @@ class MetasploitModule < Msf::Auxiliary
 
   def run_host(ip)
     case datastore['ABUSE']
-      when "MMR"
-        run_mmr
-      when "BW"
-        run_xmla
-      when "CLBA_CLASSIF_FILE_REMOTE_HOST"
-        run_clba_classif_file_remote
-      when "CLBA_UPDATE_FILE_REMOTE_HOST"
-        run_clba_update_file_remote
+    when "MMR"
+      run_mmr
+    when "BW"
+      run_xmla
+    when "CLBA_CLASSIF_FILE_REMOTE_HOST"
+      run_clba_classif_file_remote
+    when "CLBA_UPDATE_FILE_REMOTE_HOST"
+      run_clba_update_file_remote
     end
   end
 end

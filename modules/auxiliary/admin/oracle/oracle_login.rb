@@ -10,28 +10,31 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::ORACLE
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Oracle Account Discovery',
-      'Description'    => %q{
-        This module uses a list of well known default authentication credentials
-        to discover easily guessed accounts.
-      },
-      'Author'         => [ 'MC' ],
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'Oracle Account Discovery',
+        'Description' => %q{
+          This module uses a list of well known default authentication credentials
+          to discover easily guessed accounts.
+        },
+        'Author' => [ 'MC' ],
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'URL', 'http://www.petefinnigan.com/default/oracle_default_passwords.csv' ],
           [ 'URL', 'https://seclists.org/fulldisclosure/2009/Oct/261' ],
         ],
-      'DisclosureDate' => '2008-11-20'))
+        'DisclosureDate' => '2008-11-20'
+      )
+    )
 
-      register_options(
-        [
-          OptPath.new('CSVFILE', [ false, 'The file that contains a list of default accounts.', File.join(Msf::Config.install_root, 'data', 'wordlists', 'oracle_default_passwords.csv')]),
-        ])
+    register_options(
+      [
+        OptPath.new('CSVFILE', [ false, 'The file that contains a list of default accounts.', File.join(Msf::Config.install_root, 'data', 'wordlists', 'oracle_default_passwords.csv')]),
+      ]
+    )
 
-      deregister_options('DBUSER','DBPASS')
-
+    deregister_options('DBUSER', 'DBPASS')
   end
 
   def report_cred(opts)

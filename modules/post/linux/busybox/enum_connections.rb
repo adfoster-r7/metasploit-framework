@@ -18,14 +18,14 @@ class MetasploitModule < Msf::Post
 
   def initialize
     super(
-      'Name'         => 'BusyBox Enumerate Connections',
-      'Description'  => %q{
+      'Name' => 'BusyBox Enumerate Connections',
+      'Description' => %q{
         This module will be applied on a session connected to a BusyBox shell. It will
         enumerate the connections established with the router or device executing BusyBox.
       },
-      'Author'       => 'Javier Vicente Vallejo',
-      'License'      => MSF_LICENSE,
-      'Platform'     => ['linux'],
+      'Author' => 'Javier Vicente Vallejo',
+      'License' => MSF_LICENSE,
+      'Platform' => ['linux'],
       'SessionTypes' => ['shell']
     )
   end
@@ -46,7 +46,7 @@ class MetasploitModule < Msf::Post
 
   def read_connection_file(file)
     begin
-      str_file=read_file(file)
+      str_file = read_file(file)
       vprint_line(str_file)
       p = store_loot('busybox.enum.connections', 'text/plain', session, str_file, file, 'BusyBox Device Network Established Connections')
       print_good("Connections saved to #{p}")

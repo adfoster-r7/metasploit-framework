@@ -9,28 +9,32 @@ class MetasploitModule < Msf::Post
   include Msf::Post::Windows::NetAPI
   include Msf::Post::Windows::Accounts
 
-  def initialize(info={})
-    super( update_info( info,
-      'Name'	       => 'Windows Gather Enumerate Active Domain Users',
-      'Description'  => %q{
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name'	=> 'Windows Gather Enumerate Active Domain Users',
+        'Description' => %q{
           This module will enumerate computers included in the primary Domain and attempt
           to list all locations the targeted user has sessions on. If the HOST option is specified
           the module will target only that host. If the HOST is specified and USER is set to nil, all users
           logged into that host will be returned.'
         },
-        'License'      => MSF_LICENSE,
-        'Author'       => [
+        'License' => MSF_LICENSE,
+        'Author' => [
           'Etienne Stalmans <etienne[at]sensepost.com>',
           'Ben Campbell'
         ],
-        'Platform'     => [ 'win' ],
+        'Platform' => [ 'win' ],
         'SessionTypes' => [ 'meterpreter' ]
-    ))
+      )
+    )
     register_options(
       [
         OptString.new('USER', [false, 'Target User for NetSessionEnum']),
         OptString.new('HOST', [false, 'Target a specific host']),
-      ])
+      ]
+    )
   end
 
   def run
@@ -86,4 +90,3 @@ class MetasploitModule < Msf::Post
     end
   end
 end
-

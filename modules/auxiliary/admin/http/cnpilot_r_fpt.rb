@@ -7,24 +7,24 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::CNPILOT
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name' => 'Cambium cnPilot r200/r201 File Path Traversal',
-      'Description' => %{
-        This module exploits a File Path Traversal vulnerability in Cambium
-        cnPilot r200/r201 to read arbitrary files off the file system. Affected
-        versions - 4.3.3-R4 and prior.
-      },
-      'Author' =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'Cambium cnPilot r200/r201 File Path Traversal',
+        'Description' => %q{
+          This module exploits a File Path Traversal vulnerability in Cambium
+          cnPilot r200/r201 to read arbitrary files off the file system. Affected
+          versions - 4.3.3-R4 and prior.
+        },
+        'Author' => [
           'Karn Ganeshen <KarnGaneshen[at]gmail.com>'
         ],
-      'References' =>
-        [
+        'References' => [
           ['CVE', '2017-5261'],
           ['URL', 'https://blog.rapid7.com/2017/12/19/r7-2017-25-cambium-epmp-and-cnpilot-multiple-vulnerabilities']
         ],
-      'License' => MSF_LICENSE
-     )
+        'License' => MSF_LICENSE
+      )
     )
 
     register_options(

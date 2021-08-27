@@ -10,26 +10,27 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'           => 'Authentication Capture: Telnet',
-      'Description'    => %q{
+      'Name' => 'Authentication Capture: Telnet',
+      'Description' => %q{
         This module provides a fake Telnet service that
       is designed to capture authentication credentials.  DONTs
       and WONTs are sent to the client for all option negotiations,
       except for ECHO at the time of the password prompt since
       the server controls that for a bit more realism.
       },
-      'Author'         => 'kris katterjohn',
-      'License'        => MSF_LICENSE,
-      'Actions'        => [[ 'Capture', 'Description' => 'Run telnet capture server' ]],
+      'Author' => 'kris katterjohn',
+      'License' => MSF_LICENSE,
+      'Actions' => [[ 'Capture', 'Description' => 'Run telnet capture server' ]],
       'PassiveActions' => [ 'Capture' ],
-      'DefaultAction'  => 'Capture'
+      'DefaultAction' => 'Capture'
     )
 
     register_options(
       [
         OptPort.new('SRVPORT', [true, 'The local port to listen on.', 23]),
         OptString.new('BANNER', [false, 'The server banner to display when client connects'])
-      ])
+      ]
+    )
   end
 
   def setup
@@ -47,11 +48,11 @@ class MetasploitModule < Msf::Auxiliary
 
   def on_client_connect(c)
     @state[c] = {
-      :name    => "#{c.peerhost}:#{c.peerport}",
-      :ip      => c.peerhost,
-      :port    => c.peerport,
-      :user    => nil,
-      :pass    => nil,
+      :name => "#{c.peerhost}:#{c.peerport}",
+      :ip => c.peerhost,
+      :port => c.peerport,
+      :user => nil,
+      :pass => nil,
       :gotuser => false,
       :gotpass => false,
       :started => false

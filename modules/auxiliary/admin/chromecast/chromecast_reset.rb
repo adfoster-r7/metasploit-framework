@@ -7,23 +7,26 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::HttpClient
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name' => 'Chromecast Factory Reset DoS',
-      'Description' => %q{
-        This module performs a factory reset on a Chromecast, causing a denial of service (DoS).
-        No user authentication is required.
-      },
-      'Author' => ['wvu'],
-      'References' => [
-        ['URL', 'http://www.google.com/intl/en/chrome/devices/chromecast/index.html'] # vendor website
-      ],
-      'License' => MSF_LICENSE,
-      'Actions' => [
-        ['Reset', 'Description' => 'Factory reset'],
-        ['Reboot', 'Description' => 'Reboot only']
-      ],
-      'DefaultAction' => 'Reset'
-    ))
+    super(
+      update_info(
+        info,
+        'Name' => 'Chromecast Factory Reset DoS',
+        'Description' => %q{
+          This module performs a factory reset on a Chromecast, causing a denial of service (DoS).
+          No user authentication is required.
+        },
+        'Author' => ['wvu'],
+        'References' => [
+          ['URL', 'http://www.google.com/intl/en/chrome/devices/chromecast/index.html'] # vendor website
+        ],
+        'License' => MSF_LICENSE,
+        'Actions' => [
+          ['Reset', 'Description' => 'Factory reset'],
+          ['Reboot', 'Description' => 'Reboot only']
+        ],
+        'DefaultAction' => 'Reset'
+      )
+    )
 
     register_options([
       Opt::RPORT(8008)

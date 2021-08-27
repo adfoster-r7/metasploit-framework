@@ -3,33 +3,33 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 module MetasploitModule
-
   CachedSize = 487
 
   include Msf::Payload::Single
   include Msf::Sessions::CommandShellOptions
 
   def initialize(info = {})
-    super(merge_info(info,
-      'Name'          => 'Unix Command Shell, Bind TCP (inetd)',
-      'Description'   => 'Listen for a connection and spawn a command shell (persistent)',
-      'Author'        => 'hdm',
-      'License'       => MSF_LICENSE,
-      'Platform'      => 'unix',
-      'Arch'          => ARCH_CMD,
-      'Handler'       => Msf::Handler::BindTcp,
-      'Session'       => Msf::Sessions::CommandShell,
-      'PayloadType'   => 'cmd',
-      'Privileged'    => true,
-      'RequiredCmd'   => 'inetd',
-      'Payload'       =>
-        {
-          'Offsets' => { },
+    super(
+      merge_info(
+        info,
+        'Name' => 'Unix Command Shell, Bind TCP (inetd)',
+        'Description' => 'Listen for a connection and spawn a command shell (persistent)',
+        'Author' => 'hdm',
+        'License' => MSF_LICENSE,
+        'Platform' => 'unix',
+        'Arch' => ARCH_CMD,
+        'Handler' => Msf::Handler::BindTcp,
+        'Session' => Msf::Sessions::CommandShell,
+        'PayloadType' => 'cmd',
+        'Privileged' => true,
+        'RequiredCmd' => 'inetd',
+        'Payload' => {
+          'Offsets' => {},
           'Payload' => ''
         }
-      ))
+      )
+    )
   end
 
   #

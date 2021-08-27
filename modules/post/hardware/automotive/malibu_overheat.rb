@@ -5,15 +5,18 @@
 
 class MetasploitModule < Msf::Post
 
-  def initialize(info={})
-    super( update_info( info,
-        'Name'          => 'Sample Module to Flood Temp Gauge on 2006 Malibu',
-        'Description'   => %q{ Simple sample temp flood for the 2006 Malibu},
-        'License'       => MSF_LICENSE,
-        'Author'        => ['Craig Smith'],
-        'Platform'      => ['hardware'],
-        'SessionTypes'  => ['hwbridge']
-      ))
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Sample Module to Flood Temp Gauge on 2006 Malibu',
+        'Description' => %q{ Simple sample temp flood for the 2006 Malibu},
+        'License' => MSF_LICENSE,
+        'Author' => ['Craig Smith'],
+        'Platform' => ['hardware'],
+        'SessionTypes' => ['hwbridge']
+      )
+    )
     register_options([
       OptInt.new('PACKET_COUNT', [false, "How many packets to send before stopping", 200]),
       OptString.new('CANBUS', [false, "CAN Bus to perform scan on, defaults to connected bus", nil])

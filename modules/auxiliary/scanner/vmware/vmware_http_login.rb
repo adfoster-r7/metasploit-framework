@@ -3,7 +3,6 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::VIMSoap
   include Msf::Exploit::Remote::HttpClient
@@ -13,15 +12,14 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'           => 'VMWare Web Login Scanner',
-      'Description'    => 'This module attempts to authenticate to the VMWare HTTP service
+      'Name' => 'VMWare Web Login Scanner',
+      'Description' => 'This module attempts to authenticate to the VMWare HTTP service
         for VmWare Server, ESX, and ESXI',
-      'Author'         => ['theLightCosine'],
-      'References'     =>
-        [
-          [ 'CVE', '1999-0502'] # Weak password
-        ],
-      'License'        => MSF_LICENSE,
+      'Author' => ['theLightCosine'],
+      'References' => [
+        [ 'CVE', '1999-0502'] # Weak password
+      ],
+      'License' => MSF_LICENSE,
       'DefaultOptions' => { 'SSL' => true }
     )
 
@@ -29,7 +27,8 @@ class MetasploitModule < Msf::Auxiliary
       [
         OptString.new('URI', [true, "The default URI to login with", "/sdk"]),
         Opt::RPORT(443)
-      ])
+      ]
+    )
   end
 
   def report_cred(opts)
@@ -61,6 +60,7 @@ class MetasploitModule < Msf::Auxiliary
 
   def run_host(ip)
     return unless is_vmware?
+
     each_user_pass { |user, pass|
       result = vim_do_login(user, pass)
       case result
@@ -86,10 +86,10 @@ class MetasploitModule < Msf::Auxiliary
       </env:Envelope>|
 
     res = send_request_cgi({
-      'uri'     => normalize_uri(datastore['URI']),
-      'method'  => 'POST',
-      'agent'   => 'VMware VI Client',
-      'data'    => soap_data
+      'uri' => normalize_uri(datastore['URI']),
+      'method' => 'POST',
+      'agent' => 'VMware VI Client',
+      'data' => soap_data
     }, 25)
 
     unless res
@@ -131,9 +131,9 @@ class MetasploitModule < Msf::Auxiliary
     if os_match[1].include?('ESX') || os_match[1].include?('vCenter')
       # Report a fingerprint match for OS identification
       report_note(
-        :host  => rhost,
+        :host => rhost,
         :ntype => 'fingerprint.match',
-        :data  => {'os.vendor' => 'VMware', 'os.product' => os_match[1] + " " + ver_match[1], 'os.version' => build_match[1] }
+        :data => { 'os.vendor' => 'VMware', 'os.product' => os_match[1] + " " + ver_match[1], 'os.version' => build_match[1] }
       )
       return true
     end

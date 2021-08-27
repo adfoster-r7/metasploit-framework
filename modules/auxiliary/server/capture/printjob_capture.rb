@@ -10,7 +10,7 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'Printjob Capture Service',
+      'Name' => 'Printjob Capture Service',
       'Description' => %q{
         This module is designed to listen for PJL or PostScript print
         jobs. Once a print job is detected it is saved to loot. The
@@ -20,27 +20,26 @@ class MetasploitModule < Msf::Auxiliary
 
         Note, this module does not yet support IPP connections.
       },
-      'Author'      =>     ['Chris John Riley', 'todb'],
-      'License'     =>     MSF_LICENSE,
-      'References'  =>
-      [
+      'Author' => ['Chris John Riley', 'todb'],
+      'License' => MSF_LICENSE,
+      'References' => [
         # Based on previous prn-2-me tool (Python)
         ['URL', 'http://blog.c22.cc/toolsscripts/prn-2-me/'],
         # Readers for resulting PCL/PC
         ['URL', 'http://www.ghostscript.com']
       ],
-      'Actions'        => [[ 'Capture', 'Description' => 'Run print job capture server' ]],
+      'Actions' => [[ 'Capture', 'Description' => 'Run print job capture server' ]],
       'PassiveActions' => ['Capture'],
-      'DefaultAction'  => 'Capture'
+      'DefaultAction' => 'Capture'
     )
 
     register_options([
-      OptPort.new('SRVPORT',  [ true, 'The local port to listen on', 9100 ]),
-      OptBool.new('FORWARD',  [ true, 'Forward print jobs to another host', false ]),
+      OptPort.new('SRVPORT', [ true, 'The local port to listen on', 9100 ]),
+      OptBool.new('FORWARD', [ true, 'Forward print jobs to another host', false ]),
       OptAddress.new('RHOST', [ false, 'Forward to remote host' ]),
-      OptPort.new('RPORT',    [ false, 'Forward to remote port', 9100 ]),
+      OptPort.new('RPORT', [ false, 'Forward to remote port', 9100 ]),
       OptBool.new('METADATA', [ true, 'Display Metadata from printjobs', true ]),
-      OptEnum.new('MODE',     [ true,  'Print mode', 'RAW', ['RAW', 'LPR']]) # TODO: Add IPP
+      OptEnum.new('MODE', [ true, 'Print mode', 'RAW', ['RAW', 'LPR']]) # TODO: Add IPP
 
     ])
 
@@ -52,7 +51,6 @@ class MetasploitModule < Msf::Auxiliary
     @state = {}
 
     begin
-
       @srvhost = datastore['SRVHOST']
       @srvport = datastore['SRVPORT'] || 9100
       @mode = datastore['MODE'].upcase || 'RAW'
@@ -72,8 +70,7 @@ class MetasploitModule < Msf::Auxiliary
       print_status("Starting Print Server on %s:%s - %s mode" % [@srvhost, @srvport, @mode])
 
       exploit()
-
-    rescue  =>  ex
+    rescue => ex
       print_error(ex.message)
     end
   end
@@ -122,7 +119,7 @@ class MetasploitModule < Msf::Auxiliary
       forward_data(@state[c][:data])
     end
 
-    #extract print data and Metadata from @state[c][:data]
+    # extract print data and Metadata from @state[c][:data]
     begin
       # postscript data
       if @state[c][:data] =~ /%!PS-Adobe/i
@@ -134,7 +131,7 @@ class MetasploitModule < Msf::Auxiliary
       elsif @state[c][:data].unpack("H*")[0] =~ /(1b45|1b25|1b26)/
         @state[c][:prn_type] = "PCL"
         print_good("Printjob intercepted - type PCL")
-        #extract everything between PCL start and end markers (various)
+        # extract everything between PCL start and end markers (various)
         @state[c][:raw_data] = Array(@state[c][:data].unpack("H*")[0].match(/((1b45|1b25|1b26).*(1b45|1b252d313233343558))/i)[0]).pack("H*")
       end
       # extract Postsript Metadata
@@ -154,7 +151,7 @@ class MetasploitModule < Msf::Auxiliary
 
       # output discovered Metadata if set
       if @state[c][:meta_output] and @metadata
-        @state[c][:meta_output].sort.each do | out |
+        @state[c][:meta_output].sort.each do |out|
           # print metadata if not empty
           print_status("#{out}") if not out.empty?
         end
@@ -165,13 +162,12 @@ class MetasploitModule < Msf::Auxiliary
       # set name to unknown if not discovered via Metadata
       @state[c][:prn_title] = 'Unnamed' if @state[c][:prn_title].empty?
 
-      #store loot
+      # store loot
       storefile(c) if not @state[c][:raw_data].empty?
 
       # clear state
       @state.delete(c)
-
-    rescue  =>  ex
+    rescue => ex
       print_error(ex.message)
     end
   end
@@ -181,7 +177,7 @@ class MetasploitModule < Msf::Auxiliary
 
     @state[c][:prn_metadata] = @state[c][:data].scan(/^@PJL\s(JOB=|SET\s|COMMENT\s)(.*)$/i)
     print_good("Extracting PJL Metadata")
-    @state[c][:prn_metadata].each do | meta |
+    @state[c][:prn_metadata].each do |meta|
       if meta[0] =~ /^COMMENT/i
         @state[c][:meta_output] << meta[0].to_s + meta[1].to_s
       end
@@ -190,7 +186,7 @@ class MetasploitModule < Msf::Auxiliary
       end
       if meta[1] =~ /^NAME/i
         @state[c][:prn_title] = meta[1].strip
-      elsif meta[1] =~/^JOBNAME/i
+      elsif meta[1] =~ /^JOBNAME/i
         @state[c][:prn_title] = meta[1].strip
       end
     end
@@ -201,7 +197,7 @@ class MetasploitModule < Msf::Auxiliary
 
     @state[c][:prn_metadata] = @state[c][:data].scan(/^%%(.*)$/i)
     print_good("Extracting PostScript Metadata")
-    @state[c][:prn_metadata].each do | meta |
+    @state[c][:prn_metadata].each do |meta|
       if meta[0] =~ /^Title|^Creat(or|ionDate)|^For|^Target|^Language/i
         @state[c][:meta_output] << meta[0].to_s
       end
@@ -247,7 +243,7 @@ class MetasploitModule < Msf::Auxiliary
     # store the file
 
     if @state[c][:raw_data]
-      jobname = File.basename(@state[c][:prn_title].gsub("\\","/"), ".*")
+      jobname = File.basename(@state[c][:prn_title].gsub("\\", "/"), ".*")
       filename = "#{jobname}.#{@state[c][:prn_type]}"
       loot = store_loot(
         "prn_snarf.#{@state[c][:prn_type].downcase}",

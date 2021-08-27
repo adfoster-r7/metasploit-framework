@@ -18,39 +18,40 @@
 #     Auto scan for writable APF authorized library.
 ##
 
-
 module MetasploitModule
   CachedSize = 3156
   include Msf::Payload::Single
   include Msf::Payload::Mainframe
 
   def initialize(info = {})
-    super(merge_info(
-      info,
-      'Name'          => 'JCL to Escalate Privileges',
-      'Description'   => %q{(Elevate privileges for user. Adds
-         SYSTEM SPECIAL and BPX.SUPERUSER to user profile. Does this by using
-         an unsecured/updateable APF authorized library (APFLIB) and updating
-         the user's ACEE using this program/library.  Note: This privesc only
-         works with z/OS systems using RACF, no other ESM is supported.)},
-      'Author'        =>
-        [
+    super(
+      merge_info(
+        info,
+        'Name' => 'JCL to Escalate Privileges',
+        'Description' => %q{
+          (Elevate privileges for user. Adds
+          SYSTEM SPECIAL and BPX.SUPERUSER to user profile. Does this by using
+          an unsecured/updateable APF authorized library (APFLIB) and updating
+          the user's ACEE using this program/library.  Note: This privesc only
+          works with z/OS systems using RACF, no other ESM is supported.)
+        },
+        'Author' => [
           'Bigendian Smalls',
           'Ayoub'
         ],
-      'License'        => MSF_LICENSE,
-      'Platform'       => 'mainframe',
-      'Arch'           => ARCH_CMD,
-      'Handler'        => Msf::Handler::None,
-      'Session'        => Msf::Sessions::MainframeShell,
-      'PayloadType'    => 'cmd',
-      'RequiredCmd'    => 'jcl',
-      'Payload'        =>
-      {
-        'Offsets' => {},
-        'Payload' => ''
-      }
-    ))
+        'License' => MSF_LICENSE,
+        'Platform' => 'mainframe',
+        'Arch' => ARCH_CMD,
+        'Handler' => Msf::Handler::None,
+        'Session' => Msf::Sessions::MainframeShell,
+        'PayloadType' => 'cmd',
+        'RequiredCmd' => 'jcl',
+        'Payload' => {
+          'Offsets' => {},
+          'Payload' => ''
+        }
+      )
+    )
     register_options(
       [
         Opt::RPORT(21),

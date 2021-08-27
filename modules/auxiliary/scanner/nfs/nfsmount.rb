@@ -10,30 +10,27 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'          => 'NFS Mount Scanner',
-      'Description'   => %q{
+      'Name' => 'NFS Mount Scanner',
+      'Description' => %q{
         This module scans NFS mounts and their permissions.
       },
-      'Author'	       => ['<tebo[at]attackresearch.com>'],
-      'References'     =>
-        [
-          ['CVE', '1999-0170'],
-          ['URL',	'http://www.ietf.org/rfc/rfc1094.txt']
-        ],
+      'Author'	=> ['<tebo[at]attackresearch.com>'],
+      'References' => [
+        ['CVE', '1999-0170'],
+        ['URL',	'http://www.ietf.org/rfc/rfc1094.txt']
+      ],
       'License'	=> MSF_LICENSE
     )
 
     register_options([
       OptEnum.new('PROTOCOL', [ true, 'The protocol to use', 'udp', ['udp', 'tcp']])
     ])
-
   end
 
   def run_host(ip)
-
     begin
-      program		= 100005
-      progver		= 1
+      program	= 100005
+      progver	= 1
       procedure	= 5
 
       sunrpc_create(datastore['PROTOCOL'], program, progver)
@@ -44,14 +41,14 @@ class MetasploitModule < Msf::Auxiliary
       # Technically we are talking to mountd not nfsd
 
       report_service(
-        :host  => ip,
+        :host => ip,
         :proto => datastore['PROTOCOL'],
-        :port  => 2049,
-        :name  => 'nfsd',
-        :info  => "NFS Daemon #{program} v#{progver}"
+        :port => 2049,
+        :name => 'nfsd',
+        :info => "NFS Daemon #{program} v#{progver}"
       )
 
-      exports = resp[3,1].unpack('C')[0]
+      exports = resp[3, 1].unpack('C')[0]
       if (exports == 0x01)
         shares = []
         while Rex::Encoder::XDR.decode_int!(resp) == 1 do
@@ -71,7 +68,7 @@ class MetasploitModule < Msf::Auxiliary
           :data => { :exports => shares },
           :update => :unique_data
         )
-      elsif(exports == 0x00)
+      elsif (exports == 0x00)
         vprint_status("#{ip} - No exported directories")
       end
 

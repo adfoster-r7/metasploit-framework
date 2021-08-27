@@ -18,14 +18,12 @@ class MetasploitModule < Msf::Auxiliary
         Controller 6 - Express version 1.50 and 1.85,
         Controller 7 - Enterprise 2.63.60.62
       },
-      'Author' =>
-        [
-          'Cristiano Maruti <cmaruti[at]gmail.com>'
-        ],
-      'References' =>
-        [
-          ['CVE', '1999-0502'] # Weak password
-        ],
+      'Author' => [
+        'Cristiano Maruti <cmaruti[at]gmail.com>'
+      ],
+      'References' => [
+        ['CVE', '1999-0502'] # Weak password
+      ],
       'License' => MSF_LICENSE
     )
 
@@ -57,7 +55,6 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def do_login(user = nil, pass = nil)
-
     uri = normalize_uri(target_uri.path)
     auth = send_request_cgi({
       'method' => 'POST',

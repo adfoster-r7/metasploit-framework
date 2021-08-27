@@ -75,7 +75,7 @@ class MetasploitModule < Msf::Auxiliary
               sname: (ssl ? 'https' : 'http'),
               port: rport,
               type: "Wordpress Theme: #{theme} version #{version.details[:version]}",
-              #data: target_uri
+              # data: target_uri
             }
           )
         end
@@ -103,7 +103,7 @@ class MetasploitModule < Msf::Auxiliary
               sname: (ssl ? 'https' : 'http'),
               port: rport,
               type: "Wordpress Plugin: #{plugin} version #{version.details[:version]}",
-              #data: target_uri
+              # data: target_uri
             }
           )
         end

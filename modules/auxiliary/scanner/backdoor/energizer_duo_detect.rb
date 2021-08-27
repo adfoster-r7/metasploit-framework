@@ -10,26 +10,26 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'Energizer DUO Trojan Scanner',
+      'Name' => 'Energizer DUO Trojan Scanner',
       'Description' => 'Detect instances of the Energizer DUO trojan horse software on port 7777',
-      'Author'      => 'hdm',
-      'References'  =>
-        [
-          ['CVE', '2010-0103'],
-          ['OSVDB', '62782'],
-          ['US-CERT-VU', '154421']
-        ],
-      'License'     => MSF_LICENSE
+      'Author' => 'hdm',
+      'References' => [
+        ['CVE', '2010-0103'],
+        ['OSVDB', '62782'],
+        ['US-CERT-VU', '154421']
+      ],
+      'License' => MSF_LICENSE
     )
 
     register_options(
       [
         Opt::RPORT(7777),
-      ])
+      ]
+    )
   end
 
   def trojan_encode(str)
-    str.unpack("C*").map{|c| c ^ 0xE5}.pack("C*")
+    str.unpack("C*").map { |c| c ^ 0xE5 }.pack("C*")
   end
 
   def trojan_command(cmd)
@@ -57,64 +57,60 @@ class MetasploitModule < Msf::Auxiliary
     end
 
     trojan_encode(
-      [0x27].pack("V") + cid  + "\x00"
+      [0x27].pack("V") + cid + "\x00"
     )
   end
 
   def run_host(ip)
-
     begin
-
-    connect
-    sock.put(trojan_command(:dir))
-    sock.put(
-      trojan_encode(
-        [4].pack("V") + "C:\\\x00\x00"
+      connect
+      sock.put(trojan_command(:dir))
+      sock.put(
+        trojan_encode(
+          [4].pack("V") + "C:\\\x00\x00"
+        )
       )
-    )
 
-    lbuff = sock.get_once(4, 5)
-    if(not lbuff)
-      print_error("#{ip}:#{rport} UNKNOWN: No response to the directory listing request")
-      disconnect
-      return
-    end
-
-    len   = trojan_encode(lbuff).unpack("V")[0]
-    dbuff = sock.get_once(len, 30)
-    data  = trojan_encode(dbuff)
-    files = data.split("|").map do |x|
-      if x[0,2] == "?1"
-        ["D", x[2,x.length-2]]
-      else
-        ["F", x]
+      lbuff = sock.get_once(4, 5)
+      if (not lbuff)
+        print_error("#{ip}:#{rport} UNKNOWN: No response to the directory listing request")
+        disconnect
+        return
       end
-    end
 
-    # Required to prevent the server from spinning a loop
-    sock.put(trojan_command(:nop))
+      len = trojan_encode(lbuff).unpack("V")[0]
+      dbuff = sock.get_once(len, 30)
+      data = trojan_encode(dbuff)
+      files = data.split("|").map do |x|
+        if x[0, 2] == "?1"
+          ["D", x[2, x.length - 2]]
+        else
+          ["F", x]
+        end
+      end
 
-    print_good("#{ip}:#{rport} FOUND: #{files.inspect}")
-    # Add Vulnerability and Report
-    report_vuln({
-      :host  => ip,
-      :name  => "Energizer DUO USB Battery Charger Software Arucer.dll Trojaned Distribution",
-      :refs  => self.references
-    })
-    report_note(
-      :host   => ip,
-      :proto  => 'tcp',
-      :port   => datastore['RPORT'],
-      :sname  => "energizer_duo",
-      :type   => 'Energizer DUO Trojan',
-      :data   => files.inspect
-    )
-    disconnect
+      # Required to prevent the server from spinning a loop
+      sock.put(trojan_command(:nop))
 
+      print_good("#{ip}:#{rport} FOUND: #{files.inspect}")
+      # Add Vulnerability and Report
+      report_vuln({
+        :host => ip,
+        :name => "Energizer DUO USB Battery Charger Software Arucer.dll Trojaned Distribution",
+        :refs => self.references
+      })
+      report_note(
+        :host => ip,
+        :proto => 'tcp',
+        :port => datastore['RPORT'],
+        :sname => "energizer_duo",
+        :type => 'Energizer DUO Trojan',
+        :data => files.inspect
+      )
+      disconnect
     rescue ::Interrupt
       raise $!
     rescue ::Rex::ConnectionError, ::IOError
     end
-
   end
 end

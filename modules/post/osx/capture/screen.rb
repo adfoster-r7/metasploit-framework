@@ -7,32 +7,33 @@ class MetasploitModule < Msf::Post
   include Msf::Post::File
   include Msf::Auxiliary::Report
 
-  def initialize(info={})
-    super( update_info( info,
-        'Name'          => 'OSX Screen Capture',
-        'Description'   => %q{
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'OSX Screen Capture',
+        'Description' => %q{
           This module takes screenshots of target desktop and automatically downloads them.
         },
-        'License'       => MSF_LICENSE,
-        'Author'        =>
-          [
-            'Peter Toth <globetother[at]gmail.com>' # ported windows version to osx
-          ],
-        'Platform'      => [ 'osx' ],
-        'SessionTypes'  => [ 'meterpreter', 'shell' ]
-      ))
+        'License' => MSF_LICENSE,
+        'Author' => [
+          'Peter Toth <globetother[at]gmail.com>' # ported windows version to osx
+        ],
+        'Platform' => [ 'osx' ],
+        'SessionTypes' => [ 'meterpreter', 'shell' ]
+      )
+    )
 
     register_options(
       [
         OptEnum.new('FILETYPE',
-          [true, 'File format to use when saving a snapshot', 'png', %w(png gif)]
-        ),
+                    [true, 'File format to use when saving a snapshot', 'png', %w(png gif)]),
         OptInt.new('DELAY', [true, 'Interval between screenshots in seconds. 0 for no delay', 10]),
         OptInt.new('COUNT', [true, 'Number of screenshots to collect.', 1]),
         OptString.new('TMP_PATH', [true, 'Path to remote temp directory', '/tmp/<random>']),
         OptString.new('EXE_PATH', [true, 'Path to remote screencapture executable', '/usr/sbin/screencapture'])
-      ])
-
+      ]
+    )
   end
 
   def run
@@ -93,13 +94,11 @@ class MetasploitModule < Msf::Post
         vprint_error("#{e.class} #{e} #{e.backtrace}")
         return
       end
-
     end
 
     print_status("Screen Capturing Complete")
     if file_locations and not file_locations.empty?
       print_status("Use \"loot -t screen_capture.screenshot\" to see file locations of your newly acquired loot")
     end
-
   end
 end

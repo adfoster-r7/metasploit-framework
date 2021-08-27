@@ -7,23 +7,27 @@ class MetasploitModule < Msf::Post
   include Msf::Post::Common
   include Msf::Post::File
 
-  def initialize(info={})
-    super( update_info( info,
-        'Name'          => 'Android Screen Capture',
-        'Description'   => %q{
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Android Screen Capture',
+        'Description' => %q{
           This module takes a screenshot of the target phone.
         },
-        'License'       => MSF_LICENSE,
-        'Author'        => [ 'timwr' ],
-        'Platform'      => [ 'android' ],
-        'SessionTypes'  => [ 'shell', 'meterpreter' ]
-      ))
+        'License' => MSF_LICENSE,
+        'Author' => [ 'timwr' ],
+        'Platform' => [ 'android' ],
+        'SessionTypes' => [ 'shell', 'meterpreter' ]
+      )
+    )
 
     register_options(
       [
         OptString.new('TMP_PATH', [true, 'Path to remote temp directory', '/data/local/tmp/']),
         OptString.new('EXE_PATH', [true, 'Path to remote screencap executable', '/system/bin/screencap'])
-      ])
+      ]
+    )
   end
 
   def run

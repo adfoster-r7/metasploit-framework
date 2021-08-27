@@ -13,28 +13,26 @@ class MetasploitModule < Msf::Encoder::XorAdditiveFeedback
 
   def initialize
     super(
-      'Name'             => 'Polymorphic XOR Additive Feedback Encoder',
-      'Description'      => %q{
+      'Name' => 'Polymorphic XOR Additive Feedback Encoder',
+      'Description' => %q{
         This encoder implements a polymorphic XOR additive feedback encoder.
         The decoder stub is generated based on dynamic instruction
         substitution and dynamic block ordering.  Registers are also
         selected dynamically.
       },
-      'Author'           => 'spoonm',
-      'Arch'             => ARCH_X86,
-      'License'          => MSF_LICENSE,
-      'Decoder'          =>
-        {
-          'KeySize'    => 4,
-          'BlockSize'  => 4
-        })
+      'Author' => 'spoonm',
+      'Arch' => ARCH_X86,
+      'License' => MSF_LICENSE,
+      'Decoder' => {
+        'KeySize' => 4,
+        'BlockSize' => 4
+      })
   end
 
   #
   # Generates the shikata decoder stub.
   #
   def decoder_stub(state)
-
     # If the decoder stub has not already been generated for this state, do
     # it now.  The decoder stub method may be called more than once.
     if (state.decoder_stub == nil)
@@ -86,7 +84,7 @@ class MetasploitModule < Msf::Encoder::XorAdditiveFeedback
     [Rex::Arch::X86::ESP, Rex::Arch::X86::ECX] | saved_registers
   end
 
-protected
+  protected
 
   #
   # Returns the set of FPU instructions that can be used for the FPU block of
@@ -108,7 +106,7 @@ protected
     fpus << "\xd9\xe5"
 
     # This FPU instruction seems to fail consistently on Linux
-    #fpus << "\xdb\xe1"
+    # fpus << "\xdb\xe1"
 
     fpus
   end
@@ -120,7 +118,7 @@ protected
   def generate_shikata_block(state, length, cutoff)
     # Declare logical registers
     count_reg = Rex::Poly::LogicalRegister::X86.new('count', 'ecx')
-    addr_reg  = Rex::Poly::LogicalRegister::X86.new('addr')
+    addr_reg = Rex::Poly::LogicalRegister::X86.new('addr')
     key_reg = nil
 
     if state.context_encoding
@@ -134,10 +132,10 @@ protected
 
     # Clear the counter register
     clear_register = Rex::Poly::LogicalBlock.new('clear_register',
-      "\x31\xc9",  # xor ecx,ecx
-      "\x29\xc9",  # sub ecx,ecx
-      "\x33\xc9",  # xor ecx,ecx
-      "\x2b\xc9")  # sub ecx,ecx
+                                                 "\x31\xc9",  # xor ecx,ecx
+                                                 "\x29\xc9",  # sub ecx,ecx
+                                                 "\x33\xc9",  # xor ecx,ecx
+                                                 "\x2b\xc9")  # sub ecx,ecx
 
     # Initialize the counter after zeroing it
     init_counter = Rex::Poly::LogicalBlock.new('init_counter')
@@ -161,15 +159,15 @@ protected
     # If using context encoding, we use a mov reg, [addr]
     if state.context_encoding
       init_key = Rex::Poly::LogicalBlock.new('init_key',
-        Proc.new { |b| (0xa1 + b.regnum_of(key_reg)).chr + 'XORK'})
+                                             Proc.new { |b| (0xa1 + b.regnum_of(key_reg)).chr + 'XORK' })
     # Otherwise, we do a direct mov reg, val
     else
       init_key = Rex::Poly::LogicalBlock.new('init_key',
-        Proc.new { |b| (0xb8 + b.regnum_of(key_reg)).chr + 'XORK'})
+                                             Proc.new { |b| (0xb8 + b.regnum_of(key_reg)).chr + 'XORK' })
     end
 
-    xor  = Proc.new { |b| "\x31" + (0x40 + b.regnum_of(addr_reg) + (8 * b.regnum_of(key_reg))).chr }
-    add  = Proc.new { |b| "\x03" + (0x40 + b.regnum_of(addr_reg) + (8 * b.regnum_of(key_reg))).chr }
+    xor = Proc.new { |b| "\x31" + (0x40 + b.regnum_of(addr_reg) + (8 * b.regnum_of(key_reg))).chr }
+    add = Proc.new { |b| "\x03" + (0x40 + b.regnum_of(addr_reg) + (8 * b.regnum_of(key_reg))).chr }
 
     sub4 = Proc.new { |b| sub_immediate(b.regnum_of(addr_reg), -4) }
     add4 = Proc.new { |b| add_immediate(b.regnum_of(addr_reg), 4) }
@@ -181,6 +179,7 @@ protected
       if ((offset < -255 or offset > 255) and state.badchars.include? "\x00")
         raise EncodingError.new("Can't generate NULL-free decoder with a BufferOffset bigger than one byte")
       end
+
       mov = Proc.new { |b|
         # mov <buff_reg>, <addr_reg>
         "\x89" + (0xc0 + b.regnum_of(addr_reg) + (8 * b.regnum_of(buff_reg))).chr
@@ -189,21 +188,21 @@ protected
       sub_offset = Proc.new { |b| sub_immediate(b.regnum_of(addr_reg), -offset) }
 
       getpc = Rex::Poly::LogicalBlock.new('getpc')
-      getpc.add_perm(Proc.new{ |b| mov.call(b) + add_offset.call(b) })
-      getpc.add_perm(Proc.new{ |b| mov.call(b) + sub_offset.call(b) })
+      getpc.add_perm(Proc.new { |b| mov.call(b) + add_offset.call(b) })
+      getpc.add_perm(Proc.new { |b| mov.call(b) + sub_offset.call(b) })
 
       # With an offset of less than four, inc is smaller than or the same size as add
       if (offset > 0 and offset < 4)
-        getpc.add_perm(Proc.new{ |b| mov.call(b) + inc(b.regnum_of(addr_reg))*offset })
+        getpc.add_perm(Proc.new { |b| mov.call(b) + inc(b.regnum_of(addr_reg)) * offset })
       elsif (offset < 0 and offset > -4)
-        getpc.add_perm(Proc.new{ |b| mov.call(b) + dec(b.regnum_of(addr_reg))*(-offset) })
+        getpc.add_perm(Proc.new { |b| mov.call(b) + dec(b.regnum_of(addr_reg)) * (-offset) })
       end
 
       # NOTE: Adding a perm with possibly different sizes is normally
       # wrong since it will change the SymbolicBlock::End offset during
       # various stages of generation.  In this case, though, offset is
       # constant throughout the whole process, so it isn't a problem.
-      getpc.add_perm(Proc.new{ |b|
+      getpc.add_perm(Proc.new { |b|
         if (offset < -255 or offset > 255)
           # lea addr_reg, [buff_reg + DWORD offset]
           # NOTE: This will generate NULL bytes!
@@ -228,15 +227,15 @@ protected
     else
       # FPU blocks
       fpu = Rex::Poly::LogicalBlock.new('fpu',
-        *fpu_instructions)
+                                        *fpu_instructions)
 
       fnstenv = Rex::Poly::LogicalBlock.new('fnstenv',
-        "\xd9\x74\x24\xf4")
+                                            "\xd9\x74\x24\xf4")
       fnstenv.depends_on(fpu)
 
       # Get EIP off the stack
       getpc = Rex::Poly::LogicalBlock.new('getpc',
-        Proc.new { |b| (0x58 + b.regnum_of(addr_reg)).chr })
+                                          Proc.new { |b| (0x58 + b.regnum_of(addr_reg)).chr })
       getpc.depends_on(fnstenv)
 
       # Subtract the offset of the fpu instruction since that's where eip points after fnstenv
@@ -255,19 +254,20 @@ protected
       Proc.new { |b| sub4.call(b) + xor2.call(b) + add2.call(b) },
       Proc.new { |b| xor1.call(b) + add1.call(b) + add4.call(b) },
       Proc.new { |b| xor1.call(b) + add4.call(b) + add2.call(b) },
-      Proc.new { |b| add4.call(b) + xor2.call(b) + add2.call(b) })
+      Proc.new { |b| add4.call(b) + xor2.call(b) + add2.call(b) }
+    )
 
     # Loop instruction block
     loop_inst = Rex::Poly::LogicalBlock.new('loop_inst',
-      "\xe2\xf5")
-      # In the current implementation the loop block is a constant size,
-      # so really no need for a fancy calculation.  Nevertheless, here's
-      # one way to do it:
-      #Proc.new { |b|
-      #	# loop <loop_block label>
-      #	# -2 to account for the size of this instruction
-      #	"\xe2" + [ -2 - b.size_of(loop_block) ].pack('c')
-      #})
+                                            "\xe2\xf5")
+    # In the current implementation the loop block is a constant size,
+    # so really no need for a fancy calculation.  Nevertheless, here's
+    # one way to do it:
+    # Proc.new { |b|
+    #	# loop <loop_block label>
+    #	# -2 to account for the size of this instruction
+    #	"\xe2" + [ -2 - b.size_of(loop_block) ].pack('c')
+    # })
 
     # Define block dependencies
     clear_register.depends_on(getpc)
@@ -291,23 +291,28 @@ protected
 
   def sub_immediate(regnum, imm)
     return "" if imm.nil? or imm == 0
+
     if imm > 255 or imm < -255
       "\x81" + (0xe8 + regnum).chr + [imm].pack('V')
     else
       "\x83" + (0xe8 + regnum).chr + [imm].pack('c')
     end
   end
+
   def add_immediate(regnum, imm)
     return "" if imm.nil? or imm == 0
+
     if imm > 255 or imm < -255
       "\x81" + (0xc0 + regnum).chr + [imm].pack('V')
     else
       "\x83" + (0xc0 + regnum).chr + [imm].pack('c')
     end
   end
+
   def inc(regnum)
     [0x40 + regnum].pack('C')
   end
+
   def dec(regnum)
     [0x48 + regnum].pack('C')
   end

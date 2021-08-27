@@ -10,29 +10,31 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::SQLi
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name' => 'OpenEMR 5.0.1 Patch 6 SQLi Dump',
-      'Description' => '
-        This module exploits a SQLi vulnerability found in
-        OpenEMR version 5.0.1 Patch 6 and lower. The
-        vulnerability allows the contents of the entire
-        database (with exception of log and task tables) to be
-        extracted.
-        This module saves each table as a `.csv` file in your
-        loot directory and has been tested with
-        OpenEMR 5.0.1 (3).
-      ',
-      'License' => MSF_LICENSE,
-      'Author' =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'OpenEMR 5.0.1 Patch 6 SQLi Dump',
+        'Description' => %q{
+          This module exploits a SQLi vulnerability found in
+          OpenEMR version 5.0.1 Patch 6 and lower. The
+          vulnerability allows the contents of the entire
+          database (with exception of log and task tables) to be
+          extracted.
+          This module saves each table as a `.csv` file in your
+          loot directory and has been tested with
+          OpenEMR 5.0.1 (3).
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [
           'Will Porter <will.porter[at]lodestonesecurity.com>'
         ],
-      'References' => [
-        ['CVE', '2018-17179'],
-        ['URL', 'https://github.com/openemr/openemr/commit/3e22d11c7175c1ebbf3d862545ce6fee18f70617']
-      ],
-      'DisclosureDate' => '2019-05-17'
-    ))
+        'References' => [
+          ['CVE', '2018-17179'],
+          ['URL', 'https://github.com/openemr/openemr/commit/3e22d11c7175c1ebbf3d862545ce6fee18f70617']
+        ],
+        'DisclosureDate' => '2019-05-17'
+      )
+    )
 
     register_options(
       [

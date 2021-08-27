@@ -3,22 +3,23 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
-
 module MetasploitModule
-
   include Msf::Sessions::CommandShellOptions
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'          => 'Command Shell',
-      'Description'   => 'Spawn a piped command shell (cmd.exe on Windows, /bin/sh everywhere else)',
-      'Author'        => ['mihi', 'egypt'],
-      'Platform'      => 'java',
-      'Arch'          => ARCH_JAVA,
-      'PayloadCompat' => {'Convention' => 'javasocket'},
-      'License'       => MSF_LICENSE,
-      'Session'       => Msf::Sessions::CommandShell))
+    super(
+      update_info(
+        info,
+        'Name' => 'Command Shell',
+        'Description' => 'Spawn a piped command shell (cmd.exe on Windows, /bin/sh everywhere else)',
+        'Author' => ['mihi', 'egypt'],
+        'Platform' => 'java',
+        'Arch' => ARCH_JAVA,
+        'PayloadCompat' => { 'Convention' => 'javasocket' },
+        'License' => MSF_LICENSE,
+        'Session' => Msf::Sessions::CommandShell
+      )
+    )
   end
 
   def stage_class_files

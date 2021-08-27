@@ -14,14 +14,13 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'GitLab Login Utility',
+      'Name' => 'GitLab Login Utility',
       'Description' => 'This module attempts to login to a GitLab instance using a specific user/pass.',
-      'Author'      => [ 'Ben Campbell' ],
-      'License'     => MSF_LICENSE,
-      'References'  =>
-        [
-          ['URL', 'https://labs.mwrinfosecurity.com/blog/2015/03/20/gitlab-user-enumeration/']
-        ]
+      'Author' => [ 'Ben Campbell' ],
+      'License' => MSF_LICENSE,
+      'References' => [
+        ['URL', 'https://labs.mwrinfosecurity.com/blog/2015/03/20/gitlab-user-enumeration/']
+      ]
     )
 
     register_options(
@@ -30,7 +29,8 @@ class MetasploitModule < Msf::Auxiliary
         OptString.new('HttpUsername', [ true, 'The username to test', 'root' ]),
         OptString.new('HttpPassword', [ true, 'The password to test', '5iveL!fe' ]),
         OptString.new('TARGETURI', [true, 'The path to GitLab', '/'])
-      ])
+      ]
+    )
 
     deregister_options('PASSWORD_SPRAY')
 
@@ -40,9 +40,9 @@ class MetasploitModule < Msf::Auxiliary
   def run_host(ip)
     uri = normalize_uri(target_uri.path.to_s, 'users', 'sign_in')
     res = send_request_cgi(
-                            'method' => 'GET',
-                            'cookie' => 'request_method=GET',
-                            'uri'    => uri
+      'method' => 'GET',
+      'cookie' => 'request_method=GET',
+      'uri' => uri
     )
 
     if res && res.body && res.body.include?('user[email]')
@@ -77,8 +77,8 @@ class MetasploitModule < Msf::Auxiliary
     scanner.scan! do |result|
       credential_data = result.to_h
       credential_data.merge!(
-          module_fullname: fullname,
-          workspace_id: myworkspace_id
+        module_fullname: fullname,
+        workspace_id: myworkspace_id
       )
       if result.success?
         credential_core = create_credential(credential_data)

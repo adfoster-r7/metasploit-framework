@@ -10,18 +10,16 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'Digi RealPort Serial Server Version',
+      'Name' => 'Digi RealPort Serial Server Version',
       'Description' => 'Detect serial servers that speak the RealPort protocol.',
-      'References'  =>
-        [
-          ['URL', 'http://www.digi.com/pdf/fs_realport.pdf'],
-          ['URL', 'http://www.digi.com/support/productdetail?pid=2229&type=drivers']
-        ],
-      'Author'      =>
-        [
-          'hdm'
-        ],
-      'License'     => MSF_LICENSE
+      'References' => [
+        ['URL', 'http://www.digi.com/pdf/fs_realport.pdf'],
+        ['URL', 'http://www.digi.com/support/productdetail?pid=2229&type=drivers']
+      ],
+      'Author' => [
+        'hdm'
+      ],
+      'License' => MSF_LICENSE
     )
   end
 

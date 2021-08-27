@@ -12,8 +12,8 @@ class MetasploitModule < Msf::Encoder
 
   def initialize
     super(
-      'Name'             => 'The EICAR Encoder',
-      'Description'      => %q{
+      'Name' => 'The EICAR Encoder',
+      'Description' => %q{
         This encoder merely replaces the given payload with the EICAR test string.
         Note, this is sure to ruin your payload.
 
@@ -21,11 +21,10 @@ class MetasploitModule < Msf::Encoder
         standards should alert and do what it would normally do when malware is
         transmitted across the wire.
       },
-      'Author'           => 'todb',
-      'License'          => MSF_LICENSE,
-      'Arch'             => ARCH_ALL,
-      'EncoderType'      => Msf::Encoder::Type::Unspecified)
-
+      'Author' => 'todb',
+      'License' => MSF_LICENSE,
+      'Arch' => ARCH_ALL,
+      'EncoderType' => Msf::Encoder::Type::Unspecified)
   end
 
   # Avoid stating the string directly, don't want to get caught by local

@@ -9,34 +9,35 @@ class MetasploitModule < Msf::Post
   include Msf::Post::Linux::System
   include Msf::Exploit::FileDropper
 
-
-  def initialize(info={})
-    super( update_info( info,
-        'Name'          => 'Multiple Linux / Unix Post Sudo Upgrade Shell',
-        'Description'   => %q{
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Multiple Linux / Unix Post Sudo Upgrade Shell',
+        'Description' => %q{
           This module attempts to upgrade a shell account to UID 0 by reusing the
           given password and passing it to sudo. This technique relies on sudo
           versions from 2008 and later which support -A.
         },
-        'License'       => MSF_LICENSE,
-        'Author'        =>
-          [
-            'todb <todb[at]metasploit.com>',
-            'Ryan Baxendale <rbaxendale[at]gmail.com>' #added password option
-          ],
-        'Platform'      => %w{ aix linux osx solaris unix },
-        'References'    =>
-          [
-            # Askpass first added March 2, 2008, looks like
-            [ 'URL', 'http://www.sudo.ws/repos/sudo/file/05780f5f71fd/sudo.h']
-          ],
-        'SessionTypes'  => [ 'shell' ] # Need to test 'meterpreter'
-      ))
+        'License' => MSF_LICENSE,
+        'Author' => [
+          'todb <todb[at]metasploit.com>',
+          'Ryan Baxendale <rbaxendale[at]gmail.com>' # added password option
+        ],
+        'Platform' => %w{aix linux osx solaris unix},
+        'References' => [
+          # Askpass first added March 2, 2008, looks like
+          [ 'URL', 'http://www.sudo.ws/repos/sudo/file/05780f5f71fd/sudo.h']
+        ],
+        'SessionTypes' => [ 'shell' ]
+      )
+    ) # Need to test 'meterpreter'
 
-      register_options(
-        [
-          OptString.new('PASSWORD', [false, 'The password to use when running sudo.'])
-        ])
+    register_options(
+      [
+        OptString.new('PASSWORD', [false, 'The password to use when running sudo.'])
+      ]
+    )
   end
 
   # Run Method for when run command is issued

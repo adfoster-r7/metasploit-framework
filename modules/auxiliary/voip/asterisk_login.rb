@@ -9,43 +9,49 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
   include Msf::Auxiliary::AuthBrute
 
-  def initialize(info={})
-    super(update_info(info,
-      'Name'           => 'Asterisk Manager Login Utility',
-      'Description'    => %q{
-        This module attempts to authenticate to an Asterisk Manager service. Please note
-        that by default, Asterisk Call Management (port 5038) only listens locally, but
-        this can be manually configured in file /etc/asterisk/manager.conf by the admin
-        on the victim machine.
-      },
-      'Author'         =>
-        [
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Asterisk Manager Login Utility',
+        'Description' => %q{
+          This module attempts to authenticate to an Asterisk Manager service. Please note
+          that by default, Asterisk Call Management (port 5038) only listens locally, but
+          this can be manually configured in file /etc/asterisk/manager.conf by the admin
+          on the victim machine.
+        },
+        'Author' => [
           'dflah_ <dflah[at]alligatorteam.org>',
         ],
-      'References'     =>
-        [
+        'References' => [
           ['URL', 'http://www.asterisk.org/astdocs/node201.html'], # Docs for AMI
         ],
-      'License'     => MSF_LICENSE
-    ))
+        'License' => MSF_LICENSE
+      )
+    )
 
     register_options(
       [
         Opt::RPORT(5038),
-        OptString.new('USER_FILE',
+        OptString.new(
+          'USER_FILE',
           [
             false,
             'The file that contains a list of probable users accounts.',
             File.join(Msf::Config.install_root, 'data', 'wordlists', 'unix_users.txt')
-          ]),
+          ]
+        ),
 
-        OptString.new('PASS_FILE',
+        OptString.new(
+          'PASS_FILE',
           [
             false,
             'The file that contains a list of probable passwords.',
             File.join(Msf::Config.install_root, 'data', 'wordlists', 'unix_passwords.txt')
-          ])
-      ])
+          ]
+        )
+      ]
+    )
   end
 
   def report_cred(opts)
@@ -87,13 +93,13 @@ class MetasploitModule < Msf::Auxiliary
     end
   end
 
-  def send_manager(command='')
+  def send_manager(command = '')
     begin
       @result = ''
       if (!@connected)
         connect
         @connected = true
-        select(nil,nil,nil,0.4)
+        select(nil, nil, nil, 0.4)
       end
       sock.put(command)
       @result = sock.get_once || ''
@@ -102,7 +108,7 @@ class MetasploitModule < Msf::Auxiliary
     end
   end
 
-  def do_login(user='',pass='')
+  def do_login(user = '', pass = '')
     @connected = false
     begin
       send_manager(nil) # connect Only

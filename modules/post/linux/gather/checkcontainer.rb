@@ -6,18 +6,22 @@
 class MetasploitModule < Msf::Post
   include Msf::Post::File
 
-  def initialize(info={})
-    super( update_info( info,
-        'Name'          => 'Linux Gather Container Detection',
-        'Description'   => %q{
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Linux Gather Container Detection',
+        'Description' => %q{
           This module attempts to determine whether the system is running
           inside of a container and if so, which one. This module supports
-          detection of Docker, LXC, and systemd nspawn.},
-        'License'       => MSF_LICENSE,
-        'Author'        => [ 'James Otten <jamesotten1[at]gmail.com>'],
-        'Platform'      => [ 'linux' ],
-        'SessionTypes'  => [ 'shell', 'meterpreter' ]
-      ))
+          detection of Docker, LXC, and systemd nspawn.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [ 'James Otten <jamesotten1[at]gmail.com>'],
+        'Platform' => [ 'linux' ],
+        'SessionTypes' => [ 'shell', 'meterpreter' ]
+      )
+    )
   end
 
   # Run Method for when run command is issued

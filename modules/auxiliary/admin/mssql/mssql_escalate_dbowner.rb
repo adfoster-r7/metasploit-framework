@@ -3,23 +3,25 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::MSSQL
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Microsoft SQL Server Escalate Db_Owner',
-      'Description'    => %q{
-        This module can be used to escalate privileges to sysadmin if the user has
-        the db_owner role in a trustworthy database owned by a sysadmin user.  Once
-        the user has the sysadmin role the msssql_payload module can be used to obtain
-        a shell on the system.
-      },
-      'Author'         => [ 'nullbind <scott.sutherland[at]netspi.com>'],
-      'License'        => MSF_LICENSE,
-      'References'     => [[ 'URL','http://technet.microsoft.com/en-us/library/ms188676(v=sql.105).aspx']]
-    ))
+    super(
+      update_info(
+        info,
+        'Name' => 'Microsoft SQL Server Escalate Db_Owner',
+        'Description' => %q{
+          This module can be used to escalate privileges to sysadmin if the user has
+          the db_owner role in a trustworthy database owned by a sysadmin user.  Once
+          the user has the sysadmin role the msssql_payload module can be used to obtain
+          a shell on the system.
+        },
+        'Author' => [ 'nullbind <scott.sutherland[at]netspi.com>'],
+        'License' => MSF_LICENSE,
+        'References' => [[ 'URL', 'http://technet.microsoft.com/en-us/library/ms188676(v=sql.105).aspx']]
+      )
+    )
   end
 
   def run

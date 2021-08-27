@@ -10,27 +10,30 @@ class MetasploitModule < Msf::Auxiliary
 
   # Aliases for common classes
   SIMPLE = Rex::Proto::SMB::SimpleClient
-  XCEPT  = Rex::Proto::SMB::Exceptions
-  CONST  = Rex::Proto::SMB::Constants
+  XCEPT = Rex::Proto::SMB::Exceptions
+  CONST = Rex::Proto::SMB::Constants
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'WebEx Remote Command Execution Utility',
-      'Description'    => %q{
-        This module enables the execution of a single command as System by exploiting a remote
-        code execution vulnerability in Cisco's WebEx client software.
-      },
+    super(
+      update_info(
+        info,
+        'Name' => 'WebEx Remote Command Execution Utility',
+        'Description' => %q{
+          This module enables the execution of a single command as System by exploiting a remote
+          code execution vulnerability in Cisco's WebEx client software.
+        },
 
-      'Author'         => [
-        'Ron Bowes <ron@skullsecurity.net>',
-      ],
+        'Author' => [
+          'Ron Bowes <ron@skullsecurity.net>',
+        ],
 
-      'License'        => MSF_LICENSE,
-      'References'     => [
-        ['URL', 'https://webexec.org'],
-        ['CVE', '2018-15442']
-      ]
-    ))
+        'License' => MSF_LICENSE,
+        'References' => [
+          ['URL', 'https://webexec.org'],
+          ['CVE', '2018-15442']
+        ]
+      )
+    )
 
     register_options([
       OptString.new('COMMAND', [true, 'The command you want to execute on the remote host', 'net user testuser testpass /add']),

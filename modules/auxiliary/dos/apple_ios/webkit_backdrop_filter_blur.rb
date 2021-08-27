@@ -10,16 +10,16 @@ class MetasploitModule < Msf::Auxiliary
     super(
       update_info(
         info,
-        'Name'           => "iOS Safari Denial of Service with CSS",
-        'Description'    => %q(
+        'Name' => "iOS Safari Denial of Service with CSS",
+        'Description' => %q{
           This module exploits a vulnerability in WebKit on Apple iOS.
           If successful, the device will restart after viewing the webpage.
-        ),
-        'License'        => MSF_LICENSE,
-        'Author'         => [
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [
           'Sabri Haddouche', # twitter.com/pwnsdx
         ],
-        'References'     => [
+        'References' => [
           ['URL', 'https://twitter.com/pwnsdx/status/1040944750973595649'],
           ['URL', 'https://gist.github.com/pwnsdx/ce64de2760996a6c432f06d612e33aea'],
           ['URL', 'https://nbulischeck.github.io/apple-safari-crash'],

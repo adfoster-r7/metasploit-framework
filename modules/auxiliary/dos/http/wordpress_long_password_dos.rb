@@ -8,29 +8,31 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Dos
 
   def initialize(info = {})
-    super(update_info(
-      info,
-      'Name'            => 'WordPress Long Password DoS',
-      'Description'     => %q{WordPress before 3.7.5, 3.8.x before 3.8.5, 3.9.x before 3.9.3, and 4.x
-                              before 4.0.1 allows remote attackers to cause a denial of service
-                              (CPU consumption) via a long password that is improperly handled
-                              during hashing.},
-      'License'         => MSF_LICENSE,
-      'Author'          =>
-        [
-          'Javier Nieto Arevalo',  # Vulnerability disclosure
+    super(
+      update_info(
+        info,
+        'Name' => 'WordPress Long Password DoS',
+        'Description' => %q{
+          WordPress before 3.7.5, 3.8.x before 3.8.5, 3.9.x before 3.9.3, and 4.x
+          before 4.0.1 allows remote attackers to cause a denial of service
+          (CPU consumption) via a long password that is improperly handled
+          during hashing.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [
+          'Javier Nieto Arevalo', # Vulnerability disclosure
           'Andres Rojas Guerrero', # Vulnerability disclosure
           'rastating'              # Metasploit module
         ],
-      'References'      =>
-        [
+        'References' => [
           ['CVE', '2014-9016'],
           ['URL', 'http://web.nvd.nist.gov/view/vuln/detail?vulnId=CVE-2014-9034'],
           ['OSVDB', '114857'],
           ['WPVDB', '7681']
         ],
-      'DisclosureDate'  => '2014-11-20'
-    ))
+        'DisclosureDate' => '2014-11-20'
+      )
+    )
 
     register_options(
       [
@@ -40,7 +42,8 @@ class MetasploitModule < Msf::Auxiliary
         OptInt.new('TIMEOUT', [true, 'The maximum time in seconds to wait for each request to finish', 5]),
         OptString.new('USERNAME', [true, 'The username to send the requests with', '']),
         OptBool.new('VALIDATE_USER', [true, 'Validate the specified username', true])
-      ])
+      ]
+    )
   end
 
   def rlimit

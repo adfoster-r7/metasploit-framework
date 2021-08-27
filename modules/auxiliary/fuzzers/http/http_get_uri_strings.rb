@@ -8,14 +8,17 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Fuzzer
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'HTTP GET Request URI Fuzzer (Fuzzer Strings)',
-      'Description'    => %q{
-        This module sends a series of HTTP GET request with malicious URIs.
-      },
-      'Author'         => [ 'nullthreat' ],
-      'License'        => MSF_LICENSE
-    ))
+    super(
+      update_info(
+        info,
+        'Name' => 'HTTP GET Request URI Fuzzer (Fuzzer Strings)',
+        'Description' => %q{
+          This module sends a series of HTTP GET request with malicious URIs.
+        },
+        'Author' => [ 'nullthreat' ],
+        'License' => MSF_LICENSE
+      )
+    )
     register_options([
       Opt::RPORT(80),
       OptString.new("VHOST", [false, "The virtual host name to use in requests"]),
@@ -23,7 +26,7 @@ class MetasploitModule < Msf::Auxiliary
     ])
   end
 
-  def do_http_get(uri='',opts={})
+  def do_http_get(uri = '', opts = {})
     @connected = false
     connect
     @connected = true
@@ -46,12 +49,12 @@ class MetasploitModule < Msf::Auxiliary
       # XXX: Encode the string or leave it raw? Best to make a new boolean option to enable/disable this
       uri = pre + str
 
-      if(cnt % 100 == 0)
+      if (cnt % 100 == 0)
         print_status("Fuzzing with iteration #{cnt} using #{@last_fuzzer_input}")
       end
 
       begin
-        r = do_http_get(uri,:timeout => 0.50)
+        r = do_http_get(uri, :timeout => 0.50)
       rescue ::Interrupt
         print_status("Exiting on interrupt: iteration #{cnt} using #{@last_fuzzer_input}")
         raise $!
@@ -61,9 +64,9 @@ class MetasploitModule < Msf::Auxiliary
         disconnect
       end
 
-      if(not @connected)
-        if(last_str)
-          print_status("The service may have crashed: iteration:#{cnt-1} method=#{last_inp} uri=''#{last_str}'' error=#{last_err}")
+      if (not @connected)
+        if (last_str)
+          print_status("The service may have crashed: iteration:#{cnt - 1} method=#{last_inp} uri=''#{last_str}'' error=#{last_err}")
         else
           print_status("Could not connect to the service: #{last_err}")
         end

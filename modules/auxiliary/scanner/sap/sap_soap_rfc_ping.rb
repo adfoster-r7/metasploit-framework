@@ -26,15 +26,13 @@ class MetasploitModule < Msf::Auxiliary
           This module makes use of the RFC_PING function, through the	/sap/bc/soap/rfc
         SOAP service, to test connectivity to remote RFC destinations.
         },
-      'References' =>
-        [
-          [ 'URL', 'http://labs.mwrinfosecurity.com/tools/2012/04/27/sap-metasploit-modules/' ]
-        ],
-      'Author' =>
-        [
-          'Agnivesh Sathasivam',
-          'nmonkee'
-        ],
+      'References' => [
+        [ 'URL', 'http://labs.mwrinfosecurity.com/tools/2012/04/27/sap-metasploit-modules/' ]
+      ],
+      'Author' => [
+        'Agnivesh Sathasivam',
+        'nmonkee'
+      ],
       'License' => MSF_LICENSE
     )
 
@@ -44,7 +42,8 @@ class MetasploitModule < Msf::Auxiliary
         OptString.new('CLIENT', [true, 'Client', '001']),
         OptString.new('HttpUsername', [true, 'Username ', 'SAP*']),
         OptString.new('HttpPassword', [true, 'Password ', '06071992'])
-      ])
+      ]
+    )
   end
 
   def run_host(ip)
@@ -64,14 +63,14 @@ class MetasploitModule < Msf::Auxiliary
         'cookie' => "sap-usercontext=sap-language=EN&sap-client=#{client}",
         'data' => data,
         'authorization' => basic_auth(datastore['HttpUsername'], datastore['HttpPassword']),
-        'ctype'  => 'text/xml; charset=UTF-8',
+        'ctype' => 'text/xml; charset=UTF-8',
         'headers' => {
           'SOAPAction' => 'urn:sap-com:document:sap:rfc:functions'
         },
         'encode_params' => false,
         'vars_get' => {
-          'sap-client'    => client,
-          'sap-language'  => 'EN'
+          'sap-client' => client,
+          'sap-language' => 'EN'
         }
       })
       if res and res.code != 500 and res.code != 200

@@ -11,21 +11,23 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::Tcp
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'          => 'IEC104 Client Utility',
-      'Description'   => %q(
-         This module allows sending 104 commands.
-      ),
-      'Author'         =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'IEC104 Client Utility',
+        'Description' => %q{
+          This module allows sending 104 commands.
+        },
+        'Author' => [
           'Michael John <mjohn.info[at]gmail.com>'
         ],
-      'License'        => MSF_LICENSE,
-      'Actions'        =>
-        [
+        'License' => MSF_LICENSE,
+        'Actions' => [
           ['SEND_COMMAND', 'Description' => 'Send command to device']
         ],
-      'DefaultAction' => 'SEND_COMMAND'))
+        'DefaultAction' => 'SEND_COMMAND'
+      )
+    )
 
     register_options(
       [

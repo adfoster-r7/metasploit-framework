@@ -9,19 +9,20 @@ class MetasploitModule < Msf::Post
 
   def initialize
     super(
-      'Name'         => 'Testing commands needed in a function',
-      'Description'  => %q{
+      'Name' => 'Testing commands needed in a function',
+      'Description' => %q{
         This module will be applied on a session connected to a shell. It will check which commands are available in the system.
       },
-      'Author'       => 'Alberto Rafael Rodriguez Iglesias <albertocysec[at]gmail.com>',
-      'License'      => MSF_LICENSE,
-      'Platform'     => ['linux'],
+      'Author' => 'Alberto Rafael Rodriguez Iglesias <albertocysec[at]gmail.com>',
+      'License' => MSF_LICENSE,
+      'Platform' => ['linux'],
       'SessionTypes' => ['shell', 'meterpreter']
     )
     register_options(
       [
-        OptString.new('DIR', [false, 'Optional directory name to list, default current session path',''])
-      ])
+        OptString.new('DIR', [false, 'Optional directory name to list, default current session path', ''])
+      ]
+    )
   end
 
   DIRS = [
@@ -51,12 +52,12 @@ class MetasploitModule < Msf::Post
 
     # Explore common directories with binaries:
     DIRS.each do |d|
-#      if dir_exist?(d)
-        elems = dir(d)
-        path = pwd()
-        elems.each do |elem|
-          binaries.insert(-1, "#{d}#{elem}")
-        end
+      #      if dir_exist?(d)
+      elems = dir(d)
+      path = pwd()
+      elems.each do |elem|
+        binaries.insert(-1, "#{d}#{elem}")
+      end
     end
 
     # Busybox commands
@@ -71,7 +72,7 @@ class MetasploitModule < Msf::Post
       output = cmd_exec("(bin/busybox")
     end
 
-# A recursive ls through the whole system could be added to find extra binaries
+    # A recursive ls through the whole system could be added to find extra binaries
 
     binaries.uniq
     binaries.sort
@@ -80,6 +81,5 @@ class MetasploitModule < Msf::Post
     binaries.each do |bin|
       print_line("#{bin}")
     end
-
   end
 end

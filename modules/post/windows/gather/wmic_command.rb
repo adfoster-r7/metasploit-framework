@@ -6,23 +6,29 @@
 class MetasploitModule < Msf::Post
   include Msf::Post::Windows::WMIC
 
-  def initialize(info={})
-    super( update_info( info,
-      'Name'          => 'Windows Gather Run Specified WMIC Command',
-      'Description'   => %q{ This module will execute a given WMIC command options or read
-        WMIC commands options from a resource file and execute the commands in the
-        specified Meterpreter session.},
-      'License'       => MSF_LICENSE,
-      'Author'        => [ 'Carlos Perez <carlos_perez[at]darkoperator.com>'],
-      'Platform'      => [ 'win' ],
-      'SessionTypes'  => [ 'meterpreter' ]
-    ))
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Windows Gather Run Specified WMIC Command',
+        'Description' => %q{
+          This module will execute a given WMIC command options or read
+          WMIC commands options from a resource file and execute the commands in the
+          specified Meterpreter session.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [ 'Carlos Perez <carlos_perez[at]darkoperator.com>'],
+        'Platform' => [ 'win' ],
+        'SessionTypes' => [ 'meterpreter' ]
+      )
+    )
 
     register_options(
       [
         OptPath.new('RESOURCE', [false, 'Full path to resource file to read commands from.']),
         OptString.new('COMMAND', [false, 'WMIC command options.']),
-      ])
+      ]
+    )
   end
 
   # Run Method for when run command is issued
@@ -33,9 +39,9 @@ class MetasploitModule < Msf::Post
       if ::File.exist?(datastore['RESOURCE'])
 
         ::File.open(datastore['RESOURCE']).each_line do |cmd|
-
           next if cmd.strip.length < 1
-          next if cmd[0,1] == "#"
+          next if cmd[0, 1] == "#"
+
           print_status "Running command #{cmd.chomp}"
 
           result = wmic_query(cmd.chomp)
@@ -57,7 +63,7 @@ class MetasploitModule < Msf::Post
                              "text/plain",
                              session,
                              result_text,
-                             "#{cmd.gsub(/\.|\/|\s/,"_")}.txt",
+                             "#{cmd.gsub(/\.|\/|\s/, "_")}.txt",
                              "Command Output \'wmic #{cmd.chomp}\'")
 
     print_status("Command output saved to: #{command_log}")

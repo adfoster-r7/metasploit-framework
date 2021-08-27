@@ -13,15 +13,15 @@ module MetasploitModule
     super(
       update_info(
         info,
-        'Name'          => 'Linux Meterpreter',
-        'Description'   => 'Inject the mettle server payload (staged)',
-        'Author'        => [
+        'Name' => 'Linux Meterpreter',
+        'Description' => 'Inject the mettle server payload (staged)',
+        'Author' => [
           'Adam Cammack <adam_cammack[at]rapid7.com>'
         ],
-        'Platform'      => 'linux',
-        'Arch'          => ARCH_MIPSLE,
-        'License'       => MSF_LICENSE,
-        'Session'       => Msf::Sessions::Meterpreter_mipsle_Linux
+        'Platform' => 'linux',
+        'Arch' => ARCH_MIPSLE,
+        'License' => MSF_LICENSE,
+        'Session' => Msf::Sessions::Meterpreter_mipsle_Linux
       )
     )
   end
@@ -89,8 +89,8 @@ module MetasploitModule
   end
 
   def generate_stage(opts = {})
-    opts = {scheme: 'tcp'}
+    opts = { scheme: 'tcp' }
     MetasploitPayloads::Mettle.new('mipsel-linux-muslsf',
-      generate_config(opts.merge({scheme: 'tcp'}))).to_binary :process_image
+                                   generate_config(opts.merge({ scheme: 'tcp' }))).to_binary :process_image
   end
 end

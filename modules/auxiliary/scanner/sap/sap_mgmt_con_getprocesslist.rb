@@ -10,35 +10,34 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'         => 'SAP Management Console GetProcessList',
-      'Description'  => %q{
+      'Name' => 'SAP Management Console GetProcessList',
+      'Description' => %q{
         This module attempts to list SAP processes through the SAP Management Console SOAP Interface
         },
-      'References'   =>
-        [
-          # General
-          [ 'URL', 'http://blog.c22.cc' ]
-        ],
-      'Author'       =>
-        [
-          'Chris John Riley', # most of the code this module is based on
-          'Bruno Morisson <bm[at]integrity.pt>' # request ProcessList and parsing output
-        ],
-      'License'      => MSF_LICENSE
+      'References' => [
+        # General
+        [ 'URL', 'http://blog.c22.cc' ]
+      ],
+      'Author' => [
+        'Chris John Riley', # most of the code this module is based on
+        'Bruno Morisson <bm[at]integrity.pt>' # request ProcessList and parsing output
+      ],
+      'License' => MSF_LICENSE
     )
 
     register_options(
       [
         Opt::RPORT(50013),
         OptString.new('URI', [false, 'Path to the SAP Management Console ', '/']),
-      ])
+      ]
+    )
     register_autofilter_ports([ 50013 ])
   end
 
   def run_host(ip)
     res = send_request_cgi({
-      'uri'      => normalize_uri(datastore['URI']),
-      'method'   => 'GET'
+      'uri' => normalize_uri(datastore['URI']),
+      'method' => 'GET'
     }, 25)
 
     if not res
@@ -73,14 +72,14 @@ class MetasploitModule < Msf::Auxiliary
 
     begin
       res = send_request_raw({
-        'uri'      => normalize_uri(datastore['URI']),
-        'method'   => 'POST',
-        'data'     => data,
-        'headers'  =>
+        'uri' => normalize_uri(datastore['URI']),
+        'method' => 'POST',
+        'data' => data,
+        'headers' =>
           {
             'Content-Length' => data.length,
             'SOAPAction'	=> '""',
-            'Content-Type'  => 'text/xml; charset=UTF-8',
+            'Content-Type' => 'text/xml; charset=UTF-8',
           }
       }, 15)
 
@@ -102,7 +101,6 @@ class MetasploitModule < Msf::Auxiliary
           fault = true
         end
       end
-
     rescue ::Rex::ConnectionError
       print_error("#{rhost}:#{rport} [SAP] Unable to connect")
       return
@@ -112,22 +110,23 @@ class MetasploitModule < Msf::Auxiliary
       print_good("#{rhost}:#{rport} [SAP] #{env.length} processes listed")
 
       saptbl = Msf::Ui::Console::Table.new(
-          Msf::Ui::Console::Table::Style::Default,
-          'Header'    => "[SAP] Process List",
-          'Prefix'  => "\n",
-          'Postfix' => "\n",
-            'Indent'    => 1,
-            'Columns'   =>
-            [
-                "Name",
-                "Description",
-                "Status",
-                "StartTime",
-                "ElapsedTime"
-            ])
+        Msf::Ui::Console::Table::Style::Default,
+        'Header' => "[SAP] Process List",
+        'Prefix' => "\n",
+        'Postfix' => "\n",
+        'Indent' => 1,
+        'Columns' =>
+          [
+            "Name",
+            "Description",
+            "Status",
+            "StartTime",
+            "ElapsedTime"
+          ]
+      )
       env.each do |output|
         saptbl << [ output[0], output[1], output[3], output[4], output[5] ]
-        end
+      end
 
       print_line(saptbl.to_s)
       return

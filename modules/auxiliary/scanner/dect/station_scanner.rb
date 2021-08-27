@@ -8,14 +8,12 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'           => 'DECT Base Station Scanner',
-      'Description'    => 'This module scans for DECT base stations',
-      'Author'         => [ 'DK <privilegedmode[at]gmail.com>' ],
-      'License'        => MSF_LICENSE
+      'Name' => 'DECT Base Station Scanner',
+      'Description' => 'This module scans for DECT base stations',
+      'Author' => [ 'DK <privilegedmode[at]gmail.com>' ],
+      'License' => MSF_LICENSE
     )
-
   end
-
 
   def print_results
     print_line("RFPI\t\tChannel")
@@ -33,12 +31,11 @@ class MetasploitModule < Msf::Auxiliary
     open_coa
 
     begin
-
       print_status("Changing to fp scan mode.")
       fp_scan_mode
       print_status("Scanning...")
 
-      while(true)
+      while (true)
         data = poll_coa()
 
         if (data)
@@ -52,7 +49,7 @@ class MetasploitModule < Msf::Auxiliary
         next_channel
 
         vprint_status("Switching to channel: #{channel}")
-        select(nil,nil,nil,1)
+        select(nil, nil, nil, 1)
       end
     ensure
       print_status("Closing interface")

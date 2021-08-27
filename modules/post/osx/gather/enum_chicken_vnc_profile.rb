@@ -6,20 +6,22 @@
 class MetasploitModule < Msf::Post
   include Msf::Post::File
 
-  def initialize(info={})
-    super(update_info(info,
-      'Name'          => 'OS X Gather Chicken of the VNC Profile',
-      'Description'   => %q{
-        This module will download the "Chicken of the VNC" client application's
-        profile file,	which is used to store other VNC servers' information such
-        as the IP and password.
-      },
-      'License'       => MSF_LICENSE,
-      'Author'        => [ 'sinn3r'],
-      'Platform'      => [ 'osx' ],
-      'SessionTypes'  => [ "meterpreter", "shell" ]
-    ))
-
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'OS X Gather Chicken of the VNC Profile',
+        'Description' => %q{
+          This module will download the "Chicken of the VNC" client application's
+          profile file,	which is used to store other VNC servers' information such
+          as the IP and password.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [ 'sinn3r'],
+        'Platform' => [ 'osx' ],
+        'SessionTypes' => [ "meterpreter", "shell" ]
+      )
+    )
   end
 
   def whoami
@@ -52,6 +54,7 @@ class MetasploitModule < Msf::Post
   def dir(path)
     subdirs = exec("ls -l #{path}")
     return [] if subdirs =~ /No such file or directory/
+
     items = subdirs.scan(/[A-Z][a-z][a-z]\x20+\d+\x20[\d\:]+\x20(.+)$/).flatten
     return items
   end

@@ -12,12 +12,12 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'ARP Sweep Local Network Discovery',
+      'Name' => 'ARP Sweep Local Network Discovery',
       'Description' => %q{
         Enumerate alive Hosts in local network using ARP requests.
       },
-      'Author'      => 'belch',
-      'License'     => MSF_LICENSE
+      'Author' => 'belch',
+      'License' => MSF_LICENSE
     )
 
     register_options([
@@ -35,7 +35,7 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def run_batch(hosts)
-    open_pcap({'SNAPLEN' => 68, 'FILTER' => "arp[6:2] == 0x0002"})
+    open_pcap({ 'SNAPLEN' => 68, 'FILTER' => "arp[6:2] == 0x0002" })
 
     @netifaces = true
     if not netifaces_implemented?
@@ -48,40 +48,40 @@ class MetasploitModule < Msf::Auxiliary
     shost ||= get_ipv4_addr(@interface) if @netifaces
     raise 'SHOST should be defined' unless shost
 
-    smac  = datastore['SMAC']
+    smac = datastore['SMAC']
     smac ||= get_mac(@interface) if @netifaces
     raise 'SMAC should be defined' unless smac
 
     begin
+      hosts.each do |dhost|
+        if dhost != shost
+          probe = buildprobe(shost, smac, dhost)
+          inject(probe)
 
-    hosts.each do |dhost|
-      if dhost != shost
-        probe = buildprobe(shost, smac, dhost)
-        inject(probe)
+          while (reply = getreply())
+            next unless reply.is_arp?
 
-        while(reply = getreply())
+            company = OUI_LIST::lookup_oui_company_name(reply.arp_saddr_mac)
+            print_good("#{reply.arp_saddr_ip} appears to be up (#{company}).")
+            report_host(:host => reply.arp_saddr_ip, :mac => reply.arp_saddr_mac)
+            report_note(:host => reply.arp_saddr_ip, :type => "mac_oui", :data => company)
+          end
+
+        end
+      end
+
+      etime = Time.now.to_f + datastore['TIMEOUT']
+      while (Time.now.to_f < etime)
+        while (reply = getreply())
           next unless reply.is_arp?
+
           company = OUI_LIST::lookup_oui_company_name(reply.arp_saddr_mac)
           print_good("#{reply.arp_saddr_ip} appears to be up (#{company}).")
-          report_host(:host => reply.arp_saddr_ip, :mac=>reply.arp_saddr_mac)
-          report_note(:host  => reply.arp_saddr_ip, :type  => "mac_oui", :data  => company)
+          report_host(:host => reply.arp_saddr_ip, :mac => reply.arp_saddr_mac)
+          report_note(:host => reply.arp_saddr_ip, :type => "mac_oui", :data => company)
         end
-
+        Kernel.select(nil, nil, nil, 0.50)
       end
-    end
-
-    etime = Time.now.to_f + datastore['TIMEOUT']
-    while (Time.now.to_f < etime)
-      while(reply = getreply())
-        next unless reply.is_arp?
-        company = OUI_LIST::lookup_oui_company_name(reply.arp_saddr_mac)
-        print_good("#{reply.arp_saddr_ip} appears to be up (#{company}).")
-        report_host(:host => reply.arp_saddr_ip, :mac=>reply.arp_saddr_mac)
-        report_note(:host  => reply.arp_saddr_ip, :type  => "mac_oui", :data  => company)
-      end
-      Kernel.select(nil, nil, nil, 0.50)
-    end
-
     ensure
       close_pcap()
     end
@@ -102,11 +102,13 @@ class MetasploitModule < Msf::Auxiliary
 
   def getreply
     pkt_bytes = capture.next
-    Kernel.select(nil,nil,nil,0.1)
+    Kernel.select(nil, nil, nil, 0.1)
     return unless pkt_bytes
+
     pkt = PacketFu::Packet.parse(pkt_bytes)
     return unless pkt.is_arp?
     return unless pkt.arp_opcode == 2
+
     pkt
   end
 end

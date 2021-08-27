@@ -8,7 +8,6 @@
 #  on the system as JCL to JES2
 ##
 
-
 module MetasploitModule
   CachedSize = 10712
   include Msf::Payload::Single
@@ -16,25 +15,30 @@ module MetasploitModule
   include Msf::Sessions::CommandShellOptions
 
   def initialize(info = {})
-    super(merge_info(info,
-                     'Name'          => 'Z/OS (MVS) Command Shell, Bind TCP',
-                     'Description'   => 'Provide JCL which creates a bind shell
-                     This implmentation does not include ebcdic character translation,
-                     so a client with translation capabilities is required.  MSF handles
-                     this automatically.',
-                     'Author'        => 'Bigendian Smalls',
-                     'License'       => MSF_LICENSE,
-                     'Platform'      => 'mainframe',
-                     'Arch'          => ARCH_CMD,
-                     'Handler'       => Msf::Handler::BindTcp,
-                     'Session'       => Msf::Sessions::MainframeShell,
-                     'PayloadType'   => 'cmd',
-                     'RequiredCmd'   => 'jcl',
-                     'Payload'       =>
-    {
-      'Offsets' => {},
-      'Payload' => ''
-    }))
+    super(
+      merge_info(
+        info,
+        'Name' => 'Z/OS (MVS) Command Shell, Bind TCP',
+        'Description' => %q{
+          Provide JCL which creates a bind shell
+          This implmentation does not include ebcdic character translation,
+          so a client with translation capabilities is required.  MSF handles
+          this automatically.
+        },
+        'Author' => 'Bigendian Smalls',
+        'License' => MSF_LICENSE,
+        'Platform' => 'mainframe',
+        'Arch' => ARCH_CMD,
+        'Handler' => Msf::Handler::BindTcp,
+        'Session' => Msf::Sessions::MainframeShell,
+        'PayloadType' => 'cmd',
+        'RequiredCmd' => 'jcl',
+        'Payload' => {
+          'Offsets' => {},
+          'Payload' => ''
+        }
+      )
+    )
     register_options(
       [
         # need these defaulted so we can manipulate them in command_string

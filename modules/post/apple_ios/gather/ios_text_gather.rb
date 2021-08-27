@@ -7,18 +7,21 @@ class MetasploitModule < Msf::Post
   include Msf::Post::File
   include Msf::Auxiliary::Report
 
-  def initialize(info={})
-    super(update_info(info,
-      'Name'          =>  'iOS Text Gatherer',
-      'Description'   =>  %q{
-        This module collects text messages from iPhones.
-        Tested on iOS 10.3.3 on an iPhone 5.
-      },
-      'License'       =>  MSF_LICENSE,
-      'Author'        =>  [ 'Shelby Pace' ], # Metasploit Module
-      'Platform'      =>  [ 'apple_ios' ],
-      'SessionTypes'  =>  [ 'meterpreter' ]
-    ))
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'iOS Text Gatherer',
+        'Description' => %q{
+          This module collects text messages from iPhones.
+          Tested on iOS 10.3.3 on an iPhone 5.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [ 'Shelby Pace' ], # Metasploit Module
+        'Platform' => [ 'apple_ios' ],
+        'SessionTypes' => [ 'meterpreter' ]
+      )
+    )
   end
 
   def download_text_db(file_path)

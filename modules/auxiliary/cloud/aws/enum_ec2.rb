@@ -10,14 +10,14 @@ class MetasploitModule < Msf::Auxiliary
     super(
       update_info(
         info,
-        'Name'        => 'Amazon Web Services EC2 instance enumeration',
-        'Description' => %q(
-                          Provided AWS credentials, this module will call the authenticated
-                          API of Amazon Web Services to list all EC2 instances associated
-                          with the account
-                         ),
-        'Author'      => ['Aaron Soto <aaron.soto@rapid7.com>'],
-        'License'     => MSF_LICENSE
+        'Name' => 'Amazon Web Services EC2 instance enumeration',
+        'Description' => %q{
+          Provided AWS credentials, this module will call the authenticated
+          API of Amazon Web Services to list all EC2 instances associated
+          with the account
+        },
+        'Author' => ['Aaron Soto <aaron.soto@rapid7.com>'],
+        'License' => MSF_LICENSE
       )
     )
 

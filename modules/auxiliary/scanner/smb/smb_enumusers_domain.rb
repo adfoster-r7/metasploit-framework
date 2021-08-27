@@ -16,44 +16,41 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'SMB Domain User Enumeration',
+      'Name' => 'SMB Domain User Enumeration',
       'Description' => 'Determine what domain users are logged into a remote system via a DCERPC to NetWkstaUserEnum.',
-      'Author'      =>
-        [
-          'natron', # original module
-          'Joshua D. Abraham <jabra[at]praetorian.com>', # database storage
-        ],
-      'References'  =>
-        [
-          [ 'URL', 'http://msdn.microsoft.com/en-us/library/aa370669%28VS.85%29.aspx' ]
-        ],
-      'License'     => MSF_LICENSE
+      'Author' => [
+        'natron', # original module
+        'Joshua D. Abraham <jabra[at]praetorian.com>', # database storage
+      ],
+      'References' => [
+        [ 'URL', 'http://msdn.microsoft.com/en-us/library/aa370669%28VS.85%29.aspx' ]
+      ],
+      'License' => MSF_LICENSE
     )
 
     deregister_options('RPORT')
-
   end
 
   def parse_value(resp, idx)
-    #val_length  = resp[idx,4].unpack("V")[0]
+    # val_length  = resp[idx,4].unpack("V")[0]
     idx += 4
-    #val_offset = resp[idx,4].unpack("V")[0]
+    # val_offset = resp[idx,4].unpack("V")[0]
     idx += 4
-    val_actual = resp[idx,4].unpack("V")[0]
+    val_actual = resp[idx, 4].unpack("V")[0]
     idx += 4
-    value = resp[idx,val_actual*2]
+    value = resp[idx, val_actual * 2]
     idx += val_actual * 2
 
     idx += val_actual % 2 * 2 # alignment
 
-    return value,idx
+    return value, idx
   end
 
   def parse_net_wksta_enum_users_info(resp)
     accounts = [ Hash.new() ]
 
     idx = 20
-    count = resp[idx,4].unpack("V")[0] # wkssvc_NetWkstaEnumUsersInfo -> Info -> PtrCt0 -> User() -> Ptr -> Max Count
+    count = resp[idx, 4].unpack("V")[0] # wkssvc_NetWkstaEnumUsersInfo -> Info -> PtrCt0 -> User() -> Ptr -> Max Count
     idx += 4
 
     1.upto(count) do
@@ -67,10 +64,10 @@ class MetasploitModule < Msf::Auxiliary
     1.upto(count) do
       # wkssvc_NetWkstaEnumUsersInfo -> Info -> PtrCt0 -> User() -> Ptr -> ID1 max count
 
-      account_name,idx  = parse_value(resp, idx)
-      logon_domain,idx  = parse_value(resp, idx)
-      other_domains,idx = parse_value(resp, idx)
-      logon_server,idx  = parse_value(resp, idx)
+      account_name, idx = parse_value(resp, idx)
+      logon_domain, idx = parse_value(resp, idx)
+      other_domains, idx = parse_value(resp, idx)
+      logon_server, idx = parse_value(resp, idx)
 
       accounts << {
         :account_name => account_name,
@@ -121,82 +118,78 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def run_host(ip)
-
     [[139, false], [445, true]].each do |info|
+      @rport = info[0]
+      @smbdirect = info[1]
 
-    @rport = info[0]
-    @smbdirect = info[1]
-
-    begin
-      connect()
-      smb_login()
-
-      uuid = [ '6bffd098-a112-3610-9833-46c3f87e345a', '1.0' ]
-
-      handle = dcerpc_handle(
-        uuid[0], uuid[1], 'ncacn_np', ["\\wkssvc"]
-      )
       begin
-        dcerpc_bind(handle)
-        stub =
-          NDR.uwstring("\\\\" + ip) + # Server Name
-          NDR.long(1) +           # Level
-          NDR.long(1) +           # Ctr
-          NDR.long(rand(0xffffffff)) +  # ref id
-          NDR.long(0) +           # entries read
-          NDR.long(0) +           # null ptr to user0
+        connect()
+        smb_login()
 
-          NDR.long(0xffffffff) +      # Prefmaxlen
-          NDR.long(rand(0xffffffff)) +  # ref id
-          NDR.long(0)             # null ptr to resume handle
+        uuid = [ '6bffd098-a112-3610-9833-46c3f87e345a', '1.0' ]
 
-        dcerpc.call(2,stub)
+        handle = dcerpc_handle(
+          uuid[0], uuid[1], 'ncacn_np', ["\\wkssvc"]
+        )
+        begin
+          dcerpc_bind(handle)
+          stub =
+            NDR.uwstring("\\\\" + ip) + # Server Name
+            NDR.long(1) +           # Level
+            NDR.long(1) +           # Ctr
+            NDR.long(rand(0xffffffff)) + # ref id
+            NDR.long(0) +           # entries read
+            NDR.long(0) +           # null ptr to user0
+            NDR.long(0xffffffff) + # Prefmaxlen
+            NDR.long(rand(0xffffffff)) + # ref id
+            NDR.long(0) # null ptr to resume handle
 
-        resp = dcerpc.last_response ? dcerpc.last_response.stub_data : nil
+          dcerpc.call(2, stub)
 
-        accounts = parse_net_wksta_enum_users_info(resp)
-        accounts.shift
+          resp = dcerpc.last_response ? dcerpc.last_response.stub_data : nil
 
-        if datastore['VERBOSE']
+          accounts = parse_net_wksta_enum_users_info(resp)
+          accounts.shift
+
+          if datastore['VERBOSE']
+            accounts.each do |x|
+              print_status x[:logon_domain] + "\\" + x[:account_name] +
+                           "\t(logon_server: #{x[:logon_server]}, other_domains: #{x[:other_domains]})"
+            end
+          else
+            print_status "#{accounts.collect { |x| x[:logon_domain] + "\\" + x[:account_name] }.join(", ")}"
+          end
+
+          found_accounts = []
           accounts.each do |x|
-            print_status x[:logon_domain] + "\\" + x[:account_name] +
-              "\t(logon_server: #{x[:logon_server]}, other_domains: #{x[:other_domains]})"
-          end
-        else
-          print_status "#{accounts.collect{|x| x[:logon_domain] + "\\" + x[:account_name]}.join(", ")}"
-        end
-
-        found_accounts = []
-        accounts.each do |x|
-          comp_user = x[:logon_domain] + "\\" + x[:account_name]
-          found_accounts.push(comp_user.scan(/[[:print:]]/).join) unless found_accounts.include?(comp_user.scan(/[[:print:]]/).join)
-        end
-
-        found_accounts.each do |comp_user|
-          if comp_user.to_s =~ /\$$/
-            next
+            comp_user = x[:logon_domain] + "\\" + x[:account_name]
+            found_accounts.push(comp_user.scan(/[[:print:]]/).join) unless found_accounts.include?(comp_user.scan(/[[:print:]]/).join)
           end
 
-          print_good("Found user: #{comp_user}")
-          store_username(comp_user, resp, ip, rport)
+          found_accounts.each do |comp_user|
+            if comp_user.to_s =~ /\$$/
+              next
+            end
+
+            print_good("Found user: #{comp_user}")
+            store_username(comp_user, resp, ip, rport)
+          end
+        rescue ::Rex::Proto::SMB::Exceptions::ErrorCode => e
+          print_error("UUID #{uuid[0]} #{uuid[1]} ERROR 0x%.8x" % e.error_code)
+          # puts e
+          # return
+        rescue ::Exception => e
+          print_error("UUID #{uuid[0]} #{uuid[1]} ERROR #{$!}")
+          # puts e
+          # return
         end
 
-      rescue ::Rex::Proto::SMB::Exceptions::ErrorCode => e
-        print_error("UUID #{uuid[0]} #{uuid[1]} ERROR 0x%.8x" % e.error_code)
-        #puts e
-        #return
-      rescue ::Exception => e
-        print_error("UUID #{uuid[0]} #{uuid[1]} ERROR #{$!}")
-        #puts e
-        #return
+        disconnect()
+        return
+      rescue ::Exception
+        print_line($!.to_s)
       end
-
-      disconnect()
-      return
-    rescue ::Exception
-      print_line($!.to_s)
     end
   end
-end
 
 end

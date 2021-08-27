@@ -10,22 +10,21 @@ class MetasploitModule < Msf::Encoder::Alphanum
 
   def initialize
     super(
-      'Name'             => "Alpha2 Alphanumeric Uppercase Encoder",
-      'Description'      => %q{
+      'Name' => "Alpha2 Alphanumeric Uppercase Encoder",
+      'Description' => %q{
         Encodes payloads as alphanumeric uppercase text.  This encoder uses
         SkyLined's Alpha2 encoding suite.
         A pure alpha encoder is impossible without having a register that points at or near the shellcode.
         In a default configuration the first few bytes at the beginning are an fnstenv getpc stub (the same as used in shikata_ga_nai) and thus are not alphanumeric.
         You can set BufferRegister for full alpha (see Encoder options for details).
       },
-      'Author'           => [ 'pusscat', 'skylined' ],
-      'Arch'             => ARCH_X86,
-      'License'          => BSD_LICENSE,
-      'EncoderType'      => Msf::Encoder::Type::AlphanumUpper,
-      'Decoder'          =>
-        {
-          'BlockSize' => 1,
-        })
+      'Author' => [ 'pusscat', 'skylined' ],
+      'Arch' => ARCH_X86,
+      'License' => BSD_LICENSE,
+      'EncoderType' => Msf::Encoder::Type::AlphanumUpper,
+      'Decoder' => {
+        'BlockSize' => 1,
+      })
   end
 
   #
@@ -40,7 +39,7 @@ class MetasploitModule < Msf::Encoder::Alphanum
 
     # We need to create a GetEIP stub for the exploit
     if (not reg)
-      if(datastore['AllowWin32SEH'] and datastore['AllowWin32SEH'].to_s =~ /^(t|y|1)/i)
+      if (datastore['AllowWin32SEH'] and datastore['AllowWin32SEH'].to_s =~ /^(t|y|1)/i)
         buf = 'VTX630WTX638VXH49HHHPVX5AAQQPVX5YYYYP5YYYD5KKYAPTTX638TDDNVDDX4Z4A63861816'
         reg = 'ECX'
         off = 0
@@ -56,7 +55,8 @@ class MetasploitModule < Msf::Encoder::Alphanum
         if (not res)
           raise EncodingError, "Unable to generate geteip code"
         end
-      buf, reg, off = res
+
+        buf, reg, off = res
       end
     else
       reg.upcase!

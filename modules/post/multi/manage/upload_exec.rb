@@ -8,20 +8,23 @@ class MetasploitModule < Msf::Post
   include Msf::Exploit::FileDropper
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'         => 'Upload and Execute',
-      'Description'  => %q{Push a file and execute it.},
-      'Author'       => 'egypt',
-      'License'      => MSF_LICENSE,
-      'Platform'     => ['win', 'unix', 'linux', 'osx', 'bsd', 'solaris'],
-      'SessionTypes' => ['meterpreter', 'shell']
-    ))
+    super(
+      update_info(
+        info,
+        'Name' => 'Upload and Execute',
+        'Description' => %q{Push a file and execute it.},
+        'Author' => 'egypt',
+        'License' => MSF_LICENSE,
+        'Platform' => ['win', 'unix', 'linux', 'osx', 'bsd', 'solaris'],
+        'SessionTypes' => ['meterpreter', 'shell']
+      )
+    )
 
     register_options([
-      OptPath.new('LPATH',   [true, 'Local file path to upload and execute']),
+      OptPath.new('LPATH', [true, 'Local file path to upload and execute']),
       OptString.new('RPATH', [false, 'Remote file path on target (default is basename of LPATH)']),
-      OptString.new('ARGS',  [false, 'Command-line arguments to pass to the uploaded file']),
-      OptInt.new('TIMEOUT',  [true, 'Timeout for command execution', 60])
+      OptString.new('ARGS', [false, 'Command-line arguments to pass to the uploaded file']),
+      OptInt.new('TIMEOUT', [true, 'Timeout for command execution', 60])
     ])
   end
 

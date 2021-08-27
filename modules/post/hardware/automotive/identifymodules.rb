@@ -3,19 +3,21 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 class MetasploitModule < Msf::Post
   include Msf::Post::Hardware::Automotive::UDS
 
-  def initialize(info={})
-    super( update_info( info,
-        'Name'          => 'Scan CAN Bus for Diagnostic Modules',
-        'Description'   => %q{ Post Module to scan the CAN bus for any modules that can respond to UDS DSC queries},
-        'License'       => MSF_LICENSE,
-        'Author'        => ['Craig Smith'],
-        'Platform'      => ['hardware'],
-        'SessionTypes'  => ['hwbridge']
-      ))
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Scan CAN Bus for Diagnostic Modules',
+        'Description' => %q{ Post Module to scan the CAN bus for any modules that can respond to UDS DSC queries},
+        'License' => MSF_LICENSE,
+        'Author' => ['Craig Smith'],
+        'Platform' => ['hardware'],
+        'SessionTypes' => ['hwbridge']
+      )
+    )
     register_options([
       OptInt.new('STARTID', [true, "Start scan from this ID", 0x600]),
       OptInt.new('ENDID', [true, "End scan at this ID", 0x7F7]),
@@ -33,6 +35,7 @@ class MetasploitModule < Msf::Post
       next if res.nil?
       next unless res.key? "Packets"
       next unless res["Packets"].empty?
+
       if (res["Packets"][0].key? "DATA") && res["Packets"][0]["DATA"].size > 3
         if res["Packets"][0]["DATA"][0].hex == 3 && res["Packets"][0]["DATA"][1].hex == 0x7f && res["Packets"][0]["DATA"][2].hex == 0x10
           print_status("Identified module #{"%3x" % id}")

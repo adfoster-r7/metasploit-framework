@@ -9,34 +9,36 @@ class MetasploitModule < Msf::Post
   STR_CONNECTED = '* (Connected)'
   STR_DISCONNECTED = '* (Disconnected)'
 
-  def initialize(info={})
-    super( update_info( info,
-        'Name'          => 'OSX VPN Manager',
-        'Description'   => %q{
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'OSX VPN Manager',
+        'Description' => %q{
           This module lists VPN connections and tries to connect to them using stored credentials.
         },
-        'License'       => MSF_LICENSE,
-        'Author'        =>
-          [
-            'Peter Toth <globetother[at]gmail.com>'
-          ],
-        'Platform'      => [ 'osx' ],
-        'SessionTypes'  => [ 'shell', 'meterpreter' ],
-        'Actions'       => [
-          [ 'LIST',     { 'Description' => 'Show a list of VPN connections' } ],
+        'License' => MSF_LICENSE,
+        'Author' => [
+          'Peter Toth <globetother[at]gmail.com>'
+        ],
+        'Platform' => [ 'osx' ],
+        'SessionTypes' => [ 'shell', 'meterpreter' ],
+        'Actions' => [
+          [ 'LIST', { 'Description' => 'Show a list of VPN connections' } ],
           [ 'CONNECT', { 'Description' => 'Connect to a VPN using stored credentials' } ],
           [ 'DISCONNECT', { 'Description' => 'Disconnect from a VPN' } ]
         ],
         'DefaultAction' => 'LIST'
-      ))
+      )
+    )
 
     register_options(
       [
         OptString.new('VPN_CONNECTION', [true, 'Name of VPN connection. `set ACTION LIST` to get a list.', 'OSX_VPN']),
         OptString.new('SCUTIL_PATH', [true, 'Path to the scutil executable.', '/usr/sbin/scutil']),
         OptString.new('NETWORKSETUP_PATH', [true, 'Path to the networksetup executable.', '/usr/sbin/networksetup'])
-      ])
-
+      ]
+    )
   end
 
   def run
@@ -112,7 +114,7 @@ class MetasploitModule < Msf::Post
     end
   end
 
-  def parse_vpn_connection_names(data, type=:connected)
+  def parse_vpn_connection_names(data, type = :connected)
     lines = data.lines
     connection_names = []
     comp_str = type == :connected ? STR_CONNECTED : STR_DISCONNECTED
@@ -130,6 +132,7 @@ class MetasploitModule < Msf::Post
     lines.each do |line|
       line.strip!
       next if line.empty?
+
       if line.include?(vpn_name) && line =~ /([0-9A-F]{8}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{4}-[0-9A-F]{12})/
         identifier = $1
         return identifier

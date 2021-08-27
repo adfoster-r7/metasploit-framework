@@ -10,28 +10,33 @@ class MetasploitModule < Msf::Post
   include Msf::Post::File
   include Msf::Post::Windows::Registry
 
-  def initialize(info={})
-    super( update_info( info,
-      'Name'          => 'Windows Gather File and Registry Artifacts Enumeration',
-      'Description'   => %q{
-        This module will check the file system and registry for particular artifacts. The
-        list of artifacts is read from data/post/enum_artifacts_list.txt or a user specified file. Any
-        matches are written to the loot. },
-      'License'       => MSF_LICENSE,
-      'Author'        => [ 'averagesecurityguy <stephen[at]averagesecurityguy.info>' ],
-      'Platform'      => [ 'win' ],
-      'SessionTypes'  => [ 'meterpreter' ]
-    ))
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Windows Gather File and Registry Artifacts Enumeration',
+        'Description' => %q{
+          This module will check the file system and registry for particular artifacts. The
+          list of artifacts is read from data/post/enum_artifacts_list.txt or a user specified file. Any
+          matches are written to the loot.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [ 'averagesecurityguy <stephen[at]averagesecurityguy.info>' ],
+        'Platform' => [ 'win' ],
+        'SessionTypes' => [ 'meterpreter' ]
+      )
+    )
 
     register_options(
       [
-        OptPath.new( 'ARTIFACTS',
-          [
-            true,
-            'Full path to artifacts file.',
-            ::File.join(Msf::Config.data_directory, 'post', 'enum_artifacts_list.txt')
-          ])
-      ])
+        OptPath.new('ARTIFACTS',
+                    [
+                      true,
+                      'Full path to artifacts file.',
+                      ::File.join(Msf::Config.data_directory, 'post', 'enum_artifacts_list.txt')
+                    ])
+      ]
+    )
   end
 
   def run
@@ -54,6 +59,7 @@ class MetasploitModule < Msf::Post
         digest = file_remote_digestmd5(file['name'])
         # if the file doesn't exist then digest will be nil
         next if digest == nil
+
         if digest == file['csum'] then found << file['name'] end
       end
 

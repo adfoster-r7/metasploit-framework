@@ -8,32 +8,30 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
   include Msf::Auxiliary::Scanner
 
-
   def initialize
     super(
-      'Name'         => 'SAP Service Discovery',
-      'Description'  => %q{ Scans for listening SAP services. },
-      'References'   =>
-        [
-          # General
-          [ 'URL', 'http://blog.c22.cc' ]
-        ],
-      'Author'       => [ 'Chris John Riley' ],
-      'License'      => MSF_LICENSE
+      'Name' => 'SAP Service Discovery',
+      'Description' => %q{ Scans for listening SAP services. },
+      'References' => [
+        # General
+        [ 'URL', 'http://blog.c22.cc' ]
+      ],
+      'Author' => [ 'Chris John Riley' ],
+      'License' => MSF_LICENSE
     )
 
     register_options(
-    [
-      OptString.new('INSTANCES', [true, "Instance numbers to scan (e.g. 00-05,00-99)", "00-01"]),
-      OptInt.new('TIMEOUT', [true, "The socket connect timeout in milliseconds", 1000]),
-      OptInt.new('CONCURRENCY', [true, "The number of concurrent ports to check per host", 10]),
-    ])
+      [
+        OptString.new('INSTANCES', [true, "Instance numbers to scan (e.g. 00-05,00-99)", "00-01"]),
+        OptInt.new('TIMEOUT', [true, "The socket connect timeout in milliseconds", 1000]),
+        OptInt.new('CONCURRENCY', [true, "The number of concurrent ports to check per host", 10]),
+      ]
+    )
 
     deregister_options('RPORT')
   end
 
   def run_host(ip)
-
     timeout = datastore['TIMEOUT'].to_i
 
     instances = datastore['INSTANCES']
@@ -50,11 +48,11 @@ class MetasploitModule < Msf::Auxiliary
     ]
 
     static_ports = [
-      '21212', '21213', '59975', '59976', '4238', '4239','4240', '4241', '3299',
+      '21212', '21213', '59975', '59976', '4238', '4239', '4240', '4241', '3299',
       '3298', '515', '7200', '7210', '7269', '7270', '7575', '3909', '8200',
       '8210', '8220', '8230', '4363', '4444', '4445', '9999', '20003', '20004',
       '20005', '20006', '20007', '31596', '31597', '31602', '31601', '31604',
-      '2000', '2001', '2002', '8355', '8357', '8351' ,'8352', '8353', '8366',
+      '2000', '2001', '2002', '8355', '8357', '8351', '8352', '8353', '8366',
       '1090', '1095', '20201', '1099', '1089', '40080'
     ]
 
@@ -73,7 +71,6 @@ class MetasploitModule < Msf::Auxiliary
       start.upto(stop) do |p|
         ports << p
       end
-
     end
 
     # Sort, and remove dups and invalid instance numbers (00-99 valid)
@@ -86,11 +83,11 @@ class MetasploitModule < Msf::Auxiliary
     ports.each do |inst|
       inst = inst.to_s
       if inst.length < 2
-        inst = '0' +inst
+        inst = '0' + inst
       end
       def_ports.each do |dport|
         if dport.length < 2
-          dport = '0' +dport
+          dport = '0' + dport
         end
 
         final_ports << dport.gsub("NN", inst)
@@ -106,37 +103,38 @@ class MetasploitModule < Msf::Auxiliary
 
     print_status("[SAP] Beginning service Discovery '#{ip}'\n")
 
-    while(ports.length > 0)
+    while (ports.length > 0)
       t = []
       r = []
       begin
         1.upto(datastore['CONCURRENCY']) do
           this_port = ports.shift
           break if not this_port
+
           t << framework.threads.spawn("Module(#{self.refname})-#{ip}:#{this_port}", false, this_port) do |port|
             begin
               s = connect(false,
-                {
-                  'RPORT' => port,
-                  'RHOST' => ip,
-                  'ConnectTimeout' => (timeout / 1000.0)
-                })
-              #print_status("#{ip}:#{port} - TCP OPEN")
+                          {
+                            'RPORT' => port,
+                            'RHOST' => ip,
+                            'ConnectTimeout' => (timeout / 1000.0)
+                          })
+              # print_status("#{ip}:#{port} - TCP OPEN")
               case port
               when /^3299$/
                 service = "SAP Router"
               when /^3298$/
-                service =  "SAP niping (Network Test Program)"
+                service = "SAP niping (Network Test Program)"
               when /^32[0-9][0-9]/
-                service = "SAP Dispatcher sapdp" + port.to_s[-2,2]
+                service = "SAP Dispatcher sapdp" + port.to_s[-2, 2]
               when /^33[0-9][0-9]/
-                service = "SAP Gateway sapgw" + port.to_s[-2,2]
+                service = "SAP Gateway sapgw" + port.to_s[-2, 2]
               when /^48[0-9][0-9]/
-                service = "SAP Gateway [SNC] sapgw" + port.to_s[-2,2]
+                service = "SAP Gateway [SNC] sapgw" + port.to_s[-2, 2]
               when /^80[0-9][0-9]/
                 service = "SAP ICM HTTP"
               when /^36[0-9][0-9]/
-                service = "SAP Message Server sapms<SID>" + port.to_s[-2,2]
+                service = "SAP Message Server sapms<SID>" + port.to_s[-2, 2]
               when /^81[0-9][0-9]/
                 service = "SAP Message Server [HTTP]"
               when /^5[0-9][0-9]00/
@@ -162,9 +160,9 @@ class MetasploitModule < Msf::Auxiliary
               when /^5[0-9][0-9]16/
                 service = "SAP JAVA Enq. Replication"
               when /^5[0-9][0-9]13/
-                service = "SAP StartService [SOAP] sapctrl" +port.to_s[1,2]
+                service = "SAP StartService [SOAP] sapctrl" + port.to_s[1, 2]
               when /^5[0-9][0-9]14/
-                service = "SAP StartService [SOAP over SSL] sapctrl" +port.to_s[1,2]
+                service = "SAP StartService [SOAP over SSL] sapctrl" + port.to_s[1, 2]
               when /^5[0-9][0-9]1(7|8|9)/
                 service = "SAP Software Deployment Manager"
               when /^2121(2|3)/
@@ -224,34 +222,33 @@ class MetasploitModule < Msf::Auxiliary
               else
                 service = "Unknown Service"
               end
-            print_good("#{ip}:#{port}\t - #{service} OPEN")
+              print_good("#{ip}:#{port}\t - #{service} OPEN")
 
-            report_note(
-              :host => "#{ip}",
-              :port => "#{port}",
-              :type => 'SAP',
-              :data => "#{service}",
-              :update => :unique_data
-            )
-            r << [ip,port,"open", service]
+              report_note(
+                :host => "#{ip}",
+                :port => "#{port}",
+                :type => 'SAP',
+                :data => "#{service}",
+                :update => :unique_data
+              )
+              r << [ip, port, "open", service]
             rescue ::Rex::ConnectionRefused
               vprint_status("#{ip}:#{port}\t - TCP closed")
-              r << [ip,port,"closed", "service"]
+              r << [ip, port, "closed", "service"]
             rescue ::Rex::ConnectionError, ::IOError, ::Timeout::Error
             rescue ::Interrupt
-            raise $!
+              raise $!
             rescue ::Exception => e
               print_error("#{ip}:#{port} exception #{e.class} #{e} #{e.backtrace}")
             ensure
               disconnect(s) rescue nil
+            end
           end
         end
-      end
-      t.each {|x| x.join }
-
+        t.each { |x| x.join }
       rescue ::Timeout::Error
       ensure
-        t.each {|x| x.kill rescue nil }
+        t.each { |x| x.kill rescue nil }
       end
 
       r.each do |res|

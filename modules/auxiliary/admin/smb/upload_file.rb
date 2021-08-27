@@ -15,26 +15,23 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'SMB File Upload Utility',
+      'Name' => 'SMB File Upload Utility',
       'Description' => %Q{
         This module uploads a file to a target share and path. The only reason
       to use this module is if your existing SMB client is not able to support the features
       of the Metasploit Framework that you need, like pass-the-hash authentication.
       },
-      'Author'      =>
-        [
-          'hdm'    # metasploit module
-        ],
-      'References'  =>
-        [
-        ],
-      'License'     => MSF_LICENSE
+      'Author' => [
+        'hdm'    # metasploit module
+      ],
+      'References' => [
+      ],
+      'License' => MSF_LICENSE
     )
 
     register_options([
       OptString.new('SMBSHARE', [true, 'The name of a writeable share on the server', 'C$'])
     ])
-
   end
 
   def run_host(_ip)

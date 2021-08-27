@@ -10,143 +10,157 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'           => 'Veeder-Root Automatic Tank Gauge (ATG) Administrative Client',
-      'Description'    => %q{
+      'Name' => 'Veeder-Root Automatic Tank Gauge (ATG) Administrative Client',
+      'Description' => %q{
         This module acts as a simplistic administrative client for interfacing
         with Veeder-Root Automatic Tank Gauges (ATGs) or other devices speaking
         the TLS-250 and TLS-350 protocols.  This has been tested against
         GasPot and Conpot, both honeypots meant to simulate ATGs; it has not
         been tested against anything else, so use at your own risk.
       },
-      'Author'         =>
+      'Author' => [
+        'Jon Hart <jon_hart[at]rapid7.com>' # original metasploit module
+      ],
+      'License' => MSF_LICENSE,
+      'References' => [
+        ['URL', 'https://blog.rapid7.com/2015/01/22/the-internet-of-gas-station-tank-gauges'],
+        ['URL', 'http://www.trendmicro.com/vinfo/us/security/news/cybercrime-and-digital-threats/the-gaspot-experiment'],
+        ['URL', 'https://github.com/sjhilt/GasPot'],
+        ['URL', 'https://github.com/mushorg/conpot'],
+        ['URL', 'http://www.veeder.com/us/automatic-tank-gauge-atg-consoles'],
+        ['URL', 'http://www.chipkin.com/files/liz/576013-635.pdf'],
+        ['URL', 'http://www.veeder.com/gold/download.cfm?doc_id=6227']
+      ],
+      'DefaultAction' => 'INVENTORY',
+      'Actions' => [
         [
-          'Jon Hart <jon_hart[at]rapid7.com>' # original metasploit module
+          'ALARM',
+          {
+            'Description' => 'I30200 Sensor alarm history (untested)',
+            'TLS-350_CMD' => "\x01I30200"
+          }
         ],
-      'License'        => MSF_LICENSE,
-      'References'     =>
         [
-          ['URL', 'https://blog.rapid7.com/2015/01/22/the-internet-of-gas-station-tank-gauges'],
-          ['URL', 'http://www.trendmicro.com/vinfo/us/security/news/cybercrime-and-digital-threats/the-gaspot-experiment'],
-          ['URL', 'https://github.com/sjhilt/GasPot'],
-          ['URL', 'https://github.com/mushorg/conpot'],
-          ['URL', 'http://www.veeder.com/us/automatic-tank-gauge-atg-consoles'],
-          ['URL', 'http://www.chipkin.com/files/liz/576013-635.pdf'],
-          ['URL', 'http://www.veeder.com/gold/download.cfm?doc_id=6227']
+          'ALARM_RESET',
+          {
+            'Description' => 'IS00300 Remote alarm reset (untested)',
+            'TLS-350_CMD' => "\x01IS00300"
+          }
         ],
-      'DefaultAction'  => 'INVENTORY',
-      'Actions'        =>
         [
-          [ 'ALARM',
-            {
-              'Description' => 'I30200 Sensor alarm history (untested)',
-              'TLS-350_CMD' => "\x01I30200"
-            }
-          ],
-          [ 'ALARM_RESET',
-            {
-              'Description' => 'IS00300 Remote alarm reset (untested)',
-              'TLS-350_CMD' => "\x01IS00300"
-            }
-          ],
-          [ 'DELIVERY',
-            {
-              'Description' => 'I20200 Delivery report',
-              'TLS-350_CMD' => "\x01I20200"
-            }
-          ],
-          [ 'INVENTORY',
-            {
-              'Description' => '200/I20100 In-tank inventory report',
-              'TLS-250_CMD' => "\x01200",
-              'TLS-350_CMD' => "\x01I20100"
-            }
-          ],
-          [ 'LEAK',
-            {
-              'Description' => 'I20300 Leak report',
-              'TLS-350_CMD' => "\x01I20300"
-            }
-          ],
-          [ 'RELAY',
-            {
-              'Description' => 'I40600 Relay status (untested)',
-              'TLS-350_CMD' => "\x01I40600"
-            }
-          ],
-          [ 'RESET',
-            {
-              'Description' => 'IS00100 Reset (untested)',
-              'TLS-350_CMD' => "\x01IS00100"
-            }
-          ],
-          [ 'CLEAR_RESET',
-            {
-              'Description' => 'IS00200 Clear Reset Flag (untested)',
-              'TLS-350_CMD' => "\x01IS00200"
-            }
-          ],
-          [ 'SENSOR',
-            {
-              'Description' => 'I30100 Sensor status (untested)',
-              'TLS-350_CMD' => "\x01I30100"
-            }
-          ],
-          [ 'SENSOR_DIAG',
-            {
-              'Description' => 'IB0100 Sensor diagnostics (untested)',
-              'TLS-350_CMD' => "\x01IB0100"
-            }
-          ],
-          [ 'SHIFT',
-            {
-              'Description' => 'I20400 Shift report',
-              'TLS-350_CMD' => "\x01I20400"
-            }
-          ],
-          [ 'SET_TANK_NAME',
-            {
-              'Description' => 'S602 set tank name (use TANK_NUMBER and TANK_NAME options)',
-              'TLS-350_CMD' => "\x01S602"
-            }
-          ],
-          # [ 'SET_TIME',
-          #   {
-          #     'Description' => 'S50100 Set time of day (use TIME option) (untested)',
-          #     'TLS-350_CMD' => "\x01S50100"
-          #   }
-          # ],
-          [ 'STATUS',
-            {
-              'Description' => 'I20500 In-tank status report',
-              'TLS-350_CMD' => "\x01I20500"
-            }
-          ],
-          [ 'SYSTEM_STATUS',
-            {
-              'Description' => 'I10100 System status report (untested)',
-              'TLS-350_CMD' => "\x01I10100"
-            }
-          ],
-          [ 'TANK_ALARM',
-            {
-              'Description' => 'I20600 Tank alarm history (untested)',
-              'TLS-350_CMD' => "\x01I20600"
-            }
-          ],
-          [ 'TANK_DIAG',
-            {
-              'Description' => 'IA0100 Tank diagnostics (untested)',
-              'TLS-350_CMD' => "\x01IA0100"
-            }
-          ],
-          [ 'VERSION',
-            {
-              'Description' => 'Version information',
-              'TLS-250_CMD' => "\x01980",
-              'TLS-350_CMD' => "\x01I90200"
-            }
-          ]
+          'DELIVERY',
+          {
+            'Description' => 'I20200 Delivery report',
+            'TLS-350_CMD' => "\x01I20200"
+          }
+        ],
+        [
+          'INVENTORY',
+          {
+            'Description' => '200/I20100 In-tank inventory report',
+            'TLS-250_CMD' => "\x01200",
+            'TLS-350_CMD' => "\x01I20100"
+          }
+        ],
+        [
+          'LEAK',
+          {
+            'Description' => 'I20300 Leak report',
+            'TLS-350_CMD' => "\x01I20300"
+          }
+        ],
+        [
+          'RELAY',
+          {
+            'Description' => 'I40600 Relay status (untested)',
+            'TLS-350_CMD' => "\x01I40600"
+          }
+        ],
+        [
+          'RESET',
+          {
+            'Description' => 'IS00100 Reset (untested)',
+            'TLS-350_CMD' => "\x01IS00100"
+          }
+        ],
+        [
+          'CLEAR_RESET',
+          {
+            'Description' => 'IS00200 Clear Reset Flag (untested)',
+            'TLS-350_CMD' => "\x01IS00200"
+          }
+        ],
+        [
+          'SENSOR',
+          {
+            'Description' => 'I30100 Sensor status (untested)',
+            'TLS-350_CMD' => "\x01I30100"
+          }
+        ],
+        [
+          'SENSOR_DIAG',
+          {
+            'Description' => 'IB0100 Sensor diagnostics (untested)',
+            'TLS-350_CMD' => "\x01IB0100"
+          }
+        ],
+        [
+          'SHIFT',
+          {
+            'Description' => 'I20400 Shift report',
+            'TLS-350_CMD' => "\x01I20400"
+          }
+        ],
+        [
+          'SET_TANK_NAME',
+          {
+            'Description' => 'S602 set tank name (use TANK_NUMBER and TANK_NAME options)',
+            'TLS-350_CMD' => "\x01S602"
+          }
+        ],
+        # [ 'SET_TIME',
+        #   {
+        #     'Description' => 'S50100 Set time of day (use TIME option) (untested)',
+        #     'TLS-350_CMD' => "\x01S50100"
+        #   }
+        # ],
+        [
+          'STATUS',
+          {
+            'Description' => 'I20500 In-tank status report',
+            'TLS-350_CMD' => "\x01I20500"
+          }
+        ],
+        [
+          'SYSTEM_STATUS',
+          {
+            'Description' => 'I10100 System status report (untested)',
+            'TLS-350_CMD' => "\x01I10100"
+          }
+        ],
+        [
+          'TANK_ALARM',
+          {
+            'Description' => 'I20600 Tank alarm history (untested)',
+            'TLS-350_CMD' => "\x01I20600"
+          }
+        ],
+        [
+          'TANK_DIAG',
+          {
+            'Description' => 'IA0100 Tank diagnostics (untested)',
+            'TLS-350_CMD' => "\x01IA0100"
+          }
+        ],
+        [
+          'VERSION',
+          {
+            'Description' => 'Version information',
+            'TLS-250_CMD' => "\x01980",
+            'TLS-350_CMD' => "\x01I90200"
+          }
         ]
+      ]
     )
 
     register_options(

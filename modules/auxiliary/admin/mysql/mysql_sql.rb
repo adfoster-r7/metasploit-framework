@@ -7,20 +7,24 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::MYSQL
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'			=> 'MySQL SQL Generic Query',
-      'Description'	=> %q{
+    super(
+      update_info(
+        info,
+        'Name'	=> 'MySQL SQL Generic Query',
+        'Description'	=> %q{
           This module allows for simple SQL statements to be executed
           against a MySQL instance given the appropriate credentials.
-      },
-      'Author'		=> [ 'Bernardo Damele A. G. <bernardo.damele[at]gmail.com>' ],
-      'License'		=> MSF_LICENSE
-    ))
+        },
+        'Author'	=> [ 'Bernardo Damele A. G. <bernardo.damele[at]gmail.com>' ],
+        'License'	=> MSF_LICENSE
+      )
+    )
 
     register_options(
       [
-        OptString.new('SQL', [ true, 'The SQL to execute.',  'select version()'])
-      ])
+        OptString.new('SQL', [ true, 'The SQL to execute.', 'select version()'])
+      ]
+    )
   end
 
   def auxiliary_commands
@@ -34,6 +38,7 @@ class MetasploitModule < Msf::Auxiliary
 
   def run
     return if not mysql_login_datastore
+
     print_status("Sending statement: '#{datastore['SQL']}'...")
     res = mysql_query(datastore['SQL']) || []
     res.each do |row|

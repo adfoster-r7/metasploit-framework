@@ -6,28 +6,32 @@
 class MetasploitModule < Msf::Post
   include Msf::Post::Windows::Accounts
 
-  def initialize(info={})
-    super( update_info( info,
-      'Name'          => 'Windows Manage Local User Account Deletion',
-      'Description'   => %q{
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Windows Manage Local User Account Deletion',
+        'Description' => %q{
           This module deletes a local user account from the specified server,
-        or the local machine if no server is given.
-      },
-      'License'       => MSF_LICENSE,
-      'Author'        => [ 'chao-mu'],
-      'Platform'      => [ 'win' ],
-      'SessionTypes'  => [ 'meterpreter' ]
-    ))
+          or the local machine if no server is given.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [ 'chao-mu'],
+        'Platform' => [ 'win' ],
+        'SessionTypes' => [ 'meterpreter' ]
+      )
+    )
 
     register_options(
       [
         OptString.new('USERNAME', [ true, 'The username of the user to delete (not-qualified, e.g. BOB)' ]),
         OptString.new('SERVER_NAME', [ false, ' DNS or NetBIOS name of remote server on which to delete user' ]),
-      ])
+      ]
+    )
   end
 
   def run
-    username      = datastore['USERNAME']
+    username = datastore['USERNAME']
     target_server = datastore['SERVER_NAME']
 
     status = delete_user(username, target_server ? target_server : nil)

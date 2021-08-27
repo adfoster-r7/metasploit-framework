@@ -96,8 +96,8 @@ class MetasploitModule < Msf::Post
         vm = 'Hyper-V/Virtual PC'
       end
     end
-   
-    #identity Xen block Device Root
+
+    # identity Xen block Device Root
     if !vm
       proc_mounts = read_file('/proc/mounts')
       if proc_mounts
@@ -107,7 +107,7 @@ class MetasploitModule < Msf::Post
         end
       end
     end
-     
+
     # Check using lspci
     if !vm
       case get_sysinfo[:distro]
@@ -168,6 +168,5 @@ class MetasploitModule < Msf::Post
     else
       print_status('This does not appear to be a virtual machine')
     end
-
   end
 end

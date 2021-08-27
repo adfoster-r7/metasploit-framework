@@ -12,20 +12,22 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
   include Msf::Auxiliary::Scanner
 
-  def initialize(info={})
-    super(update_info(info,
-      'Name'        => 'Symantec Web Gateway Login Utility',
-      'Description' => %q{
-        This module will attempt to authenticate to a Symantec Web Gateway.
-      },
-      'Author'      => [ 'sinn3r' ],
-      'License'     => MSF_LICENSE,
-      'DefaultOptions' =>
-        {
-          'RPORT'      => 443,
-          'SSL'        => true,
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Symantec Web Gateway Login Utility',
+        'Description' => %q{
+          This module will attempt to authenticate to a Symantec Web Gateway.
+        },
+        'Author' => [ 'sinn3r' ],
+        'License' => MSF_LICENSE,
+        'DefaultOptions' => {
+          'RPORT' => 443,
+          'SSL' => true,
         }
-    ))
+      )
+    )
 
     deregister_options('PASSWORD_SPRAY')
 
@@ -33,36 +35,36 @@ class MetasploitModule < Msf::Auxiliary
       [
         OptString.new('USERNAME', [false, 'The username to specify for authentication', '']),
         OptString.new('PASSWORD', [false, 'The password to specify for authentication', ''])
-      ])
+      ]
+    )
   end
-
 
   def scanner(ip)
     @scanner ||= lambda {
       cred_collection = Metasploit::Framework::CredentialCollection.new(
         blank_passwords: datastore['BLANK_PASSWORDS'],
-        pass_file:       datastore['PASS_FILE'],
-        password:        datastore['PASSWORD'],
-        user_file:       datastore['USER_FILE'],
-        userpass_file:   datastore['USERPASS_FILE'],
-        username:        datastore['USERNAME'],
-        user_as_pass:    datastore['USER_AS_PASS']
+        pass_file: datastore['PASS_FILE'],
+        password: datastore['PASSWORD'],
+        user_file: datastore['USER_FILE'],
+        userpass_file: datastore['USERPASS_FILE'],
+        username: datastore['USERNAME'],
+        user_as_pass: datastore['USER_AS_PASS']
       )
 
       return Metasploit::Framework::LoginScanner::SymantecWebGateway.new(
         configure_http_login_scanner(
           host: ip,
           port: datastore['RPORT'],
-          cred_details:       cred_collection,
-          stop_on_success:    datastore['STOP_ON_SUCCESS'],
-          bruteforce_speed:   datastore['BRUTEFORCE_SPEED'],
+          cred_details: cred_collection,
+          stop_on_success: datastore['STOP_ON_SUCCESS'],
+          bruteforce_speed: datastore['BRUTEFORCE_SPEED'],
           connection_timeout: 5,
-          http_username:      datastore['HttpUsername'],
-          http_password:      datastore['HttpPassword']
-        ))
+          http_username: datastore['HttpUsername'],
+          http_password: datastore['HttpPassword']
+        )
+      )
     }.call
   end
-
 
   def report_good_cred(ip, port, result)
     service_data = {
@@ -91,7 +93,6 @@ class MetasploitModule < Msf::Auxiliary
     create_credential_login(login_data)
   end
 
-
   def report_bad_cred(ip, rport, result)
     invalidate_login(
       address: ip,
@@ -105,7 +106,6 @@ class MetasploitModule < Msf::Auxiliary
       proof: result.proof
     )
   end
-
 
   # Attempts to login
   def bruteforce(ip)
@@ -123,7 +123,6 @@ class MetasploitModule < Msf::Auxiliary
       end
     end
   end
-
 
   # Start here
   def run_host(ip)

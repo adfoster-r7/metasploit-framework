@@ -7,33 +7,35 @@ class MetasploitModule < Msf::Post
   include Msf::Auxiliary::Report
   include Msf::Post::Windows::LDAP
 
-  def initialize(info={})
-    super( update_info( info,
-        'Name'	       => 'Windows Gather Active Directory User Comments',
-        'Description'  => %Q{
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name'	=> 'Windows Gather Active Directory User Comments',
+        'Description' => %q{
           This module will enumerate user accounts in the default Active Domain (AD) directory which
-        contain 'pass' in their description or comment (case-insensitive) by default. In some cases,
-        such users have their passwords specified in these fields.
+          contain 'pass' in their description or comment (case-insensitive) by default. In some cases,
+          such users have their passwords specified in these fields.
         },
-        'License'      => MSF_LICENSE,
-        'Author'       => [ 'Ben Campbell' ],
-        'Platform'     => [ 'win' ],
+        'License' => MSF_LICENSE,
+        'Author' => [ 'Ben Campbell' ],
+        'Platform' => [ 'win' ],
         'SessionTypes' => [ 'meterpreter' ],
-        'References'	=>
-        [
+        'References' => [
           ['URL', 'http://social.technet.microsoft.com/wiki/contents/articles/5392.active-directory-ldap-syntax-filters.aspx'],
         ]
-      ))
+      )
+    )
 
     register_options([
       OptBool.new('STORE_LOOT', [true, 'Store file in loot.', false]),
-      OptString.new('FIELDS', [true, 'Fields to retrieve.','userPrincipalName,sAMAccountName,userAccountControl,comment,description']),
-      OptString.new('FILTER', [true, 'Search filter.','(&(&(objectCategory=person)(objectClass=user))(|(description=*pass*)(comment=*pass*)))']),
+      OptString.new('FIELDS', [true, 'Fields to retrieve.', 'userPrincipalName,sAMAccountName,userAccountControl,comment,description']),
+      OptString.new('FILTER', [true, 'Search filter.', '(&(&(objectCategory=person)(objectClass=user))(|(description=*pass*)(comment=*pass*)))']),
     ])
   end
 
   def run
-    fields = datastore['FIELDS'].gsub(/\s+/,"").split(',')
+    fields = datastore['FIELDS'].gsub(/\s+/, "").split(',')
     search_filter = datastore['FILTER']
     max_search = datastore['MAX_SEARCH']
 
@@ -50,11 +52,11 @@ class MetasploitModule < Msf::Post
 
     # Results table holds raw string data
     results_table = Rex::Text::Table.new(
-        'Header'     => "Domain Users",
-        'Indent'     => 1,
-        'SortIndex'  => -1,
-        'Columns'    => fields
-      )
+      'Header' => "Domain Users",
+      'Indent' => 1,
+      'SortIndex' => -1,
+      'Columns' => fields
+    )
 
     q[:results].each do |result|
       row = []
@@ -79,4 +81,3 @@ class MetasploitModule < Msf::Post
     end
   end
 end
-

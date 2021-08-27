@@ -34,14 +34,12 @@ class MetasploitModule < Msf::Auxiliary
         of entries on it. The module can also be used to capture SMB hashes by using a fake
         SMB share as DIR.
       },
-      'References' =>
-        [
-          [ 'URL', 'http://labs.mwrinfosecurity.com' ]
-        ],
-      'Author' =>
-        [
-          'nmonkee'
-        ],
+      'References' => [
+        [ 'URL', 'http://labs.mwrinfosecurity.com' ]
+      ],
+      'Author' => [
+        'nmonkee'
+      ],
       'License' => MSF_LICENSE
     )
 
@@ -50,7 +48,7 @@ class MetasploitModule < Msf::Auxiliary
       OptString.new('CLIENT', [true, 'SAP Client', '001']),
       OptString.new('HttpUsername', [true, 'Username', 'SAP*']),
       OptString.new('HttpPassword', [true, 'Password', '06071992']),
-      OptString.new('DIR',[true,'Directory path (e.g. /etc)','/etc'])
+      OptString.new('DIR', [true, 'Directory path (e.g. /etc)', '/etc'])
     ])
   end
 
@@ -92,9 +90,9 @@ class MetasploitModule < Msf::Auxiliary
         vprint_error("#{rhost}:#{rport} - Error message: " + res.message.to_s) if res
         vprint_error("#{rhost}:#{rport} - Error body: " + res.body.to_s) if res and res.body
       end
-      rescue ::Rex::ConnectionError
-        vprint_error("#{rhost}:#{rport} - Unable to connect")
-        return
-      end
+    rescue ::Rex::ConnectionError
+      vprint_error("#{rhost}:#{rport} - Unable to connect")
+      return
     end
   end
+end

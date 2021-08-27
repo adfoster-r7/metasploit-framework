@@ -7,26 +7,27 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::HttpClient
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Apple TV Image Remote Control',
-      'Description'    => %q(
-        This module will show an image on an AppleTV device for a period of time.
-        Some AppleTV devices are actually password-protected, in that case please
-        set the PASSWORD datastore option. For password brute forcing, please see
-        the module auxiliary/scanner/http/appletv_login.
-      ),
-      'Author'         =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'Apple TV Image Remote Control',
+        'Description' => %q{
+          This module will show an image on an AppleTV device for a period of time.
+          Some AppleTV devices are actually password-protected, in that case please
+          set the PASSWORD datastore option. For password brute forcing, please see
+          the module auxiliary/scanner/http/appletv_login.
+        },
+        'Author' => [
           '0a29406d9794e4f9b30b3c5d6702c708', # Original work
-          'sinn3r'                            # You can blame me for mistakes
+          'sinn3r' # You can blame me for mistakes
         ],
-      'References'     =>
-        [
+        'References' => [
           ['URL', 'http://nto.github.io/AirPlay.html']
         ],
-      'DefaultOptions' => { 'HttpUsername' => 'AirPlay' },
-      'License'        => MSF_LICENSE
-    ))
+        'DefaultOptions' => { 'HttpUsername' => 'AirPlay' },
+        'License' => MSF_LICENSE
+      )
+    )
 
     # Make the PASSWORD option more visible and hope the user is more aware of this option
     register_options([
@@ -50,7 +51,6 @@ class MetasploitModule < Msf::Auxiliary
       'NTLM::SendSPN', 'NTLM::UseLMKey', 'DOMAIN', 'DigestAuthIIS', 'VHOST'
     )
   end
-
 
   #
   # Sends an image request to AppleTV. HttpClient isn't used because we actually need to keep
@@ -85,19 +85,17 @@ class MetasploitModule < Msf::Auxiliary
     res
   end
 
-
   def get_image_data
     File.open(datastore['FILE'], 'rb') { |f| f.read(f.stat.size) }
   end
-
 
   def show_image
     image = get_image_data
 
     opts = {
-      'method'  => 'PUT',
-      'uri'     => '/photo',
-      'data'    => image
+      'method' => 'PUT',
+      'uri' => '/photo',
+      'data' => image
     }
 
     res = send_image_request(opts)
@@ -110,7 +108,6 @@ class MetasploitModule < Msf::Auxiliary
       print_error("The request failed due to an unknown reason")
     end
   end
-
 
   def run
     print_status("Image request sent. Duration set: #{datastore['TIME']} seconds")

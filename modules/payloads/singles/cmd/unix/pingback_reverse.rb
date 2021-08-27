@@ -3,9 +3,7 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 module MetasploitModule
-
   CachedSize = 99
 
   include Msf::Payload::Single
@@ -13,21 +11,23 @@ module MetasploitModule
   include Msf::Payload::Pingback::Options
 
   def initialize(info = {})
-    super(merge_info(info,
-      'Name'          => 'Unix Command Shell, Pingback Reverse TCP (via netcat)',
-      'Description'   => 'Creates a socket, send a UUID, then exit',
-      'Author'        =>
-        [
+    super(
+      merge_info(
+        info,
+        'Name' => 'Unix Command Shell, Pingback Reverse TCP (via netcat)',
+        'Description' => 'Creates a socket, send a UUID, then exit',
+        'Author' => [
           'asoto-r7'
         ],
-      'License'       => MSF_LICENSE,
-      'Platform'      => 'unix',
-      'Arch'          => ARCH_CMD,
-      'Handler'       => Msf::Handler::ReverseTcp,
-      'Session'       => Msf::Sessions::Pingback,
-      'PayloadType'   => 'cmd',
-      'RequiredCmd'   => 'netcat'
-    ))
+        'License' => MSF_LICENSE,
+        'Platform' => 'unix',
+        'Arch' => ARCH_CMD,
+        'Handler' => Msf::Handler::ReverseTcp,
+        'Session' => Msf::Sessions::Pingback,
+        'PayloadType' => 'cmd',
+        'RequiredCmd' => 'netcat'
+      )
+    )
   end
 
   #

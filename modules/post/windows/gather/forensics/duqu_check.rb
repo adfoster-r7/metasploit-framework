@@ -3,25 +3,26 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 class MetasploitModule < Msf::Post
   include Msf::Post::Windows::Registry
   include Msf::Auxiliary::Report
 
-  def initialize(info={})
-    super( update_info( info,
-      'Name'           => 'Windows Gather Forensics Duqu Registry Check',
-      'Description'    => %q{ This module searches for CVE-2011-3402 (Duqu) related registry artifacts.},
-      'License'        => MSF_LICENSE,
-      'Author'         => [ 'Marcus J. Carey <mjc[at]threatagent.com>'],
-      'Platform'       => [ 'win' ],
-      'SessionTypes'   => [ 'meterpreter' ],
-      'References'     =>
-        [
-          [ 'CVE', '2011-3402'  ],
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Windows Gather Forensics Duqu Registry Check',
+        'Description' => %q{ This module searches for CVE-2011-3402 (Duqu) related registry artifacts.},
+        'License' => MSF_LICENSE,
+        'Author' => [ 'Marcus J. Carey <mjc[at]threatagent.com>'],
+        'Platform' => [ 'win' ],
+        'SessionTypes' => [ 'meterpreter' ],
+        'References' => [
+          [ 'CVE', '2011-3402' ],
           [ 'URL', 'http://r-7.co/w5h7fY' ]
         ]
-    ))
+      )
+    )
   end
 
   def run
@@ -47,11 +48,11 @@ class MetasploitModule < Msf::Post
           print_good("#{sysinfo['Computer']}: #{path}\\#{query} found in registry.")
           match += 1
           report_vuln(
-            :host          => session.session_host,
-            :name          => self.name,
-            :info          => "Module #{self.fullname} detected #{path}\\#{query} - possible CVE-2011-3402 exploitation [Duqu] artifact.",
-            :refs          => self.references,
-            :exploited_at  => Time.now.utc
+            :host => session.session_host,
+            :name => self.name,
+            :info => "Module #{self.fullname} detected #{path}\\#{query} - possible CVE-2011-3402 exploitation [Duqu] artifact.",
+            :refs => self.references,
+            :exploited_at => Time.now.utc
           )
         end
       end
@@ -59,7 +60,6 @@ class MetasploitModule < Msf::Post
     end
 
     print_status("#{sysinfo['Computer']}: #{match.to_s} artifact(s) found in registry.")
-
   end
 
   def parse_path(artifact)

