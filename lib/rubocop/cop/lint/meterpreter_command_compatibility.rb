@@ -1,9 +1,10 @@
 require 'rex/post/meterpreter/command_mapper'
+require 'rex/post/meterpreter/extensions/stdapi/railgun/railgun'
 
 module RuboCop
   module Cop
     module Lint
-      class MeterpreterCommandDependencies < Base
+      class MeterpreterCommandCompatibility < Base
         extend AutoCorrector
         include Alignment
 
@@ -290,10 +291,21 @@ module RuboCop
               'core_channel_write',
               'core_channel_eof'
             ],
+            # For now assume an execute will always have a corresponding close call, even if the close doesn't occur
+            "session.sys.process.execute": [
+              'stdapi_sys_process_execute',
+              'stdapi_sys_process_close'
+            ],
+            # For now assume an execute will always have a corresponding close call, even if the close doesn't occur
             "session.sys.process.open": [
               'stdapi_sys_process_attach',
               'stdapi_sys_process_close'
-            ]
+            ],
+            "session.railgun.util": [
+              'stdapi_railgun_api',
+              'stdapi_railgun_memread',
+              'stdapi_railgun_memwrite',
+            ],
           }
 
           # Commands to expressions
@@ -475,13 +487,25 @@ module RuboCop
             ],
             stdapi_net_tcp_channel_open: [
             ],
-            "stdapi_railgun_*": [
-              'client.railgun.memread',
-              'session.railgun.memwrite',
-              'session.railgun.util'
+
+            stdapi_railgun_api: [
+              "session.railgun.add_library",
+              "session.railgun.add_function",
+              "session.railgun.add_dll",
+              "session.railgun.get_dll",
+              "session.railgun.libraries",
+              *Rex::Post::Meterpreter::Extensions::Stdapi::Railgun::Railgun::BUILTIN_LIBRARIES.values.flatten.uniq.map do |library_name|
+                "session.railgun.#{library_name}"
+              end
             ],
-            "stdapi_railgun_api*": [
-              'client.railgun'
+            stdapi_railgun_api_multi: [
+              "session.railgun.multi"
+            ],
+            stdapi_railgun_memread: [
+              "client.railgun.memread",
+            ],
+            stdapi_railgun_memwrite: [
+              "client.railgun.memwrite",
             ],
             stdapi_registry_check_key_exists: [
               'client.sys.registry.check_key_exists'
@@ -586,9 +610,11 @@ module RuboCop
               'client.sys.power.reboot'
             ],
             stdapi_sys_process_attach: [
-              'client.sys.process.open'
+              'client.sys.process.open',
             ],
             stdapi_sys_process_close: [
+              'client.sys.process.open',
+              'client.sys.process.execute'
             ],
             stdapi_sys_process_execute: [
               'client.sys.process.execute'
@@ -1039,20 +1065,15 @@ module RuboCop
               end
             end
 
-            # Removes the railgun_api call if we are already calling railgun in its entirety.
-            if @current_frame.identified_commands.include?("stdapi_railgun_*") && @current_frame.identified_commands.include?("stdapi_railgun_api*")
-              add_offense(node)
-            end
-
-            # Add an offense, but don't provide an autocorrect.
-            # There will be a final autocorrect to fix all issues
+            # Add an offense to the current node if the command hasn't been specified
+            # in the module
             commands.each do |command|
               unless @current_frame.current_commands.include?(command)
+                # Note, we don't register an autocorrect for each offense, instead ere will be a single atomic autocorrect
+                # registered later which will fix all issues
                 add_offense(node)
               end
             end
-
-            break
           end
         end
 

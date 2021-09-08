@@ -1,7 +1,7 @@
 require 'spec_helper'
-require 'rubocop/cop/lint/meterpreter_commands_dependencies'
+require 'rubocop/cop/lint/meterpreter_command_compatibility'
 
-RSpec.describe RuboCop::Cop::Lint::MeterpreterCommandDependencies, :config do
+RSpec.describe RuboCop::Cop::Lint::MeterpreterCommandCompatibility, :config do
   subject(:cop) { described_class.new(config) }
   let(:config) { RuboCop::Config.new }
 
@@ -1281,6 +1281,7 @@ RSpec.describe RuboCop::Cop::Lint::MeterpreterCommandDependencies, :config do
                 'Meterpreter' => {
                   'Commands' => %w[
                     stdapi_fs_stat
+                    stdapi_sys_process_close
                     stdapi_sys_process_execute
                   ]
                 }
@@ -1375,6 +1376,7 @@ RSpec.describe RuboCop::Cop::Lint::MeterpreterCommandDependencies, :config do
               'Meterpreter' => {
                 'Commands' => %w[
                   stdapi_sys_process_attach
+                  stdapi_sys_process_close
                   stdapi_sys_process_memory_allocate
                   stdapi_sys_process_memory_protect
                   stdapi_sys_process_memory_write
@@ -1568,14 +1570,11 @@ RSpec.describe RuboCop::Cop::Lint::MeterpreterCommandDependencies, :config do
         end
         def run
           client.railgun
-          ^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
           client.railgun.memread
-          ^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
           ^^^^^^^^^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
           session.railgun.shell32
-          ^^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
+          ^^^^^^^^^^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
           client.railgun.util
-          ^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
           ^^^^^^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
         end
       end
@@ -1597,7 +1596,9 @@ RSpec.describe RuboCop::Cop::Lint::MeterpreterCommandDependencies, :config do
               'Compat' => {
                 'Meterpreter' => {
                   'Commands' => %w[
-                    stdapi_railgun_*
+                    stdapi_railgun_api
+                    stdapi_railgun_memread
+                    stdapi_railgun_memwrite
                   ]
                 }
               }
@@ -1640,9 +1641,56 @@ RSpec.describe RuboCop::Cop::Lint::MeterpreterCommandDependencies, :config do
         end
         def run
           client.railgun
-          ^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
+          unless session.railgun.libraries.has_key?('libgnome_keyring')
+                 ^^^^^^^^^^^^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
+            session.railgun.add_library('libgnome_keyring', 'libgnome-keyring.so.0')
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
+          end
+          session.railgun.add_function(
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
+            'libgnome_keyring',
+            'gnome_keyring_is_available',
+            'BOOL',
+            [],
+            nil,
+            'cdecl'
+          )
+
+          client.railgun.add_dll('dnsapi') if !client.railgun.get_dll('dnsapi')
+                                               ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
+          session.railgun.advapi32
+          ^^^^^^^^^^^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
+          session.railgun.crypt32
+          ^^^^^^^^^^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
+          session.railgun.dbghelp
+          ^^^^^^^^^^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
+          session.railgun.iphlpapi
+          ^^^^^^^^^^^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
+          session.railgun.kernel32
+          ^^^^^^^^^^^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
+          session.railgun.libc
+          ^^^^^^^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
+          session.railgun.libobjc
+          ^^^^^^^^^^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
+          session.railgun.netapi32
+          ^^^^^^^^^^^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
+          session.railgun.ntdll
+          ^^^^^^^^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
+          session.railgun.psapi
+          ^^^^^^^^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
           session.railgun.shell32
-          ^^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
+          ^^^^^^^^^^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
+          session.railgun.user32
+          ^^^^^^^^^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
+          session.railgun.version
+          ^^^^^^^^^^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
+          session.railgun.wlanapi
+          ^^^^^^^^^^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
+          session.railgun.wldap32
+          ^^^^^^^^^^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
+          session.railgun.ws2_32
+          ^^^^^^^^^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
         end
       end
     RUBY
@@ -1663,7 +1711,7 @@ RSpec.describe RuboCop::Cop::Lint::MeterpreterCommandDependencies, :config do
               'Compat' => {
                 'Meterpreter' => {
                   'Commands' => %w[
-                    stdapi_railgun_api*
+                    stdapi_railgun_api
                   ]
                 }
               }
@@ -1672,7 +1720,105 @@ RSpec.describe RuboCop::Cop::Lint::MeterpreterCommandDependencies, :config do
         end
         def run
           client.railgun
+          unless session.railgun.libraries.has_key?('libgnome_keyring')
+            session.railgun.add_library('libgnome_keyring', 'libgnome-keyring.so.0')
+          end
+          session.railgun.add_function(
+            'libgnome_keyring',
+            'gnome_keyring_is_available',
+            'BOOL',
+            [],
+            nil,
+            'cdecl'
+          )
+
+          client.railgun.add_dll('dnsapi') if !client.railgun.get_dll('dnsapi')
+          session.railgun.advapi32
+          session.railgun.crypt32
+          session.railgun.dbghelp
+          session.railgun.iphlpapi
+          session.railgun.kernel32
+          session.railgun.libc
+          session.railgun.libobjc
+          session.railgun.netapi32
+          session.railgun.ntdll
+          session.railgun.psapi
           session.railgun.shell32
+          session.railgun.user32
+          session.railgun.version
+          session.railgun.wlanapi
+          session.railgun.wldap32
+          session.railgun.ws2_32
+        end
+      end
+    RUBY
+  end
+
+
+  it 'verifies that railgun is handles a call to multi' do
+    expect_offense(<<~RUBY)
+      class DummyModule
+        def initialize(info = {})
+          super(
+            update_info(
+              info,
+              'Name' => 'Simple module name',
+              'Description' => 'Lorem ipsum dolor sit amet',
+              'Author' => [ 'example1', 'example2' ],
+              'License' => MSF_LICENSE,
+              'Platform' => 'win',
+              'Arch' => ARCH_X86,
+              'DisclosureDate' => 'January 5',
+              'Compat' => {
+                'Meterpreter' => {
+                  'Commands' => %w[
+                  ^^^^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
+                  ]
+                }
+              }
+            )
+          )
+        end
+        def run
+          multi_rail = [
+            ['libc', 'getpid', []],
+            ['libc', 'strcat', ["meta\x00\x00\x00\x00\x00\x00\x00", 'sploit']]
+          ]
+          results = session.railgun.multi(multi_rail)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
+        end
+      end
+    RUBY
+
+    expect_correction(<<~RUBY)
+      class DummyModule
+        def initialize(info = {})
+          super(
+            update_info(
+              info,
+              'Name' => 'Simple module name',
+              'Description' => 'Lorem ipsum dolor sit amet',
+              'Author' => [ 'example1', 'example2' ],
+              'License' => MSF_LICENSE,
+              'Platform' => 'win',
+              'Arch' => ARCH_X86,
+              'DisclosureDate' => 'January 5',
+              'Compat' => {
+                'Meterpreter' => {
+                  'Commands' => %w[
+                    stdapi_railgun_api_multi
+                  ]
+                }
+              }
+            )
+          )
+        end
+        def run
+          multi_rail = [
+            ['libc', 'getpid', []],
+            ['libc', 'strcat', ["meta\x00\x00\x00\x00\x00\x00\x00", 'sploit']]
+          ]
+          results = session.railgun.multi(multi_rail)
         end
       end
     RUBY
@@ -1726,7 +1872,6 @@ RSpec.describe RuboCop::Cop::Lint::MeterpreterCommandDependencies, :config do
         %{keyword}.sys.config.getenv('TEMP')
         ^{keyword}^^^^^^^^^^^^^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
         %{keyword}.railgun.memread(@addresses['AcroRd32.exe'] + target['AdobeCollabSyncTrigger'], target['AdobeCollabSyncTriggerSignature'].length)
-        ^{keyword}^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
         ^{keyword}^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
         %{keyword}.sys.process.open
         ^{keyword}^^^^^^^^^^^^^^^^^ Convert meterpreter api calls into meterpreter command dependencies.
@@ -2011,7 +2156,7 @@ RSpec.describe RuboCop::Cop::Lint::MeterpreterCommandDependencies, :config do
                             stdapi_net_config_get_interfaces
                             stdapi_net_config_get_routes
                             stdapi_net_resolve_host
-                            stdapi_railgun_*
+                            stdapi_railgun_memread
                             stdapi_registry_check_key_exists
                             stdapi_registry_create_key
                             stdapi_registry_delete_key
@@ -2033,6 +2178,7 @@ RSpec.describe RuboCop::Cop::Lint::MeterpreterCommandDependencies, :config do
                             stdapi_sys_config_sysinfo
                             stdapi_sys_power_exitwindows
                             stdapi_sys_process_attach
+                            stdapi_sys_process_close
                             stdapi_sys_process_execute
                             stdapi_sys_process_get_processes
                             stdapi_sys_process_getpid
@@ -2087,7 +2233,7 @@ RSpec.describe RuboCop::Cop::Lint::MeterpreterCommandDependencies, :config do
 
     api_commands_without_matchers -= api_commands_handled_via_wildcards
 
-    # Remove known core command ids
+    # explicitly ignored command ids which shouldn't occur explicitly in modules
     ignored_core_command_ids = [
       "core_channel_interact",
       "core_channel_seek",
@@ -2102,18 +2248,13 @@ RSpec.describe RuboCop::Cop::Lint::MeterpreterCommandDependencies, :config do
       "core_set_uuid",
       "core_transport_getcerthash",
       "core_transport_set_timeouts",
-      "core_transport_setcerthash"
-    ]
-
-    api_commands_without_matchers -= ignored_core_command_ids
-
-    # Remove additional command ids
-    other_ignored_command_ids = [
+      "core_transport_setcerthash",
+      "stdapi_sys_process_set_term_size",
       'stdapi_net_socket_tcp_shutdown',
       'stdapi_net_tcp_channel_open'
     ]
 
-    api_commands_without_matchers -= other_ignored_command_ids
+    api_commands_without_matchers -= ignored_core_command_ids
     expect(api_commands_without_matchers).to be_empty
   end
 end
