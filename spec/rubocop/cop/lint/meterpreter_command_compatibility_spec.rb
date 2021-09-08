@@ -1281,7 +1281,6 @@ RSpec.describe RuboCop::Cop::Lint::MeterpreterCommandCompatibility, :config do
                 'Meterpreter' => {
                   'Commands' => %w[
                     stdapi_fs_stat
-                    stdapi_sys_process_close
                     stdapi_sys_process_execute
                   ]
                 }
@@ -1376,7 +1375,6 @@ RSpec.describe RuboCop::Cop::Lint::MeterpreterCommandCompatibility, :config do
               'Meterpreter' => {
                 'Commands' => %w[
                   stdapi_sys_process_attach
-                  stdapi_sys_process_close
                   stdapi_sys_process_memory_allocate
                   stdapi_sys_process_memory_protect
                   stdapi_sys_process_memory_write
@@ -2178,7 +2176,6 @@ RSpec.describe RuboCop::Cop::Lint::MeterpreterCommandCompatibility, :config do
                             stdapi_sys_config_sysinfo
                             stdapi_sys_power_exitwindows
                             stdapi_sys_process_attach
-                            stdapi_sys_process_close
                             stdapi_sys_process_execute
                             stdapi_sys_process_get_processes
                             stdapi_sys_process_getpid
@@ -2249,6 +2246,7 @@ RSpec.describe RuboCop::Cop::Lint::MeterpreterCommandCompatibility, :config do
       "core_transport_getcerthash",
       "core_transport_set_timeouts",
       "core_transport_setcerthash",
+      "stdapi_sys_process_close",
       "stdapi_sys_process_set_term_size",
       'stdapi_net_socket_tcp_shutdown',
       'stdapi_net_tcp_channel_open'

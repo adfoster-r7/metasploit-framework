@@ -291,16 +291,6 @@ module RuboCop
               'core_channel_write',
               'core_channel_eof'
             ],
-            # For now assume an execute will always have a corresponding close call, even if the close doesn't occur
-            "session.sys.process.execute": [
-              'stdapi_sys_process_execute',
-              'stdapi_sys_process_close'
-            ],
-            # For now assume an execute will always have a corresponding close call, even if the close doesn't occur
-            "session.sys.process.open": [
-              'stdapi_sys_process_attach',
-              'stdapi_sys_process_close'
-            ],
             "session.railgun.util": [
               'stdapi_railgun_api',
               'stdapi_railgun_memread',
@@ -613,8 +603,6 @@ module RuboCop
               'client.sys.process.open',
             ],
             stdapi_sys_process_close: [
-              'client.sys.process.open',
-              'client.sys.process.execute'
             ],
             stdapi_sys_process_execute: [
               'client.sys.process.execute'
