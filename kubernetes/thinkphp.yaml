@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: thinkphp
+  labels:
+    app: thinkphp
+    tier: frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: thinkphp
+  template:
+    metadata:
+      labels:
+        app: thinkphp
+        tier: frontend
+    spec:
+      containers:
+        - name: thinkphp
+          image: vulhub/thinkphp:5.0.23
+          ports:
+            - containerPort: 80
+          resources:
+            limits:
+              cpu: "0.1"
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: thinkphp
+  labels:
+    app: thinkphp
+    tier: frontend
+spec:
+  ports:
+    - port: 80
+      targetPort: 8000
+  selector:
+    app: thinkphp
+    tier: frontend

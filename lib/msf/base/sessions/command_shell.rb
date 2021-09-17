@@ -363,7 +363,7 @@ Shell Banner:
 
     print_error("Can not pop up an interactive shell")
   end
-
+  ''
   def self.binary_exists(binary, platform: nil, &block)
     if block.call('command -v command').to_s.strip == 'command'
       binary_path = block.call("command -v '#{binary}' && echo true").to_s.strip

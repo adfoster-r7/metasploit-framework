@@ -41,8 +41,8 @@ class Metasploit::Framework::ParsedOptions::Base
   def initialize(arguments=ARGV)
     begin
       @positional = option_parser.parse(arguments)
-    rescue OptionParser::InvalidOption
-      puts "ERROR: Invalid command line option provided."
+    rescue OptionParser::InvalidOption => e
+      puts "ERROR: Invalid command line option provided#{": #{e.args.join(', ')}" if e.args}"
       puts option_parser
       exit(1)
     end
