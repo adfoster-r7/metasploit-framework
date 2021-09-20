@@ -45,3 +45,8 @@ group :test do
   # Manipulate Time.now in specs
   gem 'timecop'
 end
+
+
+gem 'ruby_smb', path: "../ruby_smb"
+gem 'rubyntlm', path: "../rubyntlm"
+gem 'gssapi'
