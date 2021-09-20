@@ -1,4 +1,19 @@
 PATH
+  remote: ../ruby_smb
+  specs:
+    ruby_smb (2.0.11)
+      bindata
+      openssl-ccm
+      openssl-cmac
+      rubyntlm
+      windows_error
+
+PATH
+  remote: ../rubyntlm
+  specs:
+    rubyntlm (0.6.3)
+
+PATH
   remote: .
   specs:
     metasploit-framework (6.1.5)
@@ -431,13 +446,6 @@ GEM
     ruby-progressbar (1.11.0)
     ruby-rc4 (0.1.5)
     ruby2_keywords (0.0.5)
-    ruby_smb (2.0.11)
-      bindata
-      openssl-ccm
-      openssl-cmac
-      rubyntlm
-      windows_error
-    rubyntlm (0.6.3)
     rubyzip (2.3.2)
     sawyer (0.8.2)
       addressable (>= 2.3.5)
@@ -503,6 +511,7 @@ PLATFORMS
 DEPENDENCIES
   factory_bot_rails
   fivemat
+  gssapi
   memory_profiler
   metasploit-framework!
   octokit
@@ -513,6 +522,8 @@ DEPENDENCIES
   rspec-rerun
   rubocop
   ruby-prof (= 1.4.2)
+  ruby_smb!
+  rubyntlm!
   simplecov (= 0.18.2)
   timecop
   yard

@@ -59,9 +59,6 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def run
-    require 'pry'
-    binding.pry
-
     @rsock = Rex::Socket::Tcp.create(
       'LocalHost' => datastore['SRVHOST'],
       'LocalPort' => datastore['SRVPORT'],
