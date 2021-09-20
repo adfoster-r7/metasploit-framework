@@ -58,7 +58,7 @@ kubectl get deployments thinkphp
 Access the pod from localhost, in lieu of setting up ingress properly:
 
 ```
-kubectl port-forward deployment/thinkphp 8000:80
+kubectl port-forward thinkphp-67f7c88cc9-djg6q 8000:80
 ```
 
 Run the Metasploit exploit module:
@@ -89,6 +89,13 @@ kubectl exec -it generate-this-later-pod -- /bin/sh
 The OpenAPI approach looks interesting, as we can generate clients in the same way as Swagger:
 
 https://kubernetes.io/blog/2016/12/kubernetes-supports-openapi/
+
+Generated:
+
+https://v1-18.docs.kubernetes.io/docs/reference/generated/kubernetes-api/v1.18/
+
+Client examples:
+https://github.com/kubernetes-client
 
 Note that the namespace would be in the URI `api/v1/namespaces/{namespace_name}/`
 You can also retrieve the list of namespaces locally with:
@@ -168,6 +175,12 @@ Clean up:
 kubectl delete deployments,pods,services --all
 ```
 
+Delete all CrashLooping pods:
+
+```
+kubectl delete pod `kubectl get pods | awk '$3 == "CrashLoopBackOff" {print $1}'`
+```
+
 Running the Kubernetes [Dashboard UI](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/):
 
 ```
@@ -181,3 +194,17 @@ Now visit:
 http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/#/login
 
 To login, use the `jwt_token` mentioned above
+
+### Ideas
+
+Spencer
+- Confirm Comm semantics for send_cgi
+- Decide on how we want to get additional sessions, i.e. docker pod cmd, exec + mettle, or exec + stream
+- If we have a long lived attacker pod, we could continually exec new payloads against it. We'd need to keep track of it for reuse and cleanup.
+        - Pod exec example: https://github.com/kubernetes-client/python/blob/master/examples/pod_exec.py#L84-L90
+        - https://github.com/kubernetes-client/python-base/blob/master/stream/stream.py#L34
+
+Alan
+- Update sysinfo to detect if you're in docker/kubernetes
+- Pull out the secrets information / env / ConfigMaps
+- Get access to a real cluster
