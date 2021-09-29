@@ -1,10 +1,9 @@
-## Basics
+## Pods
 
 Create resources:
 
 ```
 kubectl apply -f redis.yaml
-kubectl apply -f secrets.yaml
 kubectl apply -f thinkphp.yaml
 ```
 
@@ -12,6 +11,49 @@ Ensure pods are alive:
 
 ```
 kubectl describe pods
+```
+
+Interacting with a pod:
+
+```
+kubectl exec -it redis -- /bin/sh
+```
+
+Getting a JWT token for the kube-system namespace:
+
+```
+kubectl -n kube-system describe secret default
+
+# For use in CURLs
+jwt_token=$(kubectl get secret -n kube-system $(kubectl -n kube-system get serviceaccount default -o jsonpath="{.secrets[0].name}") -o jsonpath="{.data.token}" | base64 --decode)
+
+echo $jwt_token
+```
+
+## Secrets
+
+Create resources:
+
+```
+kubectl apply -f secrets.yaml
+
+kubectl create secret generic secret-empty
+
+kubectl create secret generic secret-id-rsa-with-passphrase --from-file=ssh-privatekey=./secrets/id-rsa-with-passphrase --type=kubernetes.io/ssh-auth
+kubectl create secret generic secret-id-rsa-without-passphrase --from-file=ssh-privatekey=./secrets/id-rsa-without-passphrase --type=kubernetes.io/ssh-auth
+
+kubectl create secret generic secret-id-ed25519-with-passphrase --from-file=ssh-privatekey=./secrets/id-rsa-with-passphrase --type=kubernetes.io/ssh-auth
+kubectl create secret generic secret-id-ed25519-without-passphrase --from-file=ssh-privatekey=./secrets/id-rsa-without-passphrase --type=kubernetes.io/ssh-auth
+
+kubectl create secret docker-registry secret-local-registry --docker-username=username --docker-password=password --docker-email=admin@example.com
+
+kubectl create secret tls secret-tls --key ./secrets/ca.key --cert ./secrets/ca.crt
+```
+
+To populate a lot of secrets, for testing purposes:
+
+```
+for i in {1..2000}; do kubectl create secret generic secret-basic-auth-$i --from-literal=username=username-${i} --from-literal=password=password-${i} --type="kubernetes.io/basic-auth"; done 
 ```
 
 Checking secrets:
@@ -30,21 +72,9 @@ Dumping JSON:
 kubectl describe configmap -o json
 ```
 
-Interacting with a pod:
-
+Deleting
 ```
-kubectl exec -it redis -- /bin/sh
-```
-
-Getting a JWT token for the kube-system namespace:
-
-```
-kubectl -n kube-system describe secret default
-
-# For use in CURLs
-jwt_token=$(kubectl get secret -n kube-system $(kubectl -n kube-system get serviceaccount default -o jsonpath="{.secrets[0].name}") -o jsonpath="{.data.token}" | base64 --decode)
-
-echo $jwt_token
+kubectl delete secrets --all
 ```
 
 ## Thinkphp session
@@ -208,3 +238,5 @@ Alan
 - Update sysinfo to detect if you're in docker/kubernetes
 - Pull out the secrets information / env / ConfigMaps
 - Get access to a real cluster
+
+TODO: ENV will disappear from the container if you upgrade a shell to meterpreter
