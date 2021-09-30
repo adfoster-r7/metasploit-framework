@@ -6,7 +6,7 @@ module Msf
       module TablePrint
         class RankStyler
 
-          def style(rank)
+          def style(rank, _index, _row)
             case rank
             when Msf::RankingName[Msf::GreatRanking]
               "%grn#{rank}%clr"

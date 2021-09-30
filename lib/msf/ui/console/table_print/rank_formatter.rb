@@ -6,7 +6,7 @@ module Msf
       module TablePrint
         class RankFormatter
 
-          def format(rank)
+          def format(rank, _index, _row)
             if (rank.respond_to? :to_i) && (Msf::RankingName.key?(rank.to_i))
               Msf::RankingName[rank.to_i]
             else

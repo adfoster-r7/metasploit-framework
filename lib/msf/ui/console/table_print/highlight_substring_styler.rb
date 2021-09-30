@@ -12,7 +12,7 @@ module Msf
             @substrings = substrings
           end
 
-          def style(value)
+          def style(value, _index, _row)
             search_terms = @substrings.map { |substring| Regexp.escape(substring) }
             search_pattern = /#{search_terms.join('|')}/i
 
