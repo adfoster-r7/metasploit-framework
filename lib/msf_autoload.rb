@@ -291,7 +291,9 @@ class MsfAutoload
       'appapi' => 'AppApi',
       'uds_errors' => 'UDSErrors',
       'smb_hash_capture' => 'SMBHashCapture',
-      'rubysmb_mitm_provider' => 'RubySMBMITMProvider'
+      'rubysmb_mitm_provider' => 'RubySMBMITMProvider',
+      'mitm_server' => 'MITMServer',
+      'mitm_server_client' => 'MITMServerClient'
     }
   end
 
