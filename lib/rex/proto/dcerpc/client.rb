@@ -26,9 +26,6 @@ require 'rex/text'
     # If the caller passed us a smb_client object, use it and
     # and skip the connect/login/ipc$ stages of the setup
     if (self.options['smb_client'])
-      require 'pry'
-      binding.pry
-
       self.smb = self.options['smb_client']
     end
 
@@ -74,9 +71,6 @@ require 'rex/text'
 
   # Create the appropriate socket based on protocol
   def socket_setup()
-    require 'pry'
-    binding.pry
-
     ctx = { 'Msf' => self.options['Msf'], 'MsfExploit' => self.options['MsfExploit'] }
     self.socket = case self.handle.protocol
 
