@@ -88,7 +88,7 @@ PATH
       rex-text
       rex-zip
       ruby-macho
-      ruby_smb (~> 3.0)
+      ruby_smb
       rubyntlm
       rubyzip
       sinatra
@@ -451,16 +451,6 @@ GEM
     ruby-progressbar (1.11.0)
     ruby-rc4 (0.1.5)
     ruby2_keywords (0.0.5)
-<<<<<<< HEAD
-    ruby_smb (3.0.0)
-      bindata
-      openssl-ccm
-      openssl-cmac
-      rubyntlm
-      windows_error
-    rubyntlm (0.6.3)
-=======
->>>>>>> 4a67df5144 (WIP)
     rubyzip (2.3.2)
     sawyer (0.8.2)
       addressable (>= 2.3.5)
@@ -546,4 +536,4 @@ DEPENDENCIES
   yard
 
 BUNDLED WITH
-   2.1.4
+   2.2.22
