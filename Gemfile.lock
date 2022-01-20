@@ -6,7 +6,7 @@ PATH
       openssl-ccm
       openssl-cmac
       rubyntlm
-      windows_error
+      windows_error (>= 0.1.3)
 
 PATH
   remote: ../rubyntlm
