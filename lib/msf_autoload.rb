@@ -62,7 +62,6 @@ class MsfAutoload
       "#{__dir__}/rex/post.rb",
       "#{__dir__}/rex/proto/ssh/hrr_rb_ssh.rb",
       "#{__dir__}/rex/proto/ssh/connection.rb",
-      "lib/msf/core/exploit/remote/smb/rubysmb_mitm_provider_old.rb"
     ]
   end
 
@@ -291,6 +290,7 @@ class MsfAutoload
       'appapi' => 'AppApi',
       'uds_errors' => 'UDSErrors',
       'smb_hash_capture' => 'SMBHashCapture',
+      # TODO
       'rubysmb_mitm_provider' => 'RubySMBMITMProvider',
       'mitm_server' => 'MITMServer',
       'mitm_server_client' => 'MITMServerClient'
