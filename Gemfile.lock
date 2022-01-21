@@ -1,7 +1,7 @@
 PATH
   remote: ../ruby_smb
   specs:
-    ruby_smb (2.0.13)
+    ruby_smb (3.0.1)
       bindata
       openssl-ccm
       openssl-cmac
