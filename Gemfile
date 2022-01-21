@@ -48,5 +48,3 @@ end
 
 
 gem 'ruby_smb', path: "../ruby_smb"
-gem 'rubyntlm', path: "../rubyntlm"
-gem 'gssapi'
