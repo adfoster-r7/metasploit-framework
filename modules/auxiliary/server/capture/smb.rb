@@ -81,7 +81,7 @@ class MetasploitModule < Msf::Auxiliary
     ntlm_provider.netbios_domain = datastore['SMBDomain']
     ntlm_provider.netbios_hostname = datastore['SMBDomain']
 
-    handle_datastore_options(datastore, ntlm_provider)
+    validate_smb_hash_capture_datastore(datastore, ntlm_provider)
 
     server = RubySMB::Server.new(
       server_sock: @rsock,
@@ -95,6 +95,15 @@ class MetasploitModule < Msf::Auxiliary
       print_good 'Received SMB connection on Auth Capture Server!'
       true
     end
+  end
+
+  def on_ntlm_type3(address:, challenge:, client_os_version:, ntlm_message:)
+    report_ntlm_type3(
+      address: address,
+      challenge: challenge,
+      client_os_version: client_os_version,
+      ntlm_message: ntlm_message
+    )
   end
 
   def cleanup
