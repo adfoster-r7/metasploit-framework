@@ -138,17 +138,16 @@ class MetasploitModule < Msf::Auxiliary
   def run
     fail_with(Failure::BadConfig, 'The SRVHOST option must be set to a routable IP address.') if ['0.0.0.0', '::'].include?(datastore['SRVHOST'])
     @mutex = Mutex.new
-    @mutex.extend(Rex::SharedResource)
+    @mutex.extend(Rex::Ref)
 
     @tokens = {}
-    @tokens.extend(Rex::SharedResource)
+    @tokens.extend(Rex::Ref)
 
     @successes = []
-    @successes.extend(Rex::SharedResource)
+    @successes.extend(Rex::Ref)
 
     begin
       start_service
-      @service.extend(Rex::SharedResource)
     rescue Rex::BindFailed => e
       fail_with(Failure::BadConfig, e.to_s)
     end
@@ -165,6 +164,10 @@ class MetasploitModule < Msf::Auxiliary
     return Exploit::CheckCode::Vulnerable(details: @successes)
   ensure
     stop_service
+  end
+
+  def cleanup
+    service.deref
   end
 
   def run_host(ip)

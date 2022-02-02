@@ -11,6 +11,11 @@ GIT
       windows_error (>= 0.1.3)
 
 PATH
+  remote: ../rex-core
+  specs:
+    rex-core (0.1.15)
+
+PATH
   remote: .
   specs:
     metasploit-framework (6.1.28)
@@ -367,7 +372,6 @@ GEM
       rex-core
       rex-struct2
       rex-text
-    rex-core (0.1.25)
     rex-encoder (0.1.6)
       metasm
       rex-arch
@@ -522,6 +526,7 @@ DEPENDENCIES
   pry-byebug
   rake
   redcarpet
+  rex-core!
   rspec-rails
   rspec-rerun
   rubocop
