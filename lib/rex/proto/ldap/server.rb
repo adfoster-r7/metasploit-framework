@@ -59,9 +59,10 @@ module Rex
         # @param ctx [Hash] Framework context for sockets
         # @param dblock [Proc] Handler for :dispatch_request flow control interception
         # @param sblock [Proc] Handler for :send_response flow control interception
+        # @param close_delay [Fixnum] Delay in seconds to wait before closing the server
         #
         # @return [Rex::Proto::LDAP::Server] LDAP Server object
-        def initialize(lhost = '0.0.0.0', lport = 389, udp = true, tcp = true, ldif = nil, comm = nil, ctx = {}, dblock = nil, sblock = nil)
+        def initialize(lhost = '0.0.0.0', lport = 389, udp = true, tcp = true, ldif = nil, comm = nil, ctx = {}, dblock = nil, sblock = nil, close_delay = 0)
           @serve_udp = udp
           @serve_tcp = tcp
           @sock_options = {
@@ -71,6 +72,7 @@ module Rex
             'Comm' => comm
           }
           @ldif = ldif
+          @close_delay = close_delay
           self.listener_thread = nil
           self.dispatch_request_proc = dblock
           self.send_response_proc = sblock
@@ -81,6 +83,14 @@ module Rex
         #
         def running?
           listener_thread and listener_thread.alive?
+        end
+
+        #
+        # Specify the close delay. If the new delay is smaller than the current delay, it will be ignored.
+        #
+        # @param [FixNum] value The new delay
+        def set_close_delay(value)
+          @close_delay = [@close_delay, value.to_i].max
         end
 
         #
@@ -121,6 +131,8 @@ module Rex
         # Stop the LDAP server
         #
         def stop
+          sleep(@close_delay)
+          $stderr.puts "closed!"
           ensure_close = [udp_sock, tcp_sock].compact
           begin
             listener_thread.kill if listener_thread.respond_to?(:kill)

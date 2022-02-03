@@ -63,7 +63,7 @@ class MetasploitModule < Msf::Auxiliary
           File.join(Msf::Config.data_directory, 'exploits', 'CVE-2021-44228', 'http_uris.txt')
         ]
       ),
-      OptInt.new('LDAP_TIMEOUT', [ true, 'Time in seconds to wait to receive LDAP connections', 30 ])
+      OptInt.new('LdapServerCloseDelay', [ true, 'Time in seconds to wait to before closing the LDAP serer', 30 ], aliases: ['LDAP_TIMEOUT'])
     ])
   end
 
@@ -154,20 +154,29 @@ class MetasploitModule < Msf::Auxiliary
 
     super
 
-    print_status("Sleeping #{datastore['LDAP_TIMEOUT']} seconds for any last LDAP connections")
-    sleep datastore['LDAP_TIMEOUT']
+    print_status("Server will remain open for #{datastore['LdapServerCloseDelay']} seconds for any last LDAP connections")
+    stop_service
+    server = nil
+    sleep datastore['LdapServerCloseDelay']
+
 
     if @successes.empty?
       return Exploit::CheckCode::Unknown
     end
 
+    $stderr.puts "all done?"
     return Exploit::CheckCode::Vulnerable(details: @successes)
-  ensure
-    stop_service
+  end
+
+  def scanner_handle_fatal_errors
+
   end
 
   def cleanup
-    service.deref
+    return if @stop_service_called
+
+    # This path will be called for each replicant
+    super
   end
 
   def run_host(ip)

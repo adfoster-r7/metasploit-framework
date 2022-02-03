@@ -94,6 +94,7 @@ class ServiceManager < Hash
   # the service drops to zero the service will be destroyed.
   #
   def stop(klass, *args)
+    $stderr.puts "service manager stop was called"
     stop_service(hals[hardcore_alias(klass, *args)])
   end
 

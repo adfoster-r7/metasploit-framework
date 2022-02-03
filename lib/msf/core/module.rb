@@ -150,21 +150,16 @@ module Msf
     def replicant
       obj = self.clone
       self.instance_variables.each { |k|
-        old_v = instance_variable_get(k)
-        puts "hello #{k}"
-        # if v.is_a?(Rex::Ref)
-        #   require 'pry'; binding.pry
-        #   puts 123
-        # end
-        # v = (v.is_a?(Rex::Ref) ? v.dup : v.dup) rescue v
+        old_value = instance_variable_get(k)
+        $stderr.puts "variable #{k}"
         begin
-          v = old_v.dup
+          new_value = old_value.is_a?(Rex::Ref) ? old_value.ref : old_value.dup
         rescue => e
-          puts "failed to dup #{k}"
-          v = old_v
+          elog("#{self.class} replicant failed to dup #{k}", error: e)
+          new_value = old_value
         end
 
-        obj.instance_variable_set(k, v)
+        obj.instance_variable_set(k, new_value)
       }
 
       obj.datastore    = self.datastore.copy
