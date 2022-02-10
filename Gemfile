@@ -48,4 +48,5 @@ group :test do
   gem 'timecop'
 end
 
-gem 'ruby_smb', git: 'https://github.com/adfoster-r7/ruby_smb', branch: 'update-smb-relay-to-support-smb2-and-smb3'
+# gem 'ruby_smb', git: 'https://github.com/adfoster-r7/ruby_smb', branch: 'update-smb-relay-to-support-smb2-and-smb3'
+gem 'ruby_smb', path: '../ruby_smb'

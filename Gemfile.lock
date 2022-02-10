@@ -1,7 +1,10 @@
-GIT
-  remote: https://github.com/adfoster-r7/ruby_smb
-  revision: 18452ac9f4ac49c452c3a619ff933e6ab2cb2e3c
-  branch: update-smb-relay-to-support-smb2-and-smb3
+PATH
+  remote: ../rex-core
+  specs:
+    rex-core (0.1.15)
+
+PATH
+  remote: ../ruby_smb
   specs:
     ruby_smb (3.0.2)
       bindata
@@ -9,11 +12,6 @@ GIT
       openssl-cmac
       rubyntlm
       windows_error (>= 0.1.3)
-
-PATH
-  remote: ../rex-core
-  specs:
-    rex-core (0.1.15)
 
 PATH
   remote: .
