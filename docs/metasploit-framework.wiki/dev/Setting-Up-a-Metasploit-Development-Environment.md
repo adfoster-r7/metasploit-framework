@@ -1,4 +1,4 @@
-<sup>*The shortlink to this wiki page is <https://r-7.co/MSF-DEV>*</sup>
+_<sup>*The shortlink to this wiki page is <https://r-7.co/MSF-DEV>*</sup>
 
 This is a guide for setting up a developer environment to contribute modules, documentation, and fixes to the Metasploit Framework. If you just want to use Metasploit for legal, authorized hacking, we recommend instead you:
 
@@ -94,24 +94,44 @@ ln -sf ../../tools/dev/pre-commit-hook.rb .git/hooks/post-merge
 
 ## Install Ruby
 
-Linux distributions do not ship with the latest Ruby, nor are package managers routinely updated.  Additionally, if you are working with multiple Ruby projects, each one has dependencies and Ruby versions which can start to conflict.  For these reasons, it is advisable  to use a Ruby manager.
+Linux distributions do not ship with the latest Ruby, nor are package managers routinely updated. Additionally, if you are working with multiple Ruby projects, each one has dependencies and Ruby versions which can start to conflict.  For these reasons, it is advisable to use a Ruby manager.
 
-You could just install Ruby directly (eg. `sudo apt install ruby-dev`), but you may likely end up with the incorrect version and no way to update.  Instead, consider using one of the many different [Ruby environment managers] available.  The Metasploit team prefers [rbenv] and [rvm] (note that [rvm] does require a re-login to complete).
+You could just install Ruby directly (eg. `sudo apt install ruby-dev`), but you may likely end up with the incorrect version and no way to update.  Instead, consider using one of the many different [Ruby environment managers] available.  The Metasploit team prefers [rvm], but [rbenv] is also a valid alternative.
 
-Regardless of your choice, you'll want to make sure that, when inside the `~/git/metasploit-framework` directory, you are running the correct version of Ruby:
+At the time of writing the install steps for rvm are:
 
+```bash
+gpg --keyserver keyserver.ubuntu.com --recv-keys 409B6B1796C275462A1703113804BB82D39DC0E3 7D2BAF1CF37B13E2069D6956105BD0E739499BDB
+\curl -sSL https://get.rvm.io | bash
 ```
+
+Note that rvm does require a re-login to complete:
+
+```bash
+$SHELL --login
+cd ~/git/metasploit-framework
+
+rvm remove $(cat .ruby-version)
+
+# Ignore the host's openssl version - which causes issues when swapping between Ruby versions
+rvm pkg install openssl
+rvm install $(cat .ruby-version) -C --with-openssl-dir=$HOME/.rvm/usr
+rvm use
+```
+
+When inside the `~/git/metasploit-framework` directory, ensure you are running the correct version of Ruby:
+
+```bash
 $ cd ~/git/metasploit-framework
 $ cat .ruby-version
-3.0.2
+3.0.5
 $ ruby -v
-ruby 3.0.2p107 (2021-07-07 revision 0db68f0233) [x86_64-linux]
+ruby 3.0.5p211 (2022-11-24 revision ba5cf0f7c5) [x86_64-linux]
 ```
 
 Note: the Ruby version is likely to change over time, so don't rely on the output in the above example.  Instead, confirm your `ruby -v` output with the version number listed in the `.ruby-version` file.
 
 If the two versions don't match, restart your terminal. If that does not work, consult the troubleshooting documentation for your Ruby environment manager.  Unfortunately, troubleshooting the Ruby environment is beyond the scope of this document, but feel free to reach out for community support using the links at the bottom of this document.
-
 
 ## Install Gems
 
@@ -127,7 +147,37 @@ If you encounter an error with the above command, refer to the `bundle` output a
 
 Congratulations! You have now set up a development environment and the latest version of the Metasploit Framework. If you followed this guide step-by-step, and you ran into any problems, it would be super great if you could open a [new issue] so we can either help you, or, more likely, update the docs.
 
-## Optional: Set up the REST API and PostgreSQL database
+## Optional: Running tests
+
+1. Confirm that the PostgreSQL server and client are installed:
+
+```bash
+sudo apt update && sudo apt-get install -y postgresql postgresql-client
+sudo service postgresql start && sudo update-rc.d postgresql enable
+```
+
+2. Ensure that you are not running as the root user.
+
+3. Create a normal database:
+
+```
+bundle exec ruby ./msfdb init
+```
+
+3. Initialize the Metasploit test database:
+
+```bash
+bundle exec rake db:test:prepare
+```
+
+3. Run the test suite:
+```bash
+bundle exec rspec
+```
+
+You should see over 9000 tests run, mostly resulting in green dots, a few in yellow stars, and no red errors.
+
+## Optional: Set up PostgreSQL database
 
 The following optional section describes how to manually install PostgreSQL and set up the Metasploit database.  Alternatively, use our Omnibus installer which handles this more reliably.
 
@@ -144,7 +194,7 @@ sudo service postgresql start && sudo update-rc.d postgresql enable
 
 ```bash
 cd ~/git/metasploit-framework
-./msfdb init
+bundle exec ruby ./msfdb init
 ```
 
 4. If you receive an error about a component not being installed, confirm that the binaries shown are in your path using the [which] and [find] commands, then modifying your [$PATH] environment variable.  If it was something else, open a [new issue] to let us know what happened.
@@ -152,10 +202,10 @@ cd ~/git/metasploit-framework
 5. If the `msfdb init` command succeeds, then confirm that the database is accessible to Metasploit:
 
 ```bash
-$ ./msfconsole -qx "db_status; exit"
+$ bundle exec ruby ./msfconsole -qx "db_status; exit"
 ```
 
-Congratulations! You have now set up the [[Metasploit Web Service (REST API)|./metasploit-web-service.md]] and the backend database.
+Congratulations! You have now set up the backend database. Although not required for normal msfconsole usage, the database credentials can be find in `~/.msf4/database.yml`.
 
 ## Optional: Tips to speed up common workflows
 
@@ -202,14 +252,6 @@ git fetch upstream
 git checkout fixes-to-pr-12345 upstream/pr/12345
 ```
 
-If you're writing test cases (which you should), then make sure [rspec] works:
-
-```bash
-rake spec
-```
-
-You should see over 9000 tests run, mostly resulting in green dots, a few in yellow stars, and no red errors.
-
 # Great!  Now what?
 
 We're excited to see your upcoming contributions of new modules, documentation, and fixes! If you're looking for inspiration, keep an eye out for [newbie-friendly pull requests and issues][newbie-friendly-prs-issues].   Please [submit your new pull requests][howto-PR] and reach out to us on [Slack] for community help.
@@ -249,4 +291,4 @@ Finally, we welcome your feedback on this guide, so feel free to reach out to us
 [Slack]:https://www.metasploit.com/slack
 [@kernelsmith]:https://github.com/kernelsmith
 [@corelanc0d3r]:https://github.com/corelanc0d3r
-[@ffmike]:https://github.com/ffmike
+[@ffmike]:https://github.com/ffmike_
