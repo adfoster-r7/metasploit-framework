@@ -3,9 +3,32 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
+
+# class StandaloneClient < Msf::Module
+class StandaloneClient < Msf::Auxiliary
+end
+
+class StandaloneHttpClient < StandaloneClient
+  include Msf::Exploit::Remote::HttpClient
+
+  def initialize(mod)
+    # stop explosions
+    self.options = mod.options
+    self.datastore = mod.datastore
+    # Uhh, framework is global on the class itself apparently
+    self.class.framework = mod.framework
+
+    super({})
+
+    # Override
+    self.options = mod.options
+    self.datastore = mod.datastore
+  end
+end
+
 class MetasploitModule < Msf::Auxiliary
   # Exploit mixins should be called first
-  include Msf::Exploit::Remote::HttpClient
+  # include Msf::Exploit::Remote::HttpClient
   # Scanner mixin should be near last
   include Msf::Auxiliary::Scanner
 
@@ -38,10 +61,14 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def run_host(target_host)
+    dummy_client = StandaloneHttpClient.new(self)
+
     begin
       # Send a normal GET request
-      res = send_request_cgi(
-        'uri' => normalize_uri(target_uri.path)
+      res = dummy_client.send_request_cgi(
+        'uri' => '/'
+        # Note: normalize_uri and target_uri won't exist
+        # 'uri' => normalize_uri(target_uri.path)
       )
 
       # If no response, quit now
