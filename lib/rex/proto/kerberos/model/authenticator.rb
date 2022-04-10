@@ -65,13 +65,18 @@ module Rex
           # @param key [String] the key to encrypt
           # @return [String] the encrypted result
           # @raise [NotImplementedError] if the encryption schema isn't supported
-          def encrypt(etype, key)
+          def encrypt(etype, key, force_message_type_to_11: false)
             data = self.encode
 
             res = ''
             case etype
             when RC4_HMAC
-              res = encrypt_rc4_hmac(data, key, 7)
+              if force_message_type_to_11
+                # The msg type for the authenticator on an AP request to SMB needs to be 11 for some reason instead of 7
+                res = encrypt_rc4_hmac(data, key, 11)
+              else
+                res = encrypt_rc4_hmac(data, key, 7)
+              end
             else
               raise ::NotImplementedError, 'EncryptedData schema is not supported'
             end

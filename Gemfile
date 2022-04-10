@@ -4,6 +4,7 @@ source 'https://rubygems.org'
 gemspec name: 'metasploit-framework'
 
 gem 'metasploit-model', git: 'https://github.com/adfoster-r7/metasploit-model', branch: 'update-login-status-enum-to-support-incorrect-public-part'
+gem 'ruby_smb', git: 'https://github.com/adfoster-r7/ruby_smb', branch: 'spike-kerberos-support-working'
 
 # separate from test as simplecov is not run on travis-ci
 group :coverage do

@@ -351,7 +351,7 @@ class Tlv
       end
 
     val = value.inspect
-    if val.length > 50
+    if val.length > 50 && !(type == Rex::Post::Meterpreter::Extensions::Kiwi::TLV_TYPE_KIWI_CMD_RESULT || stype == Rex::Post::Meterpreter::Extensions::Kiwi::TLV_TYPE_KIWI_CMD)
       val = val[0,50] + ' ..."'
     end
     group ||= (self.class.to_s =~ /Packet/)
