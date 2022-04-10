@@ -1,10 +1,15 @@
 Useful resources:
 
 - [MS-KILE - Kerberos Protocol Extensions](https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-kile/2a32282e-dd48-4ad9-a542-609804b02cc9)
-- [Kerberos Network Authentication Service - V5](https://datatracker.ietf.org/doc/html/rfc4120)
+- [Newer Kerberos Network Authentication Service - V5](https://datatracker.ietf.org/doc/html/rfc4120)
+- [Older Kerberos V5 spec - with useful implementation details](https://datatracker.ietf.org/doc/html/rfc1510)
 - [The RC4-HMAC Kerberos Encryption Types Used by Microsoft Windows](https://datatracker.ietf.org/doc/rfc4757/)
 - [Kerberos Parameters](https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml)
 
+
+## Decrypting wireshark
+
+To decrypt kerberos packets in wireshark, first create a keypass for the account that is being used:
 
 Debugging enc_part responses of AS_REP:
 ```ruby
@@ -32,6 +37,17 @@ ktpass /crypto All /mapuser a /princ dc3.adf3.local/a@ADF3.LOCAL /pass p4$$w0rd 
 Generate keytab for krbtgt account:
 ```
 ktpass /crypto All /mapuser adf3.local@ADF3.local /princ dc3.adf3.local/krbtgt@ADF3.LOCAL /pass p4$$w0rd /out kerb.keytab /ptype KRB5_NT_PRINCIPAL
+```
+
+
+TODO: Look at the map option, this doesn't seem right:
+```
+ServicePrincipalName           Name        MemberOf                                        PasswordLastSet             LastLogon                   Delegation 
+-----------------------------  ----------  ----------------------------------------------  --------------------------  --------------------------  ----------
+dc3.adf3.local/krbtgt          a           CN=Production,OU=Groups,OU=UK,DC=adf3,DC=local  2022-04-10 02:14:45.064108  2022-04-10 05:02:23.272170             
+dc3.adf3.local/a               a           CN=Production,OU=Groups,OU=UK,DC=adf3,DC=local  2022-04-10 02:14:45.064108  2022-04-10 05:02:23.272170             
+fake_msql/dc3.adf3.local:1433  fake_mysql                                                  2022-02-10 10:57:13.356981  <never>                                
+fake_msql/dc3.adf3.local       fake_mysql                                                  2022-02-10 10:57:13.356981  <never>                                
 ```
 
 TODO: Join them

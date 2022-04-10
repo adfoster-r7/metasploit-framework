@@ -49,6 +49,9 @@ module Rex
         # Unique ID
         NT_UID = 5
 
+        # TODO: Find a docs link for this other than wireshark/impacket
+        NT_MS_PRINCIPAL = -128
+
         # From padata
 
         PA_TGS_REQ = 1

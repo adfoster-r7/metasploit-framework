@@ -120,6 +120,7 @@ class MetasploitModule < Msf::Auxiliary
 
     res = send_request_tgs(
       client_name: datastore['USER'],
+      # TODO: Seems wrong?
       server_name: "krbtgt/#{domain}",
       realm: domain,
       session_key: session_key,
