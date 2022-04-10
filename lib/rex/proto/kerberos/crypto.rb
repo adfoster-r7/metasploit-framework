@@ -9,6 +9,8 @@ module Rex
         include Rex::Proto::Kerberos::Crypto::RsaMd5
 
         RSA_MD5 = 7
+        AES128_CTS_HMAC_SHA1_96 = 17
+        AES256_CTS_HMAC_SHA1_96 = 18
         RC4_HMAC = 23
         ENC_KDC_REQUEST_BODY = 10
         ENC_AS_RESPONSE = 8

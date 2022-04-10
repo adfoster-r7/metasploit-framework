@@ -47,7 +47,7 @@ module Rex
             elems = []
             elems << OpenSSL::ASN1::ASN1Data.new([encode_vno], 0, :CONTEXT_SPECIFIC)
             elems << OpenSSL::ASN1::ASN1Data.new([encode_crealm], 1, :CONTEXT_SPECIFIC)
-            elems << OpenSSL::ASN1::ASN1Data.new([encode_cname], 2, :CONTEXT_SPECIFIC)
+            elems << OpenSSL::ASN1::ASN1Data.new([encode_cname], 2, :CONTEXT_SPECIFIC) if cname
             elems << OpenSSL::ASN1::ASN1Data.new([encode_checksum], 3, :CONTEXT_SPECIFIC) if checksum
             elems << OpenSSL::ASN1::ASN1Data.new([encode_cusec], 4, :CONTEXT_SPECIFIC)
             elems << OpenSSL::ASN1::ASN1Data.new([encode_ctime], 5, :CONTEXT_SPECIFIC)

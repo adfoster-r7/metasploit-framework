@@ -121,10 +121,22 @@ module Rex
 
           # Runtime Error which can be raised by the Rex::Proto::Kerberos API
           class KerberosError < ::StandardError
+            def initialize(message = nil)
+              super(message || "Kerberos Error")
+            end
           end
 
           # Runtime Decoding Error which can be raised by the Rex::Proto::Kerberos API
           class KerberosDecodingError < KerberosError
+            def initialize(message = nil)
+              super(message || "Kerberos Decoding Error")
+            end
+          end
+
+          class KerberosEncryptionNotSupported < KerberosError
+            def initialize(message = nil)
+              super(message || "Kerberos target does not support the required encryption")
+            end
           end
         end
       end
