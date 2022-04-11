@@ -48,7 +48,7 @@ class MetasploitModule < Msf::Auxiliary
 
   # Sends the required kerberos AS requests for a kerberos Ticket Granting Ticket
   #
-  # @param opts [Hash]
+  # @param options [Hash]
   # @return [Rex::Proto::Kerberos::Model::KdcResponse]
   # @see Msf::Kerberos::Client::TgsRequest#build_tgs_request
   # @see Rex::Proto::Kerberos::Model::KdcResponse
@@ -228,6 +228,10 @@ class MetasploitModule < Msf::Auxiliary
     else
       puts format_tgs_rep_to_john(service_user, service_spn, tgs_res)
     end
+
+    extract_kerb_creds(tgs_res, tgt_result[:auth].key.value)
+
+    require 'pry'; binding.pry
 
     return
 

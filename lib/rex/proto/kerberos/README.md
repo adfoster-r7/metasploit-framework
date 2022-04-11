@@ -89,3 +89,18 @@ Wireshark will generate warnings about being unable to decrypt the TGT ticket it
 It may be possible to fix this warning with a modified keytab file to decrypt the ticket itself, but I did not verify this.
 
 Additional details: https://wiki.wireshark.org/Kerberos
+
+
+### Decoding blobs
+
+If you have password or session key available you can decode enc_parts with:
+
+```ruby
+enc_part = "d5b664f9385aab2a81850a6ca5fe3d7c9333995e3319097e9e089a1fb2ae60480ce9ef94dee65c3c742ce34bffcc8563375b48bb08cf0702605df111d052ad27508bb5cbb855600ddfd53fe473ce5ac09394552243d9dd8d90"
+encrypted_data = Rex::Proto::Kerberos::Model::EncryptedData.new
+encrypted_data.etype = 23
+encrypted_data.kvno = 2
+encrypted_data.cipher = [enc_part].pack('H*')
+decrypted = encrypted_data.decrypt(password_digest, Rex::Proto::Kerberos::Crypto::ENC_AS_RESPONSE)
+Rex::Proto::Kerberos::Model::EncKdcResponse.decode(decrypted)
+```
