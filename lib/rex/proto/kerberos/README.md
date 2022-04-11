@@ -6,6 +6,11 @@
 - [The RC4-HMAC Kerberos Encryption Types Used by Microsoft Windows](https://datatracker.ietf.org/doc/rfc4757/)
 - [IANA - Kerberos Parameters](https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml)
 
+## API Gotchas
+
+The API fields `cname` and `client_name`, as well as `sname` and `server_name` are not interchangeable.
+`cname` and `sname` will be the real objects created and sent to the server in a binary format. 
+
 ## Decrypting encrypted Kerberos blobs
 
 The Kerberos protocol makes use of encrypted values which will show as an opaque blob of hex characters in Wireshark.

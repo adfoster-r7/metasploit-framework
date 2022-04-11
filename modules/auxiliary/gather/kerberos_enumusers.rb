@@ -148,7 +148,7 @@ class MetasploitModule < Msf::Auxiliary
 
   # @param [Rex::Proto::Kerberos::Model::KdcResponse] asrep The krb5 asrep response
   # @return [String] A valid string format which can be cracked offline
-  def format_asrep_to_john_hash(asrep)
-    "$krb5asrep$#{asrep.enc_part.etype}$#{asrep.cname.name_string.join('/')}@#{asrep.ticket.realm}:#{asrep.enc_part.cipher[0...16].unpack1('H*')}$#{asrep.enc_part.cipher[16..].unpack1('H*')}"
+  def format_asrep_to_john_hash(res)
+    "$krb5asrep$#{res.enc_part.etype}$#{res.cname.name_string.join('/')}@#{res.ticket.realm}:#{res.enc_part.cipher[0...16].unpack1('H*')}$#{res.enc_part.cipher[16..].unpack1('H*')}"
   end
 end
