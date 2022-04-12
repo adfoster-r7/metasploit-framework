@@ -50,6 +50,11 @@ module Rex
         NT_UID = 5
 
         # TODO: Find a docs link for this other than wireshark/impacket
+        # wireshark: https://github.com/wireshark/wireshark/blob/85df6d0273d8d52e9399d7d25c744a0ecd48f657/epan/dissectors/asn1/kerberos/k5.asn
+        # impacket: https://github.com/SecureAuthCorp/impacket/blob/cd4fe47cfcb72d7d35237a99e3df95cedf96e94f/impacket/krb5/constants.py#L64
+        #   Has comment with:
+        #     #   Constants for krb5.asn1 package. I took them out from the RFC plus
+        #     #   some data from [MS-KILE] as well.
         NT_MS_PRINCIPAL = -128
 
         # From padata

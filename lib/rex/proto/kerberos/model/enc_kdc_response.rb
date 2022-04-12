@@ -110,8 +110,14 @@ module Rex
                 self.srealm = decode_srealm(val)
               when 10
                 self.sname = decode_sname(val)
+              when 11
+                raise ::Rex::Proto::Kerberos::Model::Error::KerberosDecodingError, 'Failed to decode caddr ENC-KDC-RESPONSE SEQUENCE'
+              when 12
+                $stderr.puts "TODO: Can't decode encrypted pa-data #{val.tag.inspect} yet"
+                # raise ::Rex::Proto::Kerberos::Model::Error::KerberosDecodingError, 'Failed to decode caddr ENC-KDC-RESPONSE SEQUENCE'
+                # self.pa_data = decode_pa_data(val)
               else
-                raise ::Rex::Proto::Kerberos::Model::Error::KerberosDecodingError, 'Failed to decode ENC-KDC-RESPONSE SEQUENCE'
+                raise ::Rex::Proto::Kerberos::Model::Error::KerberosDecodingError, "Failed to decode tag #{val.tag.inspect} in ENC-KDC-RESPONSE SEQUENCE"
               end
             end
           end
@@ -158,6 +164,12 @@ module Rex
           # @param input [OpenSSL::ASN1::ASN1Data] the input to decode from
           # @return [Integer]
           def decode_flags(input)
+            # TODO: Wrong?
+            # [18] pry(#<Rex::Proto::Kerberos::Model::EncKdcResponse>)> val.value[0]
+            # => #<OpenSSL::ASN1::BitString:0x00007fa85f53b060 @indefinite_length=false, @tag=3, @tag_class=:UNIVERSAL, @tagging=nil, @unused_bits=0, @value="@\xA1\x00\x00">
+            # [19] pry(#<Rex::Proto::Kerberos::Model::EncKdcResponse>)> val.value[0].value
+            # => "@\xA1\x00\x00"
+            # expected: flags: 0x40a10000
             input.value[0].value.to_i
           end
 

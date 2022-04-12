@@ -3,6 +3,7 @@
 ## Useful resources
 
 - [MS-KILE - Microsoft's Kerberos Extensions](https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-kile/2a32282e-dd48-4ad9-a542-609804b02cc9)
+- [Microsoft's Principal Name Canonicalization, with Realms and EncKDCRepPart changes to include encrypted-pa-data](https://datatracker.ietf.org/doc/html/rfc6806.html)
 - [Newer Kerberos V5 spec](https://datatracker.ietf.org/doc/html/rfc4120)
 - [Older Kerberos V5 spec - contains useful implementation details](https://datatracker.ietf.org/doc/html/rfc1510)
 - [The RC4-HMAC Kerberos Encryption Types Used by Microsoft Windows](https://datatracker.ietf.org/doc/rfc4757/)

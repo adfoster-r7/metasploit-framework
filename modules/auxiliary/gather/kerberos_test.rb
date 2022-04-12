@@ -196,6 +196,7 @@ class MetasploitModule < Msf::Auxiliary
     tgs_res = send_request_tgs(
       req: build_tgs_request({
         session_key: tgt_result[:auth].key,
+        # Don't create a subkey, use the existing session key
         subkey: nil,
         checksum: nil,
         ticket: tgt_result[:ticket],
@@ -229,7 +230,7 @@ class MetasploitModule < Msf::Auxiliary
       puts format_tgs_rep_to_john(service_user, service_spn, tgs_res)
     end
 
-    extract_kerb_creds(tgs_res, tgt_result[:auth].key.value)
+    extracted_creds = extract_kerb_creds(tgs_res, tgt_result[:auth].key.value)
 
     require 'pry'; binding.pry
 
