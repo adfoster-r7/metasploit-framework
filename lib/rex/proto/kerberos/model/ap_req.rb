@@ -35,16 +35,41 @@ module Rex
           # Encodes the Rex::Proto::Kerberos::Model::ApReq into an ASN.1 String
           #
           # @return [String]
-          def encode
+          def encode(hack_for_smb: false)
             elems = []
-            elems << OpenSSL::ASN1::ASN1Data.new([encode_pvno], 0, :CONTEXT_SPECIFIC)
-            elems << OpenSSL::ASN1::ASN1Data.new([encode_msg_type], 1, :CONTEXT_SPECIFIC)
-            elems << OpenSSL::ASN1::ASN1Data.new([encode_options], 2, :CONTEXT_SPECIFIC)
-            elems << OpenSSL::ASN1::ASN1Data.new([encode_ticket], 3, :CONTEXT_SPECIFIC)
-            elems << OpenSSL::ASN1::ASN1Data.new([encode_authenticator], 4, :CONTEXT_SPECIFIC)
+
+            # if hack_for_smb
+            #
+            #   elems << OpenSSL::ASN1::ASN1Data.new([RubySMB::Gss::OID_KERBEROS_5], 0, :CONTEXT_SPECIFIC)
+            #   elems << OpenSSL::ASN1::ASN1Data.new([OpenSSL::ASN1::Boolean.new(true)], 1, :CONTEXT_SPECIFIC)
+            #   elems << OpenSSL::ASN1::ASN1Data.new([encode_pvno], 2, :CONTEXT_SPECIFIC)
+            #   elems << OpenSSL::ASN1::ASN1Data.new([encode_msg_type], 3, :CONTEXT_SPECIFIC)
+            #   elems << OpenSSL::ASN1::ASN1Data.new([encode_options], 4, :CONTEXT_SPECIFIC)
+            #   elems << OpenSSL::ASN1::ASN1Data.new([encode_ticket], 5, :CONTEXT_SPECIFIC)
+            #   elems << OpenSSL::ASN1::ASN1Data.new([encode_authenticator], 6, :CONTEXT_SPECIFIC)
+            # else
+              elems << OpenSSL::ASN1::ASN1Data.new([encode_pvno], 0, :CONTEXT_SPECIFIC)
+              elems << OpenSSL::ASN1::ASN1Data.new([encode_msg_type], 1, :CONTEXT_SPECIFIC)
+              elems << OpenSSL::ASN1::ASN1Data.new([encode_options], 2, :CONTEXT_SPECIFIC)
+              elems << OpenSSL::ASN1::ASN1Data.new([encode_ticket], 3, :CONTEXT_SPECIFIC)
+              elems << OpenSSL::ASN1::ASN1Data.new([encode_authenticator], 4, :CONTEXT_SPECIFIC)
+            # end
             seq = OpenSSL::ASN1::Sequence.new(elems)
 
             seq_asn1 = OpenSSL::ASN1::ASN1Data.new([seq], AP_REQ, :APPLICATION)
+
+            if hack_for_smb
+              return OpenSSL::ASN1::ASN1Data.new(
+                [
+                  RubySMB::Gss::OID_KERBEROS_5,
+                  # a 2-byte TOK_ID field containing 01 00 for KRB_AP_REQ messages
+                  "\x01\x00",
+                  seq_asn1
+                ],
+                0,
+                :APPLICATION
+              ).to_der
+            end
 
             seq_asn1.to_der
           end

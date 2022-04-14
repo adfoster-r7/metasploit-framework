@@ -113,7 +113,7 @@ module Rex
               when 11
                 raise ::Rex::Proto::Kerberos::Model::Error::KerberosDecodingError, 'Failed to decode caddr ENC-KDC-RESPONSE SEQUENCE'
               when 12
-                $stderr.puts "TODO: Can't decode encrypted pa-data #{val.tag.inspect} yet"
+                print_error "TODO: Can't decode #{self.class} encrypted pa-data #{val.tag.inspect} yet - ignoring for now"
                 # raise ::Rex::Proto::Kerberos::Model::Error::KerberosDecodingError, 'Failed to decode caddr ENC-KDC-RESPONSE SEQUENCE'
                 # self.pa_data = decode_pa_data(val)
               else

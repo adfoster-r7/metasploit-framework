@@ -8,6 +8,8 @@
 - [Older Kerberos V5 spec - contains useful implementation details](https://datatracker.ietf.org/doc/html/rfc1510)
 - [The RC4-HMAC Kerberos Encryption Types Used by Microsoft Windows](https://datatracker.ietf.org/doc/rfc4757/)
 - [IANA - Kerberos Parameters](https://www.iana.org/assignments/kerberos-parameters/kerberos-parameters.xhtml)
+- [Kerberos Version 5 GSS-API Mechanism](https://datatracker.ietf.org/doc/html/rfc1964)
+- [Using Kerberos with a service, such as SMB](https://docs.microsoft.com/en-us/openspecs/windows_protocols/ms-authsod/a85e4e1c-58c1-4753-b42f-903deb663430)
 
 ## API Gotchas
 
