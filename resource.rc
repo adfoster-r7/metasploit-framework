@@ -1,4 +1,6 @@
 reload_lib -a
+reload_lib -a /Users/adfoster/Documents/code/ruby_smb/lib/ruby_smb/client/tree_connect.rb
+reload_lib /Users/adfoster/Documents/code/ruby_smb/lib/ruby_smb/client/negotiation.rb
 reload_lib /Users/adfoster/Documents/code/ruby_smb/lib/ruby_smb/client/authentication.rb
 reload_lib /Users/adfoster/Documents/code/ruby_smb/lib/ruby_smb/gss.rb
 rerun rhosts=192.168.123.175 user=a password=p4$$w0rd domain=adf3.local

