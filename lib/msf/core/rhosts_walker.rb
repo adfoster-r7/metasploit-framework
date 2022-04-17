@@ -175,6 +175,7 @@ module Msf
       #   domain;user
       if uri.user && uri.user.include?(';')
         domain, user = uri.user.split(';')
+        result['DOMAIN'] = domain
         result['SMBDomain'] = domain
         result['SMBUser'] = user
         set_username(datastore, result, user)
@@ -323,7 +324,7 @@ module Msf
     def set_username(datastore, result, username)
       # Preference setting application specific values first
       username_set = false
-      option_names = %w[SMBUser FtpUser Username user USERNAME username]
+      option_names = %w[SMBUser FtpUser Username user USER USERNAME username]
       option_names.each do |option_name|
         if datastore.options.include?(option_name)
           result[option_name] = username

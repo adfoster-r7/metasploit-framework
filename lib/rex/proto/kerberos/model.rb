@@ -35,6 +35,7 @@ module Rex
         KDC_OPTION_VALIDATE        = 31
 
         # From Principal
+        # https://datatracker.ietf.org/doc/html/rfc4120#section-6.2
 
         # Name type not known
         NT_UNKNOWN = 0
@@ -55,6 +56,19 @@ module Rex
         #   Has comment with:
         #     #   Constants for krb5.asn1 package. I took them out from the RFC plus
         #     #   some data from [MS-KILE] as well.
+        # mit krb5: https://github.com/krb5/krb5/blob/cd61bdcd6339b10e6cf3feb9f6cb369213e8d7fc/src/include/krb5/krb5.hin#L253-L255
+        #
+        # Microsoft's protocol testing doesn't have it:
+        # https://github.com/microsoft/WindowsProtocolTestSuites/blob/03b3906b9745be72b1852f7ec6ac28ca838029b6/ProtoSDK/KerberosLib/Types/BasicTypes.cs#L1058-L1101
+        #
+        # Rubeus doesn't have it:
+        # https://github.com/GhostPack/Rubeus/blob/89f1d1a2b6be43da5f0a8ff9950f45956c3f3cad/Rubeus/lib/Interop.cs#L203-L215
+        #
+        #
+        # Older constants defined here:
+        #   https://datatracker.ietf.org/doc/html/rfc4120#section-6.2
+        #
+        # Still can't find where NT_MS_PRINCIPAL is defined
         NT_MS_PRINCIPAL = -128
 
         # From padata

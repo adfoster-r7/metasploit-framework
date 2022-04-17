@@ -3,5 +3,6 @@ reload_lib -a /Users/adfoster/Documents/code/ruby_smb/lib/ruby_smb/client/tree_c
 reload_lib /Users/adfoster/Documents/code/ruby_smb/lib/ruby_smb/client/negotiation.rb
 reload_lib /Users/adfoster/Documents/code/ruby_smb/lib/ruby_smb/client/authentication.rb
 reload_lib /Users/adfoster/Documents/code/ruby_smb/lib/ruby_smb/gss.rb
-rerun rhosts=192.168.123.175 user=a password=p4$$w0rd domain=adf3.local
+# rerun rhosts=192.168.123.133 rhost_domain_name=WIN-0P19ULL2NB6.demo.local user=admin password=p4$$w0rd domain=demo.local
+rerun rhosts=192.168.123.175 rhost_domain_name=dc3.adf3.local user=a password=p4$$w0rd domain=adf3.local
 

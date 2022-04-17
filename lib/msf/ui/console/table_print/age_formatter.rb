@@ -12,6 +12,11 @@ class Msf::Ui::Console::TablePrint::AgeFormatter
     rescue ArgumentError
       return format_invalid_date(date)
     end
+
+    format_duration(duration)
+  end
+
+  def format_duration(duration)
     seconds = duration
     minutes = seconds / 60
     hours = duration / (60 * 60)
@@ -19,7 +24,7 @@ class Msf::Ui::Console::TablePrint::AgeFormatter
     years = duration / (60 * 60 * 24 * 365)
 
     if seconds < -1
-      format_invalid_date(date)
+      format_invalid_date(duration)
     elsif seconds < 0
       '0s'
     elsif seconds < 60 * 2
