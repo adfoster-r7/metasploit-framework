@@ -16,9 +16,16 @@ module Rex
         AES128_CTS_HMAC_SHA1_96 = 17
         AES256_CTS_HMAC_SHA1_96 = 18
         RC4_HMAC = 23
-        ENC_KDC_REQUEST_BODY = 10
-        ENC_AS_RESPONSE = 8
-        ENC_TGS_RESPONSE = 9
+
+        # Defined within rfc4120#section-5.5.1 - A unique number used as part of encryption to make certain types of
+        # cryptographic attacks harder
+        module EncKey
+          TGS_REQ_AUTHENTICATOR = 7
+          REQUEST_BODY = 10
+          AS_RESPONSE = 8
+          TGS_RESPONSE = 9
+          AP_REQ_AUTHENTICATOR = 11
+        end
       end
     end
 

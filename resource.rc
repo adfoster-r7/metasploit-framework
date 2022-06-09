@@ -7,8 +7,8 @@ reload_lib -a
 #rerun rhosts=192.168.123.133 rhost_fqdn=WIN-0P19ULL2NB6.demo.local user=admin password=p4$$w0rd domain=demo.local
 
 # Win 2016
-#rerun rhosts=192.168.123.149 rhost_fqdn=dc3.adf3.local user=a password=p4$$w0rd domain=adf3.local
+rerun rhosts=192.168.123.150 rhost_fqdn=dc3.adf3.local user=a password=p4$$w0rd domain=adf3.local
 
 # win 2019
-rerun rhosts=192.168.123.146 rhost_fqdn=dc2.adf2.local user=test password=p4$$w0rd domain=adf2.local
+#rerun rhosts=192.168.123.146 rhost_fqdn=dc2.adf2.local user=test password=p4$$w0rd domain=adf2.local
 

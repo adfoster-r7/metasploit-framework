@@ -52,6 +52,8 @@ module Metasploit
         # Override the kerberos client's methods with the login scanner implementations
         alias rhost host
         alias rport port
+        alias kerberos_rhost host
+        alias kerberos_rport port
         alias timeout connection_timeout
 
         private

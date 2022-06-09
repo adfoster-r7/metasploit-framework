@@ -32,6 +32,9 @@ module Rex
           #   @return [Rex::Proto::Kerberos::Model::EncryptionKey] the client's choice for an encryption
           #   key which is to be used to protect this specific application session
           attr_accessor :subkey
+          # @!attribute enc_key_usage_number
+          #   @return [Rex::Proto::Kerberos::Crypto::EncKey,Integer] The key usage number for this authenticator
+          attr_accessor :enc_key_usage_number
 
           # Rex::Proto::Kerberos::Model::Authenticator decoding isn't supported
           #
@@ -65,18 +68,15 @@ module Rex
           # @param key [String] the key to encrypt
           # @return [String] the encrypted result
           # @raise [NotImplementedError] if the encryption schema isn't supported
-          def encrypt(etype, key, force_message_type_to_11: false)
+          def encrypt(etype, key)
+            raise ::Rex::Proto::Kerberos::Model::Error::KerberosError, 'Missing enc_key_usage_number' unless enc_key_usage_number
+
             data = self.encode
 
             res = ''
             case etype
             when RC4_HMAC
-              if force_message_type_to_11
-                # The msg type for the authenticator on an AP request to SMB needs to be 11 for some reason instead of 7
-                res = encrypt_rc4_hmac(data, key, 11)
-              else
-                res = encrypt_rc4_hmac(data, key, 7)
-              end
+              res = encrypt_rc4_hmac(data, key, enc_key_usage_number)
             else
               raise ::NotImplementedError, 'EncryptedData schema is not supported'
             end
