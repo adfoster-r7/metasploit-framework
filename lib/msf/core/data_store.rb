@@ -50,7 +50,23 @@ class DataStore < Hash
   # Case-insensitive wrapper around hash lookup
   #
   def [](k)
-    super(find_key_case(k))
+    key = find_key_case(k)
+    return super(key) if key?(key)
+
+    # If the key isn't present - check any additional fallbacks that have been registered with the option.
+    # i.e. handling the scenario of SMBUser not being explicitly set, but the option has registered a more
+    # generic 'Username' fallback
+    option = @options.find { |option_name, _option| option_name.casecmp?(key) }&.last
+    return nil unless option
+
+    option.fallbacks.each do |fallback|
+      if key?(fallback)
+        return self[fallback]
+      end
+    end
+
+    # If there's no registered fallbacks that matched, finally use the default option value
+    option.default
   end
 
   #
@@ -64,10 +80,31 @@ class DataStore < Hash
   # Case-insensitive wrapper around delete
   #
   def delete(k)
-    @aliases.delete_if { |_, v| v.casecmp(k) == 0 }
-    super(find_key_case(k))
+    k = find_key_case(k)
+    if key?(k)
+      super(find_key_case(k))
+    elsif @imported[k]
+      @imported[k] = false
+      @imported_by[k] = nil
+      @options[k]&.default
+    else
+      nil
+    end
   end
 
+  #
+  # Removes an option and any associated value
+  #
+  # @param [String] name the option name
+  # @return [Msf::OptBase, nil]
+  def remove_option(name)
+    k = find_key_case(name)
+    delete(k)
+    @aliases.delete_if { |_, v| v.casecmp(k) == 0 }
+    @imported.delete(k)
+    @imported_by.delete(k)
+    @options.delete(k)
+  end
 
   #
   # Updates a value in the datastore with the specified name, k, to the
@@ -85,7 +122,23 @@ class DataStore < Hash
   def import_options(options, imported_by = nil, overwrite = false)
     options.each_option do |name, opt|
       if self[name].nil? || overwrite
-        import_option(name, opt.default, true, imported_by, opt)
+        # import_option(name, nil, true, imported_by, opt)
+
+        # TODO: Copied from import_option for now
+        key = name
+        option = opt
+
+        # Don't store the value, defer the assignment until it gets a read
+        #    self.store(key, val)
+
+        if option
+          option.aliases.each do |a|
+            @aliases[a.downcase] = key.downcase
+          end
+        end
+        @options[key] = option
+        @imported[key] = imported
+        @imported_by[key] = imported_by
       end
     end
   end
@@ -153,6 +206,14 @@ class DataStore < Hash
     @options[key] = option
     @imported[key] = imported
     @imported_by[key] = imported_by
+  end
+
+  def keys
+    (super + @options.keys).uniq { |key| key.downcase }
+  end
+
+  def each_key(&block)
+    self.keys.each(&block)
   end
 
   #
@@ -235,15 +296,28 @@ class DataStore < Hash
   end
 
   #
-  # Return a deep copy of this datastore.
+  # Return a copy of this datastore. Only string values will be duplicated, other other values
+  # will share the same reference
   #
   def copy
-    ds = self.class.new
-    self.keys.each do |k|
-      ds.import_option(k, self[k].kind_of?(String) ? self[k].dup : self[k], @imported[k], @imported_by[k])
+    new_instance = self.class.new
+    new_instance.copy_state(self)
+    new_instance
+  end
+
+  #
+  # Copy the state from the other Msf::DataStore. The state will be coped in a shallow fashion, other than strings.
+  #
+  # @param [Msf::DataStore] other The other datastore to copy state from
+  def copy_state(other)
+    self.imported = other.imported.dup
+    self.options = other.options.dup
+    self.aliases = other.aliases.dup
+    other.user_defined.each do |key, value|
+      self[key] = value.kind_of?(String) ? value.dup : value
     end
-    ds.aliases = self.aliases.dup
-    ds
+
+    self
   end
 
   #
@@ -323,7 +397,7 @@ class DataStore < Hash
     end
 
     # Scan each key looking for a match
-    self.each_key do |rk|
+    each_key do |rk|
       if rk.casecmp(search_k) == 0
         return rk
       end

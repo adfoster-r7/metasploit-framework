@@ -10,6 +10,7 @@ module Msf
   ###
   class ModuleDataStore < DataStore
 
+    # @param [Msf::Module] m
     def initialize(m)
       super()
 
@@ -53,15 +54,13 @@ module Msf
     end
 
     #
-    # Return a deep copy of this datastore.
+    # Return a copy of this datastore. Only string values will be duplicated, other other values
+    # will share the same reference
     #
     def copy
-      ds = self.class.new(@_module)
-      self.keys.each do |k|
-        ds.import_option(k, self[k].kind_of?(String) ? self[k].dup : self[k], @imported[k], @imported_by[k])
-      end
-      ds.aliases = self.aliases.dup
-      ds
+      new_instance = self.class.new(@_module)
+      new_instance.copy_state(self)
+      new_instance
     end
   end
 end

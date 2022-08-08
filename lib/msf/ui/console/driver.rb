@@ -571,8 +571,10 @@ protected
     elsif active_module && (active_module.exploit? || active_module.evasion?)
       return false unless active_module.is_payload_compatible?(val)
     elsif active_module
+      require 'pry'; binding.pry
       active_module.datastore.clear_non_user_defined
     elsif framework
+      require 'pry'; binding.pry
       framework.datastore.clear_non_user_defined
     end
   end
