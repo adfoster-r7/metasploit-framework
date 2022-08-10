@@ -81,11 +81,13 @@ class DataStore < Hash
   #
   def delete(k)
     k = find_key_case(k)
+    is_imported = @imported[k]
+    @imported[k] = false
+    @imported_by[k] = nil
+
     if key?(k)
       super(find_key_case(k))
-    elsif @imported[k]
-      @imported[k] = false
-      @imported_by[k] = nil
+    elsif is_imported
       @options[k]&.default
     else
       nil
@@ -121,10 +123,10 @@ class DataStore < Hash
   #
   def import_options(options, imported_by = nil, overwrite = false)
     options.each_option do |name, opt|
+
       if self[name].nil? || overwrite
         # import_option(name, nil, true, imported_by, opt)
 
-        # TODO: Copied from import_option for now
         key = name
         option = opt
 
@@ -137,7 +139,7 @@ class DataStore < Hash
           end
         end
         @options[key] = option
-        @imported[key] = imported
+        @imported[key] = true
         @imported_by[key] = imported_by
       end
     end
@@ -196,7 +198,8 @@ class DataStore < Hash
   # TODO: Doesn't normalize data in the same vein as:
   # https://github.com/rapid7/metasploit-framework/pull/6644
   def import_option(key, val, imported = true, imported_by = nil, option = nil)
-    self.store(key, val)
+    # If populated by an option - don't immediately store the value. We'll instead lazily use the option's default value on lookup
+    self.store(key, val) if option.nil?
 
     if option
       option.aliases.each do |a|
@@ -323,19 +326,30 @@ class DataStore < Hash
   #
   # Override merge! so that we merge the aliases and imported hashes
   #
+  # @param [Msf::Datatstore, Hash] other
   def merge!(other)
     if other.is_a? DataStore
       self.aliases.merge!(other.aliases)
+      require 'pry'; binding.pry
       self.imported.merge!(other.imported)
       self.imported_by.merge!(other.imported_by)
+
+      other.user_defined.each do |k, v|
+        self[k] = v
+      end
+    else
+      other.each do |k, v|
+        self[k] = v
+      end
     end
-    # call super last so that we return a reference to ourselves
-    super
+
+    self
   end
 
   #
   # Override merge to ensure we merge the aliases and imported hashes
   #
+  # @param [Msf::Datatstore, Hash] other
   def merge(other)
     ds = self.copy
     ds.merge!(other)
@@ -346,7 +360,7 @@ class DataStore < Hash
   # not include default option values.
   #
   def user_defined
-    reject { |k, v|
+    reject { |k, _v|
       @imported[k] == true
     }
   end
