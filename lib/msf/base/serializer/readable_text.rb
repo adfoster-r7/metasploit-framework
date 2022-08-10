@@ -555,7 +555,9 @@ class ReadableText
         ])
 
     mod.options.sorted.each do |name, opt|
-      val = mod.datastore[name].nil? ? opt.default : mod.datastore[name]
+      require 'pry'; binding.pry
+      # TODO: https://github.com/rapid7/metasploit-framework/commit/0660880332029327a77ac7ae67f308af859a8f4d
+      val = mod.datastore.key?(name) ? mod.datastore[name] : opt.default
 
       next unless Msf::OptCondition.show_option(mod, opt)
       next if (opt.advanced?)

@@ -4,6 +4,9 @@ require 'spec_helper'
 
 RSpec.shared_examples_for 'a datastore with lookup support' do |opts = {}|
   it 'should have default keyed values' do
+    # TODO: Delete
+    subject; $debugz = true
+
     expect(subject['foo']).to eq 'bar'
     expect(subject['fizz']).to eq 'buzz'
   end
@@ -116,70 +119,80 @@ RSpec.shared_examples_for 'a datastore' do |opts|
       end
     end
 
-    context 'when value have been explicitly set' do
+    context 'when a value has been deleted' do
       before(:each) do
-        subject['foo'] = 'foo_value'
-        subject['custom_key'] = 'custom_key_value'
-        subject['OLD_OPTION_NAME'] = 'old_option_name_value'
-      end
-
-      it 'should return the set values' do
-        expected_values = {
-          "NewOptionName" => "old_option_name_value",
-          "custom_key" => "custom_key_value",
-          "foo" => "foo_value",
-        }
-        expect(subject.user_defined).to eq(expected_values)
-      end
-    end
-
-    context 'when values have been merged with a hash' do
-      before(:each) do
-        subject.merge!(
-          {
-            "NewOptionName" => "old_option_name_value",
-            "custom_key" => "custom_key_value",
-            "foo" => "foo_value"
-          }
-        )
-      end
-
-      it 'should return the set values' do
-        expected_values = {
-          "NewOptionName" => "old_option_name_value",
-          "custom_key" => "custom_key_value",
-          "foo" => "foo_value",
-        }
-        expect(subject.user_defined).to eq(expected_values)
-      end
-    end
-
-    context 'when values have been merged with a datastore' do
-      before(:each) do
-        other_datastore = subject.copy
         subject.delete('foo')
-        require 'pry'; binding.pry
-
-        options = Msf::OptionContainer.new(
-          Msf::Opt::stager_retry_options + Msf::Opt::http_proxy_options
-        )
-
-        other_datastore.import_options(options)
-        other_datastore['HttpProxyPass'] = 'http_proxy_pass_value'
-        other_datastore['HttpProxyType'] = 'SOCKS'
-
-        subject.merge!(other_datastore)
       end
 
-      it 'should return the set values' do
-        expected_values = {
-          "NewOptionName" => "old_option_name_value",
-          "custom_key" => "custom_key_value",
-          "foo" => "foo_value",
-        }
-        expect(subject.user_defined).to eq(expected_values)
+      it 'should explicitly include the deleted value' do
+        expect(subject.user_defined).to eq({ 'foo' => nil})
       end
     end
+
+    # context 'when value have been explicitly set' do
+    #   before(:each) do
+    #     subject['foo'] = 'foo_value'
+    #     subject['custom_key'] = 'custom_key_value'
+    #     subject['OLD_OPTION_NAME'] = 'old_option_name_value'
+    #   end
+    #
+    #   it 'should return the set values' do
+    #     expected_values = {
+    #       "NewOptionName" => "old_option_name_value",
+    #       "custom_key" => "custom_key_value",
+    #       "foo" => "foo_value",
+    #     }
+    #     expect(subject.user_defined).to eq(expected_values)
+    #   end
+    # end
+    #
+    # context 'when values have been merged with a hash' do
+    #   before(:each) do
+    #     subject.merge!(
+    #       {
+    #         "NewOptionName" => "old_option_name_value",
+    #         "custom_key" => "custom_key_value",
+    #         "foo" => "foo_value"
+    #       }
+    #     )
+    #   end
+    #
+    #   it 'should return the set values' do
+    #     expected_values = {
+    #       "NewOptionName" => "old_option_name_value",
+    #       "custom_key" => "custom_key_value",
+    #       "foo" => "foo_value",
+    #     }
+    #     expect(subject.user_defined).to eq(expected_values)
+    #   end
+    # end
+    #
+    # context 'when values have been merged with a datastore' do
+    #   before(:each) do
+    #     other_datastore = subject.copy
+    #     subject.delete('foo')
+    #     require 'pry'; binding.pry
+    #
+    #     options = Msf::OptionContainer.new(
+    #       Msf::Opt::stager_retry_options + Msf::Opt::http_proxy_options
+    #     )
+    #
+    #     other_datastore.import_options(options)
+    #     other_datastore['HttpProxyPass'] = 'http_proxy_pass_value'
+    #     other_datastore['HttpProxyType'] = 'SOCKS'
+    #
+    #     subject.merge!(other_datastore)
+    #   end
+    #
+    #   it 'should return the set values' do
+    #     expected_values = {
+    #       "NewOptionName" => "old_option_name_value",
+    #       "custom_key" => "custom_key_value",
+    #       "foo" => "foo_value",
+    #     }
+    #     expect(subject.user_defined).to eq(expected_values)
+    #   end
+    # end
   end
 
   describe '#import_options' do
@@ -211,7 +224,8 @@ RSpec.shared_examples_for 'a datastore' do |opts|
 
       describe '#[]' do
         it 'should have default keyed values' do
-          subject
+          # TODO: Delete
+          subject; $debugz = true
 
           expect(subject['NewOptionName']).to eq('default_value')
           expect(subject['OLD_OPTION_NAME']).to eq('default_value')

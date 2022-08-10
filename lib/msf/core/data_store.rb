@@ -51,6 +51,11 @@ class DataStore < Hash
   #
   def [](k)
     key = find_key_case(k)
+    if $debugz == true
+      require 'pry'; binding.pry
+      puts 123
+    end
+
     return super(key) if key?(key)
 
     # If the key isn't present - check any additional fallbacks that have been registered with the option.
@@ -215,6 +220,14 @@ class DataStore < Hash
     (super + @options.keys).uniq { |key| key.downcase }
   end
 
+  def key?(key)
+    super || @imported.key?(key)
+  end
+
+  alias has_key? key?
+  alias include? key?
+  alias member? key?
+
   def each_key(&block)
     self.keys.each(&block)
   end
@@ -360,9 +373,17 @@ class DataStore < Hash
   # not include default option values.
   #
   def user_defined
-    reject { |k, _v|
-      @imported[k] == true
-    }
+    result = {}
+
+    # Ensure explicitly deleted options are returned as nil
+    @imported.each do |k, is_imported|
+      result[k] = nil unless is_imported
+    end
+
+    self.each do |k, v|
+      result[k] = v unless @imported[k]
+    end
+    result
   end
 
   #
