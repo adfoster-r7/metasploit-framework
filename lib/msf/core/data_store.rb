@@ -47,6 +47,10 @@ class DataStore
   attr_accessor :imported
   attr_accessor :imported_by
 
+  #
+  # Returns a hash of user-defined datastore values. The returned hash does
+  # not include default option values.
+  #
   # @return [Hash<String, Object>] values explicitly defined on the data store which will override any default datastore values
   attr_accessor :user_defined
 
@@ -61,6 +65,7 @@ class DataStore
 
     opt = @options[k]
     unless opt.nil?
+      # TODO: Should `merge!` validate hash values
       if opt.validate_on_assignment?
         unless opt.valid?(v, check_empty: false)
           raise Msf::OptionValidateError.new(["Value '#{v}' is not valid for option '#{k}'"])
@@ -77,11 +82,6 @@ class DataStore
   #
   def [](k)
     key = find_key_case(k)
-    if $debugz == true
-      require 'pry'; binding.pry
-      # $stderr.puts "Checking with defaults #{@defaults} for object id #{object_id}"
-    end
-
     return @user_defined[key] if @user_defined.key?(key)
 
     # If the key isn't present - check any additional fallbacks that have been registered with the option.
@@ -100,6 +100,30 @@ class DataStore
     @defaults.key?(key) ? @defaults[key] : option.default
   end
 
+  # TODO: Dry this out with [](...)
+  def fetch(k)
+    key = find_key_case(k)
+    return @user_defined[key] if @user_defined.key?(key)
+
+    # If the key isn't present - check any additional fallbacks that have been registered with the option.
+    # i.e. handling the scenario of SMBUser not being explicitly set, but the option has registered a more
+    # generic 'Username' fallback
+    option = @options.find { |option_name, _option| option_name.casecmp?(key) }&.last
+    raise ::KeyError, "key not found: #{k.inspect}" unless option
+
+    option.fallbacks.each do |fallback|
+      if key?(fallback)
+        return self[fallback]
+      end
+    end
+
+    # If there's no registered fallbacks that matched, finally use the default option value
+    return @defaults[key] if @defaults.key?(key)
+    return option.default if option.default
+
+    raise ::KeyError, "key not found: #{k.inspect}"
+  end
+
   #
   # Case-insensitive wrapper around store
   #
@@ -111,19 +135,6 @@ class DataStore
   # Case-insensitive wrapper around delete
   # TODO: Rename as unset and add 'reset'
   def delete(k)
-    #
-    # is_imported = @imported[k]
-    # @imported[k] = false
-    # @imported_by[k] = nil
-    #
-    # if @user_defined.key?(k)
-    #   @user_defined.delete(k)
-    # elsif is_imported
-    #   @options[k]&.default
-    # else
-    #   nil
-    # end
-
     k = find_key_case(k)
     is_imported = @imported[k]
     @imported[k] = false
@@ -150,10 +161,11 @@ class DataStore
   # @return [Msf::OptBase, nil]
   def remove_option(name)
     k = find_key_case(name)
-    delete(k)
+    @user_defined.delete(k)
     @aliases.delete_if { |_, v| v.casecmp(k) == 0 }
     @imported.delete(k)
     @imported_by.delete(k)
+    # TODO: Should this modify @defaults too?
     @options.delete(k)
   end
 
@@ -170,11 +182,13 @@ class DataStore
   # This method is a helper method that imports the default value for
   # all of the supplied options
   #
-  def import_options(options, imported_by = nil, overwrite = false)
-    options.each_option do |name, opt|
+  def import_options(options, imported_by = nil, overwrite = true)
+    # $stderr.puts "importing options"
 
+    options.each_option do |name, opt|
       # TODO: This needs fixed most likely to handle unset
-      if self[name].nil? || overwrite
+      # if self[name].nil? || overwrite
+      if self.options[name].nil? || overwrite
         # import_option(name, nil, true, imported_by, opt)
 
         key = name
@@ -264,6 +278,8 @@ class DataStore
   # TODO: Doesn't normalize data in the same vein as:
   # https://github.com/rapid7/metasploit-framework/pull/6644
   def import_option(key, val, imported = true, imported_by = nil, option = nil)
+    raise ArgumentError, "should not be called"
+
     # If populated by an option - don't immediately store the value. We'll instead lazily use the option's default value on lookup
     self.store(key, val) if option.nil?
 
@@ -367,8 +383,8 @@ class DataStore
       return
     end
 
-    if (ini.group?(name))
-      import_options_from_hash(ini[name], false)
+    if ini.group?(name)
+      merge!(ini[name])
     end
   end
 
@@ -416,6 +432,8 @@ class DataStore
 
     self
   end
+
+  alias update merge!
 
   #
   # Override merge to ensure we merge the aliases and imported hashes
@@ -485,7 +503,6 @@ class DataStore
   # Case-insensitive key lookup
   #
   def find_key_case(k)
-
     # Scan each alias looking for a key
     search_k = k.downcase
     if self.aliases.has_key?(search_k)

@@ -3,24 +3,70 @@
 require 'spec_helper'
 
 RSpec.shared_examples_for 'a datastore with lookup support' do |opts = {}|
-  it 'should have default keyed values' do
-    # TODO: Delete
-    # subject; $debugz = true
+  describe '#[]' do
+    it 'should have default keyed values' do
+      expect(subject['foo']).to eq 'bar'
+      expect(subject['fizz']).to eq 'buzz'
+    end
 
-    expect(subject['foo']).to eq 'bar'
-    expect(subject['fizz']).to eq 'buzz'
+    it 'should have case-insensitive lookups' do
+      # Sorted by gray code, just for fun
+      expect(subject['foo']).to eq 'bar'
+      expect(subject['Foo']).to eq 'bar'
+      expect(subject['FOo']).to eq 'bar'
+      expect(subject['fOo']).to eq 'bar'
+      expect(subject['fOO']).to eq 'bar'
+      expect(subject['FOO']).to eq 'bar'
+      expect(subject['FoO']).to eq 'bar'
+      expect(subject['foO']).to eq 'bar'
+    end
   end
 
-  it 'should have case-insensitive lookups' do
-    # Sorted by gray code, just for fun
-    expect(subject['foo']).to eq 'bar'
-    expect(subject['Foo']).to eq 'bar'
-    expect(subject['FOo']).to eq 'bar'
-    expect(subject['fOo']).to eq 'bar'
-    expect(subject['fOO']).to eq 'bar'
-    expect(subject['FOO']).to eq 'bar'
-    expect(subject['FoO']).to eq 'bar'
-    expect(subject['foO']).to eq 'bar'
+  describe '#fetch' do
+    it 'should have default keyed values' do
+      expect(subject.fetch('foo')).to eq 'bar'
+      expect(subject.fetch('fizz')).to eq 'buzz'
+    end
+
+    it 'should have case-insensitive lookups' do
+      # Sorted by gray code, just for fun
+      expect(subject.fetch('foo')).to eq 'bar'
+      expect(subject.fetch('Foo')).to eq 'bar'
+      expect(subject.fetch('FOo')).to eq 'bar'
+      expect(subject.fetch('fOo')).to eq 'bar'
+      expect(subject.fetch('fOO')).to eq 'bar'
+      expect(subject.fetch('FOO')).to eq 'bar'
+      expect(subject.fetch('FoO')).to eq 'bar'
+      expect(subject.fetch('foO')).to eq 'bar'
+    end
+
+    it 'should raise an exception if the value is not present' do
+      expect { subject.fetch('missing') }.to raise_exception KeyError, 'key not found: "missing"'
+    end
+
+    context 'when the option does not have a default value' do
+      before(:each) do
+        options = Msf::OptionContainer.new(
+          [
+            Msf::OptString.new(
+              'OptionWithoutDefault',
+              [true, 'option without default']
+            )
+          ]
+        )
+
+        subject.import_options(options)
+      end
+
+      it 'should return the value if it is imported with a default value' do
+        subject.import_defaults_from_hash({ 'OptionWithoutDefault' => 'default_value' }, imported_by: 'self')
+        expect(subject.fetch('OptionWithoutDefault')).to eq('default_value')
+      end
+
+      it 'should raise an exception if the value is not present' do
+        expect { subject.fetch('OptionWithoutDefault') }.to raise_exception KeyError, 'key not found: "OptionWithoutDefault"'
+      end
+    end
   end
 
   context '#to_h' do
@@ -241,9 +287,6 @@ RSpec.shared_examples_for 'a datastore' do |opts|
 
       describe '#[]' do
         it 'should have default keyed values' do
-          # TODO: Delete
-          subject; $debugz = true
-
           expect(subject['NewOptionName']).to eq('default_value')
           expect(subject['OLD_OPTION_NAME']).to eq('default_value')
         end
@@ -255,16 +298,49 @@ RSpec.shared_examples_for 'a datastore' do |opts|
       end
 
       describe '#[]=' do
-        it 'should allow setting datastore values with the new option name' do
-          subject['NewOptionName'] = 'new_value_1'
-          expect(subject['NewOptionName']).to eq('new_value_1')
-          expect(subject['OLD_OPTION_NAME']).to eq('new_value_1')
+        [
+          nil,
+          false,
+          '',
+          'new_value'
+        ].each do |value|
+          context "when the value is #{value.inspect}" do
+            it 'should allow setting datastore values with the new option name' do
+              subject['NewOptionName'] = value
+
+              expect(subject['NewOptionName']).to eq(value)
+              expect(subject.fetch('NewOptionName')).to eq(value)
+
+              expect(subject['OLD_OPTION_NAME']).to eq(value)
+              expect(subject.fetch('OLD_OPTION_NAME')).to eq(value)
+            end
+
+            it 'should allow setting datastore values with the old option name' do
+              subject['OLD_OPTION_NAME'] = value
+
+              expect(subject['NewOptionName']).to eq(value)
+              expect(subject.fetch('NewOptionName')).to eq(value)
+
+              expect(subject['OLD_OPTION_NAME']).to eq(value)
+              expect(subject.fetch('OLD_OPTION_NAME')).to eq(value)
+            end
+          end
+        end
+      end
+
+      describe '#fetch' do
+        it 'should have default keyed values' do
+          expect(subject['NewOptionName']).to eq('default_value')
+          expect(subject['OLD_OPTION_NAME']).to eq('default_value')
         end
 
-        it 'should allow setting datastore values with the old option name' do
-          subject['OLD_OPTION_NAME'] = 'new_value_2'
-          expect(subject['NewOptionName']).to eq('new_value_2')
-          expect(subject['OLD_OPTION_NAME']).to eq('new_value_2')
+        it 'should have case-insensitive lookups' do
+          expect(subject['NEWOPTIONNAME']).to eq('default_value')
+          expect(subject['Old_Option_Name']).to eq('default_value')
+        end
+
+        it 'should raise an exception if the value is not present' do
+          expect { subject.fetch('missing') }.to raise_exception KeyError, 'key not found: "missing"'
         end
       end
 
