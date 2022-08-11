@@ -21,6 +21,7 @@ module Msf
     # Fetch the key from the local hash first, or from the framework datastore
     # if we can't directly find it
     #
+    # TODO: Add tests, as this will crash currently
     def fetch(key)
       key = find_key_case(key)
       val = nil

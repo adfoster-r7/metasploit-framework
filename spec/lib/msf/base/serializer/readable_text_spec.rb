@@ -37,7 +37,12 @@ RSpec.describe Msf::Serializer::ReadableText do
           'Name' => 'mock module',
           'Description' => 'mock module',
           'Author' => ['Unknown'],
-          'License' => MSF_LICENSE
+          'License' => MSF_LICENSE,
+          'DefaultOptions' => {
+            'OptionWithModuleDefault' => false,
+            'foo' => 'foo_from_module',
+            'baz' => 'baz_from_module'
+          },
         )
 
         register_options(
@@ -51,6 +56,14 @@ RSpec.describe Msf::Serializer::ReadableText do
             Msf::OptString.new(
               'fizz',
               [true, 'fizz option', 'buzz']
+            ),
+            Msf::OptString.new(
+              'baz',
+              [true, 'baz option', 'qux']
+            ),
+            Msf::OptString.new(
+              'OptionWithModuleDefault',
+              [true, 'option with module default', true]
             ),
             Msf::OptFloat.new('FloatValue', [false, 'A FloatValue ', 3.5]),
             Msf::OptString.new(
@@ -74,35 +87,41 @@ RSpec.describe Msf::Serializer::ReadableText do
     end
 
     mod = mod_klass.new
-    datastore = Msf::ModuleDataStore.new(mod)
+    # datastore = Msf::ModuleDataStore.new(mod)
     allow(mod).to receive(:framework).and_return(nil)
-    mod.send(:datastore=, datastore)
-    datastore.import_options(mod.options)
+    # require 'pry'; binding.pry
+    # mod.send(:datastore=, datastore)
+    # mod.send(:module_store=, datastore)
+    # mod.share_datastore(datastore)
+    # datastore.import_options(mod.options)
+    #
     mod
   end
 
   describe '.dump_options' do
     before(:each) do
-      # aux_mod.datastore.delete('FloatValue')
-      # aux_mod.datastore.delete('foo')
-      # aux_mod['OLD_OPTION_NAME'] = nil
-      # aux_mod['username'] = 'username'
-      # aux_mod.datastore['fizz'] = 'new_fizz'
+      aux_mod.datastore.delete('FloatValue')
+      aux_mod.datastore.delete('foo')
+      aux_mod.datastore['OLD_OPTION_NAME'] = nil
+      aux_mod.datastore['username'] = 'username'
+      aux_mod.datastore['fizz'] = 'new_fizz'
     end
 
     context 'when missing is false' do
       it 'returns the options as a table' do
         expect(described_class.dump_options(aux_mod, indent, false)).to match_table <<~TABLE
-         Name           Current Setting  Required  Description
-         ----           ---------------  --------  -----------
-         FloatValue                      no        A FloatValue
-         NewOptionName                   yes       An option with a new name. Aliases ensure the old and new names are synchronized
-         RHOSTS                          yes       The target host(s), see https://github.com/rapid7/metasploit-framework/wiki/Using-Metasploit
-         RPORT                           yes       The target port
-         SMBDomain                       yes       The SMB username
-         SMBUser                         yes       The SMB username
-         fizz           new_fizz         yes       fizz option
-         foo                             yes       Foo option
+          Name                     Current Setting  Required  Description
+          ----                     ---------------  --------  -----------
+          FloatValue                                no        A FloatValue
+          NewOptionName                             yes       An option with a new name. Aliases ensure the old and new names are synchronized
+          OptionWithModuleDefault  false            yes       option with module default
+          RHOSTS                                    yes       The target host(s), see https://github.com/rapid7/metasploit-framework/wiki/Using-Metasploit
+          RPORT                    3000             yes       The target port
+          SMBDomain                WORKGROUP        yes       The SMB username
+          SMBUser                  username         yes       The SMB username
+          baz                      baz_from_module  yes       baz option
+          fizz                     new_fizz         yes       fizz option
+          foo                                       yes       Foo option
         TABLE
       end
     end
@@ -110,9 +129,11 @@ RSpec.describe Msf::Serializer::ReadableText do
     context 'when missing is true' do
       it 'returns the options as a table' do
         expect(described_class.dump_options(aux_mod, indent, true)).to match_table <<~TABLE
-         Name    Current Setting  Required  Description
-         ----    ---------------  --------  -----------
-         RHOSTS                   yes       The target host(s), see https://github.com/rapid7/metasploit-framework/wiki/Using-Metasploit
+          Name           Current Setting  Required  Description
+          ----           ---------------  --------  -----------
+          NewOptionName                   yes       An option with a new name. Aliases ensure the old and new names are synchronized
+          RHOSTS                          yes       The target host(s), see https://github.com/rapid7/metasploit-framework/wiki/Using-Metasploit
+          foo                             yes       Foo option
         TABLE
       end
     end

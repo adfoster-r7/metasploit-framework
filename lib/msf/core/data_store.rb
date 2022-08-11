@@ -3,11 +3,11 @@ module Msf
 
 ###
 #
-# The data store is just a bitbucket that holds keyed values.  It is used
+# The data store is just a bitbucket that holds keyed values. It is used
 # by various classes to hold option values and other state information.
 #
 ###
-class DataStore < Hash
+class DataStore
 
   #
   # Initializes the data store's internal state.
@@ -17,12 +17,38 @@ class DataStore < Hash
     @aliases     = Hash.new
     @imported    = Hash.new
     @imported_by = Hash.new
+
+    # puts "Creating a new datastore #{self.object_id}"
+    # puts "=========================="
+    # puts caller
+    # puts
+    # puts
+    # puts
+
+    # default values which will be referenced when not defined by the user
+    @defaults = Hash.new
+
+    # values explicitly defined, which take precedence over default values
+    @user_defined = Hash.new
   end
 
+
+  # @return [Hash<String, Msf::OptBase>] The options associated with this datastore. Used for validating values/defaults/etc
   attr_accessor :options
+
+  # These defaults will be used if the user has not explicitly defined a specific datastore value.
+  # These will be checked as a priority to any options that also provide defaults.
+  #
+  # @return [Hash<String, Msf::OptBase>] The hash of default values
+  attr_accessor :defaults
+
+  # @return [Hash<String, String>] The key is the old option name, the value is the new option name
   attr_accessor :aliases
   attr_accessor :imported
   attr_accessor :imported_by
+
+  # @return [Hash<String, Object>] values explicitly defined on the data store which will override any default datastore values
+  attr_accessor :user_defined
 
   #
   # Clears the imported flag for the supplied key since it's being set
@@ -43,7 +69,7 @@ class DataStore < Hash
       end
     end
 
-    super(k,v)
+    @user_defined[k] = v
   end
 
   #
@@ -53,10 +79,10 @@ class DataStore < Hash
     key = find_key_case(k)
     if $debugz == true
       require 'pry'; binding.pry
-      puts 123
+      # $stderr.puts "Checking with defaults #{@defaults} for object id #{object_id}"
     end
 
-    return super(key) if key?(key)
+    return @user_defined[key] if @user_defined.key?(key)
 
     # If the key isn't present - check any additional fallbacks that have been registered with the option.
     # i.e. handling the scenario of SMBUser not being explicitly set, but the option has registered a more
@@ -71,32 +97,50 @@ class DataStore < Hash
     end
 
     # If there's no registered fallbacks that matched, finally use the default option value
-    option.default
+    @defaults.key?(key) ? @defaults[key] : option.default
   end
 
   #
   # Case-insensitive wrapper around store
   #
   def store(k,v)
-    super(find_key_case(k), v)
+    @user_defined[find_key_case(k)] = v
   end
 
   #
   # Case-insensitive wrapper around delete
-  #
+  # TODO: Rename as unset and add 'reset'
   def delete(k)
+    #
+    # is_imported = @imported[k]
+    # @imported[k] = false
+    # @imported_by[k] = nil
+    #
+    # if @user_defined.key?(k)
+    #   @user_defined.delete(k)
+    # elsif is_imported
+    #   @options[k]&.default
+    # else
+    #   nil
+    # end
+
     k = find_key_case(k)
     is_imported = @imported[k]
     @imported[k] = false
     @imported_by[k] = nil
 
-    if key?(k)
-      super(find_key_case(k))
+    result = nil
+    if @user_defined.key?(k)
+      result = @user_defined[k]
     elsif is_imported
-      @options[k]&.default
-    else
-      nil
+      # TODO: Confirm if this needs a similar lookup to the fallback mechanism
+      result = @defaults.key?(k) ? @defaults[k] : @options[k]&.default
     end
+
+    # Explicitly mark the entry as nil so that future lookups of the key are nil, instead of retrieving a default value
+    @user_defined[k] = nil
+
+    result
   end
 
   #
@@ -129,6 +173,7 @@ class DataStore < Hash
   def import_options(options, imported_by = nil, overwrite = false)
     options.each_option do |name, opt|
 
+      # TODO: This needs fixed most likely to handle unset
       if self[name].nil? || overwrite
         # import_option(name, nil, true, imported_by, opt)
 
@@ -192,12 +237,28 @@ class DataStore < Hash
   end
 
   #
-  # Imports options from a hash and stores them in the datastore.
+  # Imports values from a hash and stores them in the datastore.
   #
+  # @deprecated use {#merge!} instead
+  # @return [nil]
   def import_options_from_hash(option_hash, imported = true, imported_by = nil)
-    option_hash.each_pair { |key, val|
-      import_option(key, val, imported, imported_by)
-    }
+    merge!(option_hash)
+    # TODO: Name is bogus now
+    # option_hash.each_pair { |key, val|
+    #   import_option(key, val, imported, imported_by)
+    # }
+  end
+
+  # Update defaults from a hash
+  #
+  # @param [Hash<String, Object>] hash The default values that should be used by the datastore
+  # @param [Object] imported_by Who imported the defaults, not currently used
+  # @return [nil]
+  def import_defaults_from_hash(hash, imported_by:)
+    # $stderr.puts "importing new defaults from hash: #{@defaults} for object id #{object_id}"
+    # require 'pry'; binding.pry
+    # TODO: Use imported_by
+    @defaults.merge!(hash)
   end
 
   # TODO: Doesn't normalize data in the same vein as:
@@ -217,11 +278,11 @@ class DataStore < Hash
   end
 
   def keys
-    (super + @options.keys).uniq { |key| key.downcase }
+    (@user_defined.keys + @options.keys).uniq { |key| key.downcase }
   end
 
   def key?(key)
-    super || @imported.key?(key)
+    @user_defined.key?(key) || @imported.key?(key)
   end
 
   alias has_key? key?
@@ -329,9 +390,8 @@ class DataStore < Hash
     self.imported = other.imported.dup
     self.options = other.options.dup
     self.aliases = other.aliases.dup
-    other.user_defined.each do |key, value|
-      self[key] = value.kind_of?(String) ? value.dup : value
-    end
+    self.defaults = other.defaults.transform_values { |value| value.kind_of?(String) ? value.dup : value }
+    self.user_defined = other.user_defined.transform_values { |value| value.kind_of?(String) ? value.dup : value }
 
     self
   end
@@ -343,12 +403,10 @@ class DataStore < Hash
   def merge!(other)
     if other.is_a? DataStore
       self.aliases.merge!(other.aliases)
-      require 'pry'; binding.pry
       self.imported.merge!(other.imported)
       self.imported_by.merge!(other.imported_by)
-
       other.user_defined.each do |k, v|
-        self[k] = v
+        self.user_defined[k] = v
       end
     else
       other.each do |k, v|
@@ -372,24 +430,25 @@ class DataStore < Hash
   # Returns a hash of user-defined datastore values.  The returned hash does
   # not include default option values.
   #
-  def user_defined
-    result = {}
-
-    # Ensure explicitly deleted options are returned as nil
-    @imported.each do |k, is_imported|
-      result[k] = nil unless is_imported
-    end
-
-    self.each do |k, v|
-      result[k] = v unless @imported[k]
-    end
-    result
-  end
+  # def user_defined
+  #   result = {}
+  #
+  #   # Ensure explicitly deleted options are returned as nil
+  #   @imported.each do |k, is_imported|
+  #     result[k] = nil unless is_imported
+  #   end
+  #
+  #   self.each do |k, v|
+  #     result[k] = v unless @imported[k]
+  #   end
+  #   result
+  # end
 
   #
   # Remove all imported options from the data store.
   #
   def clear_non_user_defined
+    # TODO
     @imported.delete_if { |k, v|
       if (v and @imported_by[k] != 'self')
         self.delete(k)
@@ -404,7 +463,9 @@ class DataStore < Hash
   # Completely clear all values in the hash
   #
   def clear
-    self.keys.each {|k| self.delete(k) }
+    # Clearing these values like this removes the book keeping
+    # self.keys.each {|k| self.delete(k) }
+    @user_defined.clear
     self
   end
 

@@ -5,7 +5,7 @@ require 'spec_helper'
 RSpec.shared_examples_for 'a datastore with lookup support' do |opts = {}|
   it 'should have default keyed values' do
     # TODO: Delete
-    subject; $debugz = true
+    # subject; $debugz = true
 
     expect(subject['foo']).to eq 'bar'
     expect(subject['fizz']).to eq 'buzz'
@@ -47,8 +47,19 @@ RSpec.shared_examples_for 'a datastore' do |opts|
   describe '#import_option' do
     subject do
       s = opts[:default_subject].call
-      s.import_option('foo', 'bar')
-      s.import_option('fizz', 'buzz')
+      options = Msf::OptionContainer.new(
+        [
+          Msf::OptString.new(
+            'foo',
+            [true, 'Foo option', 'bar']
+          ),
+          Msf::OptString.new(
+            'fizz',
+            [true, 'fizz option', 'buzz']
+          )
+        ]
+      )
+      s.import_options(options)
       s
     end
     it_behaves_like 'a datastore with lookup support'
@@ -96,11 +107,17 @@ RSpec.shared_examples_for 'a datastore' do |opts|
   describe '#user_defined' do
     subject do
       s = opts[:default_subject].call
-      s.import_option('foo', 'bar')
-      s.import_option('fizz', 'buzz')
 
       options = Msf::OptionContainer.new(
         [
+          Msf::OptString.new(
+            'foo',
+            [true, 'Foo option', 'bar']
+          ),
+          Msf::OptString.new(
+            'fizz',
+            [true, 'fizz option', 'buzz']
+          ),
           Msf::OptString.new(
             'NewOptionName',
             [true, 'An option with a new name. Aliases ensure the old and new names are synchronized', 'default_value'],
@@ -197,7 +214,7 @@ RSpec.shared_examples_for 'a datastore' do |opts|
 
   describe '#import_options' do
     context 'when importing options with aliases' do
-      subject do
+      subject(:datastore_with_aliases) do
         s = opts[:default_subject].call
 
         options = Msf::OptionContainer.new(
@@ -249,6 +266,31 @@ RSpec.shared_examples_for 'a datastore' do |opts|
           expect(subject['NewOptionName']).to eq('new_value_2')
           expect(subject['OLD_OPTION_NAME']).to eq('new_value_2')
         end
+      end
+
+      describe '#import_defaults_from_hash' do
+        subject do
+          datastore_with_aliases.import_defaults_from_hash(
+            {
+              'foo' => 'overridden_default_foo',
+              'NewOptionName' => 'overridden_default_new_option_name',
+              # TODO: Add alias/old_option_name test as well
+              # 'old_option_name' => 'overridden_default_old_option_name'
+            },
+            imported_by: 'self'
+          )
+
+          datastore_with_aliases
+        end
+
+        it 'should have default keyed values' do
+          expect(subject['foo']).to eq 'overridden_default_foo'
+          expect(subject['fizz']).to eq 'buzz'
+          expect(subject['NewOptionName']).to eq('overridden_default_new_option_name')
+          expect(subject['OLD_OPTION_NAME']).to eq('overridden_default_new_option_name')
+        end
+
+        # TODO: Add tests for setting / deleting
       end
 
       it_behaves_like 'a datastore with lookup support',
