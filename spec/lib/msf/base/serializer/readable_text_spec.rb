@@ -87,14 +87,7 @@ RSpec.describe Msf::Serializer::ReadableText do
     end
 
     mod = mod_klass.new
-    # datastore = Msf::ModuleDataStore.new(mod)
     allow(mod).to receive(:framework).and_return(nil)
-    # require 'pry'; binding.pry
-    # mod.send(:datastore=, datastore)
-    # mod.send(:module_store=, datastore)
-    # mod.share_datastore(datastore)
-    # datastore.import_options(mod.options)
-    #
     mod
   end
 

@@ -192,70 +192,72 @@ RSpec.shared_examples_for 'a datastore' do |opts|
       end
     end
 
-    # context 'when value have been explicitly set' do
-    #   before(:each) do
-    #     subject['foo'] = 'foo_value'
-    #     subject['custom_key'] = 'custom_key_value'
-    #     subject['OLD_OPTION_NAME'] = 'old_option_name_value'
-    #   end
-    #
-    #   it 'should return the set values' do
-    #     expected_values = {
-    #       "NewOptionName" => "old_option_name_value",
-    #       "custom_key" => "custom_key_value",
-    #       "foo" => "foo_value",
-    #     }
-    #     expect(subject.user_defined).to eq(expected_values)
-    #   end
-    # end
-    #
-    # context 'when values have been merged with a hash' do
-    #   before(:each) do
-    #     subject.merge!(
-    #       {
-    #         "NewOptionName" => "old_option_name_value",
-    #         "custom_key" => "custom_key_value",
-    #         "foo" => "foo_value"
-    #       }
-    #     )
-    #   end
-    #
-    #   it 'should return the set values' do
-    #     expected_values = {
-    #       "NewOptionName" => "old_option_name_value",
-    #       "custom_key" => "custom_key_value",
-    #       "foo" => "foo_value",
-    #     }
-    #     expect(subject.user_defined).to eq(expected_values)
-    #   end
-    # end
-    #
-    # context 'when values have been merged with a datastore' do
-    #   before(:each) do
-    #     other_datastore = subject.copy
-    #     subject.delete('foo')
-    #     require 'pry'; binding.pry
-    #
-    #     options = Msf::OptionContainer.new(
-    #       Msf::Opt::stager_retry_options + Msf::Opt::http_proxy_options
-    #     )
-    #
-    #     other_datastore.import_options(options)
-    #     other_datastore['HttpProxyPass'] = 'http_proxy_pass_value'
-    #     other_datastore['HttpProxyType'] = 'SOCKS'
-    #
-    #     subject.merge!(other_datastore)
-    #   end
-    #
-    #   it 'should return the set values' do
-    #     expected_values = {
-    #       "NewOptionName" => "old_option_name_value",
-    #       "custom_key" => "custom_key_value",
-    #       "foo" => "foo_value",
-    #     }
-    #     expect(subject.user_defined).to eq(expected_values)
-    #   end
-    # end
+    context 'when value have been explicitly set' do
+      before(:each) do
+        subject['foo'] = 'foo_value'
+        subject['custom_key'] = 'custom_key_value'
+        subject['OLD_OPTION_NAME'] = 'old_option_name_value'
+      end
+
+      it 'should return the set values' do
+        expected_values = {
+          "NewOptionName" => "old_option_name_value",
+          "custom_key" => "custom_key_value",
+          "foo" => "foo_value",
+        }
+        expect(subject.user_defined).to eq(expected_values)
+      end
+    end
+
+    context 'when values have been merged with a hash' do
+      before(:each) do
+        subject.merge!(
+          {
+            "NewOptionName" => "old_option_name_value",
+            "custom_key" => "custom_key_value",
+            "foo" => "foo_value"
+          }
+        )
+      end
+
+      it 'should return the set values' do
+        expected_values = {
+          "NewOptionName" => "old_option_name_value",
+          "custom_key" => "custom_key_value",
+          "foo" => "foo_value",
+        }
+        expect(subject.user_defined).to eq(expected_values)
+      end
+    end
+
+    context 'when values have been merged with a datastore' do
+      before(:each) do
+        other_datastore = subject.copy
+        subject.delete('foo')
+        subject['fizz'] = 'fizz_value'
+
+        options = Msf::OptionContainer.new(
+          Msf::Opt::stager_retry_options + Msf::Opt::http_proxy_options
+        )
+
+        other_datastore.import_options(options)
+        other_datastore['fizz'] = 'new_fizz_value'
+        other_datastore['HttpProxyPass'] = 'http_proxy_pass_value'
+        other_datastore['HttpProxyType'] = 'SOCKS'
+
+        subject.merge!(other_datastore)
+      end
+
+      it 'should return the set values' do
+        expected_values = {
+          "HttpProxyPass" => "http_proxy_pass_value",
+          "HttpProxyType" => "SOCKS",
+          "foo" => nil,
+          "fizz" => "new_fizz_value"
+        }
+        expect(subject.user_defined).to eq(expected_values)
+      end
+    end
   end
 
   describe '#import_options' do

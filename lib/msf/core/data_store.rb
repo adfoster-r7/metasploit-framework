@@ -18,20 +18,12 @@ class DataStore
     @imported    = Hash.new
     @imported_by = Hash.new
 
-    # puts "Creating a new datastore #{self.object_id}"
-    # puts "=========================="
-    # puts caller
-    # puts
-    # puts
-    # puts
-
     # default values which will be referenced when not defined by the user
     @defaults = Hash.new
 
     # values explicitly defined, which take precedence over default values
     @user_defined = Hash.new
   end
-
 
   # @return [Hash<String, Msf::OptBase>] The options associated with this datastore. Used for validating values/defaults/etc
   attr_accessor :options
@@ -65,7 +57,7 @@ class DataStore
 
     opt = @options[k]
     unless opt.nil?
-      # TODO: Should `merge!` validate hash values
+      # TODO: Should `merge!` validate hash values?
       if opt.validate_on_assignment?
         unless opt.valid?(v, check_empty: false)
           raise Msf::OptionValidateError.new(["Value '#{v}' is not valid for option '#{k}'"])
@@ -247,7 +239,7 @@ class DataStore
       hash[var] = val
     }
 
-    import_options_from_hash(hash)
+    merge!(hash)
   end
 
   #
@@ -257,10 +249,6 @@ class DataStore
   # @return [nil]
   def import_options_from_hash(option_hash, imported = true, imported_by = nil)
     merge!(option_hash)
-    # TODO: Name is bogus now
-    # option_hash.each_pair { |key, val|
-    #   import_option(key, val, imported, imported_by)
-    # }
   end
 
   # Update defaults from a hash
@@ -509,6 +497,11 @@ class DataStore
       search_k = self.aliases[search_k]
     end
 
+    # Optimization path: Check to see if we have an exact key match - otherwise we'll have to search manually to check case sensitivity
+    if options.key?(search_k) || @user_defined.key?(search_k)
+      return k
+    end
+
     # Scan each key looking for a match
     each_key do |rk|
       if rk.casecmp(search_k) == 0
@@ -517,7 +510,7 @@ class DataStore
     end
 
     # Fall through to the non-existent value
-    return k
+    k
   end
 
 end
