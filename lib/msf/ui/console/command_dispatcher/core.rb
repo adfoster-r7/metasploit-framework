@@ -2188,7 +2188,7 @@ class Core
       datastore.delete(val)
     end
   end
-
+  
   def cmd_unsetg_help
     print_line "Usage: unsetg var1 [var2 ...]"
     print_line

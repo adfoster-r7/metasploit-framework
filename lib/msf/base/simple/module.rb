@@ -19,7 +19,6 @@ module Module
     # If options were supplied, import them into the payload's
     # datastore
     if (opts['Options'])
-      # TODO: Rename the remainder of the calls to use `merge!`
       self.datastore.merge!(opts['Options'])
     elsif (opts['OptionStr'])
       self.datastore.import_options_from_s(opts['OptionStr'])

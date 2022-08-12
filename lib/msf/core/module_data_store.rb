@@ -21,30 +21,28 @@ module Msf
     # Fetch the key from the local hash first, or from the framework datastore
     # if we can't directly find it
     #
-    # TODO: Add tests, as this will crash currently
     def fetch(key)
-      key = find_key_case(key)
-      val = nil
-      val = super if(@imported_by[key] != 'self')
-      if (val.nil? and @_module and @_module.framework)
-        val = @_module.framework.datastore[key]
-      end
-      val = super if val.nil?
-      val
+      super
+    rescue KeyError
+      raise key_error_for(key) if @_module&.framework.nil?
+
+      @_module.framework.datastore.fetch(key)
     end
 
     #
     # Same as fetch
     #
     def [](key)
-      key = find_key_case(key)
-      val = nil
-      val = super if(@imported_by[key] != 'self')
-      if (val.nil? and @_module and @_module.framework)
-        val = @_module.framework.datastore[key]
-      end
-      val = super if val.nil?
-      val
+      fetch(key)
+    rescue KeyError
+      nil
+    end
+
+    def delete(key, also_delete: false)
+      super(key)
+
+      # TODO: Add tests for delete and implement this properly so there's graceful fallback support
+      @user_defined.delete(key) if also_delete
     end
 
     #
@@ -56,7 +54,7 @@ module Msf
 
     #
     # Return a copy of this datastore. Only string values will be duplicated, other other values
-    # will share the same reference
+    # will share the same refeqrence
     #
     def copy
       new_instance = self.class.new(@_module)

@@ -29,7 +29,10 @@ RSpec::Matchers.define :match_table do |expected|
 end
 
 RSpec.describe Msf::Serializer::ReadableText do
-  let(:indent) { '' }
+  # The described_class API takes a mix of strings and whitespace character counts
+  let(:indent_string) { '' }
+  let(:indent_length) { indent_string.length }
+
   let(:aux_mod) do
     mod_klass = Class.new(Msf::Auxiliary) do
       def initialize
@@ -91,18 +94,58 @@ RSpec.describe Msf::Serializer::ReadableText do
     mod
   end
 
-  describe '.dump_options' do
-    before(:each) do
-      aux_mod.datastore.delete('FloatValue')
-      aux_mod.datastore.delete('foo')
-      aux_mod.datastore['OLD_OPTION_NAME'] = nil
-      aux_mod.datastore['username'] = 'username'
-      aux_mod.datastore['fizz'] = 'new_fizz'
+  let(:aux_mod_with_set_options) do
+    mod = aux_mod.replicant
+    mod.datastore.delete('FloatValue')
+    mod.datastore.delete('foo')
+    mod.datastore['OLD_OPTION_NAME'] = nil
+    mod.datastore['username'] = 'username'
+    mod.datastore['fizz'] = 'new_fizz'
+    mod
+  end
+
+  describe '.dump_datastore' do
+    context 'when the datastore is empty' do
+      it 'returns the datastore as a table' do
+        expect(described_class.dump_datastore('Table name', Msf::DataStore.new, indent_length)).to match_table <<~TABLE
+          Table name
+          ==========
+  
+          No entries in data store.
+        TABLE
+      end
     end
 
+    context 'when the datastore has values' do
+      it 'returns the datastore as a table' do
+        expect(described_class.dump_datastore('Table name', aux_mod_with_set_options.datastore, indent_length)).to match_table <<~TABLE
+          Table name
+          ==========
+  
+          Name                     Value
+          ----                     -----
+          FloatValue               
+          NewOptionName            
+          OptionWithModuleDefault  false
+          RHOSTS                   
+          RPORT                    3000
+          SMBDomain                WORKGROUP
+          SMBUser                  username
+          VERBOSE                  false
+          WORKSPACE                
+          baz                      baz_from_module
+          fizz                     new_fizz
+          foo                      
+          username                 username
+        TABLE
+      end
+    end
+  end
+
+  describe '.dump_options' do
     context 'when missing is false' do
       it 'returns the options as a table' do
-        expect(described_class.dump_options(aux_mod, indent, false)).to match_table <<~TABLE
+        expect(described_class.dump_options(aux_mod_with_set_options, indent_string, false)).to match_table <<~TABLE
           Name                     Current Setting  Required  Description
           ----                     ---------------  --------  -----------
           FloatValue                                no        A FloatValue
@@ -121,7 +164,7 @@ RSpec.describe Msf::Serializer::ReadableText do
 
     context 'when missing is true' do
       it 'returns the options as a table' do
-        expect(described_class.dump_options(aux_mod, indent, true)).to match_table <<~TABLE
+        expect(described_class.dump_options(aux_mod_with_set_options, indent_string, true)).to match_table <<~TABLE
           Name           Current Setting  Required  Description
           ----           ---------------  --------  -----------
           NewOptionName                   yes       An option with a new name. Aliases ensure the old and new names are synchronized

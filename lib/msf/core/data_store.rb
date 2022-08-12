@@ -101,7 +101,7 @@ class DataStore
     # i.e. handling the scenario of SMBUser not being explicitly set, but the option has registered a more
     # generic 'Username' fallback
     option = @options.find { |option_name, _option| option_name.casecmp?(key) }&.last
-    raise ::KeyError, "key not found: #{k.inspect}" unless option
+    raise key_error_for(k) unless option
 
     option.fallbacks.each do |fallback|
       if key?(fallback)
@@ -113,7 +113,7 @@ class DataStore
     return @defaults[key] if @defaults.key?(key)
     return option.default if option.default
 
-    raise ::KeyError, "key not found: #{k.inspect}"
+    raise key_error_for(k)
   end
 
   #
@@ -126,8 +126,8 @@ class DataStore
   #
   # Case-insensitive wrapper around delete
   # TODO: Rename as unset and add 'reset'
-  def delete(k)
-    k = find_key_case(k)
+  def delete(key)
+    k = find_key_case(key)
     is_imported = @imported[k]
     @imported[k] = false
     @imported_by[k] = nil
@@ -175,8 +175,6 @@ class DataStore
   # all of the supplied options
   #
   def import_options(options, imported_by = nil, overwrite = true)
-    # $stderr.puts "importing options"
-
     options.each_option do |name, opt|
       # TODO: This needs fixed most likely to handle unset
       # if self[name].nil? || overwrite
@@ -284,6 +282,13 @@ class DataStore
   def keys
     (@user_defined.keys + @options.keys).uniq { |key| key.downcase }
   end
+
+  def length
+    keys.length
+  end
+
+  alias count length
+  alias size length
 
   def key?(key)
     @user_defined.key?(key) || @imported.key?(key)
@@ -497,9 +502,9 @@ class DataStore
       search_k = self.aliases[search_k]
     end
 
-    # Optimization path: Check to see if we have an exact key match - otherwise we'll have to search manually to check case sensitivity
+    # Check to see if we have an exact key match - otherwise we'll have to search manually to check case sensitivity
     if options.key?(search_k) || @user_defined.key?(search_k)
-      return k
+      return search_k
     end
 
     # Scan each key looking for a match
@@ -511,6 +516,14 @@ class DataStore
 
     # Fall through to the non-existent value
     k
+  end
+
+  protected
+
+  # Raised when the specified key is not found
+  # @param [string] k
+  def key_error_for(k)
+    ::KeyError.new "key not found: #{k.inspect}"
   end
 
 end
