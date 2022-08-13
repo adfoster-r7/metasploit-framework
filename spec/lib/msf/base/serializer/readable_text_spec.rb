@@ -1,6 +1,7 @@
 # -*- coding:binary -*-
 
 require 'spec_helper'
+require 'rex/text'
 
 RSpec::Matchers.define :match_table do |expected|
   diffable
@@ -104,6 +105,10 @@ RSpec.describe Msf::Serializer::ReadableText do
     mod
   end
 
+  before(:each) do
+    allow(Rex::Text::Table).to receive(:wrapped_tables?).and_return(true)
+  end
+
   describe '.dump_datastore' do
     context 'when the datastore is empty' do
       it 'returns the datastore as a table' do
@@ -124,18 +129,18 @@ RSpec.describe Msf::Serializer::ReadableText do
   
           Name                     Value
           ----                     -----
-          FloatValue               
-          NewOptionName            
+          FloatValue
+          NewOptionName
           OptionWithModuleDefault  false
-          RHOSTS                   
+          RHOSTS
           RPORT                    3000
           SMBDomain                WORKGROUP
           SMBUser                  username
           VERBOSE                  false
-          WORKSPACE                
+          WORKSPACE
           baz                      baz_from_module
           fizz                     new_fizz
-          foo                      
+          foo
           username                 username
         TABLE
       end

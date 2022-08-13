@@ -97,10 +97,14 @@ class Core
     ["-d", "--delete-all"]     => [ false, "Delete saved options for all modules from the config file."                     ])
 
   # unset command options
-  @@unset_opts = Rex::Parser::Arguments.new(
+  @@unsetg_opts = Rex::Parser::Arguments.new(
     ["-h", "--help"] => [ false, "Help banner."],
-    ["-g", "--global"] => [ false, "Operate on global datastore variables"],
     ["-r", "--reset"] => [ false, "Reset the values instead back to the defaults, instead of unsetting"]
+  )
+
+  # unset command options
+  @@unset_opts = @@unsetg_opts.merge(
+    ["-g", "--global"] => [ false, "Operate on global datastore variables"]
   )
 
   # Returns the list of commands supported by this command dispatcher
@@ -1993,7 +1997,7 @@ class Core
   #   stage since the command itself has been completed.
   def cmd_unset_tabs(str, words)
     option_names = @@unset_opts.option_keys.select { |opt| opt.start_with?(str) }
-    datastore_names = tab_complete_datastore_names(active_module, str, words)
+    datastore_names = tab_complete_module_datastore_names(active_module, str, words)
 
     option_names + datastore_names
   end
@@ -2141,7 +2145,8 @@ class Core
     print_line "Usage: unset [options] var1 var2 var3 ..."
     print_line
     print_line "The unset command is used to unset one or more variables."
-    print_line "To flush all entries, specify 'all' as the variable name."
+    print_line "The --reset option can be used to reset values back to their defaults."
+    print_line "To update all entries, specify 'all' as the variable name."
     print @@unset_opts.usage
     print_line
   end
@@ -2234,9 +2239,10 @@ class Core
   end
 
   def cmd_unsetg_help
-    print_line "Usage: unsetg var1 [var2 ...]"
+    print_line "Usage: unsetg [options] var1 var2 var3 ..."
     print_line
     print_line "Exactly like unset -g, unset global variables, or all"
+    print @@unsetg_opts.usage
     print_line
   end
 
@@ -2257,7 +2263,7 @@ class Core
   # at least 1 when tab completion has reached this stage since the command itself has been completed
 
   def cmd_unsetg_tabs(str, words)
-    self.framework.datastore.keys
+    tab_complete_datastore_names(framework.datastore, str, words)
   end
 
   alias cmd_unsetg_help cmd_unset_help

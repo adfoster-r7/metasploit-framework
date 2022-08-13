@@ -877,7 +877,7 @@ end
 # end
 
 # Global FrameworkDatastore
-#   Note: Metasploit doesn't _currently_ have any options registered insthe global store by default, but the
+#   Note: Metasploit doesn't _currently_ have any options registered in the global store by default, but the
 #   implementation will support it
 #
 #   #fetch(k) / #[k]

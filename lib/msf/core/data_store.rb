@@ -84,7 +84,12 @@ class DataStore
     return nil unless option
 
     option.fallbacks.each do |fallback|
-      if key?(fallback)
+      # TODO: If a fallback has a default, should we choose it? If so - this won't work
+      # if @user_defined.key?(find_key_case(fallback)) # || @defaults.fetch(key) || options.fetch(fallback).default.nil?
+      #   return self[fallback]
+      # end
+      # return fetch(fallback) { next }
+      if @user_defined.key?(fallback) || @imported.key?(fallback)
         return self[fallback]
       end
     end
@@ -105,7 +110,12 @@ class DataStore
     raise key_error_for(k) unless option
 
     option.fallbacks.each do |fallback|
-      if key?(fallback)
+      # TODO: If a fallback has a default, should we choose it? If so - this won't work
+      # if @user_defined.key?(find_key_case(fallback)) # || @defaults.fetch(key) || options.fetch(fallback).default.nil?
+      #   return self[fallback]
+      # end
+      # return fetch(fallback) { next }
+      if @user_defined.key?(fallback) || @imported.key?(fallback)
         return self[fallback]
       end
     end
@@ -315,7 +325,7 @@ class DataStore
   alias size length
 
   def key?(key)
-    @user_defined.key?(key) || @imported.key?(key)
+    !find_key_case(key).nil?
   end
 
   alias has_key? key?
