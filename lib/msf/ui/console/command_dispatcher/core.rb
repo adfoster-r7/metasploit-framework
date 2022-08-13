@@ -96,6 +96,13 @@ class Core
     ["-l", "--load"]           => [ false, "Load the saved options for the active module."                                  ],
     ["-d", "--delete-all"]     => [ false, "Delete saved options for all modules from the config file."                     ])
 
+  # unset command options
+  @@unset_opts = Rex::Parser::Arguments.new(
+    ["-h", "--help"] => [ false, "Help banner."],
+    ["-g", "--global"] => [ false, "Operate on global datastore variables"],
+    ["-r", "--reset"] => [ false, "Reset the values instead back to the defaults, instead of unsetting"]
+  )
+
   # Returns the list of commands supported by this command dispatcher
   def commands
     {
@@ -1985,7 +1992,10 @@ class Core
   #   line. `words` is always at least 1 when tab completion has reached this
   #   stage since the command itself has been completed.
   def cmd_unset_tabs(str, words)
-    tab_complete_datastore_names(active_module, str, words)
+    option_names = @@unset_opts.option_keys.select { |opt| opt.start_with?(str) }
+    datastore_names = tab_complete_datastore_names(active_module, str, words)
+
+    option_names + datastore_names
   end
 
   #
@@ -2128,11 +2138,11 @@ class Core
   end
 
   def cmd_unset_help
-    print_line "Usage: unset [-g] var1 var2 var3 ..."
+    print_line "Usage: unset [options] var1 var2 var3 ..."
     print_line
     print_line "The unset command is used to unset one or more variables."
-    print_line "To flush all entires, specify 'all' as the variable name."
-    print_line "With -g, operates on global datastore variables."
+    print_line "To flush all entries, specify 'all' as the variable name."
+    print @@unset_opts.usage
     print_line
   end
 
@@ -2140,55 +2150,89 @@ class Core
   # Unsets a value if it's been set.
   #
   def cmd_unset(*args)
+    if args.include?('-h') || args.include?('--help')
+      cmd_unset_help
+      return
+    end
 
     # Figure out if these are global variables
     global = false
+    action = :unset
 
-    if (args[0] == '-g')
-      args.shift
-      global = true
+    @@unset_opts.parse(args) do |opt, idx, val|
+      case opt
+      when '-g'
+        global = true
+      when '-r'
+        action = :reset
+      end
+    end
+
+    variable_names = args.reject { |arg| arg.start_with?('-') }
+
+    # No variable names? No cookie.
+    if variable_names.empty?
+      cmd_unset_help
+      return false
     end
 
     # Determine which data store we're operating on
-    if (active_module and global == false)
+    if active_module && !global
       datastore = active_module.datastore
     else
       datastore = framework.datastore
     end
 
-    # No arguments?  No cookie.
-    if (args.length == 0)
-      cmd_unset_help
-      return false
-    end
+    # # Re-import default options into the module's datastore
+    # if active_module && !global
+    #   active_module.import_defaults
+    #   # Or simply clear the global datastore
+    # else
+    #   datastore.clear
+    # end
 
-    # If all was specified, then flush all of the entries
-    if args[0] == 'all'
-      print_line("Flushing datastore...")
-
-      # Re-import default options into the module's datastore
-      if (active_module and global == false)
-        active_module.import_defaults
-      # Or simply clear the global datastore
-      else
-        datastore.clear
+    case action
+    # Unsetting / flushing the datastore
+    when :unset
+      # If all was specified, then flush all of the entries
+      if variable_names[0] == 'all'
+        print_line("Flushing datastore...")
+        datastore.unset_all
+        return true
       end
 
-      return true
-    end
+      variable_names.each do |variable_name|
+        if driver.on_variable_unset(global, variable_name) == false
+          print_error("The variable #{variable_name} cannot be unset at this time.")
+          next
+        end
 
-    while ((val = args.shift))
-      if (driver.on_variable_unset(global, val) == false)
-        print_error("The variable #{val} cannot be unset at this time.")
-        next
+        print_line("Unsetting #{variable_name}...")
+        datastore.unset(variable_name)
+      end
+    when :reset
+      # If all was specified, then flush all of the entries
+      if variable_names[0] == 'all'
+        print_line("Resetting datastore...")
+        datastore.reset_all
+        return true
       end
 
-      print_line("Unsetting #{val}...")
+      variable_names.each do |variable_name|
+        # TODO: what does this mean in a new reset world
+        # if driver.on_variable_unset(global, variable_name) == false
+        #   print_error("The variable #{variable_name} cannot be reset at this time.")
+        #   next
+        # end
 
-      datastore.delete(val)
+        print_line("Resetting #{variable_name}...")
+        datastore.reset(variable_name)
+      end
+    else
+      print_line "unknown action: #{action}"
     end
   end
-  
+
   def cmd_unsetg_help
     print_line "Usage: unsetg var1 [var2 ...]"
     print_line

@@ -16,7 +16,7 @@ module Msf
         #   stage since the command itself has been completed.
         def tab_complete_datastore_names(mod, _str, _words)
           datastore = mod ? mod.datastore : framework.datastore
-          keys = datastore.keys
+          keys = (datastore.keys + datastore.options.keys).uniq { |key| key.downcase }
 
           if mod
             keys = keys.delete_if do |name|

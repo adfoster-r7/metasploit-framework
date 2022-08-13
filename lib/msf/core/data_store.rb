@@ -12,7 +12,7 @@ class DataStore
   #
   # Initializes the data store's internal state.
   #
-  def initialize()
+  def initialize
     @options     = Hash.new
     @aliases     = Hash.new
     @imported    = Hash.new
@@ -80,6 +80,7 @@ class DataStore
     # i.e. handling the scenario of SMBUser not being explicitly set, but the option has registered a more
     # generic 'Username' fallback
     option = @options.find { |option_name, _option| option_name.casecmp?(key) }&.last
+
     return nil unless option
 
     option.fallbacks.each do |fallback|
@@ -111,7 +112,7 @@ class DataStore
 
     # If there's no registered fallbacks that matched, finally use the default option value
     return @defaults[key] if @defaults.key?(key)
-    return option.default if option.default
+    return option.default unless option.default.nil?
 
     raise key_error_for(k)
   end
@@ -124,9 +125,8 @@ class DataStore
   end
 
   #
-  # Case-insensitive wrapper around delete
-  # TODO: Rename as unset and add 'reset'
-  def delete(key)
+  # unset the current key from the datastore
+  def unset(key)
     k = find_key_case(key)
     is_imported = @imported[k]
     @imported[k] = false
@@ -144,6 +144,30 @@ class DataStore
     @user_defined[k] = nil
 
     result
+  end
+
+  # @deprecated use #{unset} instead, or set the value explicitly to nil
+  alias delete unset
+
+  def unset_all
+    self.keys.each do |key|
+      unset(key)
+    end
+
+    nil
+  end
+
+  def reset(key)
+    k = find_key_case(key)
+    @user_defined.delete(k)
+
+    nil
+  end
+
+  def reset_all
+    self.keys.each do |key|
+      reset(key)
+    end
   end
 
   #
@@ -358,7 +382,7 @@ class DataStore
     ini.add_group(name)
 
     # Save all user-defined options to the file.
-    user_defined.each_pair { |k, v|
+    @user_defined.each_pair { |k, v|
       ini[name][k] = v
     }
 
@@ -384,7 +408,7 @@ class DataStore
   #
   # Return a copy of this datastore. Only string values will be duplicated, other other values
   # will share the same reference
-  #
+  # @return [Msf::DataStore] a new datastore instance
   def copy
     new_instance = self.class.new
     new_instance.copy_state(self)
@@ -392,9 +416,11 @@ class DataStore
   end
 
   #
-  # Copy the state from the other Msf::DataStore. The state will be coped in a shallow fashion, other than strings.
+  # Copy the state from the other Msf::DataStore. The state will be coped in a shallow fashion, other than
+  # imported and user_defined strings.
   #
   # @param [Msf::DataStore] other The other datastore to copy state from
+  # @return [Msf::DataStore] the current datastore instance
   def copy_state(other)
     self.imported = other.imported.dup
     self.options = other.options.dup
@@ -412,6 +438,7 @@ class DataStore
   def merge!(other)
     if other.is_a? DataStore
       self.aliases.merge!(other.aliases)
+      self.options.merge!(other.options)
       self.imported.merge!(other.imported)
       self.imported_by.merge!(other.imported_by)
       other.user_defined.each do |k, v|
@@ -438,24 +465,6 @@ class DataStore
   end
 
   #
-  # Returns a hash of user-defined datastore values.  The returned hash does
-  # not include default option values.
-  #
-  # def user_defined
-  #   result = {}
-  #
-  #   # Ensure explicitly deleted options are returned as nil
-  #   @imported.each do |k, is_imported|
-  #     result[k] = nil unless is_imported
-  #   end
-  #
-  #   self.each do |k, v|
-  #     result[k] = v unless @imported[k]
-  #   end
-  #   result
-  # end
-
-  #
   # Remove all imported options from the data store.
   #
   def clear_non_user_defined
@@ -472,7 +481,7 @@ class DataStore
 
   #
   # Completely clear all values in the hash
-  #
+  # TODO: What does clear mean? In this new world? is it `reset_all` ?
   def clear
     # Clearing these values like this removes the book keeping
     # self.keys.each {|k| self.delete(k) }
