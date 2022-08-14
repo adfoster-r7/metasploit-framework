@@ -2188,49 +2188,37 @@ class Core
       datastore = framework.datastore
     end
 
-    # # Re-import default options into the module's datastore
-    # if active_module && !global
-    #   active_module.import_defaults
-    #   # Or simply clear the global datastore
-    # else
-    #   datastore.clear
-    # end
+    is_all_variables = variable_names[0] == 'all'
+    if is_all_variables
+      variable_names = datastore.keys
+      variable_names += Msf::DataStore::GLOBAL_KEYS if global
+      variable_names += ['PAYLOAD'] if !global && active_module && (active_module.exploit? || active_module.evasion?)
+      variable_names = variable_names.uniq(&:downcase)
+    end
 
     case action
     # Unsetting / flushing the datastore
     when :unset
-      # If all was specified, then flush all of the entries
-      if variable_names[0] == 'all'
-        print_line("Flushing datastore...")
-        datastore.unset_all
-        return true
-      end
-
+      print_line("Flushing datastore...") if is_all_variables
       variable_names.each do |variable_name|
         if driver.on_variable_unset(global, variable_name) == false
           print_error("The variable #{variable_name} cannot be unset at this time.")
           next
         end
 
-        print_line("Unsetting #{variable_name}...")
+        print_line("Unsetting #{variable_name}...") unless is_all_variables
         datastore.unset(variable_name)
       end
     when :reset
-      # If all was specified, then flush all of the entries
-      if variable_names[0] == 'all'
-        print_line("Resetting datastore...")
-        datastore.reset_all
-        return true
-      end
+      print_line("Resetting datastore...") if is_all_variables
 
       variable_names.each do |variable_name|
-        # TODO: what does this mean in a new reset world
-        # if driver.on_variable_unset(global, variable_name) == false
-        #   print_error("The variable #{variable_name} cannot be reset at this time.")
-        #   next
-        # end
+        if driver.on_variable_reset(global, variable_name) == false
+          print_error("The variable #{variable_name} cannot be reset at this time.") unless variable_name.casecmp?('PAYLOAD')
+          next
+        end
 
-        print_line("Resetting #{variable_name}...")
+        print_line("Resetting #{variable_name}...") unless is_all_variables
         datastore.reset(variable_name)
       end
     else

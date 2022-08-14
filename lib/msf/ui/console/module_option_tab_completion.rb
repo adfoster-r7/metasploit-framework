@@ -16,25 +16,10 @@ module Msf
         #   line. `words` is always at least 1 when tab completion has reached this
         #   stage since the command itself has been completed.
         def tab_complete_datastore_names(datastore, _str, _words)
-          # The global framework datastore doesn't currently import options
-          # For now, build an ad-hoc list of keys that the shell handles
-          global_framework_datastore_keys = %w[
-            ConsoleLogging
-            LogLevel
-            MinimumRank
-            SessionLogging
-            TimestampOutput
-            Prompt
-            PromptChar
-            PromptTimeFormat
-            MeterpreterPrompt
-            SessionTlvLogging
-          ]
           keys = (
-            global_framework_datastore_keys +
-              datastore.keys
-            # TODO: Confirm this isn't needed
-            # datastore.options.keys
+            Msf::DataStore::GLOBAL_KEYS +
+              datastore.keys +
+              datastore.options.values.flat_map(&:fallbacks)
           ).uniq { |key| key.downcase }
 
           keys

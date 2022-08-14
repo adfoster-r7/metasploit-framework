@@ -9,6 +9,24 @@ module Msf
 ###
 class DataStore
 
+  # The global framework datastore doesn't currently import options
+  # For now, store an ad-hoc list of keys that the shell handles
+  #
+  # This can be removed after framework's bootup sequence registers
+  # these as real options
+  GLOBAL_KEYS = %w[
+    ConsoleLogging
+    LogLevel
+    MinimumRank
+    SessionLogging
+    TimestampOutput
+    Prompt
+    PromptChar
+    PromptTimeFormat
+    MeterpreterPrompt
+    SessionTlvLogging
+  ]
+
   #
   # Initializes the data store's internal state.
   #
@@ -159,25 +177,11 @@ class DataStore
   # @deprecated use #{unset} instead, or set the value explicitly to nil
   alias delete unset
 
-  def unset_all
-    self.keys.each do |key|
-      unset(key)
-    end
-
-    nil
-  end
-
   def reset(key)
     k = find_key_case(key)
     @user_defined.delete(k)
 
     nil
-  end
-
-  def reset_all
-    self.keys.each do |key|
-      reset(key)
-    end
   end
 
   #
@@ -314,7 +318,7 @@ class DataStore
   end
 
   def keys
-    (@user_defined.keys + @options.keys).uniq { |key| key.downcase }
+    (@user_defined.keys + @options.keys).uniq(&:downcase)
   end
 
   def length

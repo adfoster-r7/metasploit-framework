@@ -99,15 +99,6 @@ RSpec.shared_examples_for 'a datastore with lookup support' do |opts = {}|
       expect(subject.unset('bar')).to be nil
     end
   end
-
-  describe '#unset_all' do
-    it 'should unset all keys' do
-      subject.unset_all
-
-      expect(subject.unset('foo')).to be nil
-      expect(subject.unset('bar')).to be nil
-    end
-  end
 end
 
 RSpec.shared_examples_for 'a datastore' do |opts|

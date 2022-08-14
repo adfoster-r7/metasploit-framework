@@ -97,8 +97,8 @@ RSpec.describe Msf::Serializer::ReadableText do
 
   let(:aux_mod_with_set_options) do
     mod = aux_mod.replicant
-    mod.datastore.delete('FloatValue')
-    mod.datastore.delete('foo')
+    mod.datastore.unset('FloatValue')
+    mod.datastore.unset('foo')
     mod.datastore['OLD_OPTION_NAME'] = nil
     mod.datastore['username'] = 'username'
     mod.datastore['fizz'] = 'new_fizz'
