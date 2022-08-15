@@ -220,8 +220,8 @@ module Msf
     # Array of fallbacks for this option.
     #
     # This is useful in the scenario of wanting specialised option names such as
-    # {SMBUser}, but to also support gracefully fallbacking back to a more generic
-    # option name such ss {Username}.
+    # {SMBUser}, but to also support gracefully checking a list of more generic fallbacks
+    # option names such as {Username}.
     #
     # @return [Array<string>] the array of fallbacks
     attr_accessor :fallbacks

@@ -175,7 +175,9 @@ class DataStore
   end
 
   # @deprecated use #{unset} instead, or set the value explicitly to nil
-  alias delete unset
+  def delete(key)
+    unset(key)
+  end
 
   def reset(key)
     k = find_key_case(key)
@@ -420,7 +422,7 @@ class DataStore
   end
 
   #
-  # Return a copy of this datastore. Only string values will be duplicated, other other values
+  # Return a copy of this datastore. Only string values will be duplicated, other values
   # will share the same reference
   # @return [Msf::DataStore] a new datastore instance
   def copy
@@ -549,6 +551,9 @@ class DataStore
     ::KeyError.new "key not found: #{k.inspect}"
   end
 
+  def search_for(k)
+
+  end
 end
 
 end

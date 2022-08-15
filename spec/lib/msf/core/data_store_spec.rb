@@ -2,6 +2,100 @@
 
 require 'spec_helper'
 
+RSpec.shared_context 'datastore subjects', :shared_context => :metadata do
+  subject(:default_subject) do
+    described_class.new
+  end
+
+  subject(:datastore_with_simple_options) do
+    s = default_subject.copy
+    options = Msf::OptionContainer.new(
+      [
+        Msf::OptString.new(
+          'foo',
+          [true, 'foo option', 'default_foo_value']
+        ),
+        Msf::OptString.new(
+          'bar',
+          [true, 'bar option', 'default_bar_value']
+        ),
+        Msf::OptString.new(
+          'baz',
+          [false, 'baz option']
+        )
+      ]
+    )
+    s.import_options(options)
+    s
+  end
+
+  subject(:datastore_with_aliases) do
+    s = default_subject.copy
+
+    options = Msf::OptionContainer.new(
+      [
+        Msf::OptString.new(
+          'NewOptionName',
+          [true, 'An option with a new name. Aliases ensure the old and new names are synchronized', 'default_value'],
+          aliases: ['OLD_OPTION_NAME']
+        )
+      ]
+    )
+
+    s.import_options(options)
+    s
+  end
+
+  subject(:datastore_with_fallbacks) do
+    s = default_subject.copy
+
+    options = Msf::OptionContainer.new(
+      [
+        Msf::OptString.new(
+          'SMBUser',
+          [true, 'The SMB username'],
+          fallbacks: ['username']
+        ),
+
+        Msf::OptString.new(
+          'SMBDomain',
+          [true, 'The SMB username', 'WORKGROUP'],
+          fallbacks: ['domain']
+        ),
+
+        Msf::OptString.new(
+          'USER_ATTR',
+          [true, 'The ldap username'],
+          fallbacks: ['username']
+        ),
+      ]
+    )
+
+    s.import_options(options)
+    s
+  end
+
+  subject(:complex_datastore) do
+    datastore_with_simple_options
+      .merge(datastore_with_aliases)
+      .merge(datastore_with_fallbacks)
+  end
+
+  subject(:complex_datastore_with_imported_defaults) do
+    s = complex_datastore.copy
+    s.import_defaults_from_hash(
+      {
+        'foo' => 'overridden_default_foo',
+        'NewOptionName' => 'overridden_default_new_option_name',
+        # TODO: Add alias/old_option_name test as well
+        # 'old_option_name' => 'overridden_default_old_option_name'
+      },
+      imported_by: 'self'
+    )
+    s
+  end
+end
+
 RSpec.shared_examples_for 'a datastore with lookup support' do |opts = {}|
   describe '#[]' do
     it 'should have default keyed values' do
@@ -102,93 +196,6 @@ RSpec.shared_examples_for 'a datastore with lookup support' do |opts = {}|
 end
 
 RSpec.shared_examples_for 'a datastore' do |opts|
-  subject(:default_subject) do
-    instance_eval &opts[:default_subject]
-  end
-  subject(:datastore_with_simple_options) do
-    s = instance_eval &opts[:default_subject]
-    options = Msf::OptionContainer.new(
-      [
-        Msf::OptString.new(
-          'foo',
-          [true, 'foo option', 'default_foo_value']
-        ),
-        Msf::OptString.new(
-          'bar',
-          [true, 'bar option', 'default_bar_value']
-        ),
-        Msf::OptString.new(
-          'baz',
-          [false, 'baz option']
-        )
-      ]
-    )
-    s.import_options(options)
-    s
-  end
-  subject(:datastore_with_aliases) do
-    s = instance_eval &opts[:default_subject]
-
-    options = Msf::OptionContainer.new(
-      [
-        Msf::OptString.new(
-          'NewOptionName',
-          [true, 'An option with a new name. Aliases ensure the old and new names are synchronized', 'default_value'],
-          aliases: ['OLD_OPTION_NAME']
-        )
-      ]
-    )
-
-    s.import_options(options)
-    s
-  end
-  subject(:datastore_with_fallbacks) do
-    s = instance_eval &opts[:default_subject]
-
-    options = Msf::OptionContainer.new(
-      [
-        Msf::OptString.new(
-          'SMBUser',
-          [true, 'The SMB username'],
-          fallbacks: ['username']
-        ),
-
-        Msf::OptString.new(
-          'SMBDomain',
-          [true, 'The SMB username', 'WORKGROUP'],
-          fallbacks: ['domain']
-        ),
-
-        Msf::OptString.new(
-          'USER_ATTR',
-          [true, 'The ldap username'],
-          fallbacks: ['username']
-        ),
-      ]
-    )
-
-    s.import_options(options)
-    s
-  end
-  subject(:complex_datastore) do
-    datastore_with_simple_options
-      .merge(datastore_with_aliases)
-      .merge(datastore_with_fallbacks)
-  end
-  subject(:complex_datastore_with_imported_defaults) do
-    s = complex_datastore.copy
-    s.import_defaults_from_hash(
-      {
-        'foo' => 'overridden_default_foo',
-        'NewOptionName' => 'overridden_default_new_option_name',
-        # TODO: Add alias/old_option_name test as well
-        # 'old_option_name' => 'overridden_default_old_option_name'
-      },
-      imported_by: 'self'
-    )
-    s
-  end
-
   describe '#import_options' do
     let(:foo_option) do
       Msf::OptString.new(
@@ -472,8 +479,6 @@ RSpec.shared_examples_for 'a datastore' do |opts|
   end
 
   describe '#[]=' do
-    context ''
-
     context 'when the datastore has aliases' do
       subject do
         datastore_with_aliases
@@ -694,11 +699,10 @@ RSpec.shared_examples_for 'a datastore' do |opts|
       end
 
       it 'should reset the specified key' do
-        # subject['foo'] = 'new_value'
-        # subject.reset('foo')
-        #
-        # expect(subject['foo']).to eq 'foo_value'
-        # expect(subject['bar']).to eq 'bar_value'
+        subject['SMBUser'] = 'new_value'
+        subject.reset('SMBDomain')
+
+        expect(subject['SMBDomain']).to eq 'WORKGROUP'
       end
     end
 
@@ -708,168 +712,368 @@ RSpec.shared_examples_for 'a datastore' do |opts|
       end
 
       it 'should reset the specified key' do
-        # subject['foo'] = 'new_value'
-        # subject.reset('foo')
-        #
-        # expect(subject['foo']).to eq 'foo_value'
-        # expect(subject['bar']).to eq 'bar_value'
+        subject['foo'] = 'new_value'
+        subject.reset('foo')
+
+        expect(subject['foo']).to eq 'overridden_default_foo'
       end
     end
-  end
-
-  describe '#reset_all' do
-    # it 'should reset all keys' do
-    #   subject['foo'] = 'new_value'
-    #   subject.reset_all
-    #
-    #   expect(subject['foo']).to eq 'foo_value'
-    #   expect(subject['bar']).to eq 'bar_value'
-    # end
   end
 end
 
 RSpec.describe Msf::DataStore do
-  it_behaves_like 'a datastore',
-                  default_subject: proc { described_class.new }
+  include_context 'datastore subjects'
+
+  subject(:default_subject) do
+    described_class.new
+  end
+
+  subject { default_subject }
+
+  it_behaves_like 'a datastore'
 end
 
-# RSpec.describe Msf::ModuleDataStore do
-#   let(:framework_datastore) do
-#     Msf::DataStore.new
-#   end
-#   let(:mod) do
-#     framework = instance_double(Msf::Framework, datastore: framework_datastore)
-#     instance_double(
-#       Msf::Exploit,
-#       framework: framework
-#     )
-#   end
-#
-#   context 'when the framework datastore is empty' do
-#     it_behaves_like 'a datastore',
-#                     default_subject: proc {
-#                       described_class.new mod
-#                     }
-#   end
-# end
+RSpec.describe Msf::ModuleDataStore do
+  include_context 'datastore subjects'
 
-#
-#   context 'when the global framework datastore has values' do
-#     describe '#default?' do
-#       # TODO
-#     end
-#
-#     describe '#[]' do
-#       context 'when the option has a default value' do
-#         subject do
-#           s = described_class.new mod
-#           options = Msf::OptionContainer.new(
-#             [
-#               Msf::OptString.new(
-#                 'foo',
-#                 [true, 'Foo option', 'bar']
-#               ),
-#             ]
-#           )
-#           s.import_options(options)
-#           s
-#         end
-#
-#         before(:each) do
-#           framework_datastore['foo'] = 'global_foo_value'
-#         end
-#
-#         it 'should return the default value' do
-#           expect(subject['foo']).to eq('bar')
-#         end
-#
-#         it 'should return the value if it is imported with a default value' do
-#           subject.import_defaults_from_hash({ 'foo' => 'default_value' }, imported_by: 'self')
-#           expect(subject['foo']).to eq('default_value')
-#         end
-#
-#         it 'should return the default option value, and not the framework datastore value' do
-#           subject.unset('foo', also_delete: true)
-#           expect(subject['foo']).to eq('bar')
-#         end
-#       end
-#
-#       context 'when the option does not have a default value' do
-#         subject do
-#           s = described_class.new mod
-#           options = Msf::OptionContainer.new(
-#             [
-#               Msf::OptString.new(
-#                 'OptionWithoutDefault',
-#                 [true, 'option without default']
-#               )
-#             ]
-#           )
-#           s.import_options(options)
-#           s
-#         end
-#
-#         before(:each) do
-#           framework_datastore['OptionWithoutDefault'] = 'global_default_value'
-#         end
-#
-#         it 'should return the value if it is imported with a default value' do
-#           subject.import_defaults_from_hash({ 'OptionWithoutDefault' => 'default_value' }, imported_by: 'self')
-#           expect(subject['OptionWithoutDefault']).to eq('default_value')
-#         end
-#
-#         it 'should return the parent datastore value if the value is not set' do
-#           expect(subject['OptionWithoutDefault']).to eq('global_default_value')
-#         end
-#
-#         it 'should return the default option value, and not the framework datastore value' do
-#           subject.unset('foo', also_delete: true)
-#           expect(subject['foo']).to eq('bar')
-#         end
-#       end
-#     end
-#
-#     describe '#fetch' do
-#       context 'when the option does not have a default value' do
-#         subject do
-#           s = described_class.new mod
-#           options = Msf::OptionContainer.new(
-#             [
-#               Msf::OptString.new(
-#                 'OptionWithoutDefault',
-#                 [true, 'option without default']
-#               )
-#             ]
-#           )
-#           s.import_options(options)
-#           s
-#         end
-#
-#         before(:each) do
-#           framework_datastore['OptionWithoutDefault'] = 'global_default_value'
-#         end
-#
-#         it 'should return the value if it is imported with a default value' do
-#           subject.import_defaults_from_hash({ 'OptionWithoutDefault' => 'default_value' }, imported_by: 'self')
-#           expect(subject.fetch('OptionWithoutDefault')).to eq('default_value')
-#         end
-#
-#         it 'should return the parent datastore value if the value is not set' do
-#           expect(subject.fetch('OptionWithoutDefault')).to eq('global_default_value')
-#         end
-#
-#         it 'should return the parent datastore value if the value is deleted' do
-#           subject.unset('OptionWithoutDefault', also_delete: true)
-#           expect { subject.fetch('OptionWithoutDefault') }.to raise_exception KeyError, 'key not found: "missing"'
-#         end
-#       end
-#     end
-#   end
-# end
+  let(:framework_datastore) do
+    Msf::DataStore.new
+  end
+  let(:mod) do
+    framework = instance_double(Msf::Framework, datastore: framework_datastore)
+    instance_double(
+      Msf::Exploit,
+      framework: framework
+    )
+  end
+  subject(:default_subject) do
+    described_class.new mod
+  end
+  subject { default_subject }
+
+  context 'when the framework datastore is empty' do
+    it_behaves_like 'a datastore'
+  end
+
+  context 'when the global framework datastore has values' do
+    describe '#default?' do
+      context 'when the datastore has no options registered' do
+        subject do
+          default_subject
+        end
+
+        it 'should return true when the value is not set' do
+          expect(subject.default?('foo')).to be true
+        end
+
+        it 'should return false if the value is set' do
+          subject['foo'] = 'bar'
+
+          expect(subject.default?('foo')).to be false
+        end
+
+        it 'should return false if the value has been unset' do
+          subject.unset('foo')
+
+          expect(subject.default?('foo')).to be false
+        end
+
+        it 'should return true if the value has been reset' do
+          subject.unset('foo')
+          subject.reset('foo')
+
+          expect(subject.default?('foo')).to be true
+        end
+      end
+
+      context 'when the datastore has aliases' do
+        subject do
+          datastore_with_aliases
+        end
+
+        # Ensure that both the new name and old name can be used interchangeably
+        [
+          { set_key: 'NewOptionName', read_key: 'NewOptionName' },
+          { set_key: 'OLD_OPTION_NAME', read_key: 'OLD_OPTION_NAME' },
+          { set_key: 'NewOptionName', read_key: 'OLD_OPTION_NAME' },
+          { set_key: 'OLD_OPTION_NAME', read_key: 'NewOptionName' },
+        ].each do |test|
+          context "when using #{test[:set_key].inspect} to set the value and reading with #{test[:read_key].inspect}" do
+            it 'should return true when the value is not set' do
+              expect(subject.default?(test[:read_key])).to be true
+            end
+
+            it 'should return false if the value is set' do
+              subject[test[:set_key]] = 'bar'
+
+              expect(subject.default?(test[:read_key])).to be false
+            end
+
+            it 'should return false if the value has been unset' do
+              subject.unset(test[:set_key])
+
+              expect(subject.default?(test[:read_key])).to be false
+            end
+
+            it 'should return true if the value has been reset' do
+              subject.unset(test[:set_key])
+              subject.reset(test[:set_key])
+
+              expect(subject.default?(test[:read_key])).to be true
+            end
+          end
+        end
+      end
+
+      context 'when the datastore has fallbacks' do
+        subject do
+          datastore_with_aliases
+        end
+
+        # copy-pasta
+        it 'should return true when the value is not set' do
+          expect(subject.default?('SMBDomain')).to be true
+        end
+
+        it 'should return false if the value is set' do
+          subject['SMBDomain'] = 'bar'
+
+          expect(subject.default?('SMBDomain')).to be false
+        end
+
+        it 'should return false if the value has been unset' do
+          subject.unset('SMBDomain')
+
+          expect(subject.default?('SMBDomain')).to be false
+        end
+
+        it 'should return true if the value has been reset' do
+          subject.unset('SMBDomain')
+          subject.reset('SMBDomain')
+
+          expect(subject.default?('SMBDomain')).to be true
+        end
+
+        # new alias specific code
+        it 'should return false if the fallback value has been set' do
+          subject['domain'] = 'foo'
+
+          expect(subject.default?('SMBDomain')).to be false
+        end
+      end
+    end
+
+    # describe '#[]' do
+    #   context 'when the datastore has no options registered' do
+    #     subject do
+    #       default_subject
+    #     end
+    #
+    #     it 'should reset the specified key' do
+    #       expect(subject['foo']).to eq nil
+    #       expect(subject['bar']).to eq nil
+    #     end
+    #   end
+    #
+    #   context 'when the datastore has aliases' do
+    #     subject do
+    #       datastore_with_aliases
+    #     end
+    #
+    #     it 'should have default keyed values' do
+    #       expect(subject['NewOptionName']).to eq('default_value')
+    #       expect(subject['OLD_OPTION_NAME']).to eq('default_value')
+    #     end
+    #
+    #     it 'should have case-insensitive lookups' do
+    #       expect(subject['NEWOPTIONNAME']).to eq('default_value')
+    #       expect(subject['Old_Option_Name']).to eq('default_value')
+    #     end
+    #   end
+    #
+    #   context 'when the datastore has fallbacks' do
+    #     subject do
+    #       datastore_with_fallbacks
+    #     end
+    #
+    #     it 'should have default keyed values' do
+    #       expect(subject['SMBUser']).to be(nil)
+    #       expect(subject['SMBDomain']).to eq('WORKGROUP')
+    #       expect(subject['USER_ATTR']).to be(nil)
+    #       expect(subject['username']).to be(nil)
+    #     end
+    #   end
+    # end
+    #
+    # describe '#fetch' do
+    #   context 'when the datastore has simple options' do
+    #     subject do
+    #       datastore_with_simple_options
+    #     end
+    #
+    #     context 'when the default value is nil' do
+    #       before(:each) do
+    #         subject.options['foo'].send(:default=, nil)
+    #       end
+    #
+    #       it 'should handle the nil value' do
+    #         expect(subject['foo']).to eq(nil)
+    #         expect { subject.fetch('foo') }.to raise_exception KeyError, 'key not found: "foo"'
+    #       end
+    #     end
+    #
+    #     context 'when there is a default value' do
+    #       [
+    #         false,
+    #         '',
+    #         'new_value'
+    #       ].each do |value|
+    #         context "when the default value is #{value.inspect}" do
+    #           before(:each) do
+    #             subject.options['foo'].send(:default=, value)
+    #           end
+    #
+    #           it 'should return the default value' do
+    #             expect(subject['foo']).to eq(value)
+    #             expect(subject.fetch('foo')).to eq(value)
+    #           end
+    #         end
+    #       end
+    #     end
+    #   end
+    #
+    #   context 'when the datastore has aliases' do
+    #     subject do
+    #       datastore_with_aliases
+    #     end
+    #
+    #     it 'should have default keyed values' do
+    #       expect(subject['NewOptionName']).to eq('default_value')
+    #       expect(subject['OLD_OPTION_NAME']).to eq('default_value')
+    #     end
+    #
+    #     it 'should have case-insensitive lookups' do
+    #       expect(subject['NEWOPTIONNAME']).to eq('default_value')
+    #       expect(subject['Old_Option_Name']).to eq('default_value')
+    #     end
+    #
+    #     it 'should raise an exception if the value is not present' do
+    #       expect { subject.fetch('missing') }.to raise_exception KeyError, 'key not found: "missing"'
+    #     end
+    #   end
+    # end
+
+    # describe '#[]' do
+    #   context 'when the option has a default value' do
+    #     subject do
+    #       s = described_class.new mod
+    #       options = Msf::OptionContainer.new(
+    #         [
+    #           Msf::OptString.new(
+    #             'foo',
+    #             [true, 'Foo option', 'bar']
+    #           ),
+    #         ]
+    #       )
+    #       s.import_options(options)
+    #       s
+    #     end
+    #
+    #     before(:each) do
+    #       framework_datastore['foo'] = 'global_foo_value'
+    #     end
+    #
+    #     it 'should return the default value' do
+    #       expect(subject['foo']).to eq('bar')
+    #     end
+    #
+    #     it 'should return the value if it is imported with a default value' do
+    #       subject.import_defaults_from_hash({ 'foo' => 'default_value' }, imported_by: 'self')
+    #       expect(subject['foo']).to eq('default_value')
+    #     end
+    #
+    #     it 'should return the default option value, and not the framework datastore value' do
+    #       subject.unset('foo', also_delete: true)
+    #       expect(subject['foo']).to eq('bar')
+    #     end
+    #   end
+    #
+    #   context 'when the option does not have a default value' do
+    #     subject do
+    #       s = described_class.new mod
+    #       options = Msf::OptionContainer.new(
+    #         [
+    #           Msf::OptString.new(
+    #             'OptionWithoutDefault',
+    #             [true, 'option without default']
+    #           )
+    #         ]
+    #       )
+    #       s.import_options(options)
+    #       s
+    #     end
+    #
+    #     before(:each) do
+    #       framework_datastore['OptionWithoutDefault'] = 'global_default_value'
+    #     end
+    #
+    #     it 'should return the value if it is imported with a default value' do
+    #       subject.import_defaults_from_hash({ 'OptionWithoutDefault' => 'default_value' }, imported_by: 'self')
+    #       expect(subject['OptionWithoutDefault']).to eq('default_value')
+    #     end
+    #
+    #     it 'should return the parent datastore value if the value is not set' do
+    #       expect(subject['OptionWithoutDefault']).to eq('global_default_value')
+    #     end
+    #
+    #     it 'should return the default option value, and not the framework datastore value' do
+    #       subject.unset('foo', also_delete: true)
+    #       expect(subject['foo']).to eq('bar')
+    #     end
+    #   end
+    # end
+    #
+    # describe '#fetch' do
+    #   context 'when the option does not have a default value' do
+    #     subject do
+    #       s = described_class.new mod
+    #       options = Msf::OptionContainer.new(
+    #         [
+    #           Msf::OptString.new(
+    #             'OptionWithoutDefault',
+    #             [true, 'option without default']
+    #           )
+    #         ]
+    #       )
+    #       s.import_options(options)
+    #       s
+    #     end
+    #
+    #     before(:each) do
+    #       framework_datastore['OptionWithoutDefault'] = 'global_default_value'
+    #     end
+    #
+    #     it 'should return the value if it is imported with a default value' do
+    #       subject.import_defaults_from_hash({ 'OptionWithoutDefault' => 'default_value' }, imported_by: 'self')
+    #       expect(subject.fetch('OptionWithoutDefault')).to eq('default_value')
+    #     end
+    #
+    #     it 'should return the parent datastore value if the value is not set' do
+    #       expect(subject.fetch('OptionWithoutDefault')).to eq('global_default_value')
+    #     end
+    #
+    #     it 'should return the parent datastore value if the value is deleted' do
+    #       subject.unset('OptionWithoutDefault', also_delete: true)
+    #       expect { subject.fetch('OptionWithoutDefault') }.to raise_exception KeyError, 'key not found: "missing"'
+    #     end
+    #   end
+    # end
+  end
+end
 
 # Global FrameworkDatastore
 #   Note: Metasploit doesn't _currently_ have any options registered in the global store by default, but the
-#   implementation will support it
+#   implementation will now support it
 #
 #   #fetch(k) / #[k]
 #     - Checking in order from top to bottom, attempts to return one of:

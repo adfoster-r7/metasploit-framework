@@ -38,24 +38,24 @@ module Msf
       nil
     end
 
-    def delete(key, also_delete: false)
+    def unset(key)
       super(key)
 
-      # TODO: Add tests for delete and implement this properly so there's graceful fallback support
-      @user_defined.delete(key) if also_delete
+      # @user_defined.delete(key)
     end
 
     #
     # Was this entry actually set or just using its default
     #
+    # @return [TrueClass, FalseClass]
     def default?(key)
-      (@imported_by[key] == 'self')
+      !@user_defined.include?(find_key_case(key))
     end
 
     #
-    # Return a copy of this datastore. Only string values will be duplicated, other other values
-    # will share the same refeqrence
-    #
+    # Return a copy of this datastore. Only string values will be duplicated, other values
+    # will share the same reference
+    # @return [Msf::DataStore] a new datastore instance
     def copy
       new_instance = self.class.new(@_module)
       new_instance.copy_state(self)
