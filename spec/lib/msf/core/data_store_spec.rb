@@ -187,15 +187,15 @@ RSpec.shared_examples_for 'a datastore with lookup support' do |opts = {}|
   describe '#unset' do
     it 'should delete the specified case-insensitive key' do
       expect(subject.unset('foo')).to eq 'foo_value'
-      expect(subject.unset('foo')).to be nil
+      expect(subject.unset('foo')).to eq nil
 
       expect(subject.unset('bar')).to eq 'bar_value'
-      expect(subject.unset('bar')).to be nil
+      expect(subject.unset('bar')).to eq nil
     end
   end
 end
 
-RSpec.shared_examples_for 'a datastore' do |opts|
+RSpec.shared_examples_for 'a datastore' do
   describe '#import_options' do
     let(:foo_option) do
       Msf::OptString.new(
@@ -572,6 +572,126 @@ RSpec.shared_examples_for 'a datastore' do |opts|
     end
   end
 
+  describe '#unset' do
+    context 'when the datastore has no options registered' do
+      subject do
+        default_subject
+      end
+
+      it 'should delete the value when it has been user defined' do
+        subject['foo'] = 'new_value'
+
+        expect(subject.unset('foo')).to eq 'new_value'
+        expect(subject.unset('fool')).to eq nil
+      end
+
+      it 'should delete the value when it has not been user defined' do
+        expect(subject.unset('foo')).to eq nil
+        expect(subject.unset('foo')).to eq nil
+      end
+    end
+
+    context 'when the datastore has simple options' do
+      subject do
+        datastore_with_simple_options
+      end
+
+      it 'should delete the value when it has been user defined' do
+        subject['foo'] = 'new_value'
+
+        expect(subject.unset('foo')).to eq 'new_value'
+        expect(subject.unset('foo')).to eq nil
+      end
+
+      it 'should delete the value when it has not been user defined' do
+        expect(subject.unset('foo')).to eq 'default_foo_value'
+        expect(subject.unset('foo')).to eq nil
+      end
+    end
+
+    context 'when the datastore has aliases' do
+      subject do
+        datastore_with_aliases
+      end
+
+      # Ensure that both the new name and old name can be used interchangeably
+      [
+        { set_key: 'NewOptionName', delete_key: 'NewOptionName' },
+        { set_key: 'OLD_OPTION_NAME', delete_key: 'OLD_OPTION_NAME' },
+        { set_key: 'NewOptionName', delete_key: 'OLD_OPTION_NAME' },
+        { set_key: 'OLD_OPTION_NAME', delete_key: 'NewOptionName' },
+      ].each do |test|
+        context "when using #{test[:delete_key].inspect} to set the value and deleting with #{test[:delete_key].inspect}" do
+          it 'should delete the value when it has been user defined' do
+            subject[test[:set_key]] = 'new_value'
+
+            expect(subject.unset(test[:delete_key])).to eq 'new_value'
+            expect(subject.unset(test[:delete_key])).to eq nil
+          end
+
+          it 'should delete the value when it has not been user defined' do
+            expect(subject.unset(test[:delete_key])).to eq 'default_value'
+            expect(subject.unset(test[:delete_key])).to eq nil
+          end
+        end
+      end
+    end
+
+    context 'when the datastore has fallbacks' do
+      subject do
+        datastore_with_fallbacks
+      end
+
+      context 'when using the option name' do
+        it 'should delete the value when it has been user defined' do
+          subject['SMBDomain'] = 'new_value'
+
+          expect(subject.unset('SMBDomain')).to eq 'new_value'
+          expect(subject.unset('SMBDomain')).to eq nil
+        end
+
+        it 'should delete the value when it has not been user defined' do
+          expect(subject.unset('SMBDomain')).to eq 'WORKGROUP'
+          expect(subject.unset('SMBDomain')).to eq nil
+        end
+      end
+
+      context 'when using the fallback option name' do
+        it 'should delete the value when it has been user defined' do
+          subject['domain'] = 'new_value'
+
+          # Explicitly unsetting SMBDomain shouldn't unset domain
+          expect(subject['SMBDomain']).to eq 'new_value'
+          expect(subject.unset('SMBDomain')).to eq 'new_value'
+          expect(subject.unset('SMBDomain')).to eq nil
+
+          expect(subject['domain']).to eq 'new_value'
+          expect(subject.unset('domain')).to eq 'new_value'
+          expect(subject.unset('domain')).to eq nil
+        end
+
+        it 'should delete the value when it has not been user defined' do
+          expect(subject.unset('domain')).to eq nil
+          expect(subject.unset('SMBDomain')).to eq 'WORKGROUP'
+          expect(subject['domain']).to eq nil
+        end
+      end
+    end
+
+    context 'when the datastore has imported defaults' do
+      subject do
+        complex_datastore_with_imported_defaults
+      end
+
+      it 'should reset the specified key' do
+        subject['foo'] = 'new_value'
+        subject.reset('foo')
+
+        expect(subject['foo']).to eq 'overridden_default_foo'
+      end
+    end
+  end
+
   context '#to_h' do
     context 'when the datastore has no options registered' do
       subject do
@@ -830,7 +950,6 @@ RSpec.describe Msf::ModuleDataStore do
           datastore_with_fallbacks
         end
 
-        # copy-pasta
         it 'should return true when the value is not set' do
           expect(subject.default?('SMBDomain')).to be true
         end

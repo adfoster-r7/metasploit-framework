@@ -12,8 +12,8 @@ class DataStore
   # The global framework datastore doesn't currently import options
   # For now, store an ad-hoc list of keys that the shell handles
   #
-  # This can be removed after framework's bootup sequence registers
-  # these as real options
+  # This list could be removed if framework's bootup sequence registers
+  # these as datastore options
   GLOBAL_KEYS = %w[
     ConsoleLogging
     LogLevel
@@ -33,8 +33,8 @@ class DataStore
   def initialize
     @options     = Hash.new
     @aliases     = Hash.new
-    @imported    = Hash.new
-    @imported_by = Hash.new
+    # @imported    = Hash.new
+    # @imported_by = Hash.new
 
     # default values which will be referenced when not defined by the user
     @defaults = Hash.new
@@ -70,8 +70,8 @@ class DataStore
   #
   def []=(k, v)
     k = find_key_case(k)
-    @imported[k] = false
-    @imported_by[k] = nil
+    # @imported[k] = false
+    # @imported_by[k] = nil
 
     opt = @options[k]
     unless opt.nil?
@@ -117,22 +117,23 @@ class DataStore
   # unset the current key from the datastore
   def unset(key)
     k = find_key_case(key)
-    is_imported = @imported[k]
-    @imported[k] = false
-    @imported_by[k] = nil
 
-    result = nil
-    if @user_defined.key?(k)
-      result = @user_defined[k]
-    elsif is_imported
-      # TODO: Confirm if this needs a similar lookup to the fallback mechanism
-      result = @defaults.key?(k) ? @defaults[k] : @options[k]&.default
-    end
+    search_result = search_for(k)
+    # is_imported = @imported[k]
+    # @imported[k] = false
+    # @imported_by[k] = nil
+
+    # result = nil
+    # if @user_defined.key?(k)
+    #   result = @user_defined[k]
+    # else
+    #   result = @defaults.key?(k) ? @defaults[k] : @options[k]&.default
+    # end
 
     # Explicitly mark the entry as nil so that future lookups of the key are nil, instead of retrieving a default value
     @user_defined[k] = nil
 
-    result
+    search_result.value
   end
 
   # @deprecated use #{unset} instead, or set the value explicitly to nil
@@ -156,8 +157,8 @@ class DataStore
     k = find_key_case(name)
     @user_defined.delete(k)
     @aliases.delete_if { |_, v| v.casecmp(k) == 0 }
-    @imported.delete(k)
-    @imported_by.delete(k)
+    # @imported.delete(k)
+    # @imported_by.delete(k)
     # TODO: Should this modify @defaults too?
     @options.delete(k)
   end
@@ -186,8 +187,8 @@ class DataStore
           @aliases[a.downcase] = key.downcase
         end
         @options[key] = option
-        @imported[key] = true
-        @imported_by[key] = imported_by
+        # @imported[key] = true
+        # @imported_by[key] = imported_by
       end
     end
   end
@@ -268,8 +269,8 @@ class DataStore
       end
     end
     @options[key] = option
-    @imported[key] = imported
-    @imported_by[key] = imported_by
+    # @imported[key] = imported
+    # @imported_by[key] = imported_by
   end
 
   def keys
@@ -284,9 +285,8 @@ class DataStore
   alias size length
 
   def key?(key)
-    # find_key_case returns a valid key to use with the datastore, if it's nil then the key is not present
     matching_key = find_key_case(key)
-    !matching_key.nil?
+    keys.key?(matching_key)
   end
 
   alias has_key? key?
@@ -410,8 +410,8 @@ class DataStore
     if other.is_a? DataStore
       self.aliases.merge!(other.aliases)
       self.options.merge!(other.options)
-      self.imported.merge!(other.imported)
-      self.imported_by.merge!(other.imported_by)
+      # self.imported.merge!(other.imported)
+      # self.imported_by.merge!(other.imported_by)
       other.user_defined.each do |k, v|
         self.user_defined[k] = v
       end
@@ -437,17 +437,19 @@ class DataStore
 
   #
   # Remove all imported options from the data store.
-  #
+  # TODO: Find out what is this used for, and what the intent is - should it remove options now?
   def clear_non_user_defined
-    # TODO
-    @imported.delete_if { |k, v|
-      if (v and @imported_by[k] != 'self')
-        self.delete(k)
-        @imported_by.delete(k)
-      end
-
-      v
-    }
+    options.keys.each do
+      unregister
+    end
+    # @imported.delete_if { |k, v|
+    #   if (v and @imported_by[k] != 'self')
+    #     self.delete(k)
+    #     @imported_by.delete(k)
+    #   end
+    #
+    #   v
+    # }
   end
 
   #
@@ -465,9 +467,8 @@ class DataStore
   #    "can't add a new key into hash during iteration"
   #
   def each(&block)
-    list = []
-    self.keys.sort.each do |sidx|
-      list << [sidx, self[sidx]]
+    list = self.keys.sort.map do |key|
+      list << [key, self[key]]
     end
     list.each(&block)
   end
