@@ -827,7 +827,7 @@ RSpec.describe Msf::ModuleDataStore do
 
       context 'when the datastore has fallbacks' do
         subject do
-          datastore_with_aliases
+          datastore_with_fallbacks
         end
 
         # copy-pasta
@@ -854,7 +854,6 @@ RSpec.describe Msf::ModuleDataStore do
           expect(subject.default?('SMBDomain')).to be true
         end
 
-        # new alias specific code
         it 'should return false if the fallback value has been set' do
           subject['domain'] = 'foo'
 

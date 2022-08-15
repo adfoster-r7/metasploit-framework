@@ -91,58 +91,19 @@ class DataStore
   # Case-insensitive wrapper around hash lookup
   #
   def [](k)
-    key = find_key_case(k)
-    return @user_defined[key] if @user_defined.key?(key)
+    search_result = search_for(k)
 
-    # If the key isn't present - check any additional fallbacks that have been registered with the option.
-    # i.e. handling the scenario of SMBUser not being explicitly set, but the option has registered a more
-    # generic 'Username' fallback
-    option = @options.find { |option_name, _option| option_name.casecmp?(key) }&.last
-
-    return nil unless option
-
-    option.fallbacks.each do |fallback|
-      # TODO: If a fallback has a default, should we choose it? If so - this won't work
-      # if @user_defined.key?(find_key_case(fallback)) # || @defaults.fetch(key) || options.fetch(fallback).default.nil?
-      #   return self[fallback]
-      # end
-      # return fetch(fallback) { next }
-      if @user_defined.key?(fallback) || @imported.key?(fallback)
-        return self[fallback]
-      end
-    end
-
-    # If there's no registered fallbacks that matched, finally use the default option value
-    @defaults.key?(key) ? @defaults[key] : option.default
+    search_result.value
   end
 
-  # TODO: Dry this out with [](...)
   def fetch(k)
-    key = find_key_case(k)
-    return @user_defined[key] if @user_defined.key?(key)
+    search_result = search_for(k)
 
-    # If the key isn't present - check any additional fallbacks that have been registered with the option.
-    # i.e. handling the scenario of SMBUser not being explicitly set, but the option has registered a more
-    # generic 'Username' fallback
-    option = @options.find { |option_name, _option| option_name.casecmp?(key) }&.last
-    raise key_error_for(k) unless option
-
-    option.fallbacks.each do |fallback|
-      # TODO: If a fallback has a default, should we choose it? If so - this won't work
-      # if @user_defined.key?(find_key_case(fallback)) # || @defaults.fetch(key) || options.fetch(fallback).default.nil?
-      #   return self[fallback]
-      # end
-      # return fetch(fallback) { next }
-      if @user_defined.key?(fallback) || @imported.key?(fallback)
-        return self[fallback]
-      end
+    if search_result.result == :not_found
+      raise key_error_for(k)
     end
 
-    # If there's no registered fallbacks that matched, finally use the default option value
-    return @defaults[key] if @defaults.key?(key)
-    return option.default unless option.default.nil?
-
-    raise key_error_for(k)
+    search_result.value
   end
 
   #
@@ -215,22 +176,14 @@ class DataStore
   # all of the supplied options
   #
   def import_options(options, imported_by = nil, overwrite = true)
-    options.each_option do |name, opt|
-      # TODO: This needs fixed most likely to handle unset
-      # if self[name].nil? || overwrite
+    options.each_option do |name, option|
       if self.options[name].nil? || overwrite
-        # import_option(name, nil, true, imported_by, opt)
-
-        key = name
-        option = opt
-
         # Don't store the value, defer the assignment until it gets a read
         #    self.store(key, val)
 
-        if option
-          option.aliases.each do |a|
-            @aliases[a.downcase] = key.downcase
-          end
+        key = name
+        option.aliases.each do |a|
+          @aliases[a.downcase] = key.downcase
         end
         @options[key] = option
         @imported[key] = true
@@ -331,7 +284,9 @@ class DataStore
   alias size length
 
   def key?(key)
-    !find_key_case(key).nil?
+    # find_key_case returns a valid key to use with the datastore, if it's nil then the key is not present
+    matching_key = find_key_case(key)
+    !matching_key.nil?
   end
 
   alias has_key? key?
@@ -551,8 +506,47 @@ class DataStore
     ::KeyError.new "key not found: #{k.inspect}"
   end
 
-  def search_for(k)
+  #
+  # Value will be the associated datastore value
+  class SearchResult
+    # @return [Symbol] result is one of `user_defined`, `not_found`, `default`
+    attr_reader :result
 
+    # @return [object, nil] The value if found
+    attr_reader :value
+
+    def initialize(result, value)
+      @result = result
+      @value = value
+    end
+  end
+
+  # Search for a value within the current datastore, taking into consideration any registered aliases, fallbacks, etc.
+  #
+  # @param [String] k The key to search for
+  # @return [SearchResult]
+  def search_for(k)
+    key = find_key_case(k)
+    return SearchResult.new(:not_found, nil) if key.nil?
+    return SearchResult.new(:user_defined, @user_defined[key]) if @user_defined.key?(key)
+
+    # If the key isn't present - check any additional fallbacks that have been registered with the option.
+    # i.e. handling the scenario of SMBUser not being explicitly set, but the option has registered a more
+    # generic 'Username' fallback
+    option = @options.find { |option_name, _option| option_name.casecmp?(key) }&.last
+    return SearchResult.new(:not_found, nil) unless option
+
+    option.fallbacks.each do |fallback|
+      fallback_search = search_for(fallback)
+      if fallback_search.result != :not_found
+        return fallback_search
+      end
+    end
+
+    return SearchResult.new(:default, @defaults[key]) if @defaults.key?(key)
+    return SearchResult.new(:default, option.default) unless option.default.nil?
+
+    SearchResult.new(:not_found, nil)
   end
 end
 

@@ -49,7 +49,8 @@ module Msf
     #
     # @return [TrueClass, FalseClass]
     def default?(key)
-      !@user_defined.include?(find_key_case(key))
+      search_result = search_for(key)
+      search_result.result == :default || search_result.result == :not_found
     end
 
     #
