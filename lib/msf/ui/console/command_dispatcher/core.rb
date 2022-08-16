@@ -99,7 +99,8 @@ class Core
   # unset command options
   @@unsetg_opts = Rex::Parser::Arguments.new(
     ["-h", "--help"] => [ false, "Help banner."],
-    ["-r", "--reset"] => [ false, "Reset the values instead back to the defaults, instead of unsetting"]
+    ["-r", "--reset"] => [ false, "Reset the values instead back to the defaults, instead of unsetting"],
+    ["-c", "--clear"] => [ false, "Clear the values, explicitly setting to nil (default)"]
   )
 
   # unset command options
@@ -2152,7 +2153,8 @@ class Core
   end
 
   #
-  # Unsets a value if it's been set.
+  # Unsets a value if it's been set, allows clearing a value entirely or resetting the value
+  # back to a default value
   #
   def cmd_unset(*args)
     if args.include?('-h') || args.include?('--help')
@@ -2170,6 +2172,8 @@ class Core
         global = true
       when '-r'
         action = :reset
+      when '-c'
+        action = :unset
       end
     end
 
@@ -2199,14 +2203,14 @@ class Core
     case action
     # Unsetting / flushing the datastore
     when :unset
-      print_line("Flushing datastore...") if is_all_variables
+      print_line("Clearing datastore...") if is_all_variables
       variable_names.each do |variable_name|
         if driver.on_variable_unset(global, variable_name) == false
           print_error("The variable #{variable_name} cannot be unset at this time.")
           next
         end
 
-        print_line("Unsetting #{variable_name}...") unless is_all_variables
+        print_line("Clearing #{variable_name}...") unless is_all_variables
         datastore.unset(variable_name)
       end
     when :reset
@@ -2220,6 +2224,19 @@ class Core
 
         print_line("Resetting #{variable_name}...") unless is_all_variables
         datastore.reset(variable_name)
+      end
+
+      # Do a final pass over the datastore, if a user has reset a variable - but it continues to fallback to a previous
+      # datastore value it might be confusing to users. i.e. the user resetting 'SMBUser', but the datastore continues
+      # to use 'USERNAME' as a fallback as 'SMBUser' hasn't been explicitly set by the user anymore
+      variable_names.each do |variable_name|
+        search_result = datastore.search_for(variable_name)
+        if search_result.fallback?
+          print_warning(
+            "Variable #{variable_name.inspect} reset - but will continue to use #{search_result.fallback_key.inspect} as a fallback preference. " \
+              "If this is not desired, either run #{Msf::Ui::Tip.highlight("set #{variable_name} new_value")} or #{Msf::Ui::Tip.highlight("unset --reset #{search_result.fallback_key}")}"
+          )
+        end
       end
     else
       print_line "unknown action: #{action}"

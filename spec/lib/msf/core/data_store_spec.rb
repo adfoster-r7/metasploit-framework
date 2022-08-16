@@ -333,7 +333,7 @@ RSpec.shared_examples_for 'a datastore' do
           {
             "NewOptionName" => "old_option_name_value",
             "custom_key" => "custom_key_value",
-            "foo" => "foo_value"
+            "FOO" => "foo_value"
           }
         )
       end
@@ -353,15 +353,17 @@ RSpec.shared_examples_for 'a datastore' do
         other_datastore = subject.copy
         subject.unset('foo')
         subject['bar'] = 'bar_value'
+        subject['foo_bar'] = 'foo_bar_value'
 
         options = Msf::OptionContainer.new(
           Msf::Opt::stager_retry_options + Msf::Opt::http_proxy_options
         )
 
         other_datastore.import_options(options)
-        other_datastore['bar'] = 'new_bar_value'
+        other_datastore['BAR'] = 'new_bar_value'
         other_datastore['HttpProxyPass'] = 'http_proxy_pass_value'
         other_datastore['HttpProxyType'] = 'SOCKS'
+        other_datastore.unset('FOO_BAR')
 
         subject.merge!(other_datastore)
       end
@@ -371,6 +373,7 @@ RSpec.shared_examples_for 'a datastore' do
           "HttpProxyPass" => "http_proxy_pass_value",
           "HttpProxyType" => "SOCKS",
           "foo" => nil,
+          'foo_bar' => nil,
           "bar" => "new_bar_value"
         }
         expect(subject.user_defined).to eq(expected_values)
@@ -672,7 +675,7 @@ RSpec.shared_examples_for 'a datastore' do
 
         it 'should delete the value when it has not been user defined' do
           expect(subject.unset('domain')).to eq nil
-          expect(subject.unset('SMBDomain')).to eq 'WORKGROUP'
+          expect(subject.unset('SMBDomain')).to eq nil
           expect(subject['domain']).to eq nil
         end
       end
@@ -823,6 +826,14 @@ RSpec.shared_examples_for 'a datastore' do
         subject.reset('SMBDomain')
 
         expect(subject['SMBDomain']).to eq 'WORKGROUP'
+      end
+
+      it 'should reset the target value, but continue to honor fallback values' do
+        subject['SMBDomain'] =  'new_value'
+        subject['domain'] = 'fallback_value'
+
+        subject.reset('SMBDomain')
+        expect(subject['SMBDomain']).to eq 'fallback_value'
       end
     end
 

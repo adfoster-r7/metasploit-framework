@@ -49,8 +49,7 @@ module Msf
     #
     # @return [TrueClass, FalseClass]
     def default?(key)
-      search_result = search_for(key)
-      search_result.result == :default || search_result.result == :not_found
+      search_for(key).default?
     end
 
     #

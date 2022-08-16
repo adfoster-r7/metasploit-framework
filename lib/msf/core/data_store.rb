@@ -33,8 +33,6 @@ class DataStore
   def initialize
     @options     = Hash.new
     @aliases     = Hash.new
-    # @imported    = Hash.new
-    # @imported_by = Hash.new
 
     # default values which will be referenced when not defined by the user
     @defaults = Hash.new
@@ -43,19 +41,17 @@ class DataStore
     @user_defined = Hash.new
   end
 
-  # @return [Hash<String, Msf::OptBase>] The options associated with this datastore. Used for validating values/defaults/etc
+  # @return [Hash{String => Msf::OptBase}] The options associated with this datastore. Used for validating values/defaults/etc
   attr_accessor :options
 
   # These defaults will be used if the user has not explicitly defined a specific datastore value.
   # These will be checked as a priority to any options that also provide defaults.
   #
-  # @return [Hash<String, Msf::OptBase>] The hash of default values
+  # @return [Hash{String => Msf::OptBase}] The hash of default values
   attr_accessor :defaults
 
-  # @return [Hash<String, String>] The key is the old option name, the value is the new option name
+  # @return [Hash{String => String}] The key is the old option name, the value is the new option name
   attr_accessor :aliases
-  attr_accessor :imported
-  attr_accessor :imported_by
 
   #
   # Returns a hash of user-defined datastore values. The returned hash does
@@ -70,8 +66,6 @@ class DataStore
   #
   def []=(k, v)
     k = find_key_case(k)
-    # @imported[k] = false
-    # @imported_by[k] = nil
 
     opt = @options[k]
     unless opt.nil?
@@ -98,10 +92,7 @@ class DataStore
 
   def fetch(k)
     search_result = search_for(k)
-
-    if search_result.result == :not_found
-      raise key_error_for(k)
-    end
+    raise key_error_for(k) unless search_result.found?
 
     search_result.value
   end
@@ -117,18 +108,7 @@ class DataStore
   # unset the current key from the datastore
   def unset(key)
     k = find_key_case(key)
-
     search_result = search_for(k)
-    # is_imported = @imported[k]
-    # @imported[k] = false
-    # @imported_by[k] = nil
-
-    # result = nil
-    # if @user_defined.key?(k)
-    #   result = @user_defined[k]
-    # else
-    #   result = @defaults.key?(k) ? @defaults[k] : @options[k]&.default
-    # end
 
     # Explicitly mark the entry as nil so that future lookups of the key are nil, instead of retrieving a default value
     @user_defined[k] = nil
@@ -141,6 +121,11 @@ class DataStore
     unset(key)
   end
 
+  # Reset the datastore key so that future lookups of the key return the
+  # default value
+  #
+  # @param [String] key
+  # @return [nil]
   def reset(key)
     k = find_key_case(key)
     @user_defined.delete(k)
@@ -156,9 +141,7 @@ class DataStore
   def remove_option(name)
     k = find_key_case(name)
     @user_defined.delete(k)
-    @aliases.delete_if { |_, v| v.casecmp(k) == 0 }
-    # @imported.delete(k)
-    # @imported_by.delete(k)
+    @aliases.delete_if { |_, v| v.casecmp?(k) }
     # TODO: Should this modify @defaults too?
     @options.delete(k)
   end
@@ -179,16 +162,11 @@ class DataStore
   def import_options(options, imported_by = nil, overwrite = true)
     options.each_option do |name, option|
       if self.options[name].nil? || overwrite
-        # Don't store the value, defer the assignment until it gets a read
-        #    self.store(key, val)
-
         key = name
         option.aliases.each do |a|
           @aliases[a.downcase] = key.downcase
         end
         @options[key] = option
-        # @imported[key] = true
-        # @imported_by[key] = imported_by
       end
     end
   end
@@ -257,9 +235,8 @@ class DataStore
 
   # TODO: Doesn't normalize data in the same vein as:
   # https://github.com/rapid7/metasploit-framework/pull/6644
+  # @deprecated Use {#import_options}
   def import_option(key, val, imported = true, imported_by = nil, option = nil)
-    raise ArgumentError, "should not be called"
-
     # If populated by an option - don't immediately store the value. We'll instead lazily use the option's default value on lookup
     self.store(key, val) if option.nil?
 
@@ -269,14 +246,14 @@ class DataStore
       end
     end
     @options[key] = option
-    # @imported[key] = imported
-    # @imported_by[key] = imported_by
   end
 
+  # @return [Array<String>] The array of user defined datastore values, and registered option names
   def keys
     (@user_defined.keys + @options.keys).uniq(&:downcase)
   end
 
+  # @return [Integer] The length of the registered keys
   def length
     keys.length
   end
@@ -284,18 +261,16 @@ class DataStore
   alias count length
   alias size length
 
+  # @param [String] key
+  # @return [TrueClass, FalseClass] True if the key is present in the user defined values, or within registered options. False otherwise.
   def key?(key)
     matching_key = find_key_case(key)
-    keys.key?(matching_key)
+    keys.include?(matching_key)
   end
 
   alias has_key? key?
   alias include? key?
   alias member? key?
-
-  def each_key(&block)
-    self.keys.each(&block)
-  end
 
   #
   # Serializes the options in the datastore to a string.
@@ -307,7 +282,7 @@ class DataStore
       str << "#{key}=#{self[key]}" + ((str.length) ? delim : '')
     }
 
-    return str
+    str
   end
 
   # Override Hash's to_h method so we can include the original case of each key
@@ -393,7 +368,6 @@ class DataStore
   # @param [Msf::DataStore] other The other datastore to copy state from
   # @return [Msf::DataStore] the current datastore instance
   def copy_state(other)
-    self.imported = other.imported.dup
     self.options = other.options.dup
     self.aliases = other.aliases.dup
     self.defaults = other.defaults.transform_values { |value| value.kind_of?(String) ? value.dup : value }
@@ -403,17 +377,15 @@ class DataStore
   end
 
   #
-  # Override merge! so that we merge the aliases and imported hashes
+  # Merge the other object into the current datastore's aliases and imported hashes
   #
-  # @param [Msf::Datatstore, Hash] other
+  # @param [Msf::Datastore, Hash] other
   def merge!(other)
     if other.is_a? DataStore
       self.aliases.merge!(other.aliases)
       self.options.merge!(other.options)
-      # self.imported.merge!(other.imported)
-      # self.imported_by.merge!(other.imported_by)
       other.user_defined.each do |k, v|
-        self.user_defined[k] = v
+        self.user_defined[find_key_case(k)] = v
       end
     else
       other.each do |k, v|
@@ -427,13 +399,27 @@ class DataStore
   alias update merge!
 
   #
+  # Reverse Merge the other object into the current datastore's aliases and imported hashes
+  # Equivalent to ActiveSupport's reverse_merge! functionality.
+  #
+  # @param [Msf::Datastore] other
+  def reverse_merge!(other)
+    raise ArgumentError, "invalid error type #{other.class}, expected ::Msf::DataStore" unless other.is_a?(Msf::DataStore)
+
+    copy_state(other.merge(self))
+  end
+
+  #
   # Override merge to ensure we merge the aliases and imported hashes
   #
-  # @param [Msf::Datatstore, Hash] other
+  # @param [Msf::Datastore,Hash] other
   def merge(other)
     ds = self.copy
     ds.merge!(other)
   end
+
+  # TODO: Add reverse_merge!
+  # TODO: Verify code path `enc.datastore.update(options)`
 
   #
   # Remove all imported options from the data store.
@@ -473,9 +459,16 @@ class DataStore
     list.each(&block)
   end
 
+  alias each_pair each
+
+  def each_key(&block)
+    self.keys.each(&block)
+  end
+
   #
   # Case-insensitive key lookup
   #
+  # @return [String]
   def find_key_case(k)
     # Scan each alias looking for a key
     search_k = k.downcase
@@ -499,6 +492,34 @@ class DataStore
     k
   end
 
+  # Search for a value within the current datastore, taking into consideration any registered aliases, fallbacks, etc.
+  #
+  # @param [String] k The key to search for
+  # @return [SearchResult]
+  def search_for(k)
+    key = find_key_case(k)
+    return search_result(:not_found, nil) if key.nil?
+    return search_result(:user_defined, @user_defined[key]) if @user_defined.key?(key)
+
+    # If the key isn't present - check any additional fallbacks that have been registered with the option.
+    # i.e. handling the scenario of SMBUser not being explicitly set, but the option has registered a more
+    # generic 'Username' fallback
+    option = @options.find { |option_name, _option| option_name.casecmp?(key) }&.last
+    return search_result(:not_found, nil) unless option
+
+    option.fallbacks.each do |fallback|
+      fallback_search = search_for(fallback)
+      if fallback_search.found?
+        return search_result(:fallback, fallback_search.value, fallback_key: fallback)
+      end
+    end
+
+    return search_result(:default, @defaults[key]) if @defaults.key?(key)
+    return search_result(:default, option.default) unless option.default.nil?
+
+    search_result(:not_found, nil)
+  end
+
   protected
 
   # Raised when the specified key is not found
@@ -508,46 +529,41 @@ class DataStore
   end
 
   #
-  # Value will be the associated datastore value
-  class SearchResult
-    # @return [Symbol] result is one of `user_defined`, `not_found`, `default`
-    attr_reader :result
+  # Simple dataclass for storing the result of a datastore search
+  #
+  class DataStoreSearchResult
+    # @return [String, nil] the key associated with the fallback value
+    attr_reader :fallback_key
 
     # @return [object, nil] The value if found
     attr_reader :value
 
-    def initialize(result, value)
+    def initialize(result, value, fallback_key: nil)
       @result = result
       @value = value
+      @fallback_key = fallback_key
     end
+
+    def default?
+      result == :default || result == :not_found
+    end
+
+    def found?
+      result != :not_found
+    end
+
+    def fallback?
+      result == :fallback
+    end
+
+  protected
+
+    # @return [Symbol] result is one of `user_defined`, `not_found`, `fallback, `default`
+    attr_reader :result
   end
 
-  # Search for a value within the current datastore, taking into consideration any registered aliases, fallbacks, etc.
-  #
-  # @param [String] k The key to search for
-  # @return [SearchResult]
-  def search_for(k)
-    key = find_key_case(k)
-    return SearchResult.new(:not_found, nil) if key.nil?
-    return SearchResult.new(:user_defined, @user_defined[key]) if @user_defined.key?(key)
-
-    # If the key isn't present - check any additional fallbacks that have been registered with the option.
-    # i.e. handling the scenario of SMBUser not being explicitly set, but the option has registered a more
-    # generic 'Username' fallback
-    option = @options.find { |option_name, _option| option_name.casecmp?(key) }&.last
-    return SearchResult.new(:not_found, nil) unless option
-
-    option.fallbacks.each do |fallback|
-      fallback_search = search_for(fallback)
-      if fallback_search.result != :not_found
-        return fallback_search
-      end
-    end
-
-    return SearchResult.new(:default, @defaults[key]) if @defaults.key?(key)
-    return SearchResult.new(:default, option.default) unless option.default.nil?
-
-    SearchResult.new(:not_found, nil)
+  def search_result(result, value, fallback_key: nil)
+    DataStoreSearchResult.new(result, value, fallback_key: fallback_key)
   end
 end
 
