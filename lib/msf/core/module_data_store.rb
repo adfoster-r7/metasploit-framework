@@ -45,14 +45,6 @@ module Msf
     end
 
     #
-    # Was this entry actually set or just using its default
-    #
-    # @return [TrueClass, FalseClass]
-    def default?(key)
-      search_for(key).default?
-    end
-
-    #
     # Return a copy of this datastore. Only string values will be duplicated, other values
     # will share the same reference
     # @return [Msf::DataStore] a new datastore instance
@@ -60,6 +52,42 @@ module Msf
       new_instance = self.class.new(@_module)
       new_instance.copy_state(self)
       new_instance
+    end
+
+    # Search for a value within the current datastore, taking into consideration any registered aliases, fallbacks, etc.
+    #
+    # @param [String] k The key to search for
+    # @return [SearchResult]
+    def search_for(k)
+      key = find_key_case(k)
+      return search_result(:not_found, nil) if key.nil?
+      return search_result(:user_defined, @user_defined[key]) if @user_defined.key?(key)
+
+      # If the key isn't present - check any additional fallbacks that have been registered with the option.
+      # i.e. handling the scenario of SMBUser not being explicitly set, but the option has registered a more
+      # generic 'Username' fallback
+      option = @options.find { |option_name, _option| option_name.casecmp?(key) }&.last
+      return search_result(:not_found, nil) unless option
+
+      option.fallbacks.each do |fallback|
+        fallback_search = search_for(fallback)
+        if fallback_search.found?
+          return search_result(:fallback, fallback_search.value, fallback_key: fallback)
+        end
+      end
+
+      return search_result(:default, @defaults[key]) if @defaults.key?(key)
+      return search_result(:default, option.default) unless option.default.nil?
+
+      search_result(:not_found, nil)
+    end
+
+    protected
+
+    def search_framework_datastore(k)
+      search_result(:not_found, nil) if @_module&.framework.nil?
+
+      @_module.framework.datastore.search_for(key)
     end
   end
 end

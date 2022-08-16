@@ -61,6 +61,14 @@ class DataStore
   attr_accessor :user_defined
 
   #
+  # Was this entry actually set or just using its default
+  #
+  # @return [TrueClass, FalseClass]
+  def default?(key)
+    search_for(key).default?
+  end
+
+  #
   # Clears the imported flag for the supplied key since it's being set
   # directly.
   #
