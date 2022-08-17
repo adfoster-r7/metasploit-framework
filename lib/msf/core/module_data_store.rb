@@ -18,33 +18,6 @@ module Msf
     end
 
     #
-    # Fetch the key from the local hash first, or from the framework datastore
-    # if we can't directly find it
-    #
-    def fetch(key)
-      super
-    rescue KeyError
-      raise key_error_for(key) if @_module&.framework.nil?
-
-      @_module.framework.datastore.fetch(key)
-    end
-
-    #
-    # Same as fetch
-    #
-    def [](key)
-      fetch(key)
-    rescue KeyError
-      nil
-    end
-
-    def unset(key)
-      super(key)
-
-      # @user_defined.delete(key)
-    end
-
-    #
     # Return a copy of this datastore. Only string values will be duplicated, other values
     # will share the same reference
     # @return [Msf::DataStore] a new datastore instance
@@ -55,6 +28,7 @@ module Msf
     end
 
     # Search for a value within the current datastore, taking into consideration any registered aliases, fallbacks, etc.
+    # If a value is not present in the current datastore, the global parent store will be referenced instead
     #
     # @param [String] k The key to search for
     # @return [SearchResult]
@@ -63,11 +37,15 @@ module Msf
       return search_result(:not_found, nil) if key.nil?
       return search_result(:user_defined, @user_defined[key]) if @user_defined.key?(key)
 
+      # Preference a globally set values over a module's option default
+      framework_datastore_search = search_framework_datastore(k)
+      return framework_datastore_search if framework_datastore_search.found? && !framework_datastore_search.default?
+
       # If the key isn't present - check any additional fallbacks that have been registered with the option.
       # i.e. handling the scenario of SMBUser not being explicitly set, but the option has registered a more
       # generic 'Username' fallback
       option = @options.find { |option_name, _option| option_name.casecmp?(key) }&.last
-      return search_result(:not_found, nil) unless option
+      return search_framework_datastore(k) unless option
 
       option.fallbacks.each do |fallback|
         fallback_search = search_for(fallback)
@@ -79,12 +57,13 @@ module Msf
       return search_result(:default, @defaults[key]) if @defaults.key?(key)
       return search_result(:default, option.default) unless option.default.nil?
 
-      search_result(:not_found, nil)
+      # fallback to checking the parent datatore
+      search_framework_datastore(k)
     end
 
     protected
 
-    def search_framework_datastore(k)
+    def search_framework_datastore(key)
       search_result(:not_found, nil) if @_module&.framework.nil?
 
       @_module.framework.datastore.search_for(key)

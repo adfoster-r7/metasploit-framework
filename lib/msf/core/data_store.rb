@@ -37,28 +37,15 @@ class DataStore
     # default values which will be referenced when not defined by the user
     @defaults = Hash.new
 
+    # keys which have been explicitly unset by the user
+    @unset_keys = Set.new
+
     # values explicitly defined, which take precedence over default values
-    @user_defined = Hash.new
+    @_user_defined = Hash.new
   end
 
   # @return [Hash{String => Msf::OptBase}] The options associated with this datastore. Used for validating values/defaults/etc
   attr_accessor :options
-
-  # These defaults will be used if the user has not explicitly defined a specific datastore value.
-  # These will be checked as a priority to any options that also provide defaults.
-  #
-  # @return [Hash{String => Msf::OptBase}] The hash of default values
-  attr_accessor :defaults
-
-  # @return [Hash{String => String}] The key is the old option name, the value is the new option name
-  attr_accessor :aliases
-
-  #
-  # Returns a hash of user-defined datastore values. The returned hash does
-  # not include default option values.
-  #
-  # @return [Hash<String, Object>] values explicitly defined on the data store which will override any default datastore values
-  attr_accessor :user_defined
 
   #
   # Was this entry actually set or just using its default
@@ -86,7 +73,7 @@ class DataStore
       end
     end
 
-    @user_defined[k] = v
+    @_user_defined[k] = v
   end
 
   #
@@ -109,7 +96,17 @@ class DataStore
   # Case-insensitive wrapper around store
   #
   def store(k,v)
-    @user_defined[find_key_case(k)] = v
+    @_user_defined[find_key_case(k)] = v
+    @unset_keys.delete(k.downcase)
+  end
+
+  #
+  # Updates a value in the datastore with the specified name, k, to the
+  # specified value, v.  This update does not alter the imported status of
+  # the value.
+  #
+  def update_value(k, v)
+    self.store(k, v)
   end
 
   #
@@ -117,9 +114,8 @@ class DataStore
   def unset(key)
     k = find_key_case(key)
     search_result = search_for(k)
-
-    # Explicitly mark the entry as nil so that future lookups of the key are nil, instead of retrieving a default value
-    @user_defined[k] = nil
+    @_user_defined.delete(k)
+    @unset_keys.add(k.downcase)
 
     search_result.value
   end
@@ -136,7 +132,8 @@ class DataStore
   # @return [nil]
   def reset(key)
     k = find_key_case(key)
-    @user_defined.delete(k)
+    @_user_defined.delete(k)
+    @unset_keys.delete(k.downcase)
 
     nil
   end
@@ -148,19 +145,11 @@ class DataStore
   # @return [Msf::OptBase, nil]
   def remove_option(name)
     k = find_key_case(name)
-    @user_defined.delete(k)
+    @_user_defined.delete(k)
+    @unset_keys.delete(k.downcase)
     @aliases.delete_if { |_, v| v.casecmp?(k) }
     # TODO: Should this modify @defaults too?
     @options.delete(k)
-  end
-
-  #
-  # Updates a value in the datastore with the specified name, k, to the
-  # specified value, v.  This update does not alter the imported status of
-  # the value.
-  #
-  def update_value(k, v)
-    self.store(k, v)
   end
 
   #
@@ -258,7 +247,7 @@ class DataStore
 
   # @return [Array<String>] The array of user defined datastore values, and registered option names
   def keys
-    (@user_defined.keys + @options.keys).uniq(&:downcase)
+    (@_user_defined.keys + @options.keys).uniq(&:downcase)
   end
 
   # @return [Integer] The length of the registered keys
@@ -336,7 +325,7 @@ class DataStore
     ini.add_group(name)
 
     # Save all user-defined options to the file.
-    @user_defined.each_pair { |k, v|
+    @_user_defined.each_pair { |k, v|
       ini[name][k] = v
     }
 
@@ -370,21 +359,6 @@ class DataStore
   end
 
   #
-  # Copy the state from the other Msf::DataStore. The state will be coped in a shallow fashion, other than
-  # imported and user_defined strings.
-  #
-  # @param [Msf::DataStore] other The other datastore to copy state from
-  # @return [Msf::DataStore] the current datastore instance
-  def copy_state(other)
-    self.options = other.options.dup
-    self.aliases = other.aliases.dup
-    self.defaults = other.defaults.transform_values { |value| value.kind_of?(String) ? value.dup : value }
-    self.user_defined = other.user_defined.transform_values { |value| value.kind_of?(String) ? value.dup : value }
-
-    self
-  end
-
-  #
   # Merge the other object into the current datastore's aliases and imported hashes
   #
   # @param [Msf::Datastore, Hash] other
@@ -392,8 +366,9 @@ class DataStore
     if other.is_a? DataStore
       self.aliases.merge!(other.aliases)
       self.options.merge!(other.options)
-      other.user_defined.each do |k, v|
-        self.user_defined[find_key_case(k)] = v
+      self.unset_keys += other.unset_keys
+      other._user_defined.each do |k, v|
+        @_user_defined[find_key_case(k)] = v
       end
     else
       other.each do |k, v|
@@ -426,8 +401,13 @@ class DataStore
     ds.merge!(other)
   end
 
-  # TODO: Add reverse_merge!
-  # TODO: Verify code path `enc.datastore.update(options)`
+  #
+  # Returns a hash of user-defined datastore values.  The returned hash does
+  # not include default option values.
+  #
+  def user_defined
+    @_user_defined.merge(@unset_keys.map { |k| [find_key_case(k), nil] }.to_h)
+  end
 
   #
   # Remove all imported options from the data store.
@@ -452,7 +432,7 @@ class DataStore
   def clear
     # Clearing these values like this removes the book keeping
     # self.keys.each {|k| self.delete(k) }
-    @user_defined.clear
+    @_user_defined.clear
     self
   end
 
@@ -485,7 +465,7 @@ class DataStore
     end
 
     # Check to see if we have an exact key match - otherwise we'll have to search manually to check case sensitivity
-    if options.key?(search_k) || @user_defined.key?(search_k)
+    if options.key?(search_k) || @_user_defined.key?(search_k)
       return search_k
     end
 
@@ -507,7 +487,8 @@ class DataStore
   def search_for(k)
     key = find_key_case(k)
     return search_result(:not_found, nil) if key.nil?
-    return search_result(:user_defined, @user_defined[key]) if @user_defined.key?(key)
+    return search_result(:unset, nil) if @unset_keys.include?(key.downcase)
+    return search_result(:user_defined, @_user_defined[key]) if @_user_defined.key?(key)
 
     # If the key isn't present - check any additional fallbacks that have been registered with the option.
     # i.e. handling the scenario of SMBUser not being explicitly set, but the option has registered a more
@@ -529,6 +510,44 @@ class DataStore
   end
 
   protected
+
+  # These defaults will be used if the user has not explicitly defined a specific datastore value.
+  # These will be checked as a priority to any options that also provide defaults.
+  #
+  # @return [Hash{String => Msf::OptBase}] The hash of default values
+  attr_accessor :defaults
+
+  # @return [Hash{String => String}] The key is the old option name, the value is the new option name
+  attr_accessor :aliases
+
+  #
+  # Returns a hash of user-defined datastore values. The returned hash does
+  # not include default option values.
+  #
+  # @return [Hash<String, Object>] values explicitly defined on the data store which will override any default datastore values
+  attr_accessor :_user_defined
+
+  #
+  # Returns a set of datastore values which have been unset by the user. Stored in lowercase.
+  #
+  # @return [Set<String>] unset values
+  attr_accessor :unset_keys
+
+  #
+  # Copy the state from the other Msf::DataStore. The state will be coped in a shallow fashion, other than
+  # imported and user_defined strings.
+  #
+  # @param [Msf::DataStore] other The other datastore to copy state from
+  # @return [Msf::DataStore] the current datastore instance
+  def copy_state(other)
+    self.options = other.options.dup
+    self.unset_keys = other.unset_keys.dup
+    self.aliases = other.aliases.dup
+    self.defaults = other.defaults.transform_values { |value| value.kind_of?(String) ? value.dup : value }
+    self._user_defined = other._user_defined.transform_values { |value| value.kind_of?(String) ? value.dup : value }
+
+    self
+  end
 
   # Raised when the specified key is not found
   # @param [string] k
@@ -562,6 +581,10 @@ class DataStore
 
     def fallback?
       result == :fallback
+    end
+
+    def unset?
+      result == :unset
     end
 
   protected
