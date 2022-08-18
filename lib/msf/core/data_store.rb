@@ -74,6 +74,7 @@ class DataStore
     end
 
     @_user_defined[k] = v
+    @unset_keys.delete(k.downcase)
   end
 
   #
