@@ -31,14 +31,14 @@ module Msf
     # If a value is not present in the current datastore, the global parent store will be referenced instead
     #
     # @param [String] k The key to search for
-    # @return [SearchResult]
+    # @return [DataStoreSearchResult]
     def search_for(k)
       key = find_key_case(k)
-      return search_result(:not_found, nil) if key.nil?
-      return search_result(:user_defined, @user_defined[key]) if @user_defined.key?(key)
+      return search_result(:module_user_defined, @_user_defined[key]) if @_user_defined.key?(key)
 
       # Preference a globally set values over a module's option default
       framework_datastore_search = search_framework_datastore(k)
+      require 'pry'; binding.pry
       return framework_datastore_search if framework_datastore_search.found? && !framework_datastore_search.default?
 
       # If the key isn't present - check any additional fallbacks that have been registered with the option.
@@ -50,19 +50,20 @@ module Msf
       option.fallbacks.each do |fallback|
         fallback_search = search_for(fallback)
         if fallback_search.found?
-          return search_result(:fallback, fallback_search.value, fallback_key: fallback)
+          return search_result(:module_option_fallback, fallback_search.value, fallback_key: fallback)
         end
       end
 
-      return search_result(:default, @defaults[key]) if @defaults.key?(key)
-      return search_result(:default, option.default) unless option.default.nil?
-
-      # fallback to checking the parent datatore
-      search_framework_datastore(k)
+      return search_result(:module_default, @defaults[key]) if @defaults.key?(key)
+      search_result(:module_option_default, option.default)
     end
 
     protected
 
+    # Search the framework datastore
+    #
+    # @param [String] key The key to search for
+    # @return [DataStoreSearchResult]
     def search_framework_datastore(key)
       search_result(:not_found, nil) if @_module&.framework.nil?
 
