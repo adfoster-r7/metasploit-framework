@@ -38,7 +38,6 @@ module Msf
 
       # Preference a globally set values over a module's option default
       framework_datastore_search = search_framework_datastore(k)
-      require 'pry'; binding.pry
       return framework_datastore_search if framework_datastore_search.found? && !framework_datastore_search.default?
 
       # If the key isn't present - check any additional fallbacks that have been registered with the option.
@@ -65,7 +64,7 @@ module Msf
     # @param [String] key The key to search for
     # @return [DataStoreSearchResult]
     def search_framework_datastore(key)
-      search_result(:not_found, nil) if @_module&.framework.nil?
+      return search_result(:not_found, nil) if @_module&.framework.nil?
 
       @_module.framework.datastore.search_for(key)
     end

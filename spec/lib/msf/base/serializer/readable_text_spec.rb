@@ -65,13 +65,17 @@ RSpec.describe Msf::Serializer::ReadableText do
     end
 
     mod = mod_klass.new
-    allow(mod).to receive(:framework).and_return(nil)
+    mock_framework = instance_double(::Msf::Framework, datastore: Msf::DataStore.new)
+    allow(mod).to receive(:framework).and_return(mock_framework)
     mod
   end
 
   let(:aux_mod_with_set_options) do
     mod = aux_mod.replicant
-    mod.datastore.unset('FloatValue')
+    mod.framework.datastore['RHOSTS'] = '192.0.2.2'
+    mod.framework.datastore['FloatValue'] = 5
+    mod.framework.datastore['foo'] = 'foo_from_framework'
+    mod.datastore['foo'] = 'new_value'
     mod.datastore.unset('foo')
     mod.datastore['OLD_OPTION_NAME'] = nil
     mod.datastore['username'] = 'username'
@@ -103,10 +107,10 @@ RSpec.describe Msf::Serializer::ReadableText do
   
           Name                     Value
           ----                     -----
-          FloatValue
+          FloatValue               5
           NewOptionName
           OptionWithModuleDefault  false
-          RHOSTS
+          RHOSTS                   192.0.2.2
           RPORT                    3000
           SMBDomain                WORKGROUP
           SMBUser                  username
@@ -114,7 +118,7 @@ RSpec.describe Msf::Serializer::ReadableText do
           WORKSPACE
           baz                      baz_from_module
           fizz                     new_fizz
-          foo
+          foo                      foo_from_framework
           username                 username
         TABLE
       end
@@ -125,18 +129,18 @@ RSpec.describe Msf::Serializer::ReadableText do
     context 'when missing is false' do
       it 'returns the options as a table' do
         expect(described_class.dump_options(aux_mod_with_set_options, indent_string, false)).to match_table <<~TABLE
-          Name                     Current Setting  Required  Description
-          ----                     ---------------  --------  -----------
-          FloatValue                                no        A FloatValue
-          NewOptionName                             yes       An option with a new name. Aliases ensure the old and new names are synchronized
-          OptionWithModuleDefault  false            yes       option with module default
-          RHOSTS                                    yes       The target host(s), see https://github.com/rapid7/metasploit-framework/wiki/Using-Metasploit
-          RPORT                    3000             yes       The target port
-          SMBDomain                WORKGROUP        yes       The SMB username
-          SMBUser                  username         yes       The SMB username
-          baz                      baz_from_module  yes       baz option
-          fizz                     new_fizz         yes       fizz option
-          foo                                       yes       Foo option
+          Name                     Current Setting     Required  Description
+          ----                     ---------------     --------  -----------
+          FloatValue               5                   no        A FloatValue
+          NewOptionName                                yes       An option with a new name. Aliases ensure the old and new names are synchronized
+          OptionWithModuleDefault  false               yes       option with module default
+          RHOSTS                   192.0.2.2           yes       The target host(s), see https://github.com/rapid7/metasploit-framework/wiki/Using-Metasploit
+          RPORT                    3000                yes       The target port
+          SMBDomain                WORKGROUP           yes       The SMB username
+          SMBUser                  username            yes       The SMB username
+          baz                      baz_from_module     yes       baz option
+          fizz                     new_fizz            yes       fizz option
+          foo                      foo_from_framework  yes       Foo option
         TABLE
       end
     end
@@ -147,8 +151,6 @@ RSpec.describe Msf::Serializer::ReadableText do
           Name           Current Setting  Required  Description
           ----           ---------------  --------  -----------
           NewOptionName                   yes       An option with a new name. Aliases ensure the old and new names are synchronized
-          RHOSTS                          yes       The target host(s), see https://github.com/rapid7/metasploit-framework/wiki/Using-Metasploit
-          foo                             yes       Foo option
         TABLE
       end
     end

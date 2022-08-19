@@ -921,19 +921,19 @@ RSpec.describe Msf::ModuleDataStore do
           # Test permutations, ints used for readability
           [
             # nothing changed on module
-            { mod_set: 0, mod_unset: 0, framework_set: 0, framework_unset: 0, expected: option_default_value, reason: :module_option_default },
-            { mod_set: 0, mod_unset: 0, framework_set: 0, framework_unset: 1, expected: option_default_value, reason: :module_option_default },
-            { mod_set: 0, mod_unset: 0, framework_set: 1, framework_unset: 0, expected: set_value, reason: :global_user_defined },
+            { mod_set: 0, mod_unset: 0, framework_set: 0, framework_unset: 0, expected: { value: option_default_value, reason: :module_option_default, is_default: false } },
+            { mod_set: 0, mod_unset: 0, framework_set: 0, framework_unset: 1, expected: { value: option_default_value, reason: :module_option_default, is_default: false } },
+            { mod_set: 0, mod_unset: 0, framework_set: 1, framework_unset: 0, expected: { value: set_value, reason: :global_user_defined, is_default: false } },
 
             # module datastore unset
-            { mod_set: 0, mod_unset: 1, framework_set: 0, framework_unset: 0, expected: option_default_value, reason: :module_option_default },
-            { mod_set: 0, mod_unset: 1, framework_set: 0, framework_unset: 1, expected: option_default_value, reason: :module_option_default },
-            { mod_set: 0, mod_unset: 1, framework_set: 1, framework_unset: 0, expected: set_value, reason: :global_user_defined },
+            { mod_set: 0, mod_unset: 1, framework_set: 0, framework_unset: 0, expected: { value: option_default_value, reason: :module_option_default, is_default: false } },
+            { mod_set: 0, mod_unset: 1, framework_set: 0, framework_unset: 1, expected: { value: option_default_value, reason: :module_option_default, is_default: false } },
+            { mod_set: 0, mod_unset: 1, framework_set: 1, framework_unset: 0, expected: { value: set_value, reason: :global_user_defined, is_default: false } },
 
             # module datastore set
-            { mod_set: 1, mod_unset: 0, framework_set: 0, framework_unset: 0, expected: set_value, reason: :module_user_defined },
-            { mod_set: 1, mod_unset: 0, framework_set: 0, framework_unset: 1, expected: set_value, reason: :module_user_defined },
-            { mod_set: 1, mod_unset: 0, framework_set: 1, framework_unset: 0, expected: set_value, reason: :module_user_defined },
+            { mod_set: 1, mod_unset: 0, framework_set: 0, framework_unset: 0, expected: { value: set_value, reason: :module_user_defined, is_default: false } },
+            { mod_set: 1, mod_unset: 0, framework_set: 0, framework_unset: 1, expected: { value: set_value, reason: :module_user_defined, is_default: false } },
+            { mod_set: 1, mod_unset: 0, framework_set: 1, framework_unset: 0, expected: { value: set_value, reason: :module_user_defined, is_default: false } },
           ].each do |opts|
             context "when #{opts.inspect}" do
               it 'returns the expected value' do
@@ -944,10 +944,12 @@ RSpec.describe Msf::ModuleDataStore do
                 framework_datastore.unset(set_key) if opts[:framework_unset] == 1
 
                 # Assertions
+                expected = opts[:expected]
                 search_result = subject.search_for(read_key)
-                expect(search_result.value).to eq opts[:expected]
-                expect(search_result.instance_variable_get(:@result)).to eq opts[:reason]
-                expect(subject[read_key]).to eq opts[:expected]
+                expect(search_result.value).to eq expected[:value]
+                expect(search_result.instance_variable_get(:@result)).to eq expected[:reason]
+                expect(subject[read_key]).to eq expected[:value]
+                # expect(search_result.default?).to eq(expected[:is_default])
               end
             end
           end
@@ -982,7 +984,7 @@ RSpec.describe Msf::ModuleDataStore do
 
             { option_default_value: nil,  set_key: set_key, set_value: 'set_value', read_key: read_key },
             { option_default_value: '',  set_key: set_key, set_value: 'set_value', read_key: read_key },
-            { option_default_value: 'default_value',  set_key: 'foo', set_value: 'set_value', read_key: read_key },
+            { option_default_value: 'default_value',  set_key: set_key, set_value: 'set_value', read_key: read_key },
           ].each do |test|
             context "when the default value is #{test[:default_value]}" do
               option_default_value = test[:default_value]
@@ -997,19 +999,19 @@ RSpec.describe Msf::ModuleDataStore do
               # Test permutations, ints used for readability
               [
                 # nothing changed on module
-                { mod_set: 0, mod_unset: 0, framework_set: 0, framework_unset: 0, expected: option_default_value, reason: :module_option_default },
-                { mod_set: 0, mod_unset: 0, framework_set: 0, framework_unset: 1, expected: option_default_value, reason: :module_option_default },
-                { mod_set: 0, mod_unset: 0, framework_set: 1, framework_unset: 0, expected: set_value, reason: :global_user_defined },
+                { mod_set: 0, mod_unset: 0, framework_set: 0, framework_unset: 0, expected: { value: option_default_value, reason: :module_option_default, is_default: false } },
+                { mod_set: 0, mod_unset: 0, framework_set: 0, framework_unset: 1, expected: { value: option_default_value, reason: :module_option_default, is_default: false } },
+                { mod_set: 0, mod_unset: 0, framework_set: 1, framework_unset: 0, expected: { value: set_value, reason: :global_user_defined, is_default: false } },
 
                 # module datastore unset
-                { mod_set: 0, mod_unset: 1, framework_set: 0, framework_unset: 0, expected: option_default_value, reason: :module_option_default },
-                { mod_set: 0, mod_unset: 1, framework_set: 0, framework_unset: 1, expected: option_default_value, reason: :module_option_default },
-                { mod_set: 0, mod_unset: 1, framework_set: 1, framework_unset: 0, expected: set_value, reason: :global_user_defined },
+                { mod_set: 0, mod_unset: 1, framework_set: 0, framework_unset: 0, expected: { value: option_default_value, reason: :module_option_default, is_default: false } },
+                { mod_set: 0, mod_unset: 1, framework_set: 0, framework_unset: 1, expected: { value: option_default_value, reason: :module_option_default, is_default: false } },
+                { mod_set: 0, mod_unset: 1, framework_set: 1, framework_unset: 0, expected: { value: set_value, reason: :global_user_defined, is_default: false } },
 
                 # module datastore set
-                { mod_set: 1, mod_unset: 0, framework_set: 0, framework_unset: 0, expected: set_value, reason: :module_user_defined },
-                { mod_set: 1, mod_unset: 0, framework_set: 0, framework_unset: 1, expected: set_value, reason: :module_user_defined },
-                { mod_set: 1, mod_unset: 0, framework_set: 1, framework_unset: 0, expected: set_value, reason: :module_user_defined },
+                { mod_set: 1, mod_unset: 0, framework_set: 0, framework_unset: 0, expected: { value: set_value, reason: :module_user_defined, is_default: false } },
+                { mod_set: 1, mod_unset: 0, framework_set: 0, framework_unset: 1, expected: { value: set_value, reason: :module_user_defined, is_default: false } },
+                { mod_set: 1, mod_unset: 0, framework_set: 1, framework_unset: 0, expected: { value: set_value, reason: :module_user_defined, is_default: false } },
               ].each do |opts|
                 context "when #{opts.inspect}" do
                   it 'returns the expected value' do
@@ -1020,10 +1022,12 @@ RSpec.describe Msf::ModuleDataStore do
                     framework_datastore.unset(set_key) if opts[:framework_unset] == 1
 
                     # Assertions
+                    expected = opts[:expected]
                     search_result = subject.search_for(read_key)
-                    expect(search_result.value).to eq opts[:expected]
-                    expect(search_result.instance_variable_get(:@result)).to eq opts[:reason]
-                    expect(subject[read_key]).to eq opts[:expected]
+                    expect(search_result.value).to eq expected[:value]
+                    expect(search_result.instance_variable_get(:@result)).to eq expected[:reason]
+                    expect(subject[read_key]).to eq expected[:value]
+                    # expect(search_result.default?).to eq(expected[:is_default])
                   end
                 end
               end
@@ -1033,7 +1037,6 @@ RSpec.describe Msf::ModuleDataStore do
       end
     end
   end
-
 
   next
 
