@@ -38,7 +38,7 @@ class DataStore
     @defaults = Hash.new
 
     # keys which have been explicitly unset by the user
-    @unset_keys = Set.new
+    # @unset_keys = Set.new
 
     # values explicitly defined, which take precedence over default values
     @_user_defined = Hash.new
@@ -74,7 +74,7 @@ class DataStore
     end
 
     @_user_defined[k] = v
-    @unset_keys.delete(k.downcase)
+    # @unset_keys.delete(k.downcase)
   end
 
   #
@@ -86,19 +86,12 @@ class DataStore
     search_result.value
   end
 
-  def fetch(k)
-    search_result = search_for(k)
-    raise key_error_for(k) unless search_result.found?
-
-    search_result.value
-  end
-
   #
   # Case-insensitive wrapper around store
   #
   def store(k,v)
     @_user_defined[find_key_case(k)] = v
-    @unset_keys.delete(k.downcase)
+    # @unset_keys.delete(k.downcase)
   end
 
   #
@@ -116,7 +109,7 @@ class DataStore
     k = find_key_case(key)
     search_result = search_for(k)
     @_user_defined.delete(k)
-    @unset_keys.add(k.downcase)
+    # @unset_keys.add(k.downcase)
 
     search_result.value
   end
@@ -134,7 +127,7 @@ class DataStore
   def reset(key)
     k = find_key_case(key)
     @_user_defined.delete(k)
-    @unset_keys.delete(k.downcase)
+    # @unset_keys.delete(k.downcase)
 
     nil
   end
@@ -147,7 +140,7 @@ class DataStore
   def remove_option(name)
     k = find_key_case(name)
     @_user_defined.delete(k)
-    @unset_keys.delete(k.downcase)
+    # @unset_keys.delete(k.downcase)
     @aliases.delete_if { |_, v| v.casecmp?(k) }
     # TODO: Should this modify @defaults too?
     @options.delete(k)
@@ -367,7 +360,7 @@ class DataStore
     if other.is_a? DataStore
       self.aliases.merge!(other.aliases)
       self.options.merge!(other.options)
-      self.unset_keys += other.unset_keys
+      # self.unset_keys += other.unset_keys
       other._user_defined.each do |k, v|
         @_user_defined[find_key_case(k)] = v
       end
@@ -407,13 +400,16 @@ class DataStore
   # not include default option values.
   #
   def user_defined
-    @_user_defined.merge(@unset_keys.map { |k| [find_key_case(k), nil] }.to_h)
+    # @_user_defined.merge(@unset_keys.map { |k| [find_key_case(k), nil] }.to_h)
+    @_user_defined
   end
 
   #
   # Remove all imported options from the data store.
   # TODO: Find out what is this used for, and what the intent is - should it remove options now?
   def clear_non_user_defined
+    raise 'todo'
+
     options.keys.each do
       unregister
     end
@@ -528,7 +524,7 @@ class DataStore
   # Returns a set of datastore values which have been unset by the user. Stored in lowercase.
   #
   # @return [Set<String>] unset values
-  attr_accessor :unset_keys
+  # attr_accessor :unset_keys
 
   #
   # Copy the state from the other Msf::DataStore. The state will be coped in a shallow fashion, other than
@@ -538,7 +534,7 @@ class DataStore
   # @return [Msf::DataStore] the current datastore instance
   def copy_state(other)
     self.options = other.options.dup
-    self.unset_keys = other.unset_keys.dup
+    # self.unset_keys = other.unset_keys.dup
     self.aliases = other.aliases.dup
     self.defaults = other.defaults.transform_values { |value| value.kind_of?(String) ? value.dup : value }
     self._user_defined = other._user_defined.transform_values { |value| value.kind_of?(String) ? value.dup : value }
@@ -562,7 +558,8 @@ class DataStore
     # @return [object, nil] The value if found
     attr_reader :value
 
-    def initialize(result, value, fallback_key: nil)
+    def initialize(result, value, namespace: nil, fallback_key: nil)
+      @namespace = namespace
       @result = result
       @value = value
       @fallback_key = fallback_key
@@ -580,8 +577,8 @@ class DataStore
       result == :fallback
     end
 
-    def unset?
-      result == :unset
+    def global?
+      result.to_s.include?('global_') && found?
     end
 
   protected
@@ -591,7 +588,7 @@ class DataStore
   end
 
   def search_result(result, value, fallback_key: nil)
-    DataStoreSearchResult.new(result, value, fallback_key: fallback_key)
+    DataStoreSearchResult.new(result, value, namespace: :data_store, fallback_key: fallback_key)
   end
 end
 

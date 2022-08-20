@@ -96,11 +96,19 @@ class Core
     ["-l", "--load"]           => [ false, "Load the saved options for the active module."                                  ],
     ["-d", "--delete-all"]     => [ false, "Delete saved options for all modules from the config file."                     ])
 
+  # set command options
+  @@set_opts = Rex::Parser::Arguments.new(
+    ["-h", "--help"] => [ false, "Help banner."],
+    ["-c", "--clear"] => [ false, "Clear the values, explicitly setting to nil (default)"]
+  )
+
+  @@set_opts = Rex::Parser::Arguments.new(
+    ["-g", "--global"] => [ false, "Operate on global datastore variables"]
+  )
+
   # unset command options
   @@unsetg_opts = Rex::Parser::Arguments.new(
     ["-h", "--help"] => [ false, "Help banner."],
-    ["-r", "--reset"] => [ false, "Reset the values instead back to the defaults, instead of unsetting"],
-    ["-c", "--clear"] => [ false, "Clear the values, explicitly setting to nil (default)"]
   )
 
   # unset command options
@@ -1807,7 +1815,7 @@ class Core
   end
 
   def cmd_set_help
-    print_line "Usage: set [option] [value]"
+    print_line "Usage: set [options] [name] [value]"
     print_line
     print_line "Set the given option to value.  If value is omitted, print the current value."
     print_line "If both are omitted, print options that are currently set."
@@ -1816,6 +1824,7 @@ class Core
     print_line "datastore.  Use -g to operate on the global datastore."
     print_line
     print_line "If setting a PAYLOAD, this command can take an index from `show payloads'."
+    print @@set_opts.usage
     print_line
   end
 
@@ -1825,18 +1834,24 @@ class Core
   def cmd_set(*args)
     # Figure out if these are global variables
     global = false
-
-    if (args[0] == '-g')
-      args.shift
-      global = true
-    end
-
-    # Decide if this is an append operation
     append = false
+    clear = false
 
-    if (args[0] == '-a')
-      args.shift
-      append = true
+    # Manually parse options to allow users to set the strings
+    # such as `-g` in a datastore value
+    loop do
+      if args[0] == '-g' || args[0] == '--global'
+        args.shift
+        global = true
+      elsif args[0] == '-a'
+        args.shift
+        append = true
+      elsif args[0] == '-c' || args[0] == '--clear'
+        args.shift
+        clear = true
+      else
+        break
+      end
     end
 
     valid_options = []
@@ -1873,7 +1888,7 @@ class Core
           (global) ? "Global" : "Module: #{active_module.refname}",
           datastore) + "\n")
       return true
-    elsif (args.length == 1)
+    elsif args.length == 1 && !clear
       if global || valid_options.any? { |vo| vo.casecmp?(args[0]) }
         print_line("#{args[0]} => #{datastore[args[0]]}")
         return true
@@ -1889,7 +1904,9 @@ class Core
 
     # Set the supplied name to the supplied value
     name, *values_array = args
-    if name.casecmp?('RHOST') || name.casecmp?('RHOSTS')
+    if clear
+      value = nil
+    elsif name.casecmp?('RHOST') || name.casecmp?('RHOSTS')
       # Wrap any values which contain spaces in quotes to ensure it's parsed correctly later
       value = values_array.map { |value| value.include?(' ') ? "\"#{value}\"" : value }.join(' ')
     else
@@ -1897,7 +1914,7 @@ class Core
     end
 
     # Set PAYLOAD
-    if name.upcase == 'PAYLOAD' && active_module && (active_module.exploit? || active_module.evasion?)
+    if name.upcase == 'PAYLOAD' && active_module && (active_module.exploit? || active_module.evasion?) && !clear
       value = trim_path(value, 'payload')
 
       index_from_list(payload_show_results, value) do |mod|
@@ -1986,6 +2003,7 @@ class Core
     print_line "Usage: setg [option] [value]"
     print_line
     print_line "Exactly like set -g, set a value in the global datastore."
+    print @@setg_opts.usage
     print_line
   end
 
@@ -2153,8 +2171,7 @@ class Core
   end
 
   #
-  # Unsets a value if it's been set, allows clearing a value entirely or resetting the value
-  # back to a default value
+  # Unsets a value if it's been set, resetting the value back to a default value
   #
   def cmd_unset(*args)
     if args.include?('-h') || args.include?('--help')
@@ -2164,16 +2181,11 @@ class Core
 
     # Figure out if these are global variables
     global = false
-    action = :unset
 
     @@unset_opts.parse(args) do |opt, idx, val|
       case opt
       when '-g'
         global = true
-      when '-r'
-        action = :reset
-      when '-c'
-        action = :unset
       end
     end
 
@@ -2200,46 +2212,42 @@ class Core
       variable_names = variable_names.uniq(&:downcase)
     end
 
-    case action
-    # Unsetting / flushing the datastore
-    when :unset
-      print_line("Clearing datastore...") if is_all_variables
-      variable_names.each do |variable_name|
-        if driver.on_variable_unset(global, variable_name) == false
-          print_error("The variable #{variable_name} cannot be unset at this time.")
-          next
-        end
+    print_line("Unsetting datastore...") if is_all_variables
 
-        print_line("Clearing #{variable_name}...") unless is_all_variables
-        datastore.unset(variable_name)
-      end
-    when :reset
-      print_line("Resetting datastore...") if is_all_variables
-
-      variable_names.each do |variable_name|
-        if driver.on_variable_reset(global, variable_name) == false
-          print_error("The variable #{variable_name} cannot be reset at this time.") unless variable_name.casecmp?('PAYLOAD')
-          next
-        end
-
-        print_line("Resetting #{variable_name}...") unless is_all_variables
-        datastore.reset(variable_name)
+    variable_names.each do |variable_name|
+      if driver.on_variable_unset(global, variable_name) == false
+        print_error("The variable #{variable_name} cannot be unset at this time.") # unless variable_name.casecmp?('PAYLOAD')
+        next
       end
 
-      # Do a final pass over the datastore, if a user has reset a variable - but it continues to fallback to a previous
-      # datastore value it might be confusing to users. i.e. the user resetting 'SMBUser', but the datastore continues
-      # to use 'USERNAME' as a fallback as 'SMBUser' hasn't been explicitly set by the user anymore
+      print_line("Unsetting #{variable_name}...") unless is_all_variables
+      datastore.unset(variable_name)
+    end
+
+    # Do a final pass over the datastore. If a user has unset a variable - but it continues to have a value either through
+    # option defaults, or being globally set it might be confusing to users. In this scneario, log out a helpful message.
+    #
+    # i.e. the scenario of a user unsetting 'RHOSTS', but the value continues to inherit from the global framework datastore.
+    unless is_all_variables
       variable_names.each do |variable_name|
         search_result = datastore.search_for(variable_name)
         if search_result.fallback?
           print_warning(
-            "Variable #{variable_name.inspect} reset - but will continue to use #{search_result.fallback_key.inspect} as a fallback preference. " \
-              "If this is not desired, either run #{Msf::Ui::Tip.highlight("set #{variable_name} new_value")} or #{Msf::Ui::Tip.highlight("unset --reset #{search_result.fallback_key}")}"
+            "Variable #{variable_name.inspect} unset - but will continue to use #{search_result.fallback_key.inspect} as a fallback preference. " \
+              "If this is not desired, either run #{Msf::Ui::Tip.highlight("set #{variable_name} new_value")} or #{Msf::Ui::Tip.highlight("unset #{search_result.fallback_key}")}"
+          )
+        elsif !global && search_result.global?
+          print_warning(
+            "Variable #{variable_name.inspect} unset - but will continue to use the globally set value as a preference. " \
+              "If this is not desired, either run #{Msf::Ui::Tip.highlight("set --clear #{variable_name}")} or #{Msf::Ui::Tip.highlight("unsetg #{variable_name}")}"
+          )
+        elsif !search_result.value.nil?
+          print_warning(
+            "Variable #{variable_name.inspect} unset - but will use a default value still. " \
+              "If this is not desired, set it to a new value or attempt to clear it with #{Msf::Ui::Tip.highlight("set --clear #{variable_name}")}"
           )
         end
       end
-    else
-      print_line "unknown action: #{action}"
     end
   end
 

@@ -423,30 +423,14 @@ class Driver < Msf::Ui::Driver
     end
   end
 
+  # TODO: Do we want an easy way to set a default payload still
+  #  if !glob && active_module && (active_module.exploit? || active_module.evasion?)
+  #     Msf::Ui::Console::CommandDispatcher::Exploit.choose_payload(active_module)
+  #     handle_payload(active_module.datastore['PAYLOAD'])
   #
-  # Called when a variable is reset.  If this routine returns false it is an
-  # indication that the variable should not be allowed to be unset.
-  #
-  def on_variable_reset(glob, var)
-    case var.downcase
-    when 'sessionlogging'
-      handle_session_logging('0') if glob
-    when 'sessiontlvlogging'
-      handle_session_tlv_logging('false') if glob
-    when 'consolelogging'
-      handle_console_logging('0') if glob
-    when 'payload'
-      if !glob && active_module && (active_module.exploit? || active_module.evasion?)
-        Msf::Ui::Console::CommandDispatcher::Exploit.choose_payload(active_module)
-        handle_payload(active_module.datastore['PAYLOAD'])
-
-        # Explicitly return false, as the side-effect of choosing a payload has already been done
-        false
-      end
-    when 'loglevel'
-      handle_loglevel(nil) if glob
-    end
-  end
+  #    # Explicitly return false, as the side-effect of choosing a payload has already been done
+  #    false
+  #  end
 
   #
   # Proxies to shell.rb's update prompt with our own extras

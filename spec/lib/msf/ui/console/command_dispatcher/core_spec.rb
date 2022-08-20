@@ -43,7 +43,7 @@ RSpec.describe Msf::Ui::Console::CommandDispatcher::Core do
   end
 
   describe "#cmd_get and #cmd_getg" do
-    describe "without arguments" do
+    context "without arguments" do
       it "should show the correct help message" do
         core.cmd_get
         expect(@output.join).to match /Usage: get /
@@ -53,7 +53,7 @@ RSpec.describe Msf::Ui::Console::CommandDispatcher::Core do
       end
     end
 
-    describe "with arguments" do
+    context "with arguments" do
       let(:name) { ::Rex::Text.rand_text_alpha(10).upcase }
 
       context "with an active module" do
@@ -83,6 +83,120 @@ RSpec.describe Msf::Ui::Console::CommandDispatcher::Core do
     end
   end
 
+  describe '#cmd_set' do
+    let(:mod) { nil }
+
+    before(:each) do
+      allow(subject).to receive(:active_module).and_return(mod)
+      allow(driver).to receive(:on_variable_set)
+    end
+
+    context 'with an exploit active module' do
+      let(:mod) do
+        mod_klass = Class.new(Msf::Exploit) do
+          def initialize
+            super
+
+            register_options(
+              [
+                Msf::OptString.new(
+                  'foo',
+                  [true, 'Foo option', 'default_foo_value']
+                )
+              ]
+            )
+          end
+        end
+        mod = mod_klass.new
+        allow(mod).to receive(:framework).and_return(framework)
+        mod
+      end
+
+      context 'when no arguments are supplied' do
+        before(:each) do
+          subject.cmd_set
+        end
+
+        it 'should output the datastore value' do
+          expect(@output.join).to match /foo                     default_foo_value/
+        end
+      end
+
+      context 'when setting the module datastore value' do
+        before(:each) do
+          subject.cmd_set('foo', 'bar')
+        end
+
+        it 'should not set the framework datastore' do
+          expect(framework.datastore['foo']).to eq nil
+        end
+
+        it 'should allow lookup via the active module' do
+          expect(mod.datastore['foo']).to eq 'bar'
+        end
+      end
+
+      context 'when setting the global datastore value' do
+        before(:each) do
+          subject.cmd_set('-g', 'foo', 'bar')
+        end
+
+        it 'should set the framework datastore' do
+          expect(framework.datastore['foo']).to eq 'bar'
+        end
+
+        it 'should allow lookup via the active module' do
+          expect(mod.datastore['foo']).to eq 'bar'
+        end
+      end
+
+      context 'when setting the global datastore value to nil' do
+        before(:each) do
+          framework.datastore['foo'] = 'global value'
+          subject.cmd_set('--clear', 'foo', 'ignored_value')
+        end
+
+        it 'should not set the framework datastore' do
+          expect(framework.datastore['foo']).to eq 'global value'
+        end
+
+        it 'should set the datastore value to nil' do
+          expect(mod.datastore['foo']).to eq nil
+        end
+      end
+
+      context 'when setting the module datastore value to nil' do
+        before(:each) do
+          framework.datastore['foo'] = 'global value'
+          subject.cmd_set('--clear', 'foo', 'ignored_value')
+        end
+
+        it 'should not set the framework datastore' do
+          expect(framework.datastore['foo']).to eq 'global value'
+        end
+
+        it 'should set the datastore value to nil' do
+          expect(mod.datastore['foo']).to eq nil
+        end
+      end
+    end
+  end
+
+  describe '#cmd_setg' do
+    before(:each) do
+      allow(subject).to receive(:cmd_set)
+    end
+
+    it 'should call cmd_set when no arguments are present' do
+      subject.cmd_setg
+      expect(subject).to have_received(:cmd_set).with('-g')
+    end
+
+    it 'should call cmd_set when no arguments present' do
+      subject.cmd_setg('foo', 'bar')
+      expect(subject).to have_received(:cmd_set).with('-g', 'foo', 'bar')
+    end
+  end
 
   def set_tabs_test(option)
     allow(core).to receive(:active_module).and_return(mod)
@@ -118,7 +232,7 @@ RSpec.describe Msf::Ui::Console::CommandDispatcher::Core do
       end
 
       all_options.each do |option|
-        describe "with #{option} arguments" do
+        context "with #{option} arguments" do
           it "should return array or nil" do
             set_tabs_test(option)
           end

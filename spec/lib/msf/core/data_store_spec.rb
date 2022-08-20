@@ -97,6 +97,11 @@ RSpec.shared_context 'datastore subjects', :shared_context => :metadata do
 end
 
 RSpec.shared_examples_for 'a datastore with lookup support' do |opts = {}|
+  it { is_expected.to respond_to :[] }
+  it { is_expected.to respond_to :[]= }
+  it { is_expected.to respond_to :unset }
+  it { is_expected.to respond_to :delete }
+
   describe '#[]' do
     it 'should have default keyed values' do
       expect(subject['foo']).to eq 'foo_value'
@@ -113,53 +118,6 @@ RSpec.shared_examples_for 'a datastore with lookup support' do |opts = {}|
       expect(subject['FOO']).to eq 'foo_value'
       expect(subject['FoO']).to eq 'foo_value'
       expect(subject['foO']).to eq 'foo_value'
-    end
-  end
-
-  describe '#fetch' do
-    it 'should have default keyed values' do
-      expect(subject.fetch('foo')).to eq 'foo_value'
-      expect(subject.fetch('bar')).to eq 'bar_value'
-    end
-
-    it 'should have case-insensitive lookups' do
-      # Sorted by gray code, just for fun
-      expect(subject.fetch('foo')).to eq 'foo_value'
-      expect(subject.fetch('Foo')).to eq 'foo_value'
-      expect(subject.fetch('FOo')).to eq 'foo_value'
-      expect(subject.fetch('fOo')).to eq 'foo_value'
-      expect(subject.fetch('fOO')).to eq 'foo_value'
-      expect(subject.fetch('FOO')).to eq 'foo_value'
-      expect(subject.fetch('FoO')).to eq 'foo_value'
-      expect(subject.fetch('foO')).to eq 'foo_value'
-    end
-
-    it 'should raise an exception if the value is not present' do
-      expect { subject.fetch('missing') }.to raise_exception KeyError, 'key not found: "missing"'
-    end
-
-    context 'when the option does not have a default value' do
-      before(:each) do
-        options = Msf::OptionContainer.new(
-          [
-            Msf::OptString.new(
-              'OptionWithoutDefault',
-              [true, 'option without default']
-            )
-          ]
-        )
-
-        subject.import_options(options)
-      end
-
-      it 'should return the value if it is imported with a default value' do
-        subject.import_defaults_from_hash({ 'OptionWithoutDefault' => 'default_value' }, imported_by: 'self')
-        expect(subject.fetch('OptionWithoutDefault')).to eq('default_value')
-      end
-
-      it 'should raise an exception if the value is not present' do
-        expect { subject.fetch('OptionWithoutDefault') }.to raise_exception KeyError, 'key not found: "OptionWithoutDefault"'
-      end
     end
   end
 
@@ -181,16 +139,6 @@ RSpec.shared_examples_for 'a datastore with lookup support' do |opts = {}|
         { 'foo' => 'foo_value', 'bar' => 'bar_value' }
       end
       expect(subject.to_h).to eq(expected_to_h)
-    end
-  end
-
-  describe '#unset' do
-    it 'should delete the specified case-insensitive key' do
-      expect(subject.unset('foo')).to eq 'foo_value'
-      expect(subject.unset('foo')).to eq nil
-
-      expect(subject.unset('bar')).to eq 'bar_value'
-      expect(subject.unset('bar')).to eq nil
     end
   end
 end
@@ -286,8 +234,8 @@ RSpec.shared_examples_for 'a datastore' do
         subject.unset('foo')
       end
 
-      it 'should explicitly include the unset value' do
-        expect(subject.user_defined).to eq({ 'foo' => nil })
+      it 'should should not include the unset values' do
+        expect(subject.user_defined).to eq({ })
       end
     end
 
@@ -372,8 +320,7 @@ RSpec.shared_examples_for 'a datastore' do
         expected_values = {
           "HttpProxyPass" => "http_proxy_pass_value",
           "HttpProxyType" => "SOCKS",
-          "foo" => nil,
-          'foo_bar' => nil,
+          'foo_bar' => 'foo_bar_value',
           "bar" => "new_bar_value"
         }
         expect(subject.user_defined).to eq(expected_values)
@@ -423,64 +370,6 @@ RSpec.shared_examples_for 'a datastore' do
     end
   end
 
-  describe '#fetch' do
-    context 'when the datastore has simple options' do
-      subject do
-        datastore_with_simple_options
-      end
-
-      context 'when the default value is nil' do
-        before(:each) do
-          subject.options['foo'].send(:default=, nil)
-        end
-
-        it 'should handle the nil value' do
-          expect(subject['foo']).to eq(nil)
-          expect { subject.fetch('foo') }.to raise_exception KeyError, 'key not found: "foo"'
-        end
-      end
-
-      context 'when there is a default value' do
-        [
-          false,
-          '',
-          'new_value'
-        ].each do |value|
-          context "when the default value is #{value.inspect}" do
-            before(:each) do
-              subject.options['foo'].send(:default=, value)
-            end
-
-            it 'should return the default value' do
-              expect(subject['foo']).to eq(value)
-              expect(subject.fetch('foo')).to eq(value)
-            end
-          end
-        end
-      end
-    end
-
-    context 'when the datastore has aliases' do
-      subject do
-        datastore_with_aliases
-      end
-
-      it 'should have default keyed values' do
-        expect(subject['NewOptionName']).to eq('default_value')
-        expect(subject['OLD_OPTION_NAME']).to eq('default_value')
-      end
-
-      it 'should have case-insensitive lookups' do
-        expect(subject['NEWOPTIONNAME']).to eq('default_value')
-        expect(subject['Old_Option_Name']).to eq('default_value')
-      end
-
-      it 'should raise an exception if the value is not present' do
-        expect { subject.fetch('missing') }.to raise_exception KeyError, 'key not found: "missing"'
-      end
-    end
-  end
-
   describe '#[]=' do
     context 'when the datastore has aliases' do
       subject do
@@ -498,20 +387,14 @@ RSpec.shared_examples_for 'a datastore' do
             subject['NewOptionName'] = value
 
             expect(subject['NewOptionName']).to eq(value)
-            expect(subject.fetch('NewOptionName')).to eq(value)
-
             expect(subject['OLD_OPTION_NAME']).to eq(value)
-            expect(subject.fetch('OLD_OPTION_NAME')).to eq(value)
           end
 
           it 'should allow setting datastore values with the old option name' do
             subject['OLD_OPTION_NAME'] = value
 
             expect(subject['NewOptionName']).to eq(value)
-            expect(subject.fetch('NewOptionName')).to eq(value)
-
             expect(subject['OLD_OPTION_NAME']).to eq(value)
-            expect(subject.fetch('OLD_OPTION_NAME')).to eq(value)
           end
         end
       end
@@ -581,14 +464,14 @@ RSpec.shared_examples_for 'a datastore' do
         default_subject
       end
 
-      it 'should delete the value when it has been user defined' do
+      it 'should reset the value when it has been user defined' do
         subject['foo'] = 'new_value'
 
         expect(subject.unset('foo')).to eq 'new_value'
-        expect(subject.unset('fool')).to eq nil
+        expect(subject.unset('foo')).to eq nil
       end
 
-      it 'should delete the value when it has not been user defined' do
+      it 'should not change the value if not previously set' do
         expect(subject.unset('foo')).to eq nil
         expect(subject.unset('foo')).to eq nil
       end
@@ -599,16 +482,16 @@ RSpec.shared_examples_for 'a datastore' do
         datastore_with_simple_options
       end
 
-      it 'should delete the value when it has been user defined' do
+      it 'should reset the value when it has been user defined' do
         subject['foo'] = 'new_value'
 
         expect(subject.unset('foo')).to eq 'new_value'
-        expect(subject.unset('foo')).to eq nil
+        expect(subject.unset('foo')).to eq 'default_foo_value'
       end
 
-      it 'should delete the value when it has not been user defined' do
+      it 'should not change the value if not previously set' do
         expect(subject.unset('foo')).to eq 'default_foo_value'
-        expect(subject.unset('foo')).to eq nil
+        expect(subject.unset('foo')).to eq 'default_foo_value'
       end
     end
 
@@ -625,16 +508,16 @@ RSpec.shared_examples_for 'a datastore' do
         { set_key: 'OLD_OPTION_NAME', delete_key: 'NewOptionName' },
       ].each do |test|
         context "when using #{test[:delete_key].inspect} to set the value and deleting with #{test[:delete_key].inspect}" do
-          it 'should delete the value when it has been user defined' do
+          it 'should reset the value when it has been user defined' do
             subject[test[:set_key]] = 'new_value'
 
             expect(subject.unset(test[:delete_key])).to eq 'new_value'
-            expect(subject.unset(test[:delete_key])).to eq nil
+            expect(subject.unset(test[:delete_key])).to eq 'default_value'
           end
 
-          it 'should delete the value when it has not been user defined' do
+          it 'should not change the value if not previously set' do
             expect(subject.unset(test[:delete_key])).to eq 'default_value'
-            expect(subject.unset(test[:delete_key])).to eq nil
+            expect(subject.unset(test[:delete_key])).to eq 'default_value'
           end
         end
       end
@@ -646,16 +529,16 @@ RSpec.shared_examples_for 'a datastore' do
       end
 
       context 'when using the option name' do
-        it 'should delete the value when it has been user defined' do
+        it 'should reset the value when it has been user defined' do
           subject['SMBDomain'] = 'new_value'
 
           expect(subject.unset('SMBDomain')).to eq 'new_value'
-          expect(subject.unset('SMBDomain')).to eq nil
+          expect(subject.unset('SMBDomain')).to eq 'WORKGROUP'
         end
 
-        it 'should delete the value when it has not been user defined' do
+        it 'should not change the value if not previously set' do
           expect(subject.unset('SMBDomain')).to eq 'WORKGROUP'
-          expect(subject.unset('SMBDomain')).to eq nil
+          expect(subject.unset('SMBDomain')).to eq 'WORKGROUP'
         end
       end
 
@@ -663,10 +546,10 @@ RSpec.shared_examples_for 'a datastore' do
         it 'should delete the value when it has been user defined' do
           subject['domain'] = 'new_value'
 
-          # Explicitly unsetting SMBDomain shouldn't unset domain
+          # Explicitly unsetting SMBDomain shouldn't unset the domain
           expect(subject['SMBDomain']).to eq 'new_value'
           expect(subject.unset('SMBDomain')).to eq 'new_value'
-          expect(subject.unset('SMBDomain')).to eq nil
+          expect(subject.unset('SMBDomain')).to eq 'new_value'
 
           expect(subject['domain']).to eq 'new_value'
           expect(subject.unset('domain')).to eq 'new_value'
@@ -675,7 +558,7 @@ RSpec.shared_examples_for 'a datastore' do
 
         it 'should delete the value when it has not been user defined' do
           expect(subject.unset('domain')).to eq nil
-          expect(subject.unset('SMBDomain')).to eq nil
+          expect(subject.unset('SMBDomain')).to eq 'WORKGROUP'
           expect(subject['domain']).to eq nil
         end
       end
@@ -853,8 +736,6 @@ RSpec.shared_examples_for 'a datastore' do
 end
 
 RSpec.describe Msf::DataStore do
-  next
-
   include_context 'datastore subjects'
 
   subject(:default_subject) do
@@ -884,10 +765,9 @@ RSpec.describe Msf::ModuleDataStore do
   end
   subject { default_subject }
 
-  # context 'when the framework datastore is empty' do
-  #   it_behaves_like 'a datastore'
-  # end
-
+  context 'when the framework datastore is empty' do
+    it_behaves_like 'a datastore'
+  end
 
   describe 'testing all the things' do
     context 'when the datastore has simple options' do
@@ -1038,8 +918,6 @@ RSpec.describe Msf::ModuleDataStore do
     end
   end
 
-  next
-
   context 'when the global framework datastore has values' do
     describe '#default?' do
       context 'when the datastore has no options registered' do
@@ -1057,16 +935,7 @@ RSpec.describe Msf::ModuleDataStore do
           expect(subject.default?('foo')).to be false
         end
 
-        it 'should return false if the value has been unset' do
-          subject.unset('foo')
-
-          expect(subject.default?('foo')).to be false
-        end
-
-        it 'should return true if the value has been reset' do
-          subject.unset('foo')
-          subject.reset('foo')
-
+        it 'should return true if the value has been unset' do
           expect(subject.default?('foo')).to be true
         end
       end
@@ -1094,15 +963,8 @@ RSpec.describe Msf::ModuleDataStore do
               expect(subject.default?(test[:read_key])).to be false
             end
 
-            it 'should return false if the value has been unset' do
+            it 'should return true if the value has been unset' do
               subject.unset(test[:set_key])
-
-              expect(subject.default?(test[:read_key])).to be false
-            end
-
-            it 'should return true if the value has been reset' do
-              subject.unset(test[:set_key])
-              subject.reset(test[:set_key])
 
               expect(subject.default?(test[:read_key])).to be true
             end
@@ -1125,15 +987,8 @@ RSpec.describe Msf::ModuleDataStore do
           expect(subject.default?('SMBDomain')).to be false
         end
 
-        it 'should return false if the value has been unset' do
+        it 'should return true if the value has been unset' do
           subject.unset('SMBDomain')
-
-          expect(subject.default?('SMBDomain')).to be false
-        end
-
-        it 'should return true if the value has been reset' do
-          subject.unset('SMBDomain')
-          subject.reset('SMBDomain')
 
           expect(subject.default?('SMBDomain')).to be true
         end
@@ -1143,11 +998,15 @@ RSpec.describe Msf::ModuleDataStore do
 
           expect(subject.default?('SMBDomain')).to be false
         end
+
+        it 'should return true if the fallback value has been unset' do
+          subject['domain'] = 'foo'
+          subject.unset('domain')
+
+          expect(subject.default?('SMBDomain')).to be true
+        end
       end
     end
-
-    # TODO: Add test for user_defined, what does user_defined get set to if we unset a module datastore value?
-    # Most likely the value won't be present, as we're relying on setg fallback behavior
 
     describe '#[]' do
       context 'when the datastore has no options registered' do
@@ -1190,8 +1049,9 @@ RSpec.describe Msf::ModuleDataStore do
           [
             { set_key: 'NewOptionName', read_key: 'NewOptionName' },
             { set_key: 'OLD_OPTION_NAME', read_key: 'OLD_OPTION_NAME' },
-            { set_key: 'NewOptionName', read_key: 'OLD_OPTION_NAME' },
-            { set_key: 'OLD_OPTION_NAME', read_key: 'NewOptionName' },
+            # Not supported/implemented - the global datastore does not have aliases registered
+            # { set_key: 'NewOptionName', read_key: 'OLD_OPTION_NAME' },
+            # { set_key: 'OLD_OPTION_NAME', read_key: 'NewOptionName' },
           ].each do |test|
             context "when using #{test[:set_key].inspect} to set the value and reading with #{test[:read_key].inspect}" do
               it 'should fall back to the framework datastore if it is set' do
@@ -1202,12 +1062,6 @@ RSpec.describe Msf::ModuleDataStore do
 
               it 'should fallback to default value if the parent datastore is unset' do
                 framework_datastore.unset(test[:set_key])
-
-                expect(subject[test[:read_key]]).to eq 'default_value'
-              end
-
-              it 'should fallback to default value if the parent datastore is reset' do
-                framework_datastore.reset(test[:set_key])
 
                 expect(subject[test[:read_key]]).to eq 'default_value'
               end
@@ -1289,134 +1143,70 @@ RSpec.describe Msf::ModuleDataStore do
       end
     end
 
-    describe '#fetch' do
-      context 'when the datastore has simple options' do
-        subject do
-          datastore_with_simple_options
-        end
-
-        context 'when the default value is nil' do
-          before(:each) do
-            subject.options['foo'].send(:default=, nil)
-          end
-
-          it 'should handle the nil value' do
-            expect(subject['foo']).to eq(nil)
-            expect { subject.fetch('foo') }.to raise_exception KeyError, 'key not found: "foo"'
-          end
-        end
-
-        context 'when there is a default value' do
-          [
-            false,
-            '',
-            'new_value'
-          ].each do |value|
-            context "when the default value is #{value.inspect}" do
-              before(:each) do
-                subject.options['foo'].send(:default=, value)
-              end
-
-              it 'should return the default value' do
-                expect(subject['foo']).to eq(value)
-                expect(subject.fetch('foo')).to eq(value)
-              end
-            end
-          end
-        end
-      end
-
+    describe '#[]=' do
       context 'when the datastore has aliases' do
         subject do
           datastore_with_aliases
         end
 
-        it 'should have default keyed values' do
-          expect(subject['NewOptionName']).to eq('default_value')
-          expect(subject['OLD_OPTION_NAME']).to eq('default_value')
+        [
+          nil,
+          false,
+          '',
+          'new_value'
+        ].each do |value|
+          context "when the value is #{value.inspect}" do
+            it 'should allow setting datastore values with the new option name' do
+              subject['NewOptionName'] = value
+
+              expect(subject['NewOptionName']).to eq(value)
+              expect(subject['OLD_OPTION_NAME']).to eq(value)
+            end
+
+            it 'should allow setting datastore values with the old option name' do
+              subject['OLD_OPTION_NAME'] = value
+
+              expect(subject['NewOptionName']).to eq(value)
+              expect(subject['OLD_OPTION_NAME']).to eq(value)
+            end
+          end
+        end
+      end
+
+      context 'when the datastore has fallbacks' do
+        subject do
+          datastore_with_fallbacks
         end
 
-        it 'should have case-insensitive lookups' do
-          expect(subject['NEWOPTIONNAME']).to eq('default_value')
-          expect(subject['Old_Option_Name']).to eq('default_value')
+        it 'should allow setting a key with fallbacks' do
+          subject['SMBUser'] = 'username'
+          expect(subject['SMBUser']).to eq('username')
+          expect(subject['USER_ATTR']).to be(nil)
+          expect(subject['username']).to be(nil)
         end
 
-        it 'should raise an exception if the value is not present' do
-          expect { subject.fetch('missing') }.to raise_exception KeyError, 'key not found: "missing"'
+        it 'should allow setting a generic key' do
+          subject['username'] = 'username'
+          expect(subject['SMBUser']).to eq('username')
+          expect(subject['USER_ATTR']).to eq('username')
+          expect(subject['username']).to eq('username')
+        end
+
+        it 'should allow setting multiple keys with fallbacks' do
+          subject['username'] = 'username_generic'
+          subject['user_attr'] = 'username_attr'
+          subject['smbuser'] = 'username_smb'
+          expect(subject['SMBUser']).to eq('username_smb')
+          expect(subject['USER_ATTR']).to eq('username_attr')
+          expect(subject['username']).to eq('username_generic')
+        end
+
+        it 'should use the fallback in preference of the option default value' do
+          subject['domain'] = 'example.local'
+          expect(subject['SMBDomain']).to eq('example.local')
         end
       end
     end
-    #
-    # describe '#[]=' do
-    #   context 'when the datastore has aliases' do
-    #     subject do
-    #       datastore_with_aliases
-    #     end
-    #
-    #     [
-    #       nil,
-    #       false,
-    #       '',
-    #       'new_value'
-    #     ].each do |value|
-    #       context "when the value is #{value.inspect}" do
-    #         it 'should allow setting datastore values with the new option name' do
-    #           subject['NewOptionName'] = value
-    #
-    #           expect(subject['NewOptionName']).to eq(value)
-    #           expect(subject.fetch('NewOptionName')).to eq(value)
-    #
-    #           expect(subject['OLD_OPTION_NAME']).to eq(value)
-    #           expect(subject.fetch('OLD_OPTION_NAME')).to eq(value)
-    #         end
-    #
-    #         it 'should allow setting datastore values with the old option name' do
-    #           subject['OLD_OPTION_NAME'] = value
-    #
-    #           expect(subject['NewOptionName']).to eq(value)
-    #           expect(subject.fetch('NewOptionName')).to eq(value)
-    #
-    #           expect(subject['OLD_OPTION_NAME']).to eq(value)
-    #           expect(subject.fetch('OLD_OPTION_NAME')).to eq(value)
-    #         end
-    #       end
-    #     end
-    #   end
-    #
-    #   context 'when the datastore has fallbacks' do
-    #     subject do
-    #       datastore_with_fallbacks
-    #     end
-    #
-    #     it 'should allow setting a key with fallbacks' do
-    #       subject['SMBUser'] = 'username'
-    #       expect(subject['SMBUser']).to eq('username')
-    #       expect(subject['USER_ATTR']).to be(nil)
-    #       expect(subject['username']).to be(nil)
-    #     end
-    #
-    #     it 'should allow setting a generic key' do
-    #       subject['username'] = 'username'
-    #       expect(subject['SMBUser']).to eq('username')
-    #       expect(subject['USER_ATTR']).to eq('username')
-    #       expect(subject['username']).to eq('username')
-    #     end
-    #
-    #     it 'should allow setting multiple keys with fallbacks' do
-    #       subject['username'] = 'username_generic'
-    #       subject['user_attr'] = 'username_attr'
-    #       subject['smbuser'] = 'username_smb'
-    #       expect(subject['SMBUser']).to eq('username_smb')
-    #       expect(subject['USER_ATTR']).to eq('username_attr')
-    #       expect(subject['username']).to eq('username_generic')
-    #     end
-    #
-    #     it 'should use the fallback in preference of the option default value' do
-    #       subject['domain'] = 'example.local'
-    #       expect(subject['SMBDomain']).to eq('example.local')
-    #     end
-    #   end
-    # end
   end
 end
 

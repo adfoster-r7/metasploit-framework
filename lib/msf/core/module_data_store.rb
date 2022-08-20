@@ -36,7 +36,7 @@ module Msf
       key = find_key_case(k)
       return search_result(:module_user_defined, @_user_defined[key]) if @_user_defined.key?(key)
 
-      # Preference a globally set values over a module's option default
+      # Preference globally set values over a module's option default
       framework_datastore_search = search_framework_datastore(k)
       return framework_datastore_search if framework_datastore_search.found? && !framework_datastore_search.default?
 
@@ -67,6 +67,10 @@ module Msf
       return search_result(:not_found, nil) if @_module&.framework.nil?
 
       @_module.framework.datastore.search_for(key)
+    end
+
+    def search_result(result, value, fallback_key: nil)
+      DataStoreSearchResult.new(result, value, namespace: :module_data_store, fallback_key: fallback_key)
     end
   end
 end
