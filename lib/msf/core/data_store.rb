@@ -459,23 +459,23 @@ class DataStore
   # @return [DataStoreSearchResult]
   def search_for(key)
     k = find_key_case(key)
-    return search_result(:global_user_defined, @user_defined[k]) if @user_defined.key?(k)
+    return search_result(:user_defined, @user_defined[k]) if @user_defined.key?(k)
 
     # If the key isn't present - check any additional fallbacks that have been registered with the option.
     # i.e. handling the scenario of SMBUser not being explicitly set, but the option has registered a more
     # generic 'Username' fallback
     option = @options.find { |option_name, _option| option_name.casecmp?(k) }&.last
-    return search_result(:global_not_found, nil) unless option
+    return search_result(:not_found, nil) unless option
 
     option.fallbacks.each do |fallback|
       fallback_search = search_for(fallback)
       if fallback_search.found?
-        return search_result(:global_option_fallback, fallback_search.value, fallback_key: fallback)
+        return search_result(:option_fallback, fallback_search.value, fallback_key: fallback)
       end
     end
 
-    return search_result(:global_default, @defaults[k]) if @defaults.key?(k)
-    search_result(:global_option_default, option.default)
+    return search_result(:imported_default, @defaults[k]) if @defaults.key?(k)
+    search_result(:option_default, option.default)
   end
 
   protected
@@ -528,29 +528,32 @@ class DataStore
     end
 
     def default?
-      result.to_s.include?('default') || !found?
+      result == :imported_default || result == :option_default || !found?
     end
 
     def found?
-      !result.to_s.include?('not_found')
+      result != :not_found
     end
 
     def fallback?
-      result == :fallback
+      result == :option_fallback
     end
 
     def global?
-      result.to_s.include?('global_') && found?
+      namespace == :global_data_store && found?
     end
 
   protected
 
-    # @return [Symbol] result is one of `user_defined`, `not_found`, `fallback, `default`
+    # @return [Symbol] namespace Where the search result was found, i.e. a module datastore or global datastore
+    attr_reader :namespace
+
+    # @return [Symbol] result is one of `user_defined`, `not_found`, `option_fallback`, `option_default`, `imported_default`
     attr_reader :result
   end
 
   def search_result(result, value, fallback_key: nil)
-    DataStoreSearchResult.new(result, value, namespace: :data_store, fallback_key: fallback_key)
+    DataStoreSearchResult.new(result, value, namespace: :global_data_store, fallback_key: fallback_key)
   end
 end
 

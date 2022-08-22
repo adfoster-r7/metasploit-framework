@@ -34,7 +34,7 @@ module Msf
     # @return [DataStoreSearchResult]
     def search_for(key)
       k = find_key_case(key)
-      return search_result(:module_user_defined, @user_defined[k]) if @user_defined.key?(k)
+      return search_result(:user_defined, @user_defined[k]) if @user_defined.key?(k)
 
       # Preference globally set values over a module's option default
       framework_datastore_search = search_framework_datastore(key)
@@ -49,12 +49,12 @@ module Msf
       option.fallbacks.each do |fallback|
         fallback_search = search_for(fallback)
         if fallback_search.found?
-          return search_result(:module_option_fallback, fallback_search.value, fallback_key: fallback)
+          return search_result(:option_fallback, fallback_search.value, fallback_key: fallback)
         end
       end
 
-      return search_result(:module_default, @defaults[k]) if @defaults.key?(k)
-      search_result(:module_option_default, option.default)
+      return search_result(:imported_default, @defaults[k]) if @defaults.key?(k)
+      search_result(:option_default, option.default)
     end
 
     protected
