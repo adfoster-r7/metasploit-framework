@@ -16,12 +16,6 @@ RSpec.describe Msf::Ui::Console::CommandDispatcher::Core do
   it { is_expected.to respond_to :cmd_setg_tabs }
 
   def set_and_test_variable(name, framework_value, module_value, framework_re, module_re)
-    # set the current module
-    allow(core).to receive(:active_module).and_return(mod)
-    # always assume the variable is valid
-    allow(core).to receive(:tab_complete_option_names).and_return([ name ])
-    # always assume set variables validate (largely irrelevant because ours are random)
-    allow(driver).to receive(:on_variable_set).and_return(true)
     # the specified global value
     core.cmd_setg(name, framework_value) if framework_value
     # set the specified local value
@@ -61,6 +55,12 @@ RSpec.describe Msf::Ui::Console::CommandDispatcher::Core do
           mod = ::Msf::Module.new
           mod.send(:initialize, {})
           mod
+        end
+
+        before(:each) do
+          allow(core).to receive(:active_module).and_return(mod)
+          allow(core).to receive(:tab_complete_option_names).and_return([ name ])
+          allow(driver).to receive(:on_variable_set).and_return(true)
         end
 
         it "should show no value if not set in the framework or module" do
@@ -195,6 +195,131 @@ RSpec.describe Msf::Ui::Console::CommandDispatcher::Core do
     it 'should call cmd_set when no arguments present' do
       subject.cmd_setg('foo', 'bar')
       expect(subject).to have_received(:cmd_set).with('-g', 'foo', 'bar')
+    end
+  end
+
+  describe '#cmd_unset' do
+    let(:mod) { nil }
+
+    before(:each) do
+      allow(subject).to receive(:active_module).and_return(mod)
+      allow(driver).to receive(:on_variable_unset)
+    end
+
+    context 'with an exploit active module' do
+      let(:mod) do
+        mod_klass = Class.new(Msf::Exploit) do
+          def initialize
+            super
+
+            register_options(
+              [
+                Msf::OptString.new(
+                  'foo',
+                  [true, 'Foo option', 'default_foo_value']
+                ),
+                Msf::OptString.new(
+                  'SMBDomain',
+                  [ false, 'The Windows domain to use for authentication', 'WORKGROUP'],
+                  fallbacks: ['DOMAIN']
+                ),
+              ]
+            )
+          end
+        end
+        mod = mod_klass.new
+        allow(mod).to receive(:framework).and_return(framework)
+        mod
+      end
+
+      context 'when no arguments are supplied' do
+        before(:each) do
+          subject.cmd_unset
+        end
+
+        it 'should output the help information' do
+          expect(@output.join).to match /The unset command is used to .*/
+        end
+      end
+
+      context 'when unsetting a module datastore value without a registered option' do
+        before(:each) do
+          mod.datastore['PAYLOAD'] = 'linux/x86/meterpreter/reverse_tcp'
+          subject.cmd_unset('PAYLOAD')
+        end
+
+        it 'should reset the value' do
+          expect(mod.datastore['PAYLOAD']).to eq nil
+        end
+
+        it 'should output a message to the user' do
+          expect(@combined_output.join).to eq 'Unsetting PAYLOAD...'
+        end
+      end
+
+      context 'when unsetting a module datastore value with an existing default' do
+        before(:each) do
+          mod.datastore['foo'] = 'user_defined'
+          subject.cmd_unset('foo')
+        end
+
+        it 'should reset the value' do
+          expect(mod.datastore['foo']).to eq 'default_foo_value'
+        end
+
+        it 'should output an extra message indicating a default value will be used' do
+          expect(@combined_output.join).to match /Unsetting foo.../
+          expect(@combined_output.join).to match /"foo" unset - but will use a default value still/
+        end
+      end
+
+      context 'when unsetting a module datastore value with a fallback' do
+        before(:each) do
+          mod.datastore['domain'] = 'user_defined'
+          subject.cmd_unset('SMBDomain')
+        end
+
+        it 'should continue to fallback' do
+          expect(mod.datastore['SMBDomain']).to eq 'user_defined'
+        end
+
+        it 'should output an extra message indicating a fallback value will be used' do
+          expect(@combined_output.join).to match /Unsetting SMBDomain.../
+          expect(@combined_output.join).to match /Variable "SMBDomain" unset - but will continue to use "DOMAIN" as a fallback/
+        end
+      end
+
+      context 'when unsetting a module datastore value with a global value set' do
+        before(:each) do
+          mod.framework.datastore['foo'] = 'global_value'
+          subject.cmd_unset('foo')
+        end
+
+        it 'should continue to use the global value' do
+          expect(mod.datastore['foo']).to eq 'global_value'
+        end
+
+        it 'should output an extra message indicating a fallback value will be used' do
+          expect(@combined_output.join).to match /Unsetting foo.../
+          expect(@combined_output.join).to match /Variable "foo" unset - but will continue to use the globally set value/
+        end
+      end
+    end
+  end
+
+  describe '#cmd_unsetg' do
+    before(:each) do
+      allow(subject).to receive(:cmd_unset)
+    end
+
+    it 'should call cmd_unset when no arguments are present' do
+      subject.cmd_unsetg
+      expect(subject).to have_received(:cmd_unset).with('-g')
+    end
+
+    it 'should call cmd_unset when no arguments present' do
+      subject.cmd_unsetg('foo', 'bar')
+      expect(subject).to have_received(:cmd_unset).with('-g', 'foo', 'bar')
     end
   end
 

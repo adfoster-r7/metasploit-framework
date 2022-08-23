@@ -2163,8 +2163,7 @@ class Core
   def cmd_unset_help
     print_line "Usage: unset [options] var1 var2 var3 ..."
     print_line
-    print_line "The unset command is used to unset one or more variables."
-    print_line "The --reset option can be used to reset values back to their defaults."
+    print_line "The unset command is used to unset one or more variables which have been set by the user."
     print_line "To update all entries, specify 'all' as the variable name."
     print @@unset_opts.usage
     print_line

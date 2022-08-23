@@ -689,225 +689,6 @@ RSpec.describe Msf::ModuleDataStore do
     it_behaves_like 'a datastore'
   end
 
-  describe 'testing all the things' do
-    context 'when the datastore has simple options' do
-      subject do
-        datastore_with_simple_options
-      end
-
-      [
-        { option_default_value: nil, set_key: 'foo', set_value: nil },
-        { option_default_value: '',  set_key: 'foo', set_value: nil },
-        { option_default_value: 'default_value',  set_key: 'foo', set_value: nil },
-
-        { option_default_value: nil,  set_key: 'foo', set_value: '' },
-        { option_default_value: '',  set_key: 'foo', set_value: '' },
-        { option_default_value: 'default_value',  set_key: 'foo', set_value: '' },
-
-        { option_default_value: nil,  set_key: 'foo', set_value: 'set_value' },
-        { option_default_value: '',  set_key: 'foo', set_value: 'set_value' },
-        { option_default_value: 'default_value',  set_key: 'foo', set_value: 'set_value' },
-      ].each do |test|
-        context "when the option default value is #{test[:default_value]}" do
-          option_default_value = test[:option_default_value]
-          set_key = test[:set_key]
-          set_value = test[:set_value]
-          read_key = test[:set_key] || test[:read_key]
-
-          before(:each) do
-            subject.options['foo'].send(:default=, option_default_value)
-          end
-
-          # Test permutations, ints used for readability
-          [
-            # nothing changed on module
-            { mod_set: 0, mod_unset: 0, framework_set: 0, framework_unset: 0, expected: { value: option_default_value, reason: :module_data_store__option_default, is_default: true } },
-            { mod_set: 0, mod_unset: 0, framework_set: 0, framework_unset: 1, expected: { value: option_default_value, reason: :module_data_store__option_default, is_default: true } },
-            { mod_set: 0, mod_unset: 0, framework_set: 1, framework_unset: 0, expected: { value: set_value, reason: :global_data_store__user_defined, is_default: false } },
-
-            # module datastore unset
-            { mod_set: 0, mod_unset: 1, framework_set: 0, framework_unset: 0, expected: { value: option_default_value, reason: :module_data_store__option_default, is_default: true } },
-            { mod_set: 0, mod_unset: 1, framework_set: 0, framework_unset: 1, expected: { value: option_default_value, reason: :module_data_store__option_default, is_default: true } },
-            { mod_set: 0, mod_unset: 1, framework_set: 1, framework_unset: 0, expected: { value: set_value, reason: :global_data_store__user_defined, is_default: false } },
-
-            # module datastore set
-            { mod_set: 1, mod_unset: 0, framework_set: 0, framework_unset: 0, expected: { value: set_value, reason: :module_data_store__user_defined, is_default: false } },
-            { mod_set: 1, mod_unset: 0, framework_set: 0, framework_unset: 1, expected: { value: set_value, reason: :module_data_store__user_defined, is_default: false } },
-            { mod_set: 1, mod_unset: 0, framework_set: 1, framework_unset: 0, expected: { value: set_value, reason: :module_data_store__user_defined, is_default: false } },
-          ].each do |opts|
-            context "when #{opts.inspect}" do
-              it 'returns the expected value' do
-                subject[set_key] = set_value if opts[:mod_set] == 1
-                subject.unset(set_key) if opts[:mod_unset] == 1
-
-                framework_datastore[set_key] = set_value if opts[:framework_set] == 1
-                framework_datastore.unset(set_key) if opts[:framework_unset] == 1
-
-                # Assertions
-                expected = opts[:expected]
-                search_result = subject.search_for(read_key)
-                expect(search_result.value).to eq expected[:value]
-                expect(human_readable_result_for(search_result)).to eq expected[:reason]
-                expect(subject[read_key]).to eq expected[:value]
-                expect(search_result.default?).to eq(expected[:is_default])
-              end
-            end
-          end
-        end
-      end
-    end
-
-    context 'when the datastore has aliases options' do
-      subject do
-        datastore_with_aliases
-      end
-
-      # Ensure that both the new name and old name can be used interchangeably
-      [
-        { set_key: 'NewOptionName', read_key: 'NewOptionName' },
-        { set_key: 'OLD_OPTION_NAME', read_key: 'OLD_OPTION_NAME' },
-        { set_key: 'NewOptionName', read_key: 'OLD_OPTION_NAME' },
-        { set_key: 'OLD_OPTION_NAME', read_key: 'NewOptionName' },
-      ].each do |keys|
-        set_key = keys[:set_key]
-        read_key = keys[:read_key]
-
-        context "when using #{keys[:set_key].inspect} to set the value and reading with #{keys[:read_key].inspect}" do
-          [
-            { option_default_value: nil, set_key: set_key, set_value: nil, read_key: read_key },
-            { option_default_value: '',  set_key: set_key, set_value: nil, read_key: read_key },
-            { option_default_value: 'default_value',  set_key: set_key, set_value: nil, read_key: read_key },
-
-            { option_default_value: nil,  set_key: set_key, set_value: '', read_key: read_key },
-            { option_default_value: '',  set_key: set_key, set_value: '', read_key: read_key },
-            { option_default_value: 'default_value',  set_key: set_key, set_value: '', read_key: read_key },
-
-            { option_default_value: nil,  set_key: set_key, set_value: 'set_value', read_key: read_key },
-            { option_default_value: '',  set_key: set_key, set_value: 'set_value', read_key: read_key },
-            { option_default_value: 'default_value',  set_key: set_key, set_value: 'set_value', read_key: read_key },
-          ].each do |test|
-            context "when the default value is #{test[:default_value]}" do
-              option_default_value = test[:option_default_value]
-              set_key = test[:set_key]
-              set_value = test[:set_value]
-              read_key = test[:set_key] || test[:read_key]
-
-              before(:each) do
-                subject.options['NewOptionName'].send(:default=, option_default_value)
-              end
-
-              # Test permutations, ints used for readability
-              [
-                # nothing changed on module
-                { mod_set: 0, mod_unset: 0, framework_set: 0, framework_unset: 0, expected: { value: option_default_value, reason: :module_data_store__option_default, is_default: true } },
-                { mod_set: 0, mod_unset: 0, framework_set: 0, framework_unset: 1, expected: { value: option_default_value, reason: :module_data_store__option_default, is_default: true } },
-                { mod_set: 0, mod_unset: 0, framework_set: 1, framework_unset: 0, expected: { value: set_value, reason: :global_data_store__user_defined, is_default: false } },
-
-                # module datastore unset
-                { mod_set: 0, mod_unset: 1, framework_set: 0, framework_unset: 0, expected: { value: option_default_value, reason: :module_data_store__option_default, is_default: true } },
-                { mod_set: 0, mod_unset: 1, framework_set: 0, framework_unset: 1, expected: { value: option_default_value, reason: :module_data_store__option_default, is_default: true } },
-                { mod_set: 0, mod_unset: 1, framework_set: 1, framework_unset: 0, expected: { value: set_value, reason: :global_data_store__user_defined, is_default: false } },
-
-                # module datastore set
-                { mod_set: 1, mod_unset: 0, framework_set: 0, framework_unset: 0, expected: { value: set_value, reason: :module_data_store__user_defined, is_default: false } },
-                { mod_set: 1, mod_unset: 0, framework_set: 0, framework_unset: 1, expected: { value: set_value, reason: :module_data_store__user_defined, is_default: false } },
-                { mod_set: 1, mod_unset: 0, framework_set: 1, framework_unset: 0, expected: { value: set_value, reason: :module_data_store__user_defined, is_default: false } },
-              ].each do |opts|
-                context "when #{opts.inspect}" do
-                  it 'returns the expected value' do
-                    subject[set_key] = set_value if opts[:mod_set] == 1
-                    subject.unset(set_key) if opts[:mod_unset] == 1
-
-                    framework_datastore[set_key] = set_value if opts[:framework_set] == 1
-                    framework_datastore.unset(set_key) if opts[:framework_unset] == 1
-
-                    # Assertions
-                    expected = opts[:expected]
-                    search_result = subject.search_for(read_key)
-                    expect(search_result.value).to eq expected[:value]
-                    expect(human_readable_result_for(search_result)).to eq expected[:reason]
-                    expect(subject[read_key]).to eq expected[:value]
-                    expect(search_result.default?).to eq(expected[:is_default])
-                  end
-                end
-              end
-            end
-          end
-        end
-      end
-    end
-
-    context 'when the datastore has defaults imported' do
-      subject do
-        complex_datastore_with_imported_defaults
-      end
-
-      # Ensure that both the new name and old name can be used interchangeably
-      [
-        { option_default_value: nil, set_key: 'foo', set_value: nil },
-        { option_default_value: '',  set_key: 'foo', set_value: nil },
-        { option_default_value: 'default_value',  set_key: 'foo', set_value: nil },
-
-        { option_default_value: nil,  set_key: 'foo', set_value: '' },
-        { option_default_value: '',  set_key: 'foo', set_value: '' },
-        { option_default_value: 'default_value',  set_key: 'foo', set_value: '' },
-
-        { option_default_value: nil,  set_key: 'foo', set_value: 'set_value' },
-        { option_default_value: '',  set_key: 'foo', set_value: 'set_value' },
-        { option_default_value: 'default_value',  set_key: 'foo', set_value: 'set_value' },
-      ].each do |test|
-        context "when the option default value is #{test[:option_default_value]}" do
-          option_default_value = test[:option_default_value]
-          import_default_value = 'test'
-          set_key = test[:set_key]
-          set_value = test[:set_value]
-          read_key = test[:set_key] || test[:read_key]
-
-          before(:each) do
-            subject.options[set_key].send(:default=, option_default_value)
-            subject.import_defaults_from_hash({ set_key => import_default_value }, imported_by: 'data_store_spec')
-          end
-
-          # Test permutations, ints used for readability
-          [
-            # nothing changed on module
-            { mod_set: 0, mod_unset: 0, framework_set: 0, framework_unset: 0, expected: { value: import_default_value, reason: :module_data_store__imported_default, is_default: true } },
-            { mod_set: 0, mod_unset: 0, framework_set: 0, framework_unset: 1, expected: { value: import_default_value, reason: :module_data_store__imported_default, is_default: true } },
-            { mod_set: 0, mod_unset: 0, framework_set: 1, framework_unset: 0, expected: { value: set_value, reason: :global_data_store__user_defined, is_default: false } },
-
-            # module datastore unset
-            { mod_set: 0, mod_unset: 1, framework_set: 0, framework_unset: 0, expected: { value: import_default_value, reason: :module_data_store__imported_default, is_default: true } },
-            { mod_set: 0, mod_unset: 1, framework_set: 0, framework_unset: 1, expected: { value: import_default_value, reason: :module_data_store__imported_default, is_default: true } },
-            { mod_set: 0, mod_unset: 1, framework_set: 1, framework_unset: 0, expected: { value: set_value, reason: :global_data_store__user_defined, is_default: false } },
-
-            # module datastore set
-            { mod_set: 1, mod_unset: 0, framework_set: 0, framework_unset: 0, expected: { value: set_value, reason: :module_data_store__user_defined, is_default: false } },
-            { mod_set: 1, mod_unset: 0, framework_set: 0, framework_unset: 1, expected: { value: set_value, reason: :module_data_store__user_defined, is_default: false } },
-            { mod_set: 1, mod_unset: 0, framework_set: 1, framework_unset: 0, expected: { value: set_value, reason: :module_data_store__user_defined, is_default: false } },
-          ].each do |opts|
-            context "when #{opts.inspect}" do
-              it 'returns the expected value' do
-                subject[set_key] = set_value if opts[:mod_set] == 1
-                subject.unset(set_key) if opts[:mod_unset] == 1
-
-                framework_datastore[set_key] = set_value if opts[:framework_set] == 1
-                framework_datastore.unset(set_key) if opts[:framework_unset] == 1
-
-                # Assertions
-                expected = opts[:expected]
-                search_result = subject.search_for(read_key)
-                expect(search_result.value).to eq expected[:value]
-                expect(human_readable_result_for(search_result)).to eq expected[:reason]
-                expect(subject[read_key]).to eq expected[:value]
-                expect(search_result.default?).to eq(expected[:is_default])
-              end
-            end
-          end
-        end
-      end
-    end
-  end
-
   context 'when the global framework datastore has values' do
     describe '#default?' do
       context 'when the datastore has no options registered' do
@@ -1194,6 +975,225 @@ RSpec.describe Msf::ModuleDataStore do
         it 'should use the fallback in preference of the option default value' do
           subject['domain'] = 'example.local'
           expect(subject['SMBDomain']).to eq('example.local')
+        end
+      end
+    end
+  end
+
+  describe 'testing all the things' do
+    context 'when the datastore has simple options' do
+      subject do
+        datastore_with_simple_options
+      end
+
+      [
+        { option_default_value: nil, set_key: 'foo', set_value: nil },
+        { option_default_value: '',  set_key: 'foo', set_value: nil },
+        { option_default_value: 'default_value',  set_key: 'foo', set_value: nil },
+
+        { option_default_value: nil,  set_key: 'foo', set_value: '' },
+        { option_default_value: '',  set_key: 'foo', set_value: '' },
+        { option_default_value: 'default_value',  set_key: 'foo', set_value: '' },
+
+        { option_default_value: nil,  set_key: 'foo', set_value: 'set_value' },
+        { option_default_value: '',  set_key: 'foo', set_value: 'set_value' },
+        { option_default_value: 'default_value',  set_key: 'foo', set_value: 'set_value' },
+      ].each do |test|
+        context "when the option default value is #{test[:default_value]}" do
+          option_default_value = test[:option_default_value]
+          set_key = test[:set_key]
+          set_value = test[:set_value]
+          read_key = test[:set_key] || test[:read_key]
+
+          before(:each) do
+            subject.options['foo'].send(:default=, option_default_value)
+          end
+
+          # Test permutations, ints used for readability
+          [
+            # nothing changed on module
+            { mod_set: 0, mod_unset: 0, framework_set: 0, framework_unset: 0, expected: { value: option_default_value, reason: :module_data_store__option_default, is_default: true } },
+            { mod_set: 0, mod_unset: 0, framework_set: 0, framework_unset: 1, expected: { value: option_default_value, reason: :module_data_store__option_default, is_default: true } },
+            { mod_set: 0, mod_unset: 0, framework_set: 1, framework_unset: 0, expected: { value: set_value, reason: :global_data_store__user_defined, is_default: false } },
+
+            # module datastore unset
+            { mod_set: 0, mod_unset: 1, framework_set: 0, framework_unset: 0, expected: { value: option_default_value, reason: :module_data_store__option_default, is_default: true } },
+            { mod_set: 0, mod_unset: 1, framework_set: 0, framework_unset: 1, expected: { value: option_default_value, reason: :module_data_store__option_default, is_default: true } },
+            { mod_set: 0, mod_unset: 1, framework_set: 1, framework_unset: 0, expected: { value: set_value, reason: :global_data_store__user_defined, is_default: false } },
+
+            # module datastore set
+            { mod_set: 1, mod_unset: 0, framework_set: 0, framework_unset: 0, expected: { value: set_value, reason: :module_data_store__user_defined, is_default: false } },
+            { mod_set: 1, mod_unset: 0, framework_set: 0, framework_unset: 1, expected: { value: set_value, reason: :module_data_store__user_defined, is_default: false } },
+            { mod_set: 1, mod_unset: 0, framework_set: 1, framework_unset: 0, expected: { value: set_value, reason: :module_data_store__user_defined, is_default: false } },
+          ].each do |opts|
+            context "when #{opts.inspect}" do
+              it 'returns the expected value' do
+                subject[set_key] = set_value if opts[:mod_set] == 1
+                subject.unset(set_key) if opts[:mod_unset] == 1
+
+                framework_datastore[set_key] = set_value if opts[:framework_set] == 1
+                framework_datastore.unset(set_key) if opts[:framework_unset] == 1
+
+                # Assertions
+                expected = opts[:expected]
+                search_result = subject.search_for(read_key)
+                expect(search_result.value).to eq expected[:value]
+                expect(human_readable_result_for(search_result)).to eq expected[:reason]
+                expect(subject[read_key]).to eq expected[:value]
+                expect(search_result.default?).to eq(expected[:is_default])
+              end
+            end
+          end
+        end
+      end
+    end
+
+    context 'when the datastore has aliases options' do
+      subject do
+        datastore_with_aliases
+      end
+
+      # Ensure that both the new name and old name can be used interchangeably
+      [
+        { set_key: 'NewOptionName', read_key: 'NewOptionName' },
+        { set_key: 'OLD_OPTION_NAME', read_key: 'OLD_OPTION_NAME' },
+        { set_key: 'NewOptionName', read_key: 'OLD_OPTION_NAME' },
+        { set_key: 'OLD_OPTION_NAME', read_key: 'NewOptionName' },
+      ].each do |keys|
+        set_key = keys[:set_key]
+        read_key = keys[:read_key]
+
+        context "when using #{keys[:set_key].inspect} to set the value and reading with #{keys[:read_key].inspect}" do
+          [
+            { option_default_value: nil, set_key: set_key, set_value: nil, read_key: read_key },
+            { option_default_value: '',  set_key: set_key, set_value: nil, read_key: read_key },
+            { option_default_value: 'default_value',  set_key: set_key, set_value: nil, read_key: read_key },
+
+            { option_default_value: nil,  set_key: set_key, set_value: '', read_key: read_key },
+            { option_default_value: '',  set_key: set_key, set_value: '', read_key: read_key },
+            { option_default_value: 'default_value',  set_key: set_key, set_value: '', read_key: read_key },
+
+            { option_default_value: nil,  set_key: set_key, set_value: 'set_value', read_key: read_key },
+            { option_default_value: '',  set_key: set_key, set_value: 'set_value', read_key: read_key },
+            { option_default_value: 'default_value',  set_key: set_key, set_value: 'set_value', read_key: read_key },
+          ].each do |test|
+            context "when the default value is #{test[:default_value]}" do
+              option_default_value = test[:option_default_value]
+              set_key = test[:set_key]
+              set_value = test[:set_value]
+              read_key = test[:set_key] || test[:read_key]
+
+              before(:each) do
+                subject.options['NewOptionName'].send(:default=, option_default_value)
+              end
+
+              # Test permutations, ints used for readability
+              [
+                # nothing changed on module
+                { mod_set: 0, mod_unset: 0, framework_set: 0, framework_unset: 0, expected: { value: option_default_value, reason: :module_data_store__option_default, is_default: true } },
+                { mod_set: 0, mod_unset: 0, framework_set: 0, framework_unset: 1, expected: { value: option_default_value, reason: :module_data_store__option_default, is_default: true } },
+                { mod_set: 0, mod_unset: 0, framework_set: 1, framework_unset: 0, expected: { value: set_value, reason: :global_data_store__user_defined, is_default: false } },
+
+                # module datastore unset
+                { mod_set: 0, mod_unset: 1, framework_set: 0, framework_unset: 0, expected: { value: option_default_value, reason: :module_data_store__option_default, is_default: true } },
+                { mod_set: 0, mod_unset: 1, framework_set: 0, framework_unset: 1, expected: { value: option_default_value, reason: :module_data_store__option_default, is_default: true } },
+                { mod_set: 0, mod_unset: 1, framework_set: 1, framework_unset: 0, expected: { value: set_value, reason: :global_data_store__user_defined, is_default: false } },
+
+                # module datastore set
+                { mod_set: 1, mod_unset: 0, framework_set: 0, framework_unset: 0, expected: { value: set_value, reason: :module_data_store__user_defined, is_default: false } },
+                { mod_set: 1, mod_unset: 0, framework_set: 0, framework_unset: 1, expected: { value: set_value, reason: :module_data_store__user_defined, is_default: false } },
+                { mod_set: 1, mod_unset: 0, framework_set: 1, framework_unset: 0, expected: { value: set_value, reason: :module_data_store__user_defined, is_default: false } },
+              ].each do |opts|
+                context "when #{opts.inspect}" do
+                  it 'returns the expected value' do
+                    subject[set_key] = set_value if opts[:mod_set] == 1
+                    subject.unset(set_key) if opts[:mod_unset] == 1
+
+                    framework_datastore[set_key] = set_value if opts[:framework_set] == 1
+                    framework_datastore.unset(set_key) if opts[:framework_unset] == 1
+
+                    # Assertions
+                    expected = opts[:expected]
+                    search_result = subject.search_for(read_key)
+                    expect(search_result.value).to eq expected[:value]
+                    expect(human_readable_result_for(search_result)).to eq expected[:reason]
+                    expect(subject[read_key]).to eq expected[:value]
+                    expect(search_result.default?).to eq(expected[:is_default])
+                  end
+                end
+              end
+            end
+          end
+        end
+      end
+    end
+
+    context 'when the datastore has defaults imported' do
+      subject do
+        complex_datastore_with_imported_defaults
+      end
+
+      # Ensure that both the new name and old name can be used interchangeably
+      [
+        { option_default_value: nil, set_key: 'foo', set_value: nil },
+        { option_default_value: '',  set_key: 'foo', set_value: nil },
+        { option_default_value: 'default_value',  set_key: 'foo', set_value: nil },
+
+        { option_default_value: nil,  set_key: 'foo', set_value: '' },
+        { option_default_value: '',  set_key: 'foo', set_value: '' },
+        { option_default_value: 'default_value',  set_key: 'foo', set_value: '' },
+
+        { option_default_value: nil,  set_key: 'foo', set_value: 'set_value' },
+        { option_default_value: '',  set_key: 'foo', set_value: 'set_value' },
+        { option_default_value: 'default_value',  set_key: 'foo', set_value: 'set_value' },
+      ].each do |test|
+        context "when the option default value is #{test[:option_default_value]}" do
+          option_default_value = test[:option_default_value]
+          import_default_value = 'test'
+          set_key = test[:set_key]
+          set_value = test[:set_value]
+          read_key = test[:set_key] || test[:read_key]
+
+          before(:each) do
+            subject.options[set_key].send(:default=, option_default_value)
+            subject.import_defaults_from_hash({ set_key => import_default_value }, imported_by: 'data_store_spec')
+          end
+
+          # Test permutations, ints used for readability
+          [
+            # nothing changed on module
+            { mod_set: 0, mod_unset: 0, framework_set: 0, framework_unset: 0, expected: { value: import_default_value, reason: :module_data_store__imported_default, is_default: true } },
+            { mod_set: 0, mod_unset: 0, framework_set: 0, framework_unset: 1, expected: { value: import_default_value, reason: :module_data_store__imported_default, is_default: true } },
+            { mod_set: 0, mod_unset: 0, framework_set: 1, framework_unset: 0, expected: { value: set_value, reason: :global_data_store__user_defined, is_default: false } },
+
+            # module datastore unset
+            { mod_set: 0, mod_unset: 1, framework_set: 0, framework_unset: 0, expected: { value: import_default_value, reason: :module_data_store__imported_default, is_default: true } },
+            { mod_set: 0, mod_unset: 1, framework_set: 0, framework_unset: 1, expected: { value: import_default_value, reason: :module_data_store__imported_default, is_default: true } },
+            { mod_set: 0, mod_unset: 1, framework_set: 1, framework_unset: 0, expected: { value: set_value, reason: :global_data_store__user_defined, is_default: false } },
+
+            # module datastore set
+            { mod_set: 1, mod_unset: 0, framework_set: 0, framework_unset: 0, expected: { value: set_value, reason: :module_data_store__user_defined, is_default: false } },
+            { mod_set: 1, mod_unset: 0, framework_set: 0, framework_unset: 1, expected: { value: set_value, reason: :module_data_store__user_defined, is_default: false } },
+            { mod_set: 1, mod_unset: 0, framework_set: 1, framework_unset: 0, expected: { value: set_value, reason: :module_data_store__user_defined, is_default: false } },
+          ].each do |opts|
+            context "when #{opts.inspect}" do
+              it 'returns the expected value' do
+                subject[set_key] = set_value if opts[:mod_set] == 1
+                subject.unset(set_key) if opts[:mod_unset] == 1
+
+                framework_datastore[set_key] = set_value if opts[:framework_set] == 1
+                framework_datastore.unset(set_key) if opts[:framework_unset] == 1
+
+                # Assertions
+                expected = opts[:expected]
+                search_result = subject.search_for(read_key)
+                expect(search_result.value).to eq expected[:value]
+                expect(human_readable_result_for(search_result)).to eq expected[:reason]
+                expect(subject[read_key]).to eq expected[:value]
+                expect(search_result.default?).to eq(expected[:is_default])
+              end
+            end
+          end
         end
       end
     end
