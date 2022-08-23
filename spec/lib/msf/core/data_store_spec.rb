@@ -338,6 +338,15 @@ RSpec.shared_examples_for 'a datastore' do
         expect(subject['foo']).to eq nil
         expect(subject['bar']).to eq nil
       end
+
+      it 'should return imported defaults' do
+        subject.import_defaults_from_hash({ 'PAYLOAD' => 'linux/armle/meterpreter_reverse_tcp' }, imported_by: 'data_store_spec')
+
+        expect(subject.default?('payload')).to be true
+        expect(subject.default?('PAYLOAD')).to be true
+        expect(subject['PAYLOAD']).to eq 'linux/armle/meterpreter_reverse_tcp'
+        expect(subject['payload']).to eq 'linux/armle/meterpreter_reverse_tcp'
+      end
     end
 
     context 'when the datastore has aliases' do
@@ -918,6 +927,15 @@ RSpec.describe Msf::ModuleDataStore do
 
         it 'should return true if the value has been unset' do
           expect(subject.default?('foo')).to be true
+        end
+
+        it 'should return imported defaults' do
+          subject.import_defaults_from_hash({ 'PAYLOAD' => 'linux/armle/meterpreter_reverse_tcp' }, imported_by: 'data_store_spec')
+
+          expect(subject.default?('payload')).to be true
+          expect(subject.default?('PAYLOAD')).to be true
+          expect(subject['PAYLOAD']).to eq 'linux/armle/meterpreter_reverse_tcp'
+          expect(subject['payload']).to eq 'linux/armle/meterpreter_reverse_tcp'
         end
       end
 

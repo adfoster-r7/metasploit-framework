@@ -44,17 +44,21 @@ module Msf
       # i.e. handling the scenario of SMBUser not being explicitly set, but the option has registered a more
       # generic 'Username' fallback
       option = @options.find { |option_name, _option| option_name.casecmp?(k) }&.last
-      return search_framework_datastore(k) unless option
-
-      option.fallbacks.each do |fallback|
-        fallback_search = search_for(fallback)
-        if fallback_search.found?
-          return search_result(:option_fallback, fallback_search.value, fallback_key: fallback)
+      if option
+        option.fallbacks.each do |fallback|
+          fallback_search = search_for(fallback)
+          if fallback_search.found?
+            return search_result(:option_fallback, fallback_search.value, fallback_key: fallback)
+          end
         end
       end
 
-      return search_result(:imported_default, @defaults[k]) if @defaults.key?(k)
-      search_result(:option_default, option.default)
+      # Checking for imported default values, ignoring case again TODO: add Alias test for this
+      imported_default_match = @defaults.find { |default_key, _default_value| default_key.casecmp?(k) }
+      return search_result(:imported_default, imported_default_match.last) if imported_default_match
+      return search_result(:option_default, option.default) if option
+
+      search_framework_datastore(k)
     end
 
     protected
