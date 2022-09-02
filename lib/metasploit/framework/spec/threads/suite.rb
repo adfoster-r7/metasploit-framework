@@ -1,4 +1,5 @@
 require 'pathname'
+require 'metasploit/framework/spec/threads/logger'
 
 # @note needs to use explicit nesting. so this file can be loaded directly without loading 'metasploit/framework' which
 #   allows for faster loading of rake tasks.
@@ -75,26 +76,39 @@ module Metasploit
                   if thread_count > EXPECTED_THREAD_COUNT_AROUND_SUITE
                     error_lines = []
 
-                    if LOG_PATHNAME.exist?
-                      caller_by_thread_uuid = Metasploit::Framework::Spec::Threads::Suite.caller_by_thread_uuid
+                    # if LOG_PATHNAME.exist?
+                    #   caller_by_thread_uuid = Metasploit::Framework::Spec::Threads::Suite.caller_by_thread_uuid
+                    #
+                    #   thread_list.each do |thread|
+                    #     thread_uuid = thread[Metasploit::Framework::Spec::Threads::Suite::UUID_THREAD_LOCAL_VARIABLE]
+                    #
+                    #     # unmanaged thread, such as the main VM thread
+                    #     unless thread_uuid
+                    #       next
+                    #     end
+                    #
+                    #     caller = caller_by_thread_uuid[thread_uuid]
+                    #
+                    #     error_lines << "Thread #{thread_uuid}'s status is #{thread.status.inspect} " \
+                    #                    "and was started here:\n"
+                    #
+                    #     error_lines.concat(caller)
+                    #   end
+                    # else
+                    #   error_lines << "Run `rake spec` to log where Thread.new is called."
+                    # end
 
-                      thread_list.each do |thread|
-                        thread_uuid = thread[Metasploit::Framework::Spec::Threads::Suite::UUID_THREAD_LOCAL_VARIABLE]
-
-                        # unmanaged thread, such as the main VM thread
-                        unless thread_uuid
-                          next
-                        end
-
-                        caller = caller_by_thread_uuid[thread_uuid]
-
-                        error_lines << "Thread #{thread_uuid}'s status is #{thread.status.inspect} " \
-                                       "and was started here:\n"
-
-                        error_lines.concat(caller)
-                      end
-                    else
-                      error_lines << "Run `rake spec` to log where Thread.new is called."
+                    error_lines += thread_list.flat_map.with_index do |thread, index|
+                      [
+                        "thread #{index}",
+                        "--------------",
+                        "name: #{thread.name.inspect}",
+                        "status: #{thread.status.inspect}",
+                        "creator: #{thread.fetch('debug_creator', 'unknown')}",
+                        "uuid: #{thread.fetch('debug_uuid', 'unknown')}",
+                        "backtrace: #{thread.backtrace.map { |line| "    #{line} "}.join("\n")}",
+                        ""
+                      ].join("\n")
                     end
 
                     raise RuntimeError,

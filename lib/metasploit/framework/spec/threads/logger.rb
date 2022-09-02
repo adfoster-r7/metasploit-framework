@@ -26,16 +26,18 @@ Thread.define_singleton_method(:new) { |*args, &block|
 
   Metasploit::Framework::Spec::Threads::Suite::LOG_PATHNAME.parent.mkpath
 
-  Metasploit::Framework::Spec::Threads::Suite::LOG_PATHNAME.open('a') { |f|
-    # single puts so threads can't write in between each other.
-    f.puts lines.join("\n")
-  }
+  # Metasploit::Framework::Spec::Threads::Suite::LOG_PATHNAME.open('a') { |f|
+  #   # single puts so threads can't write in between each other.
+  #   f.puts lines.join("\n")
+  # }
 
-  options = {original_args: args, uuid: uuid}
+  options = {original_args: args, uuid: uuid, debug_creator: caller.map { |line| "    #{line} "}.join("\n") }
 
   original_thread_new.call(options) {
     # record uuid for thread-leak detection can used uuid to correlate log with this thread.
     Thread.current[Metasploit::Framework::Spec::Threads::Suite::UUID_THREAD_LOCAL_VARIABLE] = options.fetch(:uuid)
+    Thread.current['debug_uuid'] = options.fetch(:uuid)
+    Thread.current['debug_creator'] = options.fetch(:debug_creator)
     block.call(*options.fetch(:original_args))
   }
 }
