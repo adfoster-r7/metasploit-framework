@@ -25,25 +25,25 @@ on:
   pull_request:
     branches-ignore:
       - weekly-dependency-updates
-  schedule:
-    - cron: '*/15 * * * *'
+#  schedule:
+#    - cron: '*/5 * * * *'
 
 jobs:
-  build:
-    runs-on: ubuntu-18.04
-    timeout-minutes: 40
-    name: Docker Build
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: docker-compose build
-        run: |
-          curl -L https://github.com/docker/compose/releases/download/1.22.0/docker-compose-`uname -s`-`uname -m` > docker-compose
-          chmod +x docker-compose
-          sudo mv docker-compose /usr/bin
-
-          /usr/bin/docker-compose build
+#  build:
+#    runs-on: ubuntu-18.04
+#    timeout-minutes: 40
+#    name: Docker Build
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v2
+#
+#      - name: docker-compose build
+#        run: |
+#          curl -L https://github.com/docker/compose/releases/download/1.22.0/docker-compose-`uname -s`-`uname -m` > docker-compose
+#          chmod +x docker-compose
+#          sudo mv docker-compose /usr/bin
+#
+#          /usr/bin/docker-compose build
 
   test:
     runs-on: ${{ matrix.os }}
@@ -66,7 +66,6 @@ jobs:
       fail-fast: true
       matrix:
         ruby:
-          - 2.6
           - 2.7
           - 3.0
           - 3.1

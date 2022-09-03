@@ -13,6 +13,16 @@ module Metasploit
           #
 
           # Number of allowed threads when threads are counted in `after(:suite)` or `before(:suite)`
+          #
+          # Known threads:
+          #   1. Main thread
+          #   2. Active Record connection pool thread
+          #   3. Framework thread manager, a monitor thread for removing dead threads
+          #      https://github.com/rapid7/metasploit-framework/blame/04e8752b9b74cbaad7cb0ea6129c90e3172580a2/lib/msf/core/thread_manager.rb#L66-L89
+          #   4. if REMOTE_DB is enabled, a ManagedRemoteDataService instance is created
+          #       https://github.com/rapid7/metasploit-framework/blob/b87348267bd5f60a157b08dcb877ee218a0a454c/spec/spec_helper.rb#L143-L149
+          #   5. Ruby's Timeout library thread, a monitor thread created when using `Thread.timeout(1) { }`
+          #       https://github.com/ruby/timeout/blob/bd25f4b138b86ef076e6d9d7374b159fffe5e4e9/lib/timeout.rb#L129-L137
           EXPECTED_THREAD_COUNT_AROUND_SUITE = ENV['REMOTE_DB'] ? 4 : 3
 
           # `caller` for all Thread.new calls
@@ -73,7 +83,7 @@ module Metasploit
                   thread_list = Metasploit::Framework::Spec::Threads::Suite.non_debugger_thread_list
                   thread_count = thread_list.count
 
-                  if thread_count > EXPECTED_THREAD_COUNT_AROUND_SUITE
+                  # if thread_count > EXPECTED_THREAD_COUNT_AROUND_SUITE
                     error_lines = []
 
                     # if LOG_PATHNAME.exist?
@@ -100,7 +110,7 @@ module Metasploit
 
                     error_lines += thread_list.flat_map.with_index do |thread, index|
                       [
-                        "thread #{index}",
+                        "thread #{index + 1}",
                         "--------------",
                         "name: #{thread.name.inspect}",
                         "status: #{thread.status.inspect}",
@@ -111,6 +121,9 @@ module Metasploit
                       ].join("\n")
                     end
 
+                  $stderr.puts error_lines
+
+                  if thread_count > EXPECTED_THREAD_COUNT_AROUND_SUITE
                     raise RuntimeError,
                           "#{thread_count} #{'thread'.pluralize(thread_count)} exist(s) when only " \
                           "#{EXPECTED_THREAD_COUNT_AROUND_SUITE} " \
