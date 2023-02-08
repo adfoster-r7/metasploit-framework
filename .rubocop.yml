@@ -217,6 +217,10 @@ Style/FrozenStringLiteralComment:
   Enabled: false
   Description: 'We cannot support this yet without a lot of things breaking'
 
+Style/MutableConstant:
+  Enabled: false
+  Description: 'We cannot support this yet without a lot of things breaking'
+
 Style/RedundantReturn:
   Description: 'This often looks weird when mixed with actual returns, and hurts nothing'
   Enabled: false
