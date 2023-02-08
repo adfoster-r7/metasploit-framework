@@ -260,7 +260,7 @@ class MetasploitModule < Msf::Post
     end
 
     cmds = cmdstager.generate(opts)
-    if cmds.nil? || cmds.length < 1
+    if cmds.nil? || cmds.empty?
       print_error('The command stager could not be generated.')
       raise ArgumentError
     end
@@ -335,7 +335,7 @@ class MetasploitModule < Msf::Post
   # Show the progress of the upload
   #
   def progress(total, sent)
-    done = (sent.to_f / total.to_f) * 100
+    done = (sent.to_f / total) * 100
     print_status(format('Command stager progress: %3.2f%% (%d/%d bytes)', done.to_f, sent, total))
   end
 
