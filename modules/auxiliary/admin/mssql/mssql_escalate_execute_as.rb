@@ -3,22 +3,24 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::MSSQL
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'        => 'Microsoft SQL Server Escalate EXECUTE AS',
-      'Description' => %q{
-        This module can be used escalate privileges if the IMPERSONATION privilege has been
-        assigned to the user. In most cases, this results in additional data access, but in
-        some cases it can be used to gain sysadmin privileges.
-      },
-      'Author'      => ['nullbind <scott.sutherland[at]netspi.com>'],
-      'License'     => MSF_LICENSE,
-      'References'  => [['URL','http://msdn.microsoft.com/en-us/library/ms178640.aspx']]
-    ))
+    super(
+      update_info(
+        info,
+        'Name' => 'Microsoft SQL Server Escalate EXECUTE AS',
+        'Description' => %q{
+          This module can be used escalate privileges if the IMPERSONATION privilege has been
+          assigned to the user. In most cases, this results in additional data access, but in
+          some cases it can be used to gain sysadmin privileges.
+        },
+        'Author' => ['nullbind <scott.sutherland[at]netspi.com>'],
+        'License' => MSF_LICENSE,
+        'References' => [['URL', 'http://msdn.microsoft.com/en-us/library/ms178640.aspx']]
+      )
+    )
   end
 
   def run
@@ -46,9 +48,9 @@ class MetasploitModule < Msf::Auxiliary
     end
 
     # Get a list of the users that can be impersonated
-    print_status("Enumerating a list of users that can be impersonated...")
+    print_status('Enumerating a list of users that can be impersonated...')
     imp_user_list = check_imp_users
-    if imp_user_list.nil? || imp_user_list.length == 0
+    if imp_user_list.nil? || imp_user_list.empty?
       print_error('Sorry, the current user doesn\'t have permissions to impersonate anyone.')
       disconnect
       return

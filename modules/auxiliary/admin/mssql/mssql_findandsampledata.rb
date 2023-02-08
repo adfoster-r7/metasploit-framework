@@ -9,48 +9,52 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Microsoft SQL Server Find and Sample Data',
-      'Description'    => %q{This script will search through all of the non-default databases
-      on the SQL Server for columns that match the keywords defined in the TSQL KEYWORDS
-      option. If column names are found that match the defined keywords and data is present
-      in the associated tables, the script will select a sample of the records from each of
-      the affected tables.  The sample size is determined by the SAMPLE_SIZE option, and results
-      output in a CSV format.
-      },
-      'Author'         => [
-        'Scott Sutherland <scott.sutherland[at]netspi.com>', # Metasploit module
-        'Robin Wood <robin[at]digininja.org>',               # IDF module which was my inspiration
-        'humble-desser <humble.desser[at]gmail.com>',         # Help on IRC
-        'Carlos Perez <carlos_perez[at]darkoperator.com>',   # Help on IRC
-        'hdm',                                               # Help on IRC
-        'todb'                                               # Help on GitHub
-      ],
-      'License'        => MSF_LICENSE,
-      'References'     => [[ 'URL', 'http://www.netspi.com/blog/author/ssutherland/' ]]
-    ))
+    super(
+      update_info(
+        info,
+        'Name' => 'Microsoft SQL Server Find and Sample Data',
+        'Description' => %q{
+          This script will search through all of the non-default databases
+          on the SQL Server for columns that match the keywords defined in the TSQL KEYWORDS
+          option. If column names are found that match the defined keywords and data is present
+          in the associated tables, the script will select a sample of the records from each of
+          the affected tables.  The sample size is determined by the SAMPLE_SIZE option, and results
+          output in a CSV format.
+        },
+        'Author' => [
+          'Scott Sutherland <scott.sutherland[at]netspi.com>', # Metasploit module
+          'Robin Wood <robin[at]digininja.org>',               # IDF module which was my inspiration
+          'humble-desser <humble.desser[at]gmail.com>', # Help on IRC
+          'Carlos Perez <carlos_perez[at]darkoperator.com>',   # Help on IRC
+          'hdm',                                               # Help on IRC
+          'todb'                                               # Help on GitHub
+        ],
+        'License' => MSF_LICENSE,
+        'References' => [[ 'URL', 'http://www.netspi.com/blog/author/ssutherland/' ]]
+      )
+    )
 
     register_options(
       [
-        OptString.new('KEYWORDS', [ true, 'Keywords to search for','passw|credit|card']),
-        OptInt.new('SAMPLE_SIZE', [ true, 'Number of rows to sample',  1]),
-      ])
+        OptString.new('KEYWORDS', [ true, 'Keywords to search for', 'passw|credit|card']),
+        OptInt.new('SAMPLE_SIZE', [ true, 'Number of rows to sample', 1]),
+      ]
+    )
   end
 
   def print_with_underline(str)
     print_line(str)
-    print_line("=" * str.length)
+    print_line('=' * str.length)
   end
 
-  def run_host(ip)
-    sql_statement()
+  def run_host(_ip)
+    sql_statement
   end
 
-  def sql_statement()
-
+  def sql_statement
     # DEFINED HEADER TEXT
     headings = [
-      ["Server","Database", "Schema", "Table", "Column", "Data Type", "Sample Data","Row Count"]
+      ['Server', 'Database', 'Schema', 'Table', 'Column', 'Data Type', 'Sample Data', 'Row Count']
     ]
 
     # DEFINE SEARCH QUERY AS VARIABLE
@@ -334,10 +338,8 @@ class MetasploitModule < Msf::Auxiliary
 
     SET NOCOUNT OFF;"
 
-
-
     # STATUSING
-    print_line(" ")
+    print_line(' ')
     print_status("Attempting to connect to the SQL Server at #{rhost}:#{rport}...")
 
     # CREATE DATABASE CONNECTION AND SUBMIT QUERY WITH ERROR HANDLING
@@ -345,110 +347,109 @@ class MetasploitModule < Msf::Auxiliary
       result = mssql_query(sql, false) if mssql_login_datastore
       column_data = result[:rows]
       print_good("Successfully connected to #{rhost}:#{rport}")
-    rescue
+    rescue StandardError
       print_error("Failed to connect to #{rhost}:#{rport}.")
-    return
+      return
     end
 
     # CREATE TABLE TO STORE SQL SERVER DATA LOOT
     sql_data_tbl = Rex::Text::Table.new(
-      'Header'  => 'SQL Server Data',
-      'Indent'   => 1,
+      'Header' => 'SQL Server Data',
+      'Indent' => 1,
       'Columns' => ['Server', 'Database', 'Schema', 'Table', 'Column', 'Data Type', 'Sample Data', 'Row Count']
     )
 
     # STATUSING
-    print_status("Attempting to retrieve data ...")
+    print_status('Attempting to retrieve data ...')
 
     if (column_data.count < 7)
-      #Save loot status
-      save_loot="no"
+      # Save loot status
+      save_loot = 'no'
 
-      #Return error from SQL server
-      column_data.each { |row|
-        print_status("#{row.to_s.gsub("[","").gsub("]","").gsub("\"","")}")
-      }
-    return
+      # Return error from SQL server
+      column_data.each do |row|
+        print_status(row.to_s.gsub('[', '').gsub(']', '').gsub('"', '').to_s)
+      end
+      return
     else
-      #SETUP COLUM WIDTH FOR QUERY RESULTS
-      #Save loot status
-      save_loot="yes"
-      column_data.each { |row|
-        0.upto(7) { |col|
+      # SETUP COLUM WIDTH FOR QUERY RESULTS
+      # Save loot status
+      save_loot = 'yes'
+      column_data.each do |row|
+        0.upto(7) do |col|
           row[col] = row[col].strip.to_s
-          }
-      }
-      print_line(" ")
+        end
+      end
+      print_line(' ')
     end
 
     # SETUP ROW WIDTHS
     widths = [0, 0, 0, 0, 0, 0, 0, 0]
-    (column_data|headings).each { |row|
-      0.upto(7) { |col|
+    (column_data | headings).each do |row|
+      0.upto(7) do |col|
         widths[col] = row[col].to_s.length if row[col].to_s.length > widths[col]
-      }
-    }
+      end
+    end
 
     # PRINT HEADERS
-    buffer1 = ""
-    buffer2 = ""
-    headings.each { |row|
-      0.upto(7) { |col|
+    buffer1 = ''
+    buffer2 = ''
+    headings.each do |row|
+      0.upto(7) do |col|
         buffer1 += row[col].ljust(widths[col] + 1)
-        buffer2 += row[col]+ ","
-      }
+        buffer2 += row[col] + ','
+      end
       print_line(buffer1)
-      buffer2 = buffer2.chomp(",")+ "\n"
-    }
+      buffer2 = buffer2.chomp(',') + "\n"
+    end
 
     # PRINT DIVIDERS
-    buffer1 = ""
-    buffer2 = ""
-    headings.each { |row|
-      0.upto(7) { |col|
-        divider = "=" * widths[col] + " "
+    buffer1 = ''
+    buffer2 = ''
+    headings.each do |_row|
+      0.upto(7) do |col|
+        divider = '=' * widths[col] + ' '
         buffer1 += divider.ljust(widths[col] + 1)
-      }
+      end
       print_line(buffer1)
-    }
+    end
 
     # PRINT DATA
-    buffer1 = ""
-    buffer2 = ""
-    print_line("")
-    column_data.each { |row|
-      0.upto(7) { |col|
+    buffer1 = ''
+    buffer2 = ''
+    print_line('')
+    column_data.each do |row|
+      0.upto(7) do |col|
         buffer1 += row[col].ljust(widths[col] + 1)
-        buffer2 += row[col] + ","
-      }
+        buffer2 += row[col] + ','
+      end
       print_line(buffer1)
-      buffer2 = buffer2.chomp(",")+ "\n"
+      buffer2 = buffer2.chomp(',') + "\n"
 
       # WRITE QUERY OUTPUT TO TEMP REPORT TABLE
       sql_data_tbl << [row[0], row[1], row[2], row[3], row[4], row[5], row[6], row[7]]
 
-      buffer1 = ""
-      buffer2 = ""
+      buffer1 = ''
+      buffer2 = ''
       print_line(buffer1)
-    }
+    end
     disconnect
 
     this_service = nil
-    if framework.db and framework.db.active
+    if framework.db && framework.db.active
       this_service = report_service(
-        :host  => rhost,
-        :port => rport,
-        :name => 'mssql',
-        :proto => 'tcp'
+        host: rhost,
+        port: rport,
+        name: 'mssql',
+        proto: 'tcp'
       )
     end
 
     # CONVERT TABLE TO CSV AND WRITE TO FILE
-    if (save_loot=="yes")
-      filename= "#{datastore['RHOST']}-#{datastore['RPORT']}_sqlserver_query_results.csv"
-      path = store_loot("mssql.data", "text/plain", datastore['RHOST'], sql_data_tbl.to_csv, filename, "SQL Server query results",this_service)
+    if (save_loot == 'yes')
+      filename = "#{datastore['RHOST']}-#{datastore['RPORT']}_sqlserver_query_results.csv"
+      path = store_loot('mssql.data', 'text/plain', datastore['RHOST'], sql_data_tbl.to_csv, filename, 'SQL Server query results', this_service)
       print_good("Query results have been saved to: #{path}")
     end
-
   end
 end

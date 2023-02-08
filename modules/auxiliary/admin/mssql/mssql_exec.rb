@@ -16,17 +16,15 @@ class MetasploitModule < Msf::Auxiliary
           sp_oacreate procedure (more opsec safe, no output, no temporary data table). A valid username and password is
           required to use this module.
         },
-        'Author' =>
-          [
-            'tebo <tebo[at]attackresearch.com>',
-            'arcc <pw[at]evait.de>'
-          ],
+        'Author' => [
+          'tebo <tebo[at]attackresearch.com>',
+          'arcc <pw[at]evait.de>'
+        ],
         'License' => MSF_LICENSE,
-        'References' =>
-          [
-            [ 'URL', 'http://msdn.microsoft.com/en-us/library/cc448435(PROT.10).aspx'],
-            [ 'URL', 'https://docs.microsoft.com/en-us/sql/relational-databases/system-stored-procedures/sp-oacreate-transact-sql'],
-          ]
+        'References' => [
+          [ 'URL', 'http://msdn.microsoft.com/en-us/library/cc448435(PROT.10).aspx'],
+          [ 'URL', 'https://docs.microsoft.com/en-us/sql/relational-databases/system-stored-procedures/sp-oacreate-transact-sql'],
+        ]
       )
     )
 

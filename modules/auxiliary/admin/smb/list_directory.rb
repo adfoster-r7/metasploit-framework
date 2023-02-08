@@ -11,27 +11,24 @@ class MetasploitModule < Msf::Auxiliary
 
   # Aliases for common classes
   SIMPLE = Rex::Proto::SMB::Client
-  XCEPT  = Rex::Proto::SMB::Exceptions
-  CONST  = Rex::Proto::SMB::Constants
-
+  XCEPT = Rex::Proto::SMB::Exceptions
+  CONST = Rex::Proto::SMB::Constants
 
   def initialize
     super(
-      'Name'        => 'SMB Directory Listing Utility',
-      'Description' => %Q{
+      'Name' => 'SMB Directory Listing Utility',
+      'Description' => %(
         This module lists the directory of a target share and path. The only reason
       to use this module is if your existing SMB client is not able to support the features
       of the Metasploit Framework that you need, like pass-the-hash authentication.
-      },
-      'Author'      =>
-        [
-          'mubix',
-          'hdm'
-        ],
-      'References'  =>
-        [
-        ],
-      'License'     => MSF_LICENSE
+      ),
+      'Author' => [
+        'mubix',
+        'hdm'
+      ],
+      'References' => [
+      ],
+      'License' => MSF_LICENSE
     )
 
     register_options([
@@ -42,8 +39,8 @@ class MetasploitModule < Msf::Auxiliary
     deregister_options('SMB::ProtocolVersion')
   end
 
-  def as_size( s )
-    prefix = %W(TB GB MB KB B)
+  def as_size(s)
+    prefix = %w[TB GB MB KB B]
     s = s.to_f
     i = prefix.length - 1
     while s > 512 && i > 0
@@ -54,24 +51,24 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def run
-    print_status("Connecting to the server...")
+    print_status('Connecting to the server...')
     begin
       connect(versions: [1])
-      smb_login()
+      smb_login
       print_status("Mounting the remote share \\\\#{datastore['RHOST']}\\#{datastore['SMBSHARE']}'...")
-            self.simple.connect("\\\\#{datastore['RHOST']}\\#{datastore['SMBSHARE']}")
+      simple.connect("\\\\#{datastore['RHOST']}\\#{datastore['SMBSHARE']}")
       if datastore['RPATH']
         print_status("Listing \\\\#{datastore['RHOST']}\\#{datastore['SMBSHARE']}\\#{datastore['RPATH']}'...")
       end
-      listing = self.simple.client.find_first("\\#{datastore['RPATH']}\\*")
+      listing = simple.client.find_first("\\#{datastore['RPATH']}\\*")
       directory = Rex::Text::Table.new(
-            'Header' => "Directory Listing of \\\\#{datastore['RHOST']}\\#{datastore['SMBSHARE']}\\#{datastore['RPATH']}",
-            'Indent' => 2,
-            'SortIndex' => 2,
-            'Columns' => ['SIZE','TYPE','TIME','FILENAME']
+        'Header' => "Directory Listing of \\\\#{datastore['RHOST']}\\#{datastore['SMBSHARE']}\\#{datastore['RPATH']}",
+        'Indent' => 2,
+        'SortIndex' => 2,
+        'Columns' => ['SIZE', 'TYPE', 'TIME', 'FILENAME']
       )
-      listing.each_pair do |key,val|
-        file_lastmodified = ::Time.at(Rex::Proto::SMB::Utils.time_smb_to_unix(val["info"][9],val["info"][10]))
+      listing.each_pair do |key, val|
+        file_lastmodified = ::Time.at(Rex::Proto::SMB::Utils.time_smb_to_unix(val['info'][9], val['info'][10]))
         size = val['info'][10]
         if val['attr'] == 16
           type = 'DIR'
@@ -79,14 +76,13 @@ class MetasploitModule < Msf::Auxiliary
         else
           type = 'FILE'
         end
-        directory << [as_size(size.to_s),val["type"],file_lastmodified.strftime("%Y-%m-%d %H:%m:%S%p"),key]
+        directory << [as_size(size.to_s), val['type'], file_lastmodified.strftime('%Y-%m-%d %H:%m:%S%p'), key]
       end
       print_status(directory.to_s)
     rescue Rex::Proto::SMB::Exceptions::Error => e
       # SMB has very good explanations in error messages, don't really need to
       # prefix with anything here.
-      print_error("#{e}")
+      print_error(e.to_s)
     end
   end
 end
-
