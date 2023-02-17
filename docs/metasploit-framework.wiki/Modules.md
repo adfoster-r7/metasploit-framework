@@ -2,7 +2,17 @@
 
 There are currently {{ site.metasploit_total_module_count }} Metasploit modules:
 
-{{ site.metasploit_nested_module_counts | module_tree }}
+{{ site.metasploit_nested_module_counts | module_tree: "All Modules" }}
+
+## Metasploit CISA KEV Catalog
+
+The Cybersecurity & Infrastructure Security Agency maintain a Known Exploited Vulnerabilities (KEV) Catalog.
+Out of the total {{ site.metasploit_total_module_count }} Metasploit modules, there are {{ site.metasploit_cisa_kev_module_count }}
+modules which have CVE references present in the CISA KEV Catalog:
+
+<!-- {{ site.metasploit_cisa_kev_count }} -->
+
+{{ site.metasploit_cisa_kev_nested_module_counts | module_tree: "Metasploit KEV modules" }}
 
 ## Module types
 
