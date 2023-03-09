@@ -47,6 +47,7 @@ class MetasploitModule < Msf::Auxiliary
         OptString.new('DOMAIN', [ false, 'The Fully Qualified Domain Name (FQDN). Ex: mydomain.local' ]),
         OptString.new('USERNAME', [ false, 'The domain user' ]),
         OptString.new('PASSWORD', [ false, 'The domain user\'s password' ]),
+        OptPath.new('Krb5Ccname', [ false, 'The Kerberos TGT/TGS to use']),
         OptPath.new('CERT_FILE', [ false, 'The PKCS12 (.pfx) certificate file to authenticate with' ]),
         OptString.new('CERT_PASSWORD', [ false, 'The certificate file\'s password' ]),
         OptString.new(
@@ -151,7 +152,7 @@ class MetasploitModule < Msf::Auxiliary
     msg = e.to_s
     if e.respond_to?(:error_code) &&
        e.error_code == ::Rex::Proto::Kerberos::Model::Error::ErrorCodes::KDC_ERR_PREAUTH_REQUIRED
-      msg << ' - Check the authentication-related options (PASSWORD, NTHASH or AES_KEY)'
+      msg << ' - Check the authentication-related options (Krb5Ccname, PASSWORD, NTHASH or AES_KEY)'
     end
     fail_with(Failure::Unknown, msg)
   end
@@ -192,7 +193,11 @@ class MetasploitModule < Msf::Auxiliary
 
   def action_get_tgs
     authenticator = init_authenticator({ ticket_storage: kerberos_ticket_storage(read: true, write: true) })
-    credential = authenticator.request_tgt_only(options)
+    tgt_request_options = {}
+    if datastore['Krb5Ccname'].present?
+      tgt_request_options[:cache_file] = datastore['Krb5Ccname']
+    end
+    credential = authenticator.request_tgt_only(tgt_request_options)
 
     if datastore['IMPERSONATE'].present?
       print_status("#{peer} - Getting TGS impersonating #{datastore['IMPERSONATE']}@#{@realm} (SPN: #{datastore['SPN']})")
@@ -227,6 +232,7 @@ class MetasploitModule < Msf::Auxiliary
         sname: sname,
         ticket_storage: kerberos_ticket_storage(read: false)
       }
+
       authenticator.request_tgs_only(credential, tgs_options)
     end
   end
