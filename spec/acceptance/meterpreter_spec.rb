@@ -49,7 +49,7 @@ def with_meterpreter_name_merged(hash)
   end
 end
 
-RSpec.describe 'Meterpreter', acceptance: true do
+RSpec.describe 'Meterpreter' do
   include_context 'wait_for_expect'
 
   # Tests to ensure that Meterpreter is consistent across all implementations/operation systems
