@@ -123,14 +123,15 @@ jobs:
       - name: Setup Ruby
         env:
           BUNDLE_WITHOUT: "coverage development"
-#           Ternary operator equivalent https://github.com/actions/runner/issues/409#issuecomment-752775072
-#          BUNDLE_FORCE_RUBY_PLATFORM: ${{ (runner.os == 'Windows' && 'true') || 'false' }}
           BUNDLE_FORCE_RUBY_PLATFORM: true
         uses: ruby/setup-ruby@v1
         with:
           ruby-version: ${{ matrix.ruby }}
           bundler-cache: true
           cache-version: 4
+          # Github actions with Ruby requires Bundler 2.2.18+
+          # https://github.com/ruby/setup-ruby/tree/d2b39ad0b52eca07d23f3aa14fdf2a3fcc1f411c#windows
+          bundler: 2.2.33
 
       - name: acceptance
         env:
@@ -138,6 +139,11 @@ jobs:
           RSPEC_RERUN_RETRY_COUNT: 3
           RSPEC_RERUN_PATTERN: 'spec/acceptance/**/*_spec.rb'
           SPEC_OPTS: "--require acceptance_spec_helper.rb --color --format Fivemat --format AllureRspec::RSpecFormatter --require rspec-rerun/formatter --format RSpec::Rerun::Formatter"
+        # Unix run command:
+        #   SPEC_HELPER_LOAD_METASPLOIT=false bundle exec ./spec/acceptance
+        # Windows cmd command:
+        #   set SPEC_HELPER_LOAD_METASPLOIT=false
+        #   bundle exec rspec .\spec\acceptance
         run: |
           bundle exec rake rspec-rerun:spec
 
