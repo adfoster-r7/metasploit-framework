@@ -145,7 +145,7 @@ module Acceptance
     # and writing the console's output to stdout. Doesn't support using PTY/raw mode.
     def interact
       $stderr.puts
-      warn '[*] Opened interactive mode - enter "!next" to continue, or "!exit" to stop entirely'
+      $stderr.puts '[*] Opened interactive mode - enter "!next" to continue, or "!exit" to stop entirely'
       $stderr.puts
 
       without_debugging do
@@ -229,29 +229,43 @@ module Acceptance
     end
   end
 
-  ###
-  # Stores the data for a payload, including the options used to generate the payload,
-  ###
-  class Payload
-    attr_reader :name, :execute_cmd, :generate_options, :payload_options
-
-    def initialize(options)
-      @name = options.fetch(:name)
-      @execute_cmd = options.fetch(:execute_cmd)
-      @generate_options = options.fetch(:generate_options)
-      @payload_options = options.fetch(:payload_options)
-      @executable = options.fetch(:executable, false)
-
-      basename = "#{File.basename(__FILE__)}_#{name}".gsub(/[^a-zA-Z]/, '-')
-      extension = options.fetch(:extension, '')
-      # Generate a Dir::Tmpname instead of a Tempfile, otherwise windows won't allow the file to be executed
-      # as the current Ruby process will still have a handle to it
-      # TODO: Ensure this is deleted correctly
+  # Internally generates a temporary file with Dir::Tmpname instead of a ::Tempfile instance, otherwise windows won't allow the file to be executed
+  # at the same time as the current Ruby process having an open handle to the temporary file
+  class TempChildProcessFile
+    def initialize(basename, extension)
       @file_path = Dir::Tmpname.create([basename, extension]) do |_path, _n, _opts, _origdir|
         # noop
       end
 
       ObjectSpace.define_finalizer(self, self.class.finalizer_proc_for(@file_path))
+    end
+
+    def path
+      @file_path
+    end
+
+    def self.finalizer_proc_for(path)
+      proc { File.delete(path) if File.exist?(path) }
+    end
+  end
+
+  ###
+  # Stores the data for a payload, including the options used to generate the payload,
+  ###
+  class Payload
+    attr_reader :name, :execute_cmd, :generate_options, :datastore
+
+    def initialize(options)
+      @name = options.fetch(:name)
+      @execute_cmd = options.fetch(:execute_cmd)
+      @generate_options = options.fetch(:generate_options)
+      @datastore = options.fetch(:datastore)
+      @executable = options.fetch(:executable, false)
+
+      basename = "#{File.basename(__FILE__)}_#{name}".gsub(/[^a-zA-Z]/, '-')
+      extension = options.fetch(:extension, '')
+
+      @file_path = TempChildProcessFile.new(basename, extension)
     end
 
     # @return [TrueClass, FalseClass] True if the payload needs marked as executable before being executed
@@ -261,7 +275,7 @@ module Acceptance
 
     # @return [String] The path to the payload on disk
     def path
-      @file_path
+      @file_path.path
     end
 
     # @return [Integer] The size of the payload on disk. May be 0 when the payload doesn't exist,
@@ -283,30 +297,47 @@ module Acceptance
       end
     end
 
+    # @param [Hash] default_global_datastore
+    # @return [String] The setg commands for setting the global datastore
+    def setg_commands(default_global_datastore = {})
+      commands = []
+      # Ensure the global framework datastore is always clear
+      commands << "irb -e '(self.respond_to?(:framework) ? framework : self).datastore.user_defined.clear'"
+      # Call setg
+      global_datastore = default_global_datastore.merge(@datastore[:global])
+      global_datastore.each do |key, value|
+        commands << "setg #{key} #{value}"
+      end
+      commands.join("\n")
+    end
+
+    # @param [Hash] default_module_datastore
     # @return [String] The command which can be used on msfconsole to generate the payload
-    def generate_command
-      default_payload_options = {
-        AutoVerifySessionTimeout: 10
-      }
-      payload_options = default_payload_options.merge(@payload_options)
+    def generate_command(default_module_datastore = {})
+      module_datastore = default_module_datastore.merge(@datastore[:module])
       generate_options = @generate_options.map do |key, value|
         "#{key} #{value}"
       end
-      payload_options = payload_options.map do |key, value|
+      module_options = module_datastore.map do |key, value|
         "#{key}=#{value}"
       end
 
-      "generate -o #{path} #{generate_options.join(' ')} #{payload_options.join(' ')}"
+      "generate -o #{path} #{generate_options.join(' ')} #{module_options.join(' ')}"
     end
 
+    # @param [Hash] default_global_datastore
+    # @param [Hash] default_module_datastore
     # @return [String] A human readable representation of the payload configuration object
-    def as_readable_text
+    def as_readable_text(default_global_datastore: {}, default_module_datastore: {})
       <<~EOF
         ## Payload
         use #{name}
 
+        ## Set global datastore
+        #{generate_command(default_global_datastore)}
+
         ## Generate command
-        #{generate_command}
+        #{generate_command(default_module_datastore)}
 
         ## Create listener
         to_handler
@@ -314,10 +345,6 @@ module Acceptance
         ## Execute command
         #{Shellwords.join(execute_command)}
       EOF
-    end
-
-    def self.finalizer_proc_for(path)
-      proc { File.delete(path) if File.exist?(path) }
     end
   end
 
@@ -334,7 +361,7 @@ module Acceptance
 
   class ConsoleDriver
     def initialize
-      @coonsole = nil
+      @console = nil
       @payload_processes = []
       ObjectSpace.define_finalizer(self, self.class.finalizer_proc_for(self))
     end
