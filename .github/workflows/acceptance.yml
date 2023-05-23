@@ -138,7 +138,7 @@ jobs:
           SPEC_HELPER_LOAD_METASPLOIT: false
           RSPEC_RERUN_RETRY_COUNT: 3
           RSPEC_RERUN_PATTERN: 'spec/acceptance/**/*_spec.rb'
-          SPEC_OPTS: "--require acceptance_spec_helper.rb --color --format Fivemat --format AllureRspec::RSpecFormatter --require rspec-rerun/formatter --format RSpec::Rerun::Formatter"
+          SPEC_OPTS: "--require acceptance_spec_helper.rb --color --format documentation --format AllureRspec::RSpecFormatter --require rspec-rerun/formatter --format RSpec::Rerun::Formatter"
         # Unix run command:
         #   SPEC_HELPER_LOAD_METASPLOIT=false bundle exec ./spec/acceptance
         # Windows cmd command:

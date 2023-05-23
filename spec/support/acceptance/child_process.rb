@@ -299,7 +299,7 @@ module Acceptance
 
     # @param [Hash] default_global_datastore
     # @return [String] The setg commands for setting the global datastore
-    def setg_commands(default_global_datastore = {})
+    def setg_commands(default_global_datastore: {})
       commands = []
       # Ensure the global framework datastore is always clear
       commands << "irb -e '(self.respond_to?(:framework) ? framework : self).datastore.user_defined.clear'"
@@ -313,7 +313,7 @@ module Acceptance
 
     # @param [Hash] default_module_datastore
     # @return [String] The command which can be used on msfconsole to generate the payload
-    def generate_command(default_module_datastore = {})
+    def generate_command(default_module_datastore: {})
       module_datastore = default_module_datastore.merge(@datastore[:module])
       generate_options = @generate_options.map do |key, value|
         "#{key} #{value}"
@@ -334,10 +334,10 @@ module Acceptance
         use #{name}
 
         ## Set global datastore
-        #{generate_command(default_global_datastore)}
+        #{setg_commands(default_global_datastore: default_global_datastore)}
 
         ## Generate command
-        #{generate_command(default_module_datastore)}
+        #{generate_command(default_module_datastore: default_module_datastore)}
 
         ## Create listener
         to_handler

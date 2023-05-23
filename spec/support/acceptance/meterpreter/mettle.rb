@@ -14,7 +14,8 @@ module Acceptance::Meterpreter
           global: {
           },
           module: {
-            MeterpreterTryToFork: false
+            MeterpreterTryToFork: false,
+            MeterpreterDebugBuild: true
           }
         }
       },
@@ -31,7 +32,8 @@ module Acceptance::Meterpreter
           global: {
           },
           module: {
-            MeterpreterTryToFork: false
+            MeterpreterTryToFork: false,
+            MeterpreterDebugBuild: true
           }
         }
       },
@@ -48,7 +50,8 @@ module Acceptance::Meterpreter
       #     global: {
       #     },
       #     module: {
-      #       MeterpreterTryToFork: false
+      #       MeterpreterTryToFork: false,
+      #       MeterpreterDebugBuild: true
       #     }
       #   }
       # }

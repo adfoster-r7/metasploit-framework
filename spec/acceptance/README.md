@@ -29,7 +29,7 @@ Generate allure reports locally:
 
 ```
 # 1) Run the test suite with the allure formatter
-bundle exec rspec --format Fivemat --format AllureRspec::RSpecFormatter './spec/acceptance/meterpreter_spec.rb'
+bundle exec rspec --format documentation --format AllureRspec::RSpecFormatter './spec/acceptance/meterpreter_spec.rb'
 
 # 2) Generate allure report
 cd metasploit-framework/tmp
@@ -44,7 +44,7 @@ apt install -y curl openjdk-11-jdk-headless
 curl -o allure-$VERSION.tgz -Ls https://github.com/allure-framework/allure2/releases/download/$VERSION/allure-$VERSION.tgz
 tar -zxvf allure-$VERSION.tgz -C .
 
-./allure-$VERSION/bin/allure generate allure-raw-data/* -o ./allure-report
+./allure-$VERSION/bin/allure generate --clean allure-raw-data/ -o ./allure-report
 
 # Serve the assets from the host machine, available at http://127.0.0.1:8000
 cd allure-report

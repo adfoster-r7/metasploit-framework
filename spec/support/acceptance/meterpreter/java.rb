@@ -164,11 +164,15 @@ module Acceptance::Meterpreter
       },
       {
         name: 'test/railgun',
-        pending: true,
+        platforms: %i[osx linux windows],
+        # Railgun is not supported on this platform
+        skip: true,
       },
       {
         name: 'test/railgun_reverse_lookups',
-        pending: true,
+        platforms: %i[osx linux windows],
+        # Railgun is not supported on this platform
+        skip: true,
       },
       {
         name: 'test/registry',

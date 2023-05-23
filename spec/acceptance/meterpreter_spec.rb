@@ -6,15 +6,15 @@ RSpec.describe 'Meterpreter' do
   # Tests to ensure that Meterpreter is consistent across all implementations/operation systems
   METERPRETER_PAYLOADS = Acceptance::Meterpreter.with_meterpreter_name_merged(
     {
-      PYTHON: Acceptance::Meterpreter::PYTHON_METERPRETER,
-      # php: Acceptance::Meterpreter::PHP_METERPRETER,
-      # Java: Acceptance::Meterpreter::JAVA_METERPRETER,
-      # mettle: Acceptance::Meterpreter::METTLE_METERPRETER,
-      # windows_meterpreter: Acceptance::Meterpreter::WINDOWS_METERPRETER
+      python: Acceptance::Meterpreter::PYTHON_METERPRETER,
+      php: Acceptance::Meterpreter::PHP_METERPRETER,
+      java: Acceptance::Meterpreter::JAVA_METERPRETER,
+      mettle: Acceptance::Meterpreter::METTLE_METERPRETER,
+      windows_meterpreter: Acceptance::Meterpreter::WINDOWS_METERPRETER
     }
   )
 
-  let(:current_platform) { Acceptance::Meterpreter::current_platform }
+  let_it_be(:current_platform) { Acceptance::Meterpreter::current_platform }
   let_it_be(:port_generator) { Acceptance::PortGenerator.new }
 
   # Driver instance, keeps track of all open processes/payloads/etc, so they can be closed cleanly
@@ -71,14 +71,14 @@ RSpec.describe 'Meterpreter' do
           let(:default_module_datastore) do
             {
               AutoVerifySessionTimeout: 10,
+              lport: port_generator.next,
+              lhost: '127.0.0.1',
               MeterpreterDebugLogging: "rpath:#{meterpreter_logging_file.path}"
             }
           end
 
           # The shared payload session instance that will be reused across the test run
           let(:await_session_id) do
-            payload_config[:datastore][:module].merge!({ lport: port_generator.next, lhost: '127.0.0.1' })
-
             console.sendline "use #{payload.name}"
             console.recvuntil(Acceptance::Console.prompt)
 

@@ -13,6 +13,7 @@ module Acceptance::Meterpreter
           global: {
           },
           module: {
+            MeterpreterDebugBuild: true
           }
         }
       },
