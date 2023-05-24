@@ -6,7 +6,7 @@
 require 'rex'
 
 lib = File.join(Msf::Config.install_root, "test", "lib")
-$:.push(lib) unless $:.include?(lib)
+$LOAD_PATH.push(lib) unless $LOAD_PATH.include?(lib)
 require 'module_test'
 
 class MetasploitModule < Msf::Post
@@ -21,7 +21,8 @@ class MetasploitModule < Msf::Post
         'Description' => %q{ This module will test railgun code used in post modules},
         'License' => MSF_LICENSE,
         'Author' => [ 'kernelsmith'],
-        'Platform' => [ 'windows' ]
+        'Platform' => [ 'linux', 'osx', 'windows' ],
+        'SessionTypes' => [ 'meterpreter' ]
       )
     )
 

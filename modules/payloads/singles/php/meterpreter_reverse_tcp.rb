@@ -47,7 +47,7 @@ module MetasploitModule
     end
 
     met.gsub!(/#.*$/, '')
-    met = Rex::Text.compress(met)
+    # met = Rex::Text.compress(met)
     met
   end
 end

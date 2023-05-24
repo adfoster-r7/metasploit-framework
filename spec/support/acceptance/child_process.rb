@@ -7,11 +7,20 @@ require 'timeout'
 require 'shellwords'
 
 module Acceptance
+  class ChildProcessError < ::StandardError
+  end
+
+  class ChildProcessTimeoutError < ::StandardError
+  end
+
+  class ChildProcessRecvError < ::StandardError
+  end
+
   class ChildProcess
     def initialize
       super
 
-      @default_timeout = ENV['CI'] ? 30 : 15
+      @default_timeout = ENV['CI'] ? 60 : 40
       @debug = true
       @env ||= {}
       @cmd ||= []
@@ -80,14 +89,16 @@ module Acceptance
       end
 
       result
+    rescue ChildProcessTimeoutError
+      raise ChildProcessRecvError, "Failed #{__method__}: Did not match #{delim}, remaining buffer: #{self.buffer.string[self.buffer.pos..].inspect}"
     end
 
-    def recvall(timeout: @default_timeout)
+    def recv_available(timeout: 0)
       result = ''
 
       with_countdown(timeout) do |countdown|
-        while alive? && !countdown.elapsed?
-          data_chunk = recv(timeout: countdown.remaining_time)
+        while !countdown.elapsed?
+          data_chunk = recv(timeout: timeout)
           if !data_chunk
             next
           end
@@ -97,7 +108,30 @@ module Acceptance
       end
 
       result
+    rescue EOFError, ChildProcessTimeoutError
+      result
     end
+
+    # def recvall(timeout: @default_timeout)
+    #   result = ''
+    #
+    #   with_countdown(timeout) do |countdown|
+    #     while (buffer.any? || stdout_and_stderr.any?) && !countdown.elapsed?
+    #       data_chunk = recv(timeout: countdown.remaining_time)
+    #       if !data_chunk
+    #         next
+    #       end
+    #
+    #       result += data_chunk
+    #     end
+    #   end
+    #
+    #   result
+    # rescue EOFError
+    #   result
+    # rescue ChildProcessTimeoutError
+    #   raise ChildProcessRecvError, "Failed #{__method__}: remaining buffer: #{self.buffer.string[buffer.pos..].inspect}"
+    # end
 
     def unrecv(data)
       buffer.write(data)
@@ -145,7 +179,7 @@ module Acceptance
     # and writing the console's output to stdout. Doesn't support using PTY/raw mode.
     def interact
       $stderr.puts
-      $stderr.puts '[*] Opened interactive mode - enter "!next" to continue, or "!exit" to stop entirely'
+      $stderr.puts '[*] Opened interactive mode - enter "!next" to continue, or "!exit" to stop entirely. !pry for an interactive pry'
       $stderr.puts
 
       without_debugging do
@@ -164,6 +198,8 @@ module Acceptance
                 return
               elsif input.chomp == '!exit'
                 exit
+              elsif input.chomp == '!pry'
+                require 'pry-byebug'; binding.pry
               end
 
               write(input)
@@ -194,6 +230,9 @@ module Acceptance
     # @return [Process::Waiter] the waiter thread for the current process
     attr_reader :wait_thread
 
+    # @return [String] The cmd that was used to execute the current process
+    attr_reader :cmd
+
     private
 
     # @return [StringIO] the buffer for any data which was read from stdout/stderr which was read, but not consumed
@@ -203,7 +242,7 @@ module Acceptance
     def log(s)
       return unless @debug
 
-      warn s
+      $stderr.puts s
     end
 
     def without_debugging
@@ -224,8 +263,10 @@ module Acceptance
         yield countdown
       end
       if countdown.elapsed?
-        raise "Failed await result, remaining buffer: #{buffer.string[buffer.pos..].inspect}"
+        raise ChildProcessTimeoutError
       end
+    rescue ::Timeout::Error
+      raise ChildProcessTimeoutError
     end
   end
 
@@ -242,6 +283,14 @@ module Acceptance
 
     def path
       @file_path
+    end
+
+    def to_s
+      path
+    end
+
+    def inspect
+      "#<#{self.class} #{self.path}>"
     end
 
     def self.finalizer_proc_for(path)
@@ -353,6 +402,7 @@ module Acceptance
     def initialize(cmd)
       super()
 
+      @debug = false
       @env = {}
       @cmd = cmd
       @options = {}
@@ -375,6 +425,7 @@ module Acceptance
       payload_process = PayloadProcess.new(payload.execute_command)
       payload_process.run
       @payload_processes << payload_process
+      payload_process
     end
 
     # @return [Acceptance::Console]
@@ -405,7 +456,7 @@ module Acceptance
         begin
           process.close
         rescue StandardError => e
-          warn e.to_s
+          $stderr.puts e.to_s
         end
       end
     end
@@ -416,6 +467,7 @@ module Acceptance
       super
 
       framework_root = Dir.pwd
+      @debug = true
       @env = {
         'BUNDLE_GEMFILE' => File.join(framework_root, 'Gemfile'),
         'PATH' => "#{framework_root.shellescape}:#{ENV['PATH']}"

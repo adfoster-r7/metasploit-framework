@@ -6,6 +6,11 @@ create handlers, etc.
 
 ### Examples
 
+Useful environment variables:
+- `METERPRETER` - Filter the test suite for specific Meterpreter instances, example: `METERPRETER=java`
+- `METERPRETER_MODULE_TEST` - Filter the post modules to run, example: `METERPRETER_MODULE_TEST=test/meterpreter`
+- `SPEC_HELPER_LOAD_METASPLOIT` - Skip RSpec from loading Metasploit framework and requiring a connected msfdb instance, example: `SPEC_HELPER_LOAD_METASPLOIT=false`
+
 Running Meterpreter test suite:
 
 ```
@@ -18,18 +23,19 @@ Skip loading of Rails/Metasplotit with:
 SPEC_OPTS='--tag acceptance' SPEC_HELPER_LOAD_METASPLOIT=false bundle exec rspec ./spec/acceptance
 ```
 
-Run only the PHP Meterpreter test suite on Unix / Windows:
+Run a specific Meterpreter/module test Unix / Windows:
 ```
-SPEC_OPTS='--tag acceptance' METERPRETER=php bundle exec rspec './spec/acceptance/meterpreter_spec.rb'
+SPEC_OPTS='--tag acceptance' METERPRETER=php METERPRETER_MODULE_TEST=test/unix bundle exec rspec './spec/acceptance/meterpreter_spec.rb'
 
-$env:SPEC_OPTS='--tag acceptance'; $env:METERPRETER = 'php'; bundle exec rspec './spec/acceptance/meterpreter_spec.rb'
+$env:SPEC_OPTS='--tag acceptance'; $env:SPEC_HELPER_LOAD_METASPLOIT=$false; $env:METERPRETER = 'php'; bundle exec rspec './spec/acceptance/meterpreter_spec.rb'
 ```
 
 Generate allure reports locally:
 
 ```
 # 1) Run the test suite with the allure formatter
-bundle exec rspec --format documentation --format AllureRspec::RSpecFormatter './spec/acceptance/meterpreter_spec.rb'
+rm -rf tmp/allure-raw-data
+bundle exec rspec --require acceptance_spec_helper.rb --format documentation --format AllureRspec::RSpecFormatter './spec/acceptance/meterpreter_spec.rb'
 
 # 2) Generate allure report
 cd metasploit-framework/tmp
@@ -48,7 +54,7 @@ tar -zxvf allure-$VERSION.tgz -C .
 
 # Serve the assets from the host machine, available at http://127.0.0.1:8000
 cd allure-report
-ruby -run -e httpd . -p 9090
+ruby -run -e httpd . -p 8000
 ```
 
 ### Debugging
@@ -70,3 +76,4 @@ the interactive msfconsole:
 
 - `!continue` - Continue, similar to Pry's continue functionality
 - `!exit` - Exit the Ruby process entirely, similar to Pry's exit functionality
+- `!pry` - Enter into a pry session within the calling Ruby process

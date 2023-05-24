@@ -1,4 +1,5 @@
 lib = File.join(Msf::Config.install_root, "test", "lib")
+$LOAD_PATH.push(lib) unless $LOAD_PATH.include?(lib)
 require 'module_test'
 
 class MetasploitModule < Msf::Post
@@ -15,7 +16,8 @@ class MetasploitModule < Msf::Post
         'Description' => %q{ This module will test railgun api functions },
         'License' => MSF_LICENSE,
         'Author' => [ 'Spencer McIntyre' ],
-        'Platform' => [ 'linux', 'osx', 'windows' ]
+        'Platform' => [ 'linux', 'osx', 'windows' ],
+        'SessionTypes' => [ 'meterpreter' ]
       )
     )
   end

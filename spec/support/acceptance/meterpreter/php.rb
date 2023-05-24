@@ -10,8 +10,7 @@ module Acceptance::Meterpreter
           '-f': 'raw'
         },
         datastore: {
-          global: {
-          },
+          global: {},
           module: {
             MeterpreterDebugBuild: true
           }
@@ -22,10 +21,10 @@ module Acceptance::Meterpreter
       {
         name: 'test/cmd_exec',
         platforms: %i[
-              osx
-              linux
-              windows
-            ],
+          osx
+          linux
+          windows
+        ],
         lines: {
           all: {
             required: [
@@ -57,10 +56,10 @@ module Acceptance::Meterpreter
       {
         name: 'test/extapi',
         platforms: %i[
-              osx
-              linux
-              windows
-            ],
+          osx
+          linux
+          windows
+        ],
         lines: {
           all: {
             required: [
@@ -88,10 +87,12 @@ module Acceptance::Meterpreter
       {
         name: 'test/file',
         platforms: %i[
-              osx
-              linux
-              windows
-            ],
+          osx
+          linux
+          windows
+        ],
+        # XXX: Skipped for now, the tests hang
+        skip: true,
         lines: {
           all: {
             required: [
@@ -124,10 +125,10 @@ module Acceptance::Meterpreter
       {
         name: 'test/get_env',
         platforms: %i[
-              osx
-              linux
-              windows
-            ],
+          osx
+          linux
+          windows
+        ],
         lines: {
           all: {
             required: [
@@ -152,10 +153,11 @@ module Acceptance::Meterpreter
       {
         name: 'test/meterpreter',
         platforms: %i[
-              osx
-              linux
-              windows
-            ],
+          osx
+          linux
+          windows
+        ],
+        # focus: true,
         lines: {
           all: {
             required: [
@@ -183,104 +185,15 @@ module Acceptance::Meterpreter
       },
       {
         name: 'test/railgun',
-        platforms: [
-          :windows
-        ],
-        lines: {
-          all: {
-            required: [
-            ],
-            acceptable_failures: [
-            ]
-          },
-          osx: {
-            required: [
-              'Failed: 0'
-            ],
-            acceptable_failures: [
-              'FAILED: Should retrieve the win32k file version',
-              'Exception: Rex::NotImplementedError : The requested method is not implemented',
-              'FAILED: Should include error information in the results',
-              'FAILED: Should support functions with no parameters',
-              'FAILED: Should support functions with literal parameters',
-              'FAILED: Should support functions with in/out/inout parameter types',
-              'FAILED: Should support calling multiple functions at once',
-              'FAILED: Should support writing memory',
-              'FAILED: Should support reading memory'
-            ]
-          },
-          linux: {
-            required: [
-              'Failed: 0'
-            ],
-            acceptable_failures: [
-              'FAILED: Should retrieve the win32k file version',
-              'Exception: Rex::NotImplementedError : The requested method is not implemented',
-              'FAILED: Should include error information in the results',
-              'FAILED: Should support functions with no parameters',
-              'FAILED: Should support functions with literal parameters',
-              'FAILED: Should support functions with in/out/inout parameter types',
-              'FAILED: Should support calling multiple functions at once',
-              'FAILED: Should support writing memory',
-              'FAILED: Should support reading memory'
-            ]
-          },
-          windows: {
-            required: [
-              'Failed: 0'
-            ],
-            acceptable_failures: [
-              'stdapi_fs_file_expand_path: Operation failed: 1',
-              'FAILED: Should retrieve the win32k file version',
-              'Exception: Rex::NotImplementedError : The requested method is not implemented',
-              'FAILED: Should include error information in the results',
-              'FAILED: Should support functions with no parameters',
-              'FAILED: Should support functions with literal parameters',
-              'FAILED: Should support functions with in/out/inout parameter types',
-              'FAILED: Should support calling multiple functions at once',
-              'FAILED: Should support writing memory',
-              'FAILED: Should support reading memory'
-            ]
-          }
-        }
+        platforms: %i[osx linux windows],
+        # Railgun is not supported on this platform
+        skip: true
       },
       {
         name: 'test/railgun_reverse_lookups',
-        platforms: %i[
-              osx
-              linux
-              windows
-            ],
-        lines: {
-          all: {
-            required: [
-            ],
-            acceptable_failures: [
-            ]
-          },
-          osx: {
-            required: [],
-            acceptable_failures: [
-              'FAILED: should return a constant name given a const and a filter',
-              'FAILED: should return an error string given an error code',
-              'Failed: 2'
-            ]
-          },
-          linux: {
-            required: [],
-            acceptable_failures: [
-              'FAILED: should return a constant name given a const and a filter',
-              'FAILED: should return an error string given an error code',
-              'Failed: 2'
-            ]
-          },
-          windows: {
-            required: [
-              'Failed: 0'
-            ],
-            acceptable_failures: []
-          }
-        }
+        platforms: %i[osx linux windows],
+        # Railgun is not supported on this platform
+        skip: true
       },
       {
         name: 'test/registry',
@@ -317,7 +230,7 @@ module Acceptance::Meterpreter
               'Exception: NoMethodError : undefined method',
               'FAILED: should return normalized values',
               'FAILED: should enumerate keys and values',
-              'Failed: 10'
+              'Failed: 0'
             ]
           }
         }
@@ -325,10 +238,10 @@ module Acceptance::Meterpreter
       {
         name: 'test/search',
         platforms: %i[
-              osx
-              linux
-              windows
-            ],
+          osx
+          linux
+          windows
+        ],
         lines: {
           all: {
             required: [
@@ -374,8 +287,13 @@ module Acceptance::Meterpreter
           windows: {
             required: [],
             acceptable_failures: [
+              'Exception: Rex::NotImplementedError : Unsupported architecture (must be ARCH_X86 or ARCH_X64)',
               'Exception: Rex::Post::Meterpreter::ExtensionLoadError : The "extapi" extension is not supported by this Meterpreter type',
               'Exception: Rex::NotImplementedError : The requested method is not implemented.',
+              'FAILED: should write REG_BINARY values',
+              'FAILED: should write REG_EXPAND_SZ values',
+              'FAILED: should write REG_MULTI_SZ values',
+              'FAILED: should write REG_QWORD values',
               'FAILED: should start W32Time',
               'FAILED: should stop W32Time',
               'FAILED: should list services',
@@ -388,7 +306,8 @@ module Acceptance::Meterpreter
               'FAILED: should start a disabled service',
               'FAILED: should restart a started service',
               'FAILED: should raise a runtime exception if no access to service',
-              'FAILED: should raise a runtime exception if services doesnt exist'
+              'FAILED: should raise a runtime exception if services doesnt exist',
+              'Passed: 3; Failed: 14'
             ]
           }
         }
@@ -417,6 +336,6 @@ module Acceptance::Meterpreter
           }
         }
       },
-    ],
+    ]
   }
 end

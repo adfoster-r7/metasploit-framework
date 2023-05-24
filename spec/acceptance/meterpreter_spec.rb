@@ -37,7 +37,7 @@ RSpec.describe 'Meterpreter' do
 
     # Read the remaining console
     # console.sendline "quit -y"
-    # console.recvall
+    # console.recv_available
 
     console
   end
@@ -54,12 +54,23 @@ RSpec.describe 'Meterpreter' do
         ) do
           let(:payload) { Acceptance::Payload.new(payload_config) }
 
+          class FakePath
+            attr_reader :path
+            def initialize(path)
+              @path = path
+            end
+          end
+
           let(:session_tlv_logging_file) do
             Acceptance::TempChildProcessFile.new("#{payload.name}_session_tlv_logging", 'txt')
+
+            # FakePath.new('/tmp/php_session_tlv_log.txt')
           end
 
           let(:meterpreter_logging_file) do
             Acceptance::TempChildProcessFile.new('#{payload.name}_debug_log', 'txt')
+
+            # FakePath.new('/tmp/php_log.txt')
           end
 
           let(:default_global_datastore) do
@@ -77,8 +88,13 @@ RSpec.describe 'Meterpreter' do
             }
           end
 
-          # The shared payload session instance that will be reused across the test run
-          let(:await_session_id) do
+          let(:executed_payload) do
+            driver.run_payload(payload)
+          end
+
+          # The shared payload process and session instance that will be reused across the test run
+          #
+          let(:payload_process_and_session_id) do
             console.sendline "use #{payload.name}"
             console.recvuntil(Acceptance::Console.prompt)
 
@@ -98,20 +114,33 @@ RSpec.describe 'Meterpreter' do
 
             console.sendline 'to_handler'
             console.recvuntil(/Started reverse TCP handler[^\n]*\n/)
-            driver.run_payload(payload)
+            payload_process = executed_payload
+            session_id = nil
 
-            session_opened_matcher = /Meterpreter session (\d+) opened[^\n]*\n/
-            session_message = console.recvuntil(session_opened_matcher)
-            session_id = session_message[session_opened_matcher, 1]
-            expect(session_id).to_not be_nil
+            # Wait for the session to open, or if the payload has died
+            wait_for_expect do
+              unless payload_process.alive?
+                break
+              end
 
-            session_id
+              session_opened_matcher = /Meterpreter session (\d+) opened[^\n]*\n/
+              session_message = ''
+              begin
+                session_message = console.recvuntil(session_opened_matcher, timeout: 1)
+              rescue Acceptance::ChildProcessRecvError
+                # noop
+              end
+
+              session_id = session_message[session_opened_matcher, 1]
+              expect(session_id).to_not be_nil
+            end
+
+            [payload_process, session_id]
           end
 
           before :each do
             driver.close_payloads
             console.reset
-            await_session_id
           end
 
           after :all do
@@ -119,99 +148,150 @@ RSpec.describe 'Meterpreter' do
             console.reset
           end
 
-          meterpreter_config[:module_tests].each do |module_test|
-            describe module_test[:name].to_s do
-              it(
-                "successfully opens a session for the #{payload_config[:name].inspect} payload and passes the #{module_test[:name].inspect} tests",
-                if: (
-                  Acceptance::Meterpreter.run_meterpreter?(meterpreter_config) &&
-                    Acceptance::Meterpreter.supported_platform?(payload_config) &&
-                    Acceptance::Meterpreter.supported_platform?(module_test)
-                )
-              ) do
-                console.sendline("use #{module_test[:name]}")
-                console.recvuntil(Acceptance::Console.prompt)
+          context "#{Acceptance::Meterpreter.current_platform}" do
 
-                console.sendline("run session=#{await_session_id} AddEntropy=true Verbose=true")
+            meterpreter_config[:module_tests].each do |module_test|
+              describe module_test[:name].to_s, focus: module_test[:focus] do
+                it(
+                  "successfully opens a session for the #{payload_config[:name].inspect} payload and passes the #{module_test[:name].inspect} tests",
+                  if: (
+                    # Run if ENV['METERPRETER'] = 'java php' etc
+                    Acceptance::Meterpreter.run_meterpreter?(meterpreter_config) &&
+                      # Run if ENV['METERPRETER_MODULE_TEST'] = 'test/cmd_exec' etc
+                      Acceptance::Meterpreter.run_meterpreter_module_test?(module_test[:name]) &&
+                      # Only run payloads / tests, if the host machine can run them
+                      Acceptance::Meterpreter.supported_platform?(payload_config) &&
+                      Acceptance::Meterpreter.supported_platform?(module_test) &&
+                      !Acceptance::Meterpreter.skipped?(module_test)
+                  )
+                ) do
+                  replication_commands = []
+                  current_payload_output = ''
 
-                # Expect happiness
-                test_result = console.recvuntil('Post module execution completed')
+                  # Ensure we have a valid session id; We intentionally omit this from a `before(:each)` to ensure the allure attachments are generated if the session dies
+                  payload_process, session_id = payload_process_and_session_id
 
-                # Ensure there are no failures, and assert tests are complete
-                aggregate_failures do
-                  acceptable_failures = module_test.dig(:lines, :all, :acceptable_failures) || []
-                  acceptable_failures += module_test.dig(:lines, current_platform, :acceptable_failures) || []
-                  acceptable_failures = acceptable_failures.flat_map { |value| Acceptance::LineValidation.new(*Array(value)).flatten }
+                  expect(payload_process).to(be_alive, proc do
+                    current_payload_output = payload_process.recv_available
+                    message = "Expected Payload process to be running. Instead got: process exited with #{payload_process.wait_thread.value} - when running the command #{payload_process.cmd.inspect} - with output: #{current_payload_output.inspect}"
+                    message
+                  end)
+                  expect(session_id).to_not(be_nil, proc do
+                    "There should be a session present"
+                  end)
 
-                  required_lines = module_test.dig(:lines, :all, :required) || []
-                  required_lines += module_test.dig(:lines, current_platform, :required) || []
-                  required_lines = required_lines.flat_map { |value| Acceptance::LineValidation.new(*Array(value)).flatten }
+                  use_module = "use #{module_test[:name]}"
+                  run_module = "run session=#{session_id} AddEntropy=true Verbose=true"
+
+                  replication_commands << use_module
+                  console.sendline(use_module)
+                  console.recvuntil(Acceptance::Console.prompt)
+
+                  replication_commands << run_module
+                  console.sendline(run_module)
 
                   # XXX: When debugging failed tests, you can enter into an interactive msfconsole prompt with:
                   # console.interact
 
-                  # Skip any ignored lines from the validation input
-                  validated_lines = test_result.lines.reject do |line|
-                    is_acceptable = acceptable_failures.any? do |acceptable_failure|
-                      line.match?(acceptable_failure.value) &&
-                        acceptable_failure.if?
+                  # Expect the test module to complete
+                  test_result = console.recvuntil('Post module execution completed')
+
+                  # Ensure there are no failures, and assert tests are complete
+                  aggregate_failures("#{payload_config[:name].inspect} payload and passes the #{module_test[:name].inspect} tests") do
+                    acceptable_failures = module_test.dig(:lines, :all, :acceptable_failures) || []
+                    acceptable_failures += module_test.dig(:lines, current_platform, :acceptable_failures) || []
+                    acceptable_failures = acceptable_failures.flat_map { |value| Acceptance::LineValidation.new(*Array(value)).flatten }
+
+                    required_lines = module_test.dig(:lines, :all, :required) || []
+                    required_lines += module_test.dig(:lines, current_platform, :required) || []
+                    required_lines = required_lines.flat_map { |value| Acceptance::LineValidation.new(*Array(value)).flatten }
+
+                    # Skip any ignored lines from the validation input
+                    validated_lines = test_result.lines.reject do |line|
+                      is_acceptable = acceptable_failures.any? do |acceptable_failure|
+                        line.match?(acceptable_failure.value) &&
+                          acceptable_failure.if?
+                      end
+
+                      is_acceptable
                     end
 
-                    is_acceptable
+                    validated_lines.each do |test_line|
+                      test_line = Acceptance::Meterpreter.uncolorize(test_line)
+                      expect(test_line).to_not include('FAILED', '[-] FAILED', '[-] Exception', '[-] '), "Unexpected error: #{test_line}"
+                    end
+
+                    # Assert all expected lines are present, unless they're flaky
+                    required_lines.each do |required|
+                      next unless required.if?
+
+                      expect(test_result).to include(required.value)
+                    end
+
+                    # Assert all ignored lines are present, if they are not present - they should be removed from
+                    # the calling config
+                    acceptable_failures.each do |acceptable_failure|
+                      next if acceptable_failure.flaky?
+                      next unless acceptable_failure.if?
+
+                      expect(test_result).to include(acceptable_failure.value)
+                    end
                   end
-
-                  validated_lines.each do |test_line|
-                    test_line = Acceptance::Meterpreter.uncolorize(test_line)
-                    expect(test_line).to_not include('FAILED', '[-] FAILED', '[-] Exception', '[-] '), "Unexpected error: #{test_line}"
-                  end
-
-                  # Assert all expected lines are present, unless they're flaky
-                  required_lines.each do |required|
-                    next unless required.if?
-
-                    expect(test_result).to include(required.value)
-                  end
-
-                  # Assert all ignored lines are present, if they are not present - they should be removed from
-                  # the calling config
-                  acceptable_failures.each do |acceptable_failure|
-                    next if acceptable_failure.flaky?
-                    next unless acceptable_failure.if?
-
-                    expect(test_result).to include(acceptable_failure.value)
-                  end
-                end
-              ensure
-                Allure.add_attachment(
-                  name: 'payload',
-                  source: payload.as_readable_text(
+                ensure
+                  payload_configuration_details = payload.as_readable_text(
                     default_global_datastore: default_global_datastore,
                     default_module_datastore: default_module_datastore
-                  ),
-                  type: Allure::ContentType::TXT,
-                  test_case: false
-                )
+                  )
 
-                Allure.add_attachment(
-                  name: 'payload debug log if available',
-                  source: File.exist?(meterpreter_logging_file.path) ? File.binread(meterpreter_logging_file.path) : 'none present',
-                  type: Allure::ContentType::TXT,
-                  test_case: false
-                )
+                  replication_steps = <<~EOF
+                    ## Load test modules
+                    loadpath test/modules
+  
+                    #{payload_configuration_details}
+  
+                    ## Replication commands
+                    #{replication_commands.empty? ? 'no additional commands run' : replication_commands.join("\n")}
+                  EOF
 
-                Allure.add_attachment(
-                  name: 'session tlv logging if available',
-                  source: File.exist?(session_tlv_logging_file.path) ? File.binread(session_tlv_logging_file.path) : 'empty',
-                  type: Allure::ContentType::TXT,
-                  test_case: false
-                )
+                  Allure.add_attachment(
+                    name: 'payload configuration and replication',
+                    source: replication_steps,
+                    type: Allure::ContentType::TXT,
+                    test_case: false
+                  )
 
-                Allure.add_attachment(
-                  name: 'console data',
-                  source: console.all_data,
-                  type: Allure::ContentType::TXT,
-                  test_case: false
-                )
+                  final_payload_output = current_payload_output + (payload_process&.recv_available || '')
+
+                  $stderr.puts final_payload_output
+
+                  Allure.add_attachment(
+                    name: 'payload output if available',
+                    source: final_payload_output.length > 0 ? final_payload_output : 'no payload output',
+                    type: Allure::ContentType::TXT,
+                    test_case: false
+                  )
+
+                  Allure.add_attachment(
+                    name: 'payload debug log if available',
+                    source: File.exist?(meterpreter_logging_file.path) ? File.binread(meterpreter_logging_file.path) : 'none present',
+                    type: Allure::ContentType::TXT,
+                    test_case: false
+                  )
+
+                  Allure.add_attachment(
+                    name: 'session tlv logging if available',
+                    source: File.exist?(session_tlv_logging_file.path) ? File.binread(session_tlv_logging_file.path) : 'none present',
+                    type: Allure::ContentType::TXT,
+                    test_case: false
+                  )
+
+                  Allure.add_attachment(
+                    name: 'console data',
+                    source: console.all_data,
+                    type: Allure::ContentType::TXT,
+                    test_case: false
+                  )
+                end
               end
             end
           end

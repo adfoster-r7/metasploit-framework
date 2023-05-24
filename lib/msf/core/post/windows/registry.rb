@@ -1,6 +1,5 @@
 # -*- coding: binary -*-
 
-
 module Msf
 class Post
 module Windows
@@ -162,7 +161,7 @@ module Registry
   # Return an array of subkeys for the given registry key
   #
   def registry_enumkeys(key, view = REGISTRY_VIEW_NATIVE)
-    if session_has_registry_ext
+    if session.commands.include?(Rex::Post::Meterpreter::Extensions::Stdapi::COMMAND_ID_STDAPI_REGISTRY_ENUM_KEY)
       meterpreter_registry_enumkeys(key, view)
     else
       shell_registry_enumkeys(key, view)

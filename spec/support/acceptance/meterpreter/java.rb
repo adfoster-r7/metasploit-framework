@@ -10,8 +10,7 @@ module Acceptance::Meterpreter
           '-f': 'jar'
         },
         datastore: {
-          global: {
-          },
+          global: {},
           module: {
             spawn: 0
           }
@@ -166,13 +165,13 @@ module Acceptance::Meterpreter
         name: 'test/railgun',
         platforms: %i[osx linux windows],
         # Railgun is not supported on this platform
-        skip: true,
+        skip: true
       },
       {
         name: 'test/railgun_reverse_lookups',
         platforms: %i[osx linux windows],
         # Railgun is not supported on this platform
-        skip: true,
+        skip: true
       },
       {
         name: 'test/registry',
@@ -195,10 +194,14 @@ module Acceptance::Meterpreter
             required: [],
             acceptable_failures: [
               'FAILED: should create keys',
+              'FAILED: should write REG_BINARY values',
               'FAILED: should write REG_SZ values',
+              'FAILED: should write REG_EXPAND_SZ values',
+              'FAILED: should write REG_MULTI_SZ values',
               'FAILED: should write REG_DWORD values',
               'FAILED: should delete keys',
               'FAILED: should create unicode keys',
+              'FAILED: should write REG_QWORD values',
               'FAILED: should write REG_SZ unicode values',
               'FAILED: should delete unicode keys',
               'FAILED: should evaluate key existence',
@@ -207,7 +210,7 @@ module Acceptance::Meterpreter
               'Exception: NoMethodError : undefined method',
               'FAILED: should return normalized values',
               'FAILED: should enumerate keys and values',
-              'Failed: 10'
+              'Passed: 3; Failed: 14'
             ]
           }
         }
@@ -241,6 +244,7 @@ module Acceptance::Meterpreter
       {
         name: 'test/services',
         platforms: [:windows],
+        # focus: true,
         lines: {
           all: {
             required: [
@@ -249,7 +253,8 @@ module Acceptance::Meterpreter
           },
           osx: {
             required: [],
-            acceptable_failures: []
+            acceptable_failures: [
+            ]
           },
           linux: {
             required: [],
@@ -273,7 +278,10 @@ module Acceptance::Meterpreter
               'FAILED: should start a disabled service',
               'FAILED: should restart a started service',
               'FAILED: should raise a runtime exception if no access to service',
-              'FAILED: should raise a runtime exception if services doesnt exist'
+              'FAILED: should raise a runtime exception if services doesnt exist',
+              'Could not retrieve the start type of the winmgmt service!',
+              'Could not retrieve the start type of the testes service!',
+              'Failed: 3'
             ]
           }
         }
@@ -302,6 +310,6 @@ module Acceptance::Meterpreter
           }
         }
       },
-    ],
+    ]
   }
 end

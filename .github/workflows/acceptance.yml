@@ -136,7 +136,8 @@ jobs:
       - name: acceptance
         env:
           SPEC_HELPER_LOAD_METASPLOIT: false
-          RSPEC_RERUN_RETRY_COUNT: 3
+          # TODO: Change this to 3
+          RSPEC_RERUN_RETRY_COUNT: 1
           RSPEC_RERUN_PATTERN: 'spec/acceptance/**/*_spec.rb'
           SPEC_OPTS: "--require acceptance_spec_helper.rb --color --format documentation --format AllureRspec::RSpecFormatter --require rspec-rerun/formatter --format RSpec::Rerun::Formatter"
         # Unix run command:

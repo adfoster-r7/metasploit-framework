@@ -11,8 +11,7 @@ module Acceptance::Meterpreter
           '-f': 'exe'
         },
         datastore: {
-          global: {
-          },
+          global: {},
           module: {
             MeterpreterTryToFork: false,
             MeterpreterDebugBuild: true
@@ -242,6 +241,6 @@ module Acceptance::Meterpreter
           }
         }
       },
-    ],
+    ]
   }
 end

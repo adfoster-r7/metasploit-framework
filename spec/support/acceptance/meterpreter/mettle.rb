@@ -11,8 +11,7 @@ module Acceptance::Meterpreter
           '-f': 'elf'
         },
         datastore: {
-          global: {
-          },
+          global: {},
           module: {
             MeterpreterTryToFork: false,
             MeterpreterDebugBuild: true
@@ -29,8 +28,7 @@ module Acceptance::Meterpreter
           '-f': 'macho'
         },
         datastore: {
-          global: {
-          },
+          global: {},
           module: {
             MeterpreterTryToFork: false,
             MeterpreterDebugBuild: true
@@ -378,6 +376,6 @@ module Acceptance::Meterpreter
           }
         }
       },
-    ],
+    ]
   }
 end

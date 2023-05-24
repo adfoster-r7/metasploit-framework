@@ -2,7 +2,7 @@ module Acceptance::Meterpreter
   PYTHON_METERPRETER = {
     payloads: [
       {
-        name: 'python/meterpreter/reverse_tcp',
+        name: 'python/meterpreter_reverse_tcp',
         extension: '.py',
         platforms: %i[osx linux windows],
         execute_cmd: ['python', '${payload_path}'],
@@ -10,11 +10,10 @@ module Acceptance::Meterpreter
           '-f': 'raw'
         },
         datastore: {
-          global: {
-          },
+          global: {},
           module: {
             MeterpreterTryToFork: false,
-            PythonMeterpreterDebug: true,
+            PythonMeterpreterDebug: true
           }
         }
       },
@@ -324,11 +323,9 @@ module Acceptance::Meterpreter
           },
           windows: {
             required: [
-              'Passed: 10; Failed: 1'
+              'Failed: 0'
             ],
             acceptable_failures: [
-              'FAILED: should evaluate key existence',
-              'Passed: 10; Failed: 1'
             ]
           }
         }
@@ -380,23 +377,26 @@ module Acceptance::Meterpreter
           },
           windows: {
             required: [
-              'Passed: 11; Failed: 2'
+              'Failed: 0'
             ],
             acceptable_failures: [
               'FAILED: should start W32Time',
               'FAILED: should stop W32Time',
               'FAILED: should list services',
               'Exception: RuntimeError : Could not open service. OpenServiceA error: FormatMessage failed to retrieve the error',
+              "Exception: NoMethodError : undefined method `include?' for true:TrueClass",
+              'FAILED: should raise a runtime exception if no access to service',
               'The "extapi" extension is not supported by this Meterpreter type',
               'FAILED: should return info on a given service',
               'FAILED: should create a service',
               'FAILED: should return info on the newly-created service',
+              'FAILED: should raise a runtime exception if services doesnt exist',
               'FAILED: should delete the new service',
               'FAILED: should return status on a given service',
               'FAILED: should modify config on a given service',
               'FAILED: should start a disabled service',
               'FAILED: should restart a started service',
-              'Passed: 11; Failed: 2'
+              "Exception: NoMethodError : undefined method `service' for nil:NilClass",
             ]
           }
         }

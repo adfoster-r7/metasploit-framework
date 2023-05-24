@@ -17,10 +17,18 @@ module Acceptance::Meterpreter
   # Allows restricting the tests of a specific Meterpreter's test suite with the METERPRETER environment variable
   # @return [TrueClass, FalseClass] True if the given Meterpreter should be run, false otherwise.
   def self.run_meterpreter?(meterpreter_config)
-    return true if ENV['Meterpreter'].blank?
+    return true if ENV['METERPRETER'].blank?
 
     name = meterpreter_config[:name].to_s
     ENV['METERPRETER'].include?(name)
+  end
+
+  # Allows restricting the tests of a specific Meterpreter's test suite with the METERPRETER environment variable
+  # @return [TrueClass, FalseClass] True if the given Meterpreter should be run, false otherwise.
+  def self.run_meterpreter_module_test?(module_test)
+    return true if ENV['METERPRETER_MODULE_TEST'].blank?
+
+    ENV['METERPRETER_MODULE_TEST'].include?(module_test)
   end
 
   # @param [String] string A console string with ANSI escape codes present
@@ -33,6 +41,12 @@ module Acceptance::Meterpreter
   # @return [Boolean]
   def self.supported_platform?(payload_config)
     payload_config[:platforms].include?(current_platform)
+  end
+
+  # @param [Hash] payload_config
+  # @return [Boolean]
+  def self.skipped?(payload_config)
+    payload_config.fetch(:skip, false)
   end
 
   # @param [Hash] payload_config
