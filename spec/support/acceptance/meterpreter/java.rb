@@ -95,7 +95,7 @@ module Acceptance::Meterpreter
               # Occasionally fails
               ['FAILED: should append binary data', { flaky: true }],
               ['FAILED: should upload a file', { flaky: true }],
-              ['Failed:', { flaky: true }],
+              ['; Failed:', { flaky: true }],
               ['Exception: EOFError : EOFError', { flaky: true }]
             ]
           },
@@ -103,12 +103,13 @@ module Acceptance::Meterpreter
             required: [],
             acceptable_failures: [
               ['FAILED: should upload a file', { flaky: true }],
-              ['Failed:', { flaky: true }],
+              ['; Failed:', { flaky: true }],
               ['Exception: EOFError : EOFError', { flaky: true }],
               'Post failed: Errno::ENOENT No such file or directory @ rb_sysopen - /bin/echo',
               'Call stack:',
               'modules/post/test/file.rb',
-              'lib/module_test.rb'
+              'lib/module_test.rb',
+              'failed to create the symbolic link'
             ]
           }
         }

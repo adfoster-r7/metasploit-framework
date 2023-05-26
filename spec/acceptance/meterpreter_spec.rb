@@ -24,6 +24,8 @@ RSpec.describe 'Meterpreter' do
   end
 
   # Opens a test console with the test loadpath specified
+  # @!attribute [r] console
+  #   @return [Acceptance::Console]
   let_it_be(:console) do
     console = driver.open_console
 
@@ -81,7 +83,7 @@ RSpec.describe 'Meterpreter' do
 
           let(:default_module_datastore) do
             {
-              AutoVerifySessionTimeout: 10,
+              AutoVerifySessionTimeout: ENV['CI'] ? 30 : 10,
               lport: port_generator.next,
               lhost: '127.0.0.1',
               MeterpreterDebugLogging: "rpath:#{meterpreter_logging_file.path}"
@@ -136,11 +138,6 @@ RSpec.describe 'Meterpreter' do
             end
 
             [payload_process, session_id]
-          end
-
-          before :each do
-            driver.close_payloads
-            console.reset
           end
 
           after :all do
@@ -238,6 +235,31 @@ RSpec.describe 'Meterpreter' do
                     end
                   end
                 ensure
+
+                  # Cleanup; We intentionally omit cleanup from an `after(:each)` to ensure the allure attachments are still generated if the session dies in a weird way etc
+                  begin
+                    driver.close_payloads
+                  rescue => e
+                    Allure.add_attachment(
+                      name: 'driver.close_payloads failure information',
+                      source: "Error: #{e.class} - #{e.message}\n#{(e.backtrace || []).join("\n")}",
+                      type: Allure::ContentType::TXT,
+                      test_case: false
+                    )
+                  end
+                  console_reset_error = nil
+                  begin
+                    console.reset
+                  rescue => e
+                    console_reset_error = e
+                    Allure.add_attachment(
+                      name: 'console.reset failure information',
+                      source: "Error: #{e.class} - #{e.message}\n#{(e.backtrace || []).join("\n")}",
+                      type: Allure::ContentType::TXT,
+                      test_case: false
+                    )
+                  end
+
                   payload_configuration_details = payload.as_readable_text(
                     default_global_datastore: default_global_datastore,
                     default_module_datastore: default_module_datastore
@@ -261,9 +283,6 @@ RSpec.describe 'Meterpreter' do
                   )
 
                   final_payload_output = current_payload_output + (payload_process&.recv_available || '')
-
-                  $stderr.puts final_payload_output
-
                   Allure.add_attachment(
                     name: 'payload output if available',
                     source: final_payload_output.length > 0 ? final_payload_output : 'no payload output',
@@ -291,6 +310,8 @@ RSpec.describe 'Meterpreter' do
                     type: Allure::ContentType::TXT,
                     test_case: false
                   )
+
+                  raise console_reset_error if console_reset_error
                 end
               end
             end

@@ -71,6 +71,20 @@ module Payload::Python::MeterpreterLoader
       txt.gsub('\\', '\\' * 8).gsub('\'', %q(\\\\\\\'))
     }
 
+
+    # patch in global exception handler
+    global_exception_handler = <<~EOF
+      def handle_exception(exc_type, exc_value, exc_traceback):
+        debug_print('unhandled exception caught:')
+        debug_print(''.join(traceback.format_exception(exc_type, exc_value, exc_traceback)))
+        sys.__excepthook__(exc_type, exc_value, exc_traceback)
+
+      sys.excepthook = handle_exception
+    EOF
+
+    prefix_text = "DEBUGGING = False"
+    met.sub!(prefix_text, "#{prefix_text}\n#{global_exception_handler}\n")
+
     if ds['MeterpreterDebugBuild']
       met.sub!(%q|DEBUGGING = False|, %q|DEBUGGING = True|)
 

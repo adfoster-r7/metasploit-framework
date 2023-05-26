@@ -90,7 +90,7 @@ module Acceptance
 
       result
     rescue ChildProcessTimeoutError
-      raise ChildProcessRecvError, "Failed #{__method__}: Did not match #{delim}, remaining buffer: #{self.buffer.string[self.buffer.pos..].inspect}"
+      raise ChildProcessRecvError, "Failed #{__method__}: Did not match #{delim.inspect}, remaining buffer: #{self.buffer.string[self.buffer.pos..].inspect}"
     end
 
     def recv_available(timeout: 0)
@@ -494,6 +494,7 @@ module Acceptance
       sendline('jobs -K')
       recvuntil(Console.prompt)
 
+    ensure
       @all_data.reopen('')
     end
   end

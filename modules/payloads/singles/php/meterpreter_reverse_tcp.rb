@@ -46,6 +46,31 @@ module MetasploitModule
       met.sub!(%q|define("MY_DEBUGGING_LOG_FILE_PATH", false);|, %Q|define("MY_DEBUGGING_LOG_FILE_PATH", "#{logging_options[:rpath]}");|) if logging_options[:rpath]
     end
 
+    global_shutdown_handler = <<~EOF
+      # register global shutdown handler for debugging
+      if (MY_DEBUGGING) {
+        if (!isset($GLOBALS['my_shutdown_handler'])) {
+          $GLOBALS['my_shutdown_handler'] = true;
+
+          if (function_exists("register_shutdown_function")) {
+            function my_shutdown_handler() {
+              my_print("shutdown called");
+              $error = error_get_last();
+      
+              if($error !== NULL) {
+                dump_array($error);
+              }
+            }
+      
+            register_shutdown_function("my_shutdown_handler");
+          }
+        }
+      }
+    EOF
+
+    bootstrap_text = 'my_print("Evaling main meterpreter stage");'
+    met.sub!(bootstrap_text, "#{bootstrap_text}\n#{global_shutdown_handler}\n")
+
     met.gsub!(/#.*$/, '')
     # met = Rex::Text.compress(met)
     met
