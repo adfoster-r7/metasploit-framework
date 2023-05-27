@@ -248,6 +248,7 @@ RSpec.describe 'Meterpreter' do
                     )
                   end
                   console_reset_error = nil
+                  current_console_data = console.all_data
                   begin
                     console.reset
                   rescue => e
@@ -306,7 +307,7 @@ RSpec.describe 'Meterpreter' do
 
                   Allure.add_attachment(
                     name: 'console data',
-                    source: console.all_data,
+                    source: current_console_data,
                     type: Allure::ContentType::TXT,
                     test_case: false
                   )

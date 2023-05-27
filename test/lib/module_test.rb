@@ -2,6 +2,7 @@ module Msf
   module ModuleTest
     attr_accessor :tests
     attr_accessor :failures
+    attr_accessor :skipped
 
     class SkipTestError < ::Exception
     end
@@ -9,6 +10,7 @@ module Msf
     def initialize(info = {})
       @tests = 0
       @failures = 0
+      @skipped = 0
       super
     end
 
@@ -34,8 +36,10 @@ module Msf
           return
         end
       rescue SkipTestError => e
+        @skipped += 1
         print_status("SKIPPED: #{msg} (#{e.message})")
       rescue ::Exception => e
+        @failures += 1
         print_error("FAILED: #{msg}")
         print_error("Exception: #{e.class} : #{e}")
         print_status("Backtrace: #{e.backtrace}")
@@ -50,6 +54,10 @@ module Msf
     def pending(msg = "", &block)
       print_status("PENDING: #{msg}")
     end
+
+    def passed
+      @tests - @failures
+    end
   end
 
   module ModuleTest::PostTest
@@ -59,14 +67,14 @@ module Msf
       print_status("Session type is #{session.type} and platform is #{session.platform}")
 
       t = Time.now
-      @tests = 0; @failures = 0
+      @tests = 0; @failures = 0; @skipped = 0
       run_all_tests
 
       vprint_status("Testing complete in #{Time.now - t}")
       if (@failures > 0)
-        print_error("Passed: #{@tests - @failures}; Failed: #{@failures}")
+        print_error("Passed: #{passed}; Failed: #{@failures}")
       else
-        print_status("Passed: #{@tests - @failures}; Failed: #{@failures}")
+        print_status("Passed: #{passed}; Failed: #{@failures}")
       end
     end
   end

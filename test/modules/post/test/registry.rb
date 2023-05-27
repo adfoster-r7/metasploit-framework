@@ -26,7 +26,7 @@ class MetasploitModule < Msf::Post
           'egypt',       # PostTest conversion
         ],
         'Platform' => [ 'windows' ],
-        'SessionTypes' => [ 'meterpreter' ]
+        'SessionTypes' => [ 'meterpreter', 'shell', 'powershell' ]
       )
     )
   end

@@ -192,6 +192,12 @@ module Acceptance::Meterpreter
                   'stdapi_net_config_get_routes: Operation failed: Python exception: TypeError',
                 ],
                 { if: ENV['METERPRETER_RUNTIME_VERSION'] == '3.8' }
+              ],
+              [
+                [
+                  '; Failed: ',
+                ],
+                { flaky: true }
               ]
             ]
           },

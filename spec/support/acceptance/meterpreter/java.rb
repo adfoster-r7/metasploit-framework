@@ -105,7 +105,6 @@ module Acceptance::Meterpreter
               ['FAILED: should upload a file', { flaky: true }],
               ['; Failed:', { flaky: true }],
               ['Exception: EOFError : EOFError', { flaky: true }],
-              'Post failed: Errno::ENOENT No such file or directory @ rb_sysopen - /bin/echo',
               'Call stack:',
               'modules/post/test/file.rb',
               'lib/module_test.rb',
@@ -211,7 +210,7 @@ module Acceptance::Meterpreter
               'Exception: NoMethodError : undefined method',
               'FAILED: should return normalized values',
               'FAILED: should enumerate keys and values',
-              'Passed: 3; Failed: 14'
+              'Passed: 0; Failed: 17'
             ]
           }
         }
@@ -282,7 +281,7 @@ module Acceptance::Meterpreter
               'FAILED: should raise a runtime exception if services doesnt exist',
               'Could not retrieve the start type of the winmgmt service!',
               'Could not retrieve the start type of the testes service!',
-              'Failed: 3'
+              'Failed: 13'
             ]
           }
         }

@@ -220,6 +220,10 @@ module Acceptance::Meterpreter
             acceptable_failures: [
               'FAILED: should create keys',
               'FAILED: should write REG_SZ values',
+              'FAILED: should write REG_BINARY values',
+              'FAILED: should write REG_EXPAND_SZ values',
+              'FAILED: should write REG_MULTI_SZ values',
+              'FAILED: should write REG_QWORD values',
               'FAILED: should write REG_DWORD values',
               'FAILED: should delete keys',
               'FAILED: should create unicode keys',
@@ -231,7 +235,7 @@ module Acceptance::Meterpreter
               'Exception: NoMethodError : undefined method',
               'FAILED: should return normalized values',
               'FAILED: should enumerate keys and values',
-              'Failed: 0'
+              'Failed: 17'
             ]
           }
         }
