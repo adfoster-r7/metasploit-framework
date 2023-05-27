@@ -15,6 +15,9 @@ RSpec.describe 'Meterpreter' do
   )
 
   let_it_be(:current_platform) { Acceptance::Meterpreter::current_platform }
+
+  # @!attribute [r] port_generator
+  #   @return [Acceptance::PortGenerator]
   let_it_be(:port_generator) { Acceptance::PortGenerator.new }
 
   # Driver instance, keeps track of all open processes/payloads/etc, so they can be closed cleanly
@@ -56,23 +59,22 @@ RSpec.describe 'Meterpreter' do
         ) do
           let(:payload) { Acceptance::Payload.new(payload_config) }
 
-          class FakePath
+          class LocalPath
             attr_reader :path
+
             def initialize(path)
               @path = path
             end
           end
 
           let(:session_tlv_logging_file) do
+            # LocalPath.new('/tmp/php_session_tlv_log.txt')
             Acceptance::TempChildProcessFile.new("#{payload.name}_session_tlv_logging", 'txt')
-
-            # FakePath.new('/tmp/php_session_tlv_log.txt')
           end
 
           let(:meterpreter_logging_file) do
+            # LocalPath.new('/tmp/php_log.txt')
             Acceptance::TempChildProcessFile.new('#{payload.name}_debug_log', 'txt')
-
-            # FakePath.new('/tmp/php_log.txt')
           end
 
           let(:default_global_datastore) do
@@ -146,7 +148,6 @@ RSpec.describe 'Meterpreter' do
           end
 
           context "#{Acceptance::Meterpreter.current_platform}" do
-
             meterpreter_config[:module_tests].each do |module_test|
               describe module_test[:name].to_s, focus: module_test[:focus] do
                 it(
@@ -162,91 +163,107 @@ RSpec.describe 'Meterpreter' do
                       !Acceptance::Meterpreter.skipped?(module_test)
                   )
                 ) do
-                  replication_commands = []
-                  current_payload_output = ''
+                  begin
+                    replication_commands = []
+                    current_payload_output = ''
+                    current_payload_status = ''
 
-                  # Ensure we have a valid session id; We intentionally omit this from a `before(:each)` to ensure the allure attachments are generated if the session dies
-                  payload_process, session_id = payload_process_and_session_id
+                    # Ensure we have a valid session id; We intentionally omit this from a `before(:each)` to ensure the allure attachments are generated if the session dies
+                    payload_process, session_id = payload_process_and_session_id
 
-                  expect(payload_process).to(be_alive, proc do
-                    current_payload_output = payload_process.recv_available
-                    message = "Expected Payload process to be running. Instead got: process exited with #{payload_process.wait_thread.value} - when running the command #{payload_process.cmd.inspect} - with output: #{current_payload_output.inspect}"
-                    message
-                  end)
-                  expect(session_id).to_not(be_nil, proc do
-                    "There should be a session present"
-                  end)
+                    expect(payload_process).to(be_alive, proc do
+                      current_payload_output = payload_process.recv_available
+                      current_payload_status = "Expected Payload process to be running. Instead got: payload process exited with #{payload_process.wait_thread.value} - when running the command #{payload_process.cmd.inspect} - with output: #{current_payload_output.inspect}"
+                      rspec_failure_message = current_payload_status
+                      rspec_failure_message
+                    end)
+                    expect(session_id).to_not(be_nil, proc do
+                      "There should be a session present"
+                    end)
 
-                  use_module = "use #{module_test[:name]}"
-                  run_module = "run session=#{session_id} AddEntropy=true Verbose=true"
+                    use_module = "use #{module_test[:name]}"
+                    run_module = "run session=#{session_id} AddEntropy=true Verbose=true"
 
-                  replication_commands << use_module
-                  console.sendline(use_module)
-                  console.recvuntil(Acceptance::Console.prompt)
+                    replication_commands << use_module
+                    console.sendline(use_module)
+                    console.recvuntil(Acceptance::Console.prompt)
 
-                  replication_commands << run_module
-                  console.sendline(run_module)
+                    replication_commands << run_module
+                    console.sendline(run_module)
 
-                  # XXX: When debugging failed tests, you can enter into an interactive msfconsole prompt with:
-                  # console.interact
+                    # XXX: When debugging failed tests, you can enter into an interactive msfconsole prompt with:
+                    # console.interact
 
-                  # Expect the test module to complete
-                  test_result = console.recvuntil('Post module execution completed')
+                    # Expect the test module to complete
+                    test_result = console.recvuntil('Post module execution completed')
 
-                  # Ensure there are no failures, and assert tests are complete
-                  aggregate_failures("#{payload_config[:name].inspect} payload and passes the #{module_test[:name].inspect} tests") do
-                    acceptable_failures = module_test.dig(:lines, :all, :acceptable_failures) || []
-                    acceptable_failures += module_test.dig(:lines, current_platform, :acceptable_failures) || []
-                    acceptable_failures = acceptable_failures.flat_map { |value| Acceptance::LineValidation.new(*Array(value)).flatten }
+                    # Ensure there are no failures, and assert tests are complete
+                    aggregate_failures("#{payload_config[:name].inspect} payload and passes the #{module_test[:name].inspect} tests") do
+                      acceptable_failures = module_test.dig(:lines, :all, :acceptable_failures) || []
+                      acceptable_failures += module_test.dig(:lines, current_platform, :acceptable_failures) || []
+                      acceptable_failures = acceptable_failures.flat_map { |value| Acceptance::LineValidation.new(*Array(value)).flatten }
 
-                    required_lines = module_test.dig(:lines, :all, :required) || []
-                    required_lines += module_test.dig(:lines, current_platform, :required) || []
-                    required_lines = required_lines.flat_map { |value| Acceptance::LineValidation.new(*Array(value)).flatten }
+                      required_lines = module_test.dig(:lines, :all, :required) || []
+                      required_lines += module_test.dig(:lines, current_platform, :required) || []
+                      required_lines = required_lines.flat_map { |value| Acceptance::LineValidation.new(*Array(value)).flatten }
 
-                    # Skip any ignored lines from the validation input
-                    validated_lines = test_result.lines.reject do |line|
-                      is_acceptable = acceptable_failures.any? do |acceptable_failure|
-                        line.match?(acceptable_failure.value) &&
-                          acceptable_failure.if?
+                      # Skip any ignored lines from the validation input
+                      validated_lines = test_result.lines.reject do |line|
+                        is_acceptable = acceptable_failures.any? do |acceptable_failure|
+                          line.match?(acceptable_failure.value) &&
+                            acceptable_failure.if?
+                        end
+
+                        is_acceptable
                       end
 
-                      is_acceptable
+                      validated_lines.each do |test_line|
+                        test_line = Acceptance::Meterpreter.uncolorize(test_line)
+                        expect(test_line).to_not include('FAILED', '[-] FAILED', '[-] Exception', '[-] '), "Unexpected error: #{test_line}"
+                      end
+
+                      # Assert all expected lines are present, unless they're flaky
+                      required_lines.each do |required|
+                        next unless required.if?
+
+                        expect(test_result).to include(required.value)
+                      end
+
+                      # Assert all ignored lines are present, if they are not present - they should be removed from
+                      # the calling config
+                      acceptable_failures.each do |acceptable_failure|
+                        next if acceptable_failure.flaky?
+                        next unless acceptable_failure.if?
+
+                        expect(test_result).to include(acceptable_failure.value)
+                      end
                     end
-
-                    validated_lines.each do |test_line|
-                      test_line = Acceptance::Meterpreter.uncolorize(test_line)
-                      expect(test_line).to_not include('FAILED', '[-] FAILED', '[-] Exception', '[-] '), "Unexpected error: #{test_line}"
-                    end
-
-                    # Assert all expected lines are present, unless they're flaky
-                    required_lines.each do |required|
-                      next unless required.if?
-
-                      expect(test_result).to include(required.value)
-                    end
-
-                    # Assert all ignored lines are present, if they are not present - they should be removed from
-                    # the calling config
-                    acceptable_failures.each do |acceptable_failure|
-                      next if acceptable_failure.flaky?
-                      next unless acceptable_failure.if?
-
-                      expect(test_result).to include(acceptable_failure.value)
-                    end
+                  rescue => e
+                    test_run_error = e
                   end
-                ensure
 
                   # Cleanup; We intentionally omit cleanup from an `after(:each)` to ensure the allure attachments are still generated if the session dies in a weird way etc
-                  begin
-                    driver.close_payloads
-                  rescue => e
-                    Allure.add_attachment(
-                      name: 'driver.close_payloads failure information',
-                      source: "Error: #{e.class} - #{e.message}\n#{(e.backtrace || []).join("\n")}",
-                      type: Allure::ContentType::TXT,
-                      test_case: false
-                    )
+                  # Payload process cleanup / verification
+                  # The payload process wasn't initially marked as dead - let's close it
+                  if payload_process.present? && current_payload_status.blank?
+                    begin
+                      current_payload_output = payload_process.recv_available
+                      if payload_process.alive?
+                        current_payload_status = "Process still alive after running test suite"
+                        payload_process.close
+                      else
+                        current_payload_status = "Expected Payload process to be running. Instead got: payload process exited with #{payload_process.wait_thread.value} - when running the command #{payload_process.cmd.inspect}"
+                      end
+                    rescue => e
+                      Allure.add_attachment(
+                        name: 'driver.close_payloads failure information',
+                        source: "Error: #{e.class} - #{e.message}\n#{(e.backtrace || []).join("\n")}",
+                        type: Allure::ContentType::TXT,
+                        test_case: false
+                      )
+                    end
                   end
+
                   console_reset_error = nil
                   current_console_data = console.all_data
                   begin
@@ -269,9 +286,9 @@ RSpec.describe 'Meterpreter' do
                   replication_steps = <<~EOF
                     ## Load test modules
                     loadpath test/modules
-  
+
                     #{payload_configuration_details}
-  
+
                     ## Replication commands
                     #{replication_commands.empty? ? 'no additional commands run' : replication_commands.join("\n")}
                   EOF
@@ -283,10 +300,10 @@ RSpec.describe 'Meterpreter' do
                     test_case: false
                   )
 
-                  final_payload_output = current_payload_output + (payload_process&.recv_available || '')
+                  final_payload_output = current_payload_output
                   Allure.add_attachment(
                     name: 'payload output if available',
-                    source: final_payload_output.length > 0 ? final_payload_output : 'no payload output',
+                    source: "Final status:\n#{current_payload_status}\nstdout and stderr:\n#{final_payload_output.length > 0 ? final_payload_output : 'no payload output'}",
                     type: Allure::ContentType::TXT,
                     test_case: false
                   )
@@ -312,6 +329,7 @@ RSpec.describe 'Meterpreter' do
                     test_case: false
                   )
 
+                  raise test_run_error if test_run_error
                   raise console_reset_error if console_reset_error
                 end
               end

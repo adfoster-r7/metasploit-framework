@@ -22,7 +22,7 @@ class MetasploitModule < Msf::Post
 
   def run
     available_modules = select_available_modules
-    session_metadata = "#{session.platform}/#{session.type} session #{session.sid}"
+    session_metadata = "#{session.session_type} session #{session.sid}"
 
     print_status("Applicable modules:")
     print_line(

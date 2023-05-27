@@ -293,10 +293,9 @@ module Acceptance::Meterpreter
               'Passed:'
             ],
             acceptable_failures: [
-              'Exception: Rex::NotImplementedError : Unsupported architecture (must be ARCH_X86 or ARCH_X64)',
               'Exception: Rex::Post::Meterpreter::ExtensionLoadError : The "extapi" extension is not supported by this Meterpreter type',
               'Exception: Rex::NotImplementedError : The requested method is not implemented.',
-              'Exception: Rex::NotImplementedError : Unsupported architecture (must be ARCH_X86 or ARCH_X64)',
+              'Exception: Rex::NotImplementedError : Unsupported architecture \(must be ARCH_X86 or ARCH_X64\)',
               'FAILED: should write REG_BINARY values',
               'FAILED: should write REG_EXPAND_SZ values',
               'FAILED: should write REG_MULTI_SZ values',
@@ -316,7 +315,7 @@ module Acceptance::Meterpreter
               'FAILED: should restart a started service',
               'FAILED: should raise a runtime exception if no access to service',
               'FAILED: should raise a runtime exception if services doesnt exist',
-              '; Failed: 3'
+              '; Failed: 13'
             ]
           }
         }

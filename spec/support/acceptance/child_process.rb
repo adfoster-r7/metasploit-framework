@@ -93,12 +93,13 @@ module Acceptance
       raise ChildProcessRecvError, "Failed #{__method__}: Did not match #{delim.inspect}, remaining buffer: #{self.buffer.string[self.buffer.pos..].inspect}"
     end
 
-    def recv_available(timeout: 0)
+    def recv_available(timeout: @default_timeout)
       result = ''
+      available = stdout_and_stderr.nread
 
-      with_countdown(timeout) do |countdown|
-        while !countdown.elapsed?
-          data_chunk = recv(timeout: timeout)
+      with_countdown(timeout) do
+        while result.length < available do
+          data_chunk = recv(timeout: 0)
           if !data_chunk
             next
           end

