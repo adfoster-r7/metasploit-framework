@@ -23,7 +23,7 @@ module Acceptance
 
     # @return [boolean] returns true if the current failure applies under the current environment or the result is flaky, false otherwise.
     def flaky?
-      !!@options.fetch(:flaky, true)
+      !!@options.fetch(:flaky, false)
     end
 
     # @return [boolean] returns true if the current failure applies under the current environment or the result is flaky, false otherwise.

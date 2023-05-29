@@ -179,7 +179,7 @@ RSpec.describe 'Meterpreter' do
             meterpreter_config[:module_tests].each do |module_test|
               describe module_test[:name].to_s, focus: module_test[:focus] do
                 it(
-                  "#{Acceptance::Meterpreter.current_platform}/#{meterpreter_runtime_name} successfully opens a session for the #{payload_config[:name].inspect} payload and passes the #{module_test[:name].inspect} tests",
+                  "#{Acceptance::Meterpreter.current_platform}/#{meterpreter_runtime_name} meterpreter successfully opens a session for the #{payload_config[:name].inspect} payload and passes the #{module_test[:name].inspect} tests",
                   if: (
                     # Run if ENV['METERPRETER'] = 'java php' etc
                     Acceptance::Meterpreter.run_meterpreter?(meterpreter_config) &&
@@ -193,17 +193,14 @@ RSpec.describe 'Meterpreter' do
                 ) do
                   begin
                     replication_commands = []
-                    current_payload_output = ''
                     current_payload_status = ''
 
                     # Ensure we have a valid session id; We intentionally omit this from a `before(:each)` to ensure the allure attachments are generated if the session dies
                     payload_process, session_id = payload_process_and_session_id
 
                     expect(payload_process).to(be_alive, proc do
-                      current_payload_output = payload_process.recv_available
-                      current_payload_status = "Expected Payload process to be running. Instead got: payload process exited with #{payload_process.wait_thread.value} - when running the command #{payload_process.cmd.inspect} - with output: #{current_payload_output.inspect}"
-                      rspec_failure_message = current_payload_status
-                      rspec_failure_message
+                      current_payload_status = "Expected Payload process to be running. Instead got: payload process exited with #{payload_process.wait_thread.value} - when running the command #{payload_process.cmd.inspect}"
+                      current_payload_status
                     end)
                     expect(session_id).to_not(be_nil, proc do
                       "There should be a session present"
@@ -285,8 +282,7 @@ RSpec.describe 'Meterpreter' do
                       Allure.add_attachment(
                         name: 'driver.close_payloads failure information',
                         source: "Error: #{e.class} - #{e.message}\n#{(e.backtrace || []).join("\n")}",
-                        type: Allure::ContentType::TXT,
-                        test_case: false
+                        type: Allure::ContentType::TXT
                       )
                     end
                   end
@@ -300,8 +296,7 @@ RSpec.describe 'Meterpreter' do
                     Allure.add_attachment(
                       name: 'console.reset failure information',
                       source: "Error: #{e.class} - #{e.message}\n#{(e.backtrace || []).join("\n")}",
-                      type: Allure::ContentType::TXT,
-                      test_case: false
+                      type: Allure::ContentType::TXT
                     )
                   end
 
@@ -323,36 +318,31 @@ RSpec.describe 'Meterpreter' do
                   Allure.add_attachment(
                     name: 'payload configuration and replication',
                     source: replication_steps,
-                    type: Allure::ContentType::TXT,
-                    test_case: false
+                    type: Allure::ContentType::TXT
                   )
 
                   Allure.add_attachment(
                     name: 'payload output if available',
                     source: "Final status:\n#{current_payload_status}\nstdout and stderr:\n#{get_file_attachment_contents(payload_stdout_and_stderr_file.path)}",
-                    type: Allure::ContentType::TXT,
-                    test_case: false
+                    type: Allure::ContentType::TXT
                   )
 
                   Allure.add_attachment(
                     name: 'payload debug log if available',
                     source: get_file_attachment_contents(meterpreter_logging_file.path),
-                    type: Allure::ContentType::TXT,
-                    test_case: false
+                    type: Allure::ContentType::TXT
                   )
 
                   Allure.add_attachment(
                     name: 'session tlv logging if available',
                     source: get_file_attachment_contents(session_tlv_logging_file.path),
-                    type: Allure::ContentType::TXT,
-                    test_case: false
+                    type: Allure::ContentType::TXT
                   )
 
                   Allure.add_attachment(
                     name: 'console data',
                     source: current_console_data,
-                    type: Allure::ContentType::TXT,
-                    test_case: false
+                    type: Allure::ContentType::TXT
                   )
 
                   raise test_run_error if test_run_error

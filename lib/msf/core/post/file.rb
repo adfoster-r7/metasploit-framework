@@ -813,11 +813,8 @@ protected
   # Meterpreter-specific file write. Returns true on success
   #
   def _write_file_meterpreter(file_name, data, mode = 'wb')
-    $stderr.puts("befofore file open")
     fd = session.fs.file.new(file_name, mode)
-    $stderr.puts("before file wrote")
     fd.write(data)
-    $stderr.puts("before file closed")
     fd.close
     return true
   rescue ::Rex::Post::Meterpreter::RequestError => e

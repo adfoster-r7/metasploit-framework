@@ -62,10 +62,9 @@ module Acceptance::Meterpreter
 
             ],
             acceptable_failures: [
-              'Post failed: Errno::ENOENT No such file or directory @ rb_sysopen - /bin/echo',
-              'Call stack:',
-              'test/modules/post/test/file.rb',
-              'test/lib/module_test.rb',
+              # 'Call stack:',
+              # 'test/modules/post/test/file.rb',
+              # 'test/lib/module_test.rb',
             ]
           },
           windows: {

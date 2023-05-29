@@ -402,6 +402,9 @@ module Acceptance
     # @return [Process::Waiter] the waiter thread for the current process
     attr_reader :wait_thread
 
+    # @return [String] the executed command
+    attr_reader :cmd
+
     # @param [Array<String>] cmd The command which can be used to execute this payload. For instance ["python3", "/tmp/path.py"]
     # @param [Hash] opts the opts to pass to the Process#spawn call
     def initialize(cmd, opts = {})

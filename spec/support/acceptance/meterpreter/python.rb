@@ -1,3 +1,5 @@
+require 'support/acceptance/meterpreter'
+
 module Acceptance::Meterpreter
   PYTHON_METERPRETER = {
     payloads: [
@@ -95,7 +97,8 @@ module Acceptance::Meterpreter
             required: [
               'Failed: 0'
             ],
-            acceptable_failures: []
+            acceptable_failures: [
+            ]
           },
           linux: {
             required: [
@@ -106,10 +109,8 @@ module Acceptance::Meterpreter
           },
           windows: {
             required: [
-
             ],
             acceptable_failures: [
-              'Post failed: Errno::ENOENT No such file or directory @ rb_sysopen - /bin/echo',
               'Call stack:',
               'test/modules/post/test/file.rb',
               'test/lib/module_test.rb',
@@ -119,9 +120,12 @@ module Acceptance::Meterpreter
                   'FAILED: should delete a symbolic link target',
                   'Exception: Rex::Post::Meterpreter::RequestError : stdapi_sys_process_execute: Operation failed: Python exception: FileNotFoundError',
                   'FAILED: should not recurse into symbolic link directories',
-                  'Failed: 3'
                 ],
                 { if: ENV['METERPRETER_RUNTIME_VERSION'] == '2.7' }
+              ],
+              [
+                '; Failed: ',
+                { flaky: true}
               ]
             ]
           }
@@ -188,7 +192,7 @@ module Acceptance::Meterpreter
                   'FAILED: should return network routes',
                   'stdapi_net_config_get_routes: Operation failed: Unknown error',
                 ],
-                { if: ENV['METERPRETER_RUNTIME_VERSION'] == '3.6' || !ENV['CI'] }
+                { if: (Acceptance::Meterpreter.current_platform == :osx && ENV['METERPRETER_RUNTIME_VERSION'] == '3.6') || !ENV['CI'] }
               ],
               [
                 [
@@ -199,7 +203,7 @@ module Acceptance::Meterpreter
                   'FAILED: should return network routes',
                   'stdapi_net_config_get_routes: Operation failed: Python exception: TypeError',
                 ],
-                { if: ENV['METERPRETER_RUNTIME_VERSION'] == '3.8' }
+                { if: Acceptance::Meterpreter.current_platform == :osx && ENV['METERPRETER_RUNTIME_VERSION'] == '3.8' }
               ],
               [
                 [
