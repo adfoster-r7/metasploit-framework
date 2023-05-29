@@ -91,8 +91,7 @@ module Acceptance::Meterpreter
           linux
           windows
         ],
-        # XXX: Skipped for now, the tests hang on file upload
-        skip: true,
+        # skip: true,
         lines: {
           all: {
             required: [
@@ -108,16 +107,24 @@ module Acceptance::Meterpreter
           },
           linux: {
             required: [],
-            acceptable_failures: []
+            acceptable_failures: [
+              'FAILED: should read the binary data we just wrote',
+              '; Failed: 1',
+            ]
           },
           windows: {
             required: [],
             acceptable_failures: [
+              'FAILED: should test for file existence',
+              'FAILED: should delete a symbolic link target',
+              'Exception: Rex::Post::Meterpreter::RequestError : stdapi_sys_process_execute: Operation failed: Python exception: FileNotFoundError',
+              'FAILED: should not recurse into symbolic link directories',
               'Post failed: Rex::Post::Meterpreter::RequestError stdapi_fs_chdir: Operation failed: 1',
               'Call stack:',
               'rex/post/meterpreter/extensions/stdapi/fs/dir.rb',
               'msf/core/post/file.rb',
-              'test/modules/post/test/file.rb'
+              'test/modules/post/test/file.rb',
+              '; Failed: 3'
             ]
           }
         }
@@ -157,8 +164,7 @@ module Acceptance::Meterpreter
           linux
           windows
         ],
-        # XXX: Skipped for now, the tests hang on file upload
-        skip: true,
+        # skip: true,
         lines: {
           all: {
             required: [
@@ -295,7 +301,7 @@ module Acceptance::Meterpreter
             acceptable_failures: [
               'Exception: Rex::Post::Meterpreter::ExtensionLoadError : The "extapi" extension is not supported by this Meterpreter type',
               'Exception: Rex::NotImplementedError : The requested method is not implemented.',
-              'Exception: Rex::NotImplementedError : Unsupported architecture \(must be ARCH_X86 or ARCH_X64\)',
+              'Exception: Rex::NotImplementedError : Unsupported architecture (must be ARCH_X86 or ARCH_X64)',
               'FAILED: should write REG_BINARY values',
               'FAILED: should write REG_EXPAND_SZ values',
               'FAILED: should write REG_MULTI_SZ values',

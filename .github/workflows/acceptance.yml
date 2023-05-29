@@ -51,8 +51,7 @@ jobs:
           - { name: java, runtime_version: 8 }
           - { name: php, runtime_version: 5.3 }
           - { name: php, runtime_version: 7.4 }
-          # Meterpreter is broken on PHP 8.1 https://github.com/rapid7/metasploit-payloads/issues/531
-          # - { name: php, runtime_version: 8.1 }
+          - { name: php, runtime_version: 8.1 }
           - { name: windows_meterpreter }
           - { name: mettle }
         ruby:
@@ -174,7 +173,7 @@ jobs:
       - name: allure generate
         if: always()
         run: |
-          export VERSION=2.17.2
+          export VERSION=2.22.1
 
           curl -o allure-$VERSION.tgz -Ls https://github.com/allure-framework/allure2/releases/download/$VERSION/allure-$VERSION.tgz
           tar -zxvf allure-$VERSION.tgz -C .

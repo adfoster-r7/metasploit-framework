@@ -48,7 +48,9 @@ RSpec.describe 'Meterpreter' do
   end
 
   METERPRETER_PAYLOADS.each do |meterpreter_name, meterpreter_config|
-    describe "#{meterpreter_name}#{ENV.fetch('METERPRETER_RUNTIME_VERSION', '')}", focus: meterpreter_config[:focus] do
+    meterpreter_runtime_name = "#{meterpreter_name}#{ENV.fetch('METERPRETER_RUNTIME_VERSION', '')}"
+
+    describe meterpreter_runtime_name, focus: meterpreter_config[:focus] do
       meterpreter_config[:payloads].each do |payload_config|
         describe(
           Acceptance::Meterpreter.human_name_for_payload(payload_config).to_s,
@@ -74,7 +76,12 @@ RSpec.describe 'Meterpreter' do
 
           let(:meterpreter_logging_file) do
             # LocalPath.new('/tmp/php_log.txt')
-            Acceptance::TempChildProcessFile.new('#{payload.name}_debug_log', 'txt')
+            Acceptance::TempChildProcessFile.new("#{payload.name}_debug_log", 'txt')
+          end
+
+          let(:payload_stdout_and_stderr_file) do
+            # LocalPath.new('/tmp/php_log.txt')
+            Acceptance::TempChildProcessFile.new("#{payload.name}_stdout_and_stderr", 'txt')
           end
 
           let(:default_global_datastore) do
@@ -93,7 +100,14 @@ RSpec.describe 'Meterpreter' do
           end
 
           let(:executed_payload) do
-            driver.run_payload(payload)
+            file = File.open(payload_stdout_and_stderr_file.path, 'w')
+            driver.run_payload(
+              payload,
+              {
+                out: file,
+                err: file
+              }
+            )
           end
 
           # The shared payload process and session instance that will be reused across the test run
@@ -142,6 +156,20 @@ RSpec.describe 'Meterpreter' do
             [payload_process, session_id]
           end
 
+          # @param [String] path The file path to read the content of
+          # @return [String] The file contents if found
+          def get_file_attachment_contents(path)
+            if File.exists?(path)
+              content = File.binread(path)
+              if content.blank?
+                return 'file created - but empty'
+              end
+              return content
+            else
+              return 'none present'
+            end
+          end
+
           after :all do
             driver.close_payloads
             console.reset
@@ -151,7 +179,7 @@ RSpec.describe 'Meterpreter' do
             meterpreter_config[:module_tests].each do |module_test|
               describe module_test[:name].to_s, focus: module_test[:focus] do
                 it(
-                  "successfully opens a session for the #{payload_config[:name].inspect} payload and passes the #{module_test[:name].inspect} tests",
+                  "#{Acceptance::Meterpreter.current_platform}/#{meterpreter_runtime_name} successfully opens a session for the #{payload_config[:name].inspect} payload and passes the #{module_test[:name].inspect} tests",
                   if: (
                     # Run if ENV['METERPRETER'] = 'java php' etc
                     Acceptance::Meterpreter.run_meterpreter?(meterpreter_config) &&
@@ -210,7 +238,7 @@ RSpec.describe 'Meterpreter' do
                       # Skip any ignored lines from the validation input
                       validated_lines = test_result.lines.reject do |line|
                         is_acceptable = acceptable_failures.any? do |acceptable_failure|
-                          line.match?(acceptable_failure.value) &&
+                          line.include?(acceptable_failure.value) &&
                             acceptable_failure.if?
                         end
 
@@ -238,7 +266,7 @@ RSpec.describe 'Meterpreter' do
                         expect(test_result).to include(acceptable_failure.value)
                       end
                     end
-                  rescue => e
+                  rescue RSpec::Expectations::ExpectationNotMetError, StandardError => e
                     test_run_error = e
                   end
 
@@ -247,7 +275,6 @@ RSpec.describe 'Meterpreter' do
                   # The payload process wasn't initially marked as dead - let's close it
                   if payload_process.present? && current_payload_status.blank?
                     begin
-                      current_payload_output = payload_process.recv_available
                       if payload_process.alive?
                         current_payload_status = "Process still alive after running test suite"
                         payload_process.close
@@ -300,24 +327,23 @@ RSpec.describe 'Meterpreter' do
                     test_case: false
                   )
 
-                  final_payload_output = current_payload_output
                   Allure.add_attachment(
                     name: 'payload output if available',
-                    source: "Final status:\n#{current_payload_status}\nstdout and stderr:\n#{final_payload_output.length > 0 ? final_payload_output : 'no payload output'}",
+                    source: "Final status:\n#{current_payload_status}\nstdout and stderr:\n#{get_file_attachment_contents(payload_stdout_and_stderr_file.path)}",
                     type: Allure::ContentType::TXT,
                     test_case: false
                   )
 
                   Allure.add_attachment(
                     name: 'payload debug log if available',
-                    source: File.exist?(meterpreter_logging_file.path) ? File.binread(meterpreter_logging_file.path) : 'none present',
+                    source: get_file_attachment_contents(meterpreter_logging_file.path),
                     type: Allure::ContentType::TXT,
                     test_case: false
                   )
 
                   Allure.add_attachment(
                     name: 'session tlv logging if available',
-                    source: File.exist?(session_tlv_logging_file.path) ? File.binread(session_tlv_logging_file.path) : 'none present',
+                    source: get_file_attachment_contents(session_tlv_logging_file.path),
                     type: Allure::ContentType::TXT,
                     test_case: false
                   )

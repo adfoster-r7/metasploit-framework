@@ -42,7 +42,7 @@ cd metasploit-framework/tmp
 docker run -it -w $(pwd) -v $(pwd):$(pwd) ubuntu:20.04 /bin/bash
 
 # In the container
-export VERSION=2.17.2
+export VERSION=2.22.1
 
 apt update
 apt install -y curl openjdk-11-jdk-headless

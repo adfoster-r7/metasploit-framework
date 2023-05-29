@@ -1,4 +1,4 @@
-# require 'stringio'
+require 'stringio'
 require 'open3'
 require 'English'
 require 'tempfile'
@@ -215,13 +215,13 @@ module Acceptance
     end
 
     def close
-      stdin.close if stdin
-      stdout_and_stderr.close if stdout_and_stderr
       begin
         Process.kill('KILL', wait_thread.pid) if wait_thread.pid
       rescue StandardError => e
         warn "error #{e} for #{@cmd}, pid #{wait_thread.pid}"
       end
+      stdin.close if stdin
+      stdout_and_stderr.close if stdout_and_stderr
     end
 
     # @return [IO] the stdin for the child process which can be written to
@@ -256,7 +256,7 @@ module Acceptance
 
     # Yields a timer object that can be used to request the remaining time available
     def with_countdown(timeout)
-      countdown = Countdown.new(timeout)
+      countdown = Acceptance::Countdown.new(timeout)
       # It is the caller's responsibility to honor the required countdown limits,
       # but let's wrap the full operation in an explicit for worse case scenario,
       # which may leave object state in a non-determinant state depending on the call
@@ -398,15 +398,45 @@ module Acceptance
     end
   end
 
-  class PayloadProcess < ChildProcess
+  class PayloadProcess
+    # @return [Process::Waiter] the waiter thread for the current process
+    attr_reader :wait_thread
+
     # @param [Array<String>] cmd The command which can be used to execute this payload. For instance ["python3", "/tmp/path.py"]
-    def initialize(cmd)
+    # @param [Hash] opts the opts to pass to the Process#spawn call
+    def initialize(cmd, opts = {})
       super()
 
       @debug = false
       @env = {}
       @cmd = cmd
-      @options = {}
+      @options = opts
+    end
+
+    # @return [Process::Waiter] the waiter thread for the payload process
+    def run
+      pid = Process.spawn(
+        @env,
+        *@cmd,
+        **@options
+      )
+      @wait_thread = Process.detach(pid)
+      @wait_thread
+    end
+
+    def alive?
+      @wait_thread.alive?
+    end
+
+    def close
+      begin
+        Process.kill('KILL', wait_thread.pid) if wait_thread.pid
+      rescue StandardError => e
+        warn "error #{e} for #{@cmd}, pid #{wait_thread.pid}"
+      end
+      [:in, :out, :err].each do |name|
+        @options[name].close if @options[name]
+      end
     end
   end
 
@@ -418,12 +448,13 @@ module Acceptance
     end
 
     # @param [Acceptance::Payload] payload
-    def run_payload(payload)
+    # @param [Hash] opts
+    def run_payload(payload, opts)
       if payload.executable? && !File.executable?(payload.path)
         FileUtils.chmod('+x', payload.path)
       end
 
-      payload_process = PayloadProcess.new(payload.execute_command)
+      payload_process = PayloadProcess.new(payload.execute_command, opts)
       payload_process.run
       @payload_processes << payload_process
       payload_process
