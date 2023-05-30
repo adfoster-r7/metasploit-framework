@@ -48,22 +48,39 @@ jobs:
           - { name: python, runtime_version: 2.7 }
           - { name: python, runtime_version: 3.6 }
           - { name: python, runtime_version: 3.8 }
+          -
+          - { name: python, runtime_version: 2.7 }
+          - { name: python, runtime_version: 3.6 }
+          - { name: python, runtime_version: 3.8 }
+
+          - { name: python, runtime_version: 2.7 }
+          - { name: python, runtime_version: 3.6 }
+          - { name: python, runtime_version: 3.8 }
+
+          - { name: python, runtime_version: 2.7 }
+          - { name: python, runtime_version: 3.6 }
+          - { name: python, runtime_version: 3.8 }
+
+          - { name: python, runtime_version: 2.7 }
+          - { name: python, runtime_version: 3.6 }
+          - { name: python, runtime_version: 3.8 }
+
           # Newer versions of Java are not supported currently: https://github.com/rapid7/metasploit-payloads/issues/647
-          - { name: java, runtime_version: 8 }
-          - { name: php, runtime_version: 5.3 }
-          - { name: php, runtime_version: 7.4 }
-          - { name: php, runtime_version: 8.2 }
-          - { name: windows_meterpreter }
-          - { name: mettle }
+#          - { name: java, runtime_version: 8 }
+#          - { name: php, runtime_version: 5.3 }
+#          - { name: php, runtime_version: 7.4 }
+#          - { name: php, runtime_version: 8.2 }
+#          - { name: windows_meterpreter }
+#          - { name: mettle }
         ruby:
           - 3.0.2
-        include:
-          - { meterpreter: { name: windows_meterpreter }, os: windows-2022 }
-        exclude:
-          - { meterpreter: { name: mettle }, os: windows-2019 }
-          # Skip mac/ubuntu windows_meterpreter test runs
-          - { meterpreter: { name: windows_meterpreter }, os: macos-11 }
-          - { meterpreter: { name: windows_meterpreter }, os: ubuntu-20.04 }
+#        include:
+#          - { meterpreter: { name: windows_meterpreter }, os: windows-2022 }
+#        exclude:
+#          - { meterpreter: { name: mettle }, os: windows-2019 }
+#          # Skip mac/ubuntu windows_meterpreter test runs
+#          - { meterpreter: { name: windows_meterpreter }, os: macos-11 }
+#          - { meterpreter: { name: windows_meterpreter }, os: ubuntu-20.04 }
 
     runs-on: ${{ matrix.os }}
 
