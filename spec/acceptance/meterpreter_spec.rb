@@ -247,7 +247,7 @@ RSpec.describe 'Meterpreter' do
                         expect(test_line).to_not include('FAILED', '[-] FAILED', '[-] Exception', '[-] '), "Unexpected error: #{test_line}"
                       end
 
-                      # Assert all expected lines are present, unless they're flaky
+                      # Assert all expected lines are present
                       required_lines.each do |required|
                         next unless required.if?
 

@@ -111,12 +111,12 @@ module Acceptance::Meterpreter
             required: [
             ],
             acceptable_failures: [
-              'Call stack:',
+              # 'Call stack:',
               'test/modules/post/test/file.rb',
               'test/lib/module_test.rb',
               [
                 [
-                  'FAILED: should test for file existence',
+                  # 'FAILED: should test for file existence',
                   'FAILED: should delete a symbolic link target',
                   'Exception: Rex::Post::Meterpreter::RequestError : stdapi_sys_process_execute: Operation failed: Python exception: FileNotFoundError',
                   'FAILED: should not recurse into symbolic link directories',
@@ -170,36 +170,35 @@ module Acceptance::Meterpreter
             required: [
               '; Failed: '
             ],
+            # TODO: Python OSX Meterpreter chokes on netstat -rn output:
+            #   '172.16.83.3        0.c.29.a1.cb.67    UHLWIi     bridge1    358'
+            #  Exception:
+            #   'gateway': inet_pton(state, gateway),
+            #   *** error: illegal IP address string passed to inet_pton
             acceptable_failures: [
               [
                 [
                   'FAILED: should return network interfaces',
                   'stdapi_net_config_get_interfaces: Operation failed: Python exception: TypeError',
                   'FAILED: should have an interface that matches session_host',
-                  'stdapi_net_config_get_interfaces: Operation failed: Python exception: TypeError',
                   'stdapi_net_config_get_routes: Operation failed: Python exception: TypeError'
                 ],
                 { if: ENV['METERPRETER_RUNTIME_VERSION'] == '3.6' }
               ],
 
-              # TODO: Python OSX Meterpreter chokes on netstat -rn output:
-              #   '172.16.83.3        0.c.29.a1.cb.67    UHLWIi     bridge1    358'
-              #  Exception:
-              #   'gateway': inet_pton(state, gateway),
-              #   *** error: illegal IP address string passed to inet_pton
-              [
-                [
-                  'FAILED: should return network routes',
-                  'stdapi_net_config_get_routes: Operation failed: Unknown error',
-                ],
-                { if: (Acceptance::Meterpreter.current_platform == :osx && ENV['METERPRETER_RUNTIME_VERSION'] == '3.6') || !ENV['CI'] }
-              ],
+              # TODO: Delete
+              # [
+              #   [
+              #     'FAILED: should return network routes',
+              #     'stdapi_net_config_get_routes: Operation failed: Unknown error',
+              #   ],
+              #   { if: (Acceptance::Meterpreter.current_platform == :osx && ENV['METERPRETER_RUNTIME_VERSION'] == '3.6') || !ENV['CI'] }
+              # ],
               [
                 [
                   'FAILED: should return network interfaces',
                   'stdapi_net_config_get_interfaces: Operation failed: Python exception: TypeError',
                   'FAILED: should have an interface that matches session_host',
-                  'stdapi_net_config_get_interfaces: Operation failed: Python exception: TypeError',
                   'FAILED: should return network routes',
                   'stdapi_net_config_get_routes: Operation failed: Python exception: TypeError',
                 ],
@@ -271,8 +270,8 @@ module Acceptance::Meterpreter
               'Failed: 0'
             ],
             acceptable_failures: [
-              'stdapi_fs_file_expand_path: Operation failed: 1',
-              'FAILED: Should retrieve the win32k file version',
+              # 'stdapi_fs_file_expand_path: Operation failed: 1',
+              # 'FAILED: Should retrieve the win32k file version',
               'Exception: Rex::NotImplementedError : The requested method is not implemented',
               'FAILED: Should include error information in the results',
               'FAILED: Should support functions with no parameters',
@@ -401,13 +400,13 @@ module Acceptance::Meterpreter
               'FAILED: should stop W32Time',
               'FAILED: should list services',
               'Exception: RuntimeError : Could not open service. OpenServiceA error: FormatMessage failed to retrieve the error',
-              "Exception: NoMethodError : undefined method `include?' for true:TrueClass",
-              'FAILED: should raise a runtime exception if no access to service',
-              'The "extapi" extension is not supported by this Meterpreter type',
+              # "Exception: NoMethodError : undefined method `include?' for true:TrueClass",
+              # 'FAILED: should raise a runtime exception if no access to service',
+              # 'The "extapi" extension is not supported by this Meterpreter type',
               'FAILED: should return info on a given service',
               'FAILED: should create a service',
               'FAILED: should return info on the newly-created service',
-              'FAILED: should raise a runtime exception if services doesnt exist',
+              # 'FAILED: should raise a runtime exception if services doesnt exist',
               'FAILED: should delete the new service',
               'FAILED: should return status on a given service',
               'FAILED: should modify config on a given service',

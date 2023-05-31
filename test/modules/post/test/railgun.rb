@@ -23,6 +23,7 @@ class MetasploitModule < Msf::Post
   end
 
   def test_api_function_calls_libc
+    # TODO: Call `skip('...')`
     return unless session.platform == 'linux' || session.platform == 'osx'
 
     buffer = nil
@@ -91,16 +92,20 @@ class MetasploitModule < Msf::Post
   end
 
   def test_api_function_file_info_windows
+    # TODO: Call `skip('...')`
     return unless session.platform == 'windows'
 
     it "Should retrieve the win32k file version" do
       path = expand_path('%WINDIR%\\system32\\win32k.sys')
       major, minor, build, revision, brand = file_version(path)
+      # XXX: These values should be asserted - as in this scenario the values are `nil`
+      # https://github.com/rapid7/metasploit-framework/commit/99e576d023cba66fa898d9ce3b52a52201f0f250
       true
     end
   end
 
   def test_api_function_calls_windows
+    # TODO: Call `skip('...')`
     return unless session.platform == 'windows'
 
     it "Should include error information in the results" do
