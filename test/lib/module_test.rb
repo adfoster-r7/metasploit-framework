@@ -17,7 +17,11 @@ module Msf
     def run_all_tests
       tests = self.methods.select { |m| m.to_s =~ /^test_/ }
       tests.each { |test_method|
-        self.send(test_method)
+        begin
+          self.send(test_method)
+        rescue SkipTestError => e
+          print_status("SKIPPED: def #{test_method} (#{e.message})")
+        end
       }
     end
 
@@ -42,7 +46,6 @@ module Msf
         @failures += 1
         print_error("FAILED: #{msg}")
         print_error("Exception: #{e.class} : #{e}")
-        print_status("Backtrace: #{e.backtrace}")
         dlog("Exception in testing - #{msg}")
         dlog("Call stack: #{e.backtrace.join("\n")}")
         return
@@ -71,10 +74,11 @@ module Msf
       run_all_tests
 
       vprint_status("Testing complete in #{Time.now - t}")
-      if (@failures > 0)
-        print_error("Passed: #{passed}; Failed: #{@failures}")
+      status = "Passed: #{passed}; Failed: #{@failures}; Skipped: #{@skipped}"
+      if @failures > 0
+        print_error(status)
       else
-        print_status("Passed: #{passed}; Failed: #{@failures}")
+        print_status(status)
       end
     end
   end

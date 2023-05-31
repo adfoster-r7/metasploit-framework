@@ -23,8 +23,8 @@ class MetasploitModule < Msf::Post
   end
 
   def test_api_function_calls_libc
-    # TODO: Call `skip('...')`
-    return unless session.platform == 'linux' || session.platform == 'osx'
+    return skip('target is not linux or osx') unless session.platform == 'linux' || session.platform == 'osx'
+    return skip('session does not support COMMAND_ID_STDAPI_RAILGUN_API') unless session.commands.include?(session.commands.include?(Rex::Post::Meterpreter::Extensions::Stdapi::COMMAND_ID_STDAPI_RAILGUN_API))
 
     buffer = nil
     buffer_size = 128
@@ -92,8 +92,8 @@ class MetasploitModule < Msf::Post
   end
 
   def test_api_function_file_info_windows
-    # TODO: Call `skip('...')`
-    return unless session.platform == 'windows'
+    return skip('session platform is not windows') unless session.platform == 'windows'
+    return skip('session does not support COMMAND_ID_STDAPI_RAILGUN_API') unless session.commands.include?(session.commands.include?(Rex::Post::Meterpreter::Extensions::Stdapi::COMMAND_ID_STDAPI_RAILGUN_API))
 
     it "Should retrieve the win32k file version" do
       path = expand_path('%WINDIR%\\system32\\win32k.sys')
@@ -105,8 +105,8 @@ class MetasploitModule < Msf::Post
   end
 
   def test_api_function_calls_windows
-    # TODO: Call `skip('...')`
-    return unless session.platform == 'windows'
+    return skip('session platform is not windows') unless session.platform == 'windows'
+    return skip('session does not support COMMAND_ID_STDAPI_RAILGUN_API') unless session.commands.include?(session.commands.include?(Rex::Post::Meterpreter::Extensions::Stdapi::COMMAND_ID_STDAPI_RAILGUN_API))
 
     it "Should include error information in the results" do
       ret = true

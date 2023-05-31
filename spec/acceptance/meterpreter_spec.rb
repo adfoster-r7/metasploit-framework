@@ -189,7 +189,9 @@ RSpec.describe 'Meterpreter' do
                       Acceptance::Meterpreter.supported_platform?(payload_config) &&
                       Acceptance::Meterpreter.supported_platform?(module_test) &&
                       !Acceptance::Meterpreter.skipped?(module_test)
-                  )
+                  ),
+                  # metadata
+                  module_test: module_test[:name]
                 ) do
                   begin
                     replication_commands = []
@@ -237,7 +239,7 @@ RSpec.describe 'Meterpreter' do
                         is_acceptable = acceptable_failures.any? do |acceptable_failure|
                           line.include?(acceptable_failure.value) &&
                             acceptable_failure.if?
-                        end
+                        end || line.match?(/Passed: \d+; Failed: \d+/)
 
                         is_acceptable
                       end

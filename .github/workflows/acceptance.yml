@@ -44,43 +44,29 @@ jobs:
           - macos-11
           - windows-2019
           - ubuntu-20.04
-        meterpreter:
-          - { name: python, runtime_version: 2.7 }
-          - { name: python, runtime_version: 3.6 }
-          - { name: python, runtime_version: 3.8 }
-          -
-          - { name: python, runtime_version: 2.7 }
-          - { name: python, runtime_version: 3.6 }
-          - { name: python, runtime_version: 3.8 }
-
-          - { name: python, runtime_version: 2.7 }
-          - { name: python, runtime_version: 3.6 }
-          - { name: python, runtime_version: 3.8 }
-
-          - { name: python, runtime_version: 2.7 }
-          - { name: python, runtime_version: 3.6 }
-          - { name: python, runtime_version: 3.8 }
-
-          - { name: python, runtime_version: 2.7 }
-          - { name: python, runtime_version: 3.6 }
-          - { name: python, runtime_version: 3.8 }
-
-          # Newer versions of Java are not supported currently: https://github.com/rapid7/metasploit-payloads/issues/647
-#          - { name: java, runtime_version: 8 }
-#          - { name: php, runtime_version: 5.3 }
-#          - { name: php, runtime_version: 7.4 }
-#          - { name: php, runtime_version: 8.2 }
-#          - { name: windows_meterpreter }
-#          - { name: mettle }
         ruby:
           - 3.0.2
-#        include:
-#          - { meterpreter: { name: windows_meterpreter }, os: windows-2022 }
-#        exclude:
-#          - { meterpreter: { name: mettle }, os: windows-2019 }
-#          # Skip mac/ubuntu windows_meterpreter test runs
-#          - { meterpreter: { name: windows_meterpreter }, os: macos-11 }
-#          - { meterpreter: { name: windows_meterpreter }, os: ubuntu-20.04 }
+        meterpreter:
+          # Python
+          - { name: python, runtime_version: 2.7 }
+          - { name: python, runtime_version: 3.6 }
+          - { name: python, runtime_version: 3.8 }
+
+          # Java - newer versions of Java are not supported currently: https://github.com/rapid7/metasploit-payloads/issues/647
+          - { name: java, runtime_version: 8 }
+
+          # PHP
+          - { name: php, runtime_version: 5.3 }
+          - { name: php, runtime_version: 7.4 }
+          - { name: php, runtime_version: 8.2 }
+        include:
+          # Windows Meterpreter
+          - { meterpreter: { name: windows_meterpreter }, os: windows-2019 }
+          - { meterpreter: { name: windows_meterpreter }, os: windows-2022 }
+
+          # Mettle
+          - { name: mettle, os: macos-11 }
+          - { name: mettle, os: ubuntu-20.04 }
 
     runs-on: ${{ matrix.os }}
 
@@ -151,17 +137,16 @@ jobs:
       - name: acceptance
         env:
           SPEC_HELPER_LOAD_METASPLOIT: false
-          # TODO: Change this to 3
-          RSPEC_RERUN_RETRY_COUNT: 1
-          RSPEC_RERUN_PATTERN: 'spec/acceptance/**/*_spec.rb'
           SPEC_OPTS: "--require acceptance_spec_helper.rb --color --format documentation --format AllureRspec::RSpecFormatter --require rspec-rerun/formatter --format RSpec::Rerun::Formatter"
         # Unix run command:
         #   SPEC_HELPER_LOAD_METASPLOIT=false bundle exec ./spec/acceptance
         # Windows cmd command:
         #   set SPEC_HELPER_LOAD_METASPLOIT=false
         #   bundle exec rspec .\spec\acceptance
+        # Note: rspec retry is intentioanlly not used, as it can cause issues with allure's reporting
+        # Additionally - flakey tests should be fixed or marked as flakey instead of silently retried
         run: |
-          bundle exec rake rspec-rerun:spec
+          bundle exec rspec spec/acceptance
 
       - name: Archive results
         if: always()

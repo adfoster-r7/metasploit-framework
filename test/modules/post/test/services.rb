@@ -41,6 +41,8 @@ class MetasploitModule < Msf::Post
   end
 
   def test_start
+    return skip('session platform is not windows') unless session.platform == 'windows'
+
     it "should start #{datastore["SSERVICE"]}" do
       ret = true
       results = service_start(datastore['SSERVICE'])
@@ -63,6 +65,8 @@ class MetasploitModule < Msf::Post
   end
 
   def test_list
+    return skip('session platform is not windows') unless session.platform == 'windows'
+
     it "should list services" do
       ret = true
       results = service_list
@@ -76,6 +80,8 @@ class MetasploitModule < Msf::Post
   end
 
   def test_info
+    return skip('session platform is not windows') unless session.platform == 'windows'
+
     it "should return info on a given service  #{datastore["QSERVICE"]}" do
       ret = true
       results = service_info(datastore['QSERVICE'])
@@ -94,6 +100,8 @@ class MetasploitModule < Msf::Post
   end
 
   def test_create
+    return skip('session platform is not windows') unless session.platform == 'windows'
+
     it "should create a service  #{datastore["NSERVICE"]}" do
       mode = case datastore["MODE"]
              when "disable"; START_TYPE_DISABLED
@@ -133,6 +141,8 @@ class MetasploitModule < Msf::Post
   end
 
   def test_status
+    return skip('session platform is not windows') unless session.platform == 'windows'
+
     it "should return status on a given service #{datastore["QSERVICE"]}" do
       ret = true
       results = service_status(datastore['QSERVICE'])
@@ -148,6 +158,8 @@ class MetasploitModule < Msf::Post
   end
 
   def test_change
+    return skip('session platform is not windows') unless session.platform == 'windows'
+
     service_name = "a" << Rex::Text.rand_text_alpha(5)
     display_name = service_name
 
@@ -179,6 +191,8 @@ class MetasploitModule < Msf::Post
   end
 
   def test_restart_disabled
+    return skip('session platform is not windows') unless session.platform == 'windows'
+
     service_name = "a" << Rex::Text.rand_text_alpha(5)
     display_name = service_name
 
@@ -204,6 +218,7 @@ class MetasploitModule < Msf::Post
   end
 
   def test_restart_start
+    return skip('session platform is not windows') unless session.platform == 'windows'
     service_name = datastore['SSERVICE']
 
     it "should restart a started service #{service_name}" do
@@ -221,6 +236,7 @@ class MetasploitModule < Msf::Post
   end
 
   def test_noaccess
+    return skip('session platform is not windows') unless session.platform == 'windows'
     it "should raise a runtime exception if no access to service" do
       ret = false
       begin
@@ -234,6 +250,7 @@ class MetasploitModule < Msf::Post
   end
 
   def test_no_service
+    return skip('session platform is not windows') unless session.platform == 'windows'
     it "should raise a runtime exception if services doesnt exist" do
       ret = false
       begin
