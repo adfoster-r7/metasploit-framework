@@ -163,9 +163,10 @@ class MetasploitModule < Msf::Post
     service_name = "a" << Rex::Text.rand_text_alpha(5)
     display_name = service_name
 
-    it "should modify config on a given service #{service_name}" do
+    it "should modify config on a given service" do
       ret = true
 
+      vprint_status("creating new service #{service_name}")
       results = service_create(service_name,
                                display: display_name,
                                path: datastore['BINPATH'],
@@ -196,8 +197,9 @@ class MetasploitModule < Msf::Post
     service_name = "a" << Rex::Text.rand_text_alpha(5)
     display_name = service_name
 
-    it "should start a disabled service #{service_name}" do
+    it "should start a disabled service" do
       ret = true
+      vprint_status("creating new service #{service_name}")
       results = service_create(service_name,
                                display: display_name,
                                path: datastore['BINPATH'],

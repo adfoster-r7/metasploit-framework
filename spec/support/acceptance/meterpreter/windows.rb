@@ -28,12 +28,12 @@ module Acceptance::Meterpreter
             required: [
               'Failed: 0'
             ],
-            acceptable_failures: [
+            known_failures: [
             ]
           },
           windows: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           }
         }
       },
@@ -44,12 +44,12 @@ module Acceptance::Meterpreter
           all: {
             required: [
             ],
-            acceptable_failures: [
+            known_failures: [
             ]
           },
           windows: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           }
         }
       },
@@ -61,7 +61,7 @@ module Acceptance::Meterpreter
             required: [
 
             ],
-            acceptable_failures: [
+            known_failures: [
               # 'Call stack:',
               # 'test/modules/post/test/file.rb',
               # 'test/lib/module_test.rb',
@@ -69,7 +69,7 @@ module Acceptance::Meterpreter
           },
           windows: {
             required: [],
-            acceptable_failures: [
+            known_failures: [
             ]
           }
         }
@@ -82,19 +82,19 @@ module Acceptance::Meterpreter
             required: [
               'Failed: 0'
             ],
-            acceptable_failures: []
+            known_failures: []
           },
           osx: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           linux: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           windows: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           }
         }
       },
@@ -106,19 +106,19 @@ module Acceptance::Meterpreter
             required: [
               'Failed: 0'
             ],
-            acceptable_failures: []
+            known_failures: []
           },
           osx: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           linux: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           windows: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           }
         }
       },
@@ -129,14 +129,14 @@ module Acceptance::Meterpreter
           all: {
             required: [
             ],
-            acceptable_failures: [
+            known_failures: [
             ]
           },
           windows: {
             required: [
               'Failed: 0'
             ],
-            acceptable_failures: [
+            known_failures: [
             ]
           }
         }
@@ -148,14 +148,14 @@ module Acceptance::Meterpreter
           all: {
             required: [
             ],
-            acceptable_failures: [
+            known_failures: [
             ]
           },
           windows: {
             required: [
               'Failed: 0'
             ],
-            acceptable_failures: []
+            known_failures: []
           }
         }
       },
@@ -166,11 +166,11 @@ module Acceptance::Meterpreter
           all: {
             required: [
             ],
-            acceptable_failures: []
+            known_failures: []
           },
           windows: {
             required: [],
-            acceptable_failures: [
+            known_failures: [
             ]
           }
         }
@@ -182,21 +182,21 @@ module Acceptance::Meterpreter
           all: {
             required: [
             ],
-            acceptable_failures: [
+            known_failures: [
             ]
           },
           osx: {
             required: [],
-            acceptable_failures: [
+            known_failures: [
             ]
           },
           linux: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           windows: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           }
         }
       },
@@ -207,19 +207,19 @@ module Acceptance::Meterpreter
           all: {
             required: [
             ],
-            acceptable_failures: []
+            known_failures: []
           },
           osx: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           linux: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           windows: {
             required: [],
-            acceptable_failures: [
+            known_failures: [
               'FAILED: should start W32Time',
               ['Exception: TypeError : exception class/object expected', { flaky: true }],
               'FAILED: should stop W32Time',

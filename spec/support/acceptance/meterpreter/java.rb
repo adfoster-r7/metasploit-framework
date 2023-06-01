@@ -26,19 +26,19 @@ module Acceptance::Meterpreter
             required: [
               'Failed: 0'
             ],
-            acceptable_failures: []
+            known_failures: []
           },
           osx: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           linux: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           windows: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           }
         }
       },
@@ -49,7 +49,7 @@ module Acceptance::Meterpreter
           all: {
             required: [
             ],
-            acceptable_failures: [
+            known_failures: [
               'The "extapi" extension is not supported by this Meterpreter type',
               'Call stack:',
               'test/modules/post/test/extapi.rb'
@@ -57,15 +57,15 @@ module Acceptance::Meterpreter
           },
           osx: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           linux: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           windows: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           }
         }
       },
@@ -77,19 +77,19 @@ module Acceptance::Meterpreter
             required: [
 
             ],
-            acceptable_failures: []
+            known_failures: []
           },
           osx: {
             required: [
               'Passed: '
             ],
-            acceptable_failures: []
+            known_failures: []
           },
           linux: {
             required: [
               'Passed: '
             ],
-            acceptable_failures: [
+            known_failures: [
               # Consistently fails on CI
               ["Didn't read what we wrote, actual file on target: ||", { if: ENV['CI'] }],
               # Occasionally fails
@@ -101,7 +101,7 @@ module Acceptance::Meterpreter
           },
           windows: {
             required: [],
-            acceptable_failures: [
+            known_failures: [
               ['FAILED: should upload a file', { flaky: true }],
               ['; Failed:', { flaky: true }],
               ['Exception: EOFError : EOFError', { flaky: true }],
@@ -121,19 +121,19 @@ module Acceptance::Meterpreter
             required: [
               'Failed: 0'
             ],
-            acceptable_failures: []
+            known_failures: []
           },
           osx: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           linux: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           windows: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           }
         }
       },
@@ -145,19 +145,19 @@ module Acceptance::Meterpreter
             required: [
               'Failed: 0'
             ],
-            acceptable_failures: []
+            known_failures: []
           },
           osx: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           linux: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           windows: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           }
         }
       },
@@ -180,19 +180,19 @@ module Acceptance::Meterpreter
           all: {
             required: [
             ],
-            acceptable_failures: []
+            known_failures: []
           },
           osx: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           linux: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           windows: {
             required: [],
-            acceptable_failures: [
+            known_failures: [
               'FAILED: should create keys',
               'FAILED: should write REG_BINARY values',
               'FAILED: should write REG_SZ values',
@@ -223,21 +223,21 @@ module Acceptance::Meterpreter
             required: [
               'Failed: 0'
             ],
-            acceptable_failures: [
+            known_failures: [
             ]
           },
           osx: {
             required: [],
-            acceptable_failures: [
+            known_failures: [
             ]
           },
           linux: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           windows: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           }
         }
       },
@@ -249,20 +249,20 @@ module Acceptance::Meterpreter
           all: {
             required: [
             ],
-            acceptable_failures: []
+            known_failures: []
           },
           osx: {
             required: [],
-            acceptable_failures: [
+            known_failures: [
             ]
           },
           linux: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           windows: {
             required: [],
-            acceptable_failures: [
+            known_failures: [
               'stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type',
               'Exception: Rex::Post::Meterpreter::ExtensionLoadError : The "extapi" extension is not supported by this Meterpreter type',
               'Exception: Rex::NotImplementedError : The requested method is not implemented.',
@@ -294,19 +294,19 @@ module Acceptance::Meterpreter
             required: [
               'Failed: 0'
             ],
-            acceptable_failures: []
+            known_failures: []
           },
           osx: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           linux: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           windows: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           }
         }
       },

@@ -26,14 +26,8 @@ class AllureRspec::RSpecFormatter
   end
 
   def namespaced_history_id(example)
-    runtime_environment_metadata = [
-      Acceptance::Meterpreter.current_platform,
-      RUBY_VERSION,
-      ENV['METERPRETER'],
-      ENV['METERPRETER_RUNTIME_VERSION']
-    ].compact
-
-    "#{runtime_environment_metadata.join('_')}_#{example.id}"
+    runtime_environment_metadata = allure_config.environment_properties
+    "#{runtime_environment_metadata}_#{example.id}"
   end
 end
 
@@ -47,7 +41,8 @@ AllureRspec.configure do |config|
   # Add additional metadata to allure
   environment_properties = {
     host_os: RbConfig::CONFIG['host_os'],
-    ruby_version: RUBY_VERSION
+    ruby_version: RUBY_VERSION,
+    host_runner_image: ENV['HOST_RUNNER_IMAGE'],
   }.compact
   meterpreter_name = ENV['METERPRETER']
   meterpreter_runtime_version = ENV['METERPRETER_RUNTIME_VERSION']

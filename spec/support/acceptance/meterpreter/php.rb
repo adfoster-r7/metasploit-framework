@@ -30,23 +30,23 @@ module Acceptance::Meterpreter
             required: [
 
             ],
-            acceptable_failures: []
+            known_failures: []
           },
           osx: {
             required: [
               'Failed: 0'
             ],
-            acceptable_failures: []
+            known_failures: []
           },
           linux: {
             required: [
               'Failed: 0'
             ],
-            acceptable_failures: []
+            known_failures: []
           },
           windows: {
             required: [],
-            acceptable_failures: [
+            known_failures: [
               'FAILED: should return the stderr output',
               '; Failed: 1'
             ]
@@ -64,7 +64,7 @@ module Acceptance::Meterpreter
           all: {
             required: [
             ],
-            acceptable_failures: [
+            known_failures: [
               'The "extapi" extension is not supported by this Meterpreter type',
               'Call stack:',
               'test/modules/post/test/extapi.rb'
@@ -72,15 +72,15 @@ module Acceptance::Meterpreter
           },
           osx: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           linux: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           windows: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           }
         }
       },
@@ -96,25 +96,25 @@ module Acceptance::Meterpreter
           all: {
             required: [
             ],
-            acceptable_failures: []
+            known_failures: []
           },
           osx: {
             required: [],
-            acceptable_failures: [
+            known_failures: [
               'FAILED: should read the binary data we just wrote',
               '; Failed: 1'
             ]
           },
           linux: {
             required: [],
-            acceptable_failures: [
+            known_failures: [
               'FAILED: should read the binary data we just wrote',
               '; Failed: 1',
             ]
           },
           windows: {
             required: [],
-            acceptable_failures: [
+            known_failures: [
               'FAILED: should test for file existence',
               'FAILED: should delete a symbolic link target',
               'Exception: Rex::Post::Meterpreter::RequestError : stdapi_sys_process_execute: Operation failed: Python exception: FileNotFoundError',
@@ -141,19 +141,19 @@ module Acceptance::Meterpreter
             required: [
               'Failed: 0'
             ],
-            acceptable_failures: []
+            known_failures: []
           },
           osx: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           linux: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           windows: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           }
         }
       },
@@ -169,24 +169,24 @@ module Acceptance::Meterpreter
           all: {
             required: [
             ],
-            acceptable_failures: [
+            known_failures: [
             ]
           },
           osx: {
             required: [
             ],
-            acceptable_failures: [
+            known_failures: [
               'FAILED: should return a list of processes',
               'Failed: 1'
             ]
           },
           linux: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           windows: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           }
         }
       },
@@ -211,19 +211,19 @@ module Acceptance::Meterpreter
           all: {
             required: [
             ],
-            acceptable_failures: []
+            known_failures: []
           },
           osx: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           linux: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           windows: {
             required: [],
-            acceptable_failures: [
+            known_failures: [
               'FAILED: should create keys',
               'FAILED: should write REG_SZ values',
               'FAILED: should write REG_BINARY values',
@@ -258,20 +258,20 @@ module Acceptance::Meterpreter
             required: [
               'Failed: 0'
             ],
-            acceptable_failures: []
+            known_failures: []
           },
           osx: {
             required: [],
-            acceptable_failures: [
+            known_failures: [
             ]
           },
           linux: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           windows: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           }
         }
       },
@@ -284,21 +284,21 @@ module Acceptance::Meterpreter
           all: {
             required: [
             ],
-            acceptable_failures: []
+            known_failures: []
           },
           osx: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           linux: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           windows: {
             required: [
               'Passed:'
             ],
-            acceptable_failures: [
+            known_failures: [
               'Exception: Rex::Post::Meterpreter::ExtensionLoadError : The "extapi" extension is not supported by this Meterpreter type',
               'Exception: Rex::NotImplementedError : The requested method is not implemented.',
               'Exception: Rex::NotImplementedError : Unsupported architecture (must be ARCH_X86 or ARCH_X64)',
@@ -334,19 +334,19 @@ module Acceptance::Meterpreter
             required: [
               'Failed: 0'
             ],
-            acceptable_failures: []
+            known_failures: []
           },
           osx: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           linux: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           windows: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           }
         }
       },

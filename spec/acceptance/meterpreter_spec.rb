@@ -226,9 +226,9 @@ RSpec.describe 'Meterpreter' do
 
                     # Ensure there are no failures, and assert tests are complete
                     aggregate_failures("#{payload_config[:name].inspect} payload and passes the #{module_test[:name].inspect} tests") do
-                      acceptable_failures = module_test.dig(:lines, :all, :acceptable_failures) || []
-                      acceptable_failures += module_test.dig(:lines, current_platform, :acceptable_failures) || []
-                      acceptable_failures = acceptable_failures.flat_map { |value| Acceptance::LineValidation.new(*Array(value)).flatten }
+                      known_failures = module_test.dig(:lines, :all, :known_failures) || []
+                      known_failures += module_test.dig(:lines, current_platform, :known_failures) || []
+                      known_failures = known_failures.flat_map { |value| Acceptance::LineValidation.new(*Array(value)).flatten }
 
                       required_lines = module_test.dig(:lines, :all, :required) || []
                       required_lines += module_test.dig(:lines, current_platform, :required) || []
@@ -236,7 +236,7 @@ RSpec.describe 'Meterpreter' do
 
                       # Skip any ignored lines from the validation input
                       validated_lines = test_result.lines.reject do |line|
-                        is_acceptable = acceptable_failures.any? do |acceptable_failure|
+                        is_acceptable = known_failures.any? do |acceptable_failure|
                           line.include?(acceptable_failure.value) &&
                             acceptable_failure.if?
                         end || line.match?(/Passed: \d+; Failed: \d+/)
@@ -258,7 +258,7 @@ RSpec.describe 'Meterpreter' do
 
                       # Assert all ignored lines are present, if they are not present - they should be removed from
                       # the calling config
-                      acceptable_failures.each do |acceptable_failure|
+                      known_failures.each do |acceptable_failure|
                         next if acceptable_failure.flaky?
                         next unless acceptable_failure.if?
 

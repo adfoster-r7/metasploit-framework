@@ -29,11 +29,11 @@ module Acceptance::Meterpreter
             required: [
               'Passed: '
             ],
-            acceptable_failures: []
+            known_failures: []
           },
           osx: {
             required: [],
-            acceptable_failures: [
+            known_failures: [
               ['should return the stderr output', { flaky: true }],
               ['should return the result of echo', { flaky: true }],
               ['should return the result of echo with double quotes', { flaky: true }],
@@ -42,7 +42,7 @@ module Acceptance::Meterpreter
           },
           linux: {
             required: [],
-            acceptable_failures: [
+            known_failures: [
               ['should return the stderr output', { flaky: true }],
               ['should return the result of echo', { flaky: true }],
               ['should return the result of echo with double quotes', { flaky: true }],
@@ -51,7 +51,7 @@ module Acceptance::Meterpreter
           },
           windows: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           }
         }
       },
@@ -62,7 +62,7 @@ module Acceptance::Meterpreter
           all: {
             required: [
             ],
-            acceptable_failures: [
+            known_failures: [
               'The "extapi" extension is not supported by this Meterpreter type',
               'Call stack:',
               'test/modules/post/test/extapi.rb'
@@ -70,15 +70,15 @@ module Acceptance::Meterpreter
           },
           osx: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           linux: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           windows: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           }
         }
       },
@@ -90,27 +90,27 @@ module Acceptance::Meterpreter
             required: [
 
             ],
-            acceptable_failures: [
+            known_failures: [
             ]
           },
           osx: {
             required: [
               'Failed: 0'
             ],
-            acceptable_failures: [
+            known_failures: [
             ]
           },
           linux: {
             required: [
               'Failed: 0'
             ],
-            acceptable_failures: [
+            known_failures: [
             ]
           },
           windows: {
             required: [
             ],
-            acceptable_failures: [
+            known_failures: [
               # 'Call stack:',
               'test/modules/post/test/file.rb',
               'test/lib/module_test.rb',
@@ -139,20 +139,20 @@ module Acceptance::Meterpreter
             required: [
               'Failed: 0'
             ],
-            acceptable_failures: [
+            known_failures: [
             ]
           },
           osx: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           linux: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           windows: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           }
         }
       },
@@ -163,7 +163,7 @@ module Acceptance::Meterpreter
           all: {
             required: [
             ],
-            acceptable_failures: [
+            known_failures: [
             ]
           },
           osx: {
@@ -175,7 +175,7 @@ module Acceptance::Meterpreter
             #  Exception:
             #   'gateway': inet_pton(state, gateway),
             #   *** error: illegal IP address string passed to inet_pton
-            acceptable_failures: [
+            known_failures: [
               [
                 [
                   'FAILED: should return network interfaces',
@@ -214,11 +214,11 @@ module Acceptance::Meterpreter
           },
           linux: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           windows: {
             required: [],
-            acceptable_failures: [
+            known_failures: [
               # https://github.com/rapid7/metasploit-framework/pull/16178
               [
                 [
@@ -240,20 +240,20 @@ module Acceptance::Meterpreter
           all: {
             required: [
             ],
-            acceptable_failures: [
+            known_failures: [
             ]
           },
           osx: {
             required: [
             ],
-            acceptable_failures: [
+            known_failures: [
             ]
           },
           linux: {
             required: [
               'Failed: 0'
             ],
-            acceptable_failures: [
+            known_failures: [
               'FAILED: Should retrieve the win32k file version',
               'Exception: Rex::NotImplementedError : The requested method is not implemented',
               'FAILED: Should include error information in the results',
@@ -269,7 +269,7 @@ module Acceptance::Meterpreter
             required: [
               'Failed: 0'
             ],
-            acceptable_failures: [
+            known_failures: [
               # 'stdapi_fs_file_expand_path: Operation failed: 1',
               # 'FAILED: Should retrieve the win32k file version',
               'Exception: Rex::NotImplementedError : The requested method is not implemented',
@@ -291,14 +291,14 @@ module Acceptance::Meterpreter
           all: {
             required: [
             ],
-            acceptable_failures: [
+            known_failures: [
             ]
           },
           osx: {
             required: [
               'Passed: 0; Failed: 2'
             ],
-            acceptable_failures: [
+            known_failures: [
               'FAILED: should return a constant name given a const and a filter',
               'FAILED: should return an error string given an error code',
               'Passed: 0; Failed: 2'
@@ -308,7 +308,7 @@ module Acceptance::Meterpreter
             required: [
               'Passed: 0; Failed: 2'
             ],
-            acceptable_failures: [
+            known_failures: [
               'FAILED: should return a constant name given a const and a filter',
               'FAILED: should return an error string given an error code',
               'Passed: 0; Failed: 2'
@@ -316,7 +316,7 @@ module Acceptance::Meterpreter
           },
           windows: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           }
         }
       },
@@ -327,22 +327,22 @@ module Acceptance::Meterpreter
           all: {
             required: [
             ],
-            acceptable_failures: [
+            known_failures: [
             ]
           },
           osx: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           linux: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           windows: {
             required: [
               'Failed: 0'
             ],
-            acceptable_failures: [
+            known_failures: [
             ]
           }
         }
@@ -355,22 +355,22 @@ module Acceptance::Meterpreter
             required: [
               'Failed: 0'
             ],
-            acceptable_failures: [
+            known_failures: [
             ]
           },
           osx: {
             required: [
             ],
-            acceptable_failures: [
+            known_failures: [
             ]
           },
           linux: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           windows: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           }
         }
       },
@@ -381,21 +381,21 @@ module Acceptance::Meterpreter
           all: {
             required: [
             ],
-            acceptable_failures: [
+            known_failures: [
             ]
           },
           osx: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           linux: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           windows: {
             required: [
             ],
-            acceptable_failures: [
+            known_failures: [
               'FAILED: should start W32Time',
               'FAILED: should stop W32Time',
               'FAILED: should list services',
@@ -426,20 +426,20 @@ module Acceptance::Meterpreter
             required: [
               'Failed: 0'
             ],
-            acceptable_failures: [
+            known_failures: [
             ]
           },
           osx: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           linux: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           },
           windows: {
             required: [],
-            acceptable_failures: []
+            known_failures: []
           }
         }
       },

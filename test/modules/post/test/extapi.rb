@@ -45,7 +45,7 @@ class MetasploitModule < Msf::Post
     vprint_status("Starting clipboard management tests")
 
     it "should return an array of clipboard data" do
-      skip('session does not support COMMAND_ID_EXTAPI_CLIPBOARD_GET_DATA') unless session.commands.include?(Rex::Post::Meterpreter::Extensions::Extapi::COMMAND_ID_EXTAPI_CLIPBOARD_GET_DATA)
+      return skip('session does not support COMMAND_ID_EXTAPI_CLIPBOARD_GET_DATA') unless session.commands.include?(Rex::Post::Meterpreter::Extensions::Extapi::COMMAND_ID_EXTAPI_CLIPBOARD_GET_DATA)
 
       ret = false
       clipboard = session.extapi.clipboard.get_data(false)
@@ -59,7 +59,7 @@ class MetasploitModule < Msf::Post
     end
 
     it "should return clipboard jpg dimensions" do
-      return skip("Session doesn't implement railgun.user32, skipping jpg test") unless session.railgun.user32
+      return skip("Session doesn't implement railgun.user32, skipping jpg test") unless session.commands.include?(Rex::Post::Meterpreter::Extensions::Stdapi::COMMAND_ID_STDAPI_RAILGUN_API) && session.railgun.user32
 
       # VK_PRINTSCREEN 154 Maybe needed on XP?
       # VK_SNAPSHOT 44
@@ -96,7 +96,7 @@ class MetasploitModule < Msf::Post
     end
 
     it "should download clipboard jpg data" do
-      return skip("Session doesn't implement railgun.user32, skipping download_jpg test") unless session.railgun.user32
+      return skip("Session doesn't implement railgun.user32, skipping download_jpg test") unless session.commands.include?(Rex::Post::Meterpreter::Extensions::Stdapi::COMMAND_ID_STDAPI_RAILGUN_API) && session.railgun.user32
 
       ret = false
 
