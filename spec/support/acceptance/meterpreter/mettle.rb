@@ -1,14 +1,16 @@
+require 'support/acceptance/meterpreter'
+
 module Acceptance::Meterpreter
   METTLE_METERPRETER = {
     payloads: [
       {
-        name: 'linux/x64/meterpreter/reverse_tcp',
-        extension: '',
+        name: "linux/x64/meterpreter/reverse_tcp",
+        extension: "",
         platforms: [:linux],
         executable: true,
-        execute_cmd: ['${payload_path}'],
+        execute_cmd: ["${payload_path}"],
         generate_options: {
-          '-f': 'elf'
+          '-f': "elf"
         },
         datastore: {
           global: {},
@@ -19,13 +21,13 @@ module Acceptance::Meterpreter
         }
       },
       {
-        name: 'osx/x64/meterpreter_reverse_tcp',
-        extension: '',
+        name: "osx/x64/meterpreter_reverse_tcp",
+        extension: "",
         platforms: [:osx],
         executable: true,
-        execute_cmd: ['${payload_path}'],
+        execute_cmd: ["${payload_path}"],
         generate_options: {
-          '-f': 'macho'
+          '-f': "macho"
         },
         datastore: {
           global: {},
@@ -34,347 +36,139 @@ module Acceptance::Meterpreter
             MeterpreterDebugBuild: true
           }
         }
-      },
-      # {
-      #   name: 'osx/x64/meterpreter/reverse_tcp',
-      #   extension: '',
-      #   platforms: [:osx],
-      #   executable: true,
-      #   execute_cmd: ['${payload_path}'],
-      #   generate_options: {
-      #     '-f': 'macho'
-      #   },
-      #   datastore: {
-      #     global: {
-      #     },
-      #     module: {
-      #       MeterpreterTryToFork: false,
-      #       MeterpreterDebugBuild: true
-      #     }
-      #   }
-      # }
+      }
     ],
     module_tests: [
       {
-        name: 'test/cmd_exec',
-        platforms: %i[osx linux windows],
-        lines: {
-          all: {
-            required: [
-              'Passed: '
-            ],
-            known_failures: []
-          },
-          osx: {
-            required: [],
-            known_failures: [
-              ['should return the stderr output', { flaky: true }],
-              ['; Failed:', { flaky: true }],
-            ]
-          },
-          linux: {
-            required: [],
-            known_failures: [
-              ['should return the stderr output', { flaky: true }],
-              ['; Failed:', { flaky: true }],
-            ]
-          },
-          windows: {
-            required: [],
-            known_failures: []
-          }
-        }
-      },
-      {
-        name: 'test/extapi',
-        platforms: %i[osx linux windows],
-        lines: {
-          all: {
-            required: [
-            ],
-            known_failures: [
-
-            ]
-          },
-          osx: {
-            required: [],
-            known_failures: [
-              'The "extapi" extension is not supported by this Meterpreter type',
-              'Call stack:',
-              'test/modules/post/test/extapi.rb'
-            ]
-          },
-          linux: {
-            required: [],
-            known_failures: [
-              'Post failed: RuntimeError x86_64-linux-musl/extapi not found',
-              'lib/metasploit_payloads/mettle.rb',
-              'lib/rex/post/meterpreter/client_core.rb',
-              'Call stack:',
-              'test/modules/post/test/extapi.rb'
-            ]
-          }
-        }
-      },
-      {
-        name: 'test/file',
-        platforms: %i[osx linux],
-        lines: {
-          all: {
-            required: [
-
-            ],
-            known_failures: [
-            ]
-          },
-          osx: {
-            required: [
-              'Failed: 0'
-            ],
-            known_failures: []
-          },
-          linux: {
-            required: [
-              'Failed: 0'
-            ],
-            known_failures: [
-            ]
-          }
-        }
-      },
-      {
-        name: 'test/get_env',
-        platforms: %i[osx linux],
-        lines: {
-          all: {
-            required: [
-              'Failed: 0'
-            ],
-            known_failures: [
-            ]
-          },
-          osx: {
-            required: [],
-            known_failures: []
-          },
-          linux: {
-            required: [],
-            known_failures: []
-          }
-        }
-      },
-      {
-        name: 'test/meterpreter',
-        platforms: %i[osx linux],
-        lines: {
-          all: {
-            required: [
-            ],
-            known_failures: [
-            ]
-          },
-          osx: {
-            required: [
-              '; Failed: 2'
-            ],
-            known_failures:
-              [
-                'FAILED: should return network interfaces',
-                'FAILED: should have an interface that matches session_host',
-                '; Failed: 2'
-              ]
-          },
-          linux: {
-            required: [],
-            known_failures: []
-          }
-        }
-      },
-      {
-        name: 'test/railgun',
+        name: "test/search",
         platforms: [
-        ],
-        lines: {
-          all: {
-            required: [
-            ],
-            known_failures: [
-            ]
-          },
-          osx: {
-            required: [
-            ],
-            known_failures: [
-            ]
-          },
-          linux: {
-            required: [
-            ],
-            known_failures: [
-            ]
-          }
-        }
-      },
-      {
-        name: 'test/railgun_reverse_lookups',
-        platforms: %i[osx linux windows],
-        lines: {
-          all: {
-            required: [
-            ],
-            known_failures: [
-            ]
-          },
-          osx: {
-            required: [
-              'Passed: 0; Failed: 2'
-            ],
-            known_failures: [
-              'FAILED: should return a constant name given a const and a filter',
-              'FAILED: should return an error string given an error code',
-              'Passed: 0; Failed: 2'
-            ]
-          },
-          linux: {
-            required: [
-              'Passed: 0; Failed: 2'
-            ],
-            known_failures: [
-              'FAILED: should return a constant name given a const and a filter',
-              'FAILED: should return an error string given an error code',
-              'Passed: 0; Failed: 2'
-            ]
-          },
-          windows: {
-            required: [],
-            known_failures: []
-          }
-        }
-      },
-      {
-        name: 'test/registry',
-        platforms: [:windows],
-        lines: {
-          all: {
-            required: [
-            ],
-            known_failures: [
-            ]
-          },
-          osx: {
-            required: [],
-            known_failures: []
-          },
-          linux: {
-            required: [],
-            known_failures: []
-          },
-          windows: {
-            required: [
-              'Passed: 10; Failed: 1'
-            ],
-            known_failures: [
-            ]
-          }
-        }
-      },
-      {
-        name: 'test/search',
-        platforms: [
-          :osx,
           :linux,
-          :windows
+          [
+            :osx,
+            {
+              skip: true,
+              reason: "skipped - test/search hangs in osx and CPU spikes to >300%"
+            }
+          ]
         ],
+        skipped: false,
+        flaky: false,
         lines: {
-          all: {
-            required: [
-            ],
-            known_failures: [
-            ]
-          },
           osx: {
-            required: [
-              'Failed: 0'
-            ],
-            known_failures: [
-            ]
-          },
-          linux: {
-            required: [],
             known_failures: []
           },
-          windows: {
-            required: [],
+          linux: {
             known_failures: []
           }
         }
       },
       {
-        name: 'test/services',
-        platforms: [:windows],
+        name: "test/cmd_exec",
+        platforms: [:osx, :linux],
+        skipped: false,
+        flaky: false,
         lines: {
-          all: {
-            required: [
-            ],
-            known_failures: [
-            ]
-          },
           osx: {
-            required: [],
             known_failures: []
           },
           linux: {
-            required: [],
+            known_failures: []
+          }
+        }
+      },
+      {
+        name: "test/extapi",
+        platforms: [:osx, :linux],
+        skipped: false,
+        flaky: false,
+        lines: {
+          osx: {
             known_failures: []
           },
-          windows: {
-            required: [
-              'Passed: 11; Failed: 2'
-            ],
+          linux: {
             known_failures: [
-              'FAILED: should start W32Time',
-              'FAILED: should stop W32Time',
-              'FAILED: should list services',
-              'Exception: RuntimeError : Could not open service. OpenServiceA error: FormatMessage failed to retrieve the error',
-              'The "extapi" extension is not supported by this Meterpreter type',
-              'FAILED: should return info on a given service',
-              'FAILED: should create a service',
-              'FAILED: should return info on the newly-created service',
-              'FAILED: should delete the new service',
-              'FAILED: should return status on a given service',
-              'FAILED: should modify config on a given service',
-              'FAILED: should start a disabled service',
-              'FAILED: should restart a started service',
-              'Passed: 11; Failed: 2'
+              "[-] Post failed: RuntimeError x86_64-linux-musl/extapi not found",
+              "[-] Call stack:",
+              "metasploit-framework/vendor/bundle/ruby/3.0.0/gems/metasploit_payloads-mettle-1.0.20/lib/metasploit_payloads/mettle.rb:205:in `load_extension'",
+              "metasploit-framework/lib/rex/post/meterpreter/client_core.rb:356:in `use'",
+              "metasploit-framework/test/modules/post/test/extapi.rb:32:in `setup'"
             ]
           }
         }
       },
       {
-        name: 'test/unix',
-        platforms: %i[osx linux],
+        name: "test/file",
+        platforms: [:osx, :linux],
+        skipped: false,
+        flaky: false,
         lines: {
-          all: {
-            required: [
-              'Failed: 0'
-            ],
-            known_failures: [
-            ]
-          },
           osx: {
-            required: [],
             known_failures: []
           },
           linux: {
-            required: [],
-            known_failures: []
-          },
-          windows: {
-            required: [],
             known_failures: []
           }
         }
       },
+      {
+        name: "test/get_env",
+        platforms: [:osx, :linux],
+        skipped: false,
+        flaky: false,
+        lines: {
+          osx: {
+            known_failures: []
+          },
+          linux: {
+            known_failures: []
+          }
+        }
+      },
+      {
+        name: "test/meterpreter",
+        platforms: [:osx, :linux],
+        skipped: false,
+        flaky: false,
+        lines: {
+          osx: {
+            known_failures: [
+              "[-] FAILED: should return network interfaces",
+              "[-] FAILED: should have an interface that matches session_host"
+            ]
+          },
+          linux: {
+            known_failures: []
+          }
+        }
+      },
+      {
+        name: "test/railgun_reverse_lookups",
+        platforms: [:osx, :linux],
+        skipped: false,
+        flaky: false,
+        lines: {
+          osx: {
+            known_failures: []
+          },
+          linux: {
+            known_failures: []
+          }
+        }
+      },
+      {
+        name: "test/unix",
+        platforms: [:osx, :linux],
+        skipped: false,
+        flaky: false,
+        lines: {
+          osx: {
+            known_failures: []
+          },
+          linux: {
+            known_failures: []
+          }
+        }
+      }
     ]
   }
 end

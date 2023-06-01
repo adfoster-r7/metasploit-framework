@@ -227,6 +227,7 @@ class MetasploitModule < Msf::Post
       ret = true
 
       results = service_start(service_name)
+
       ret &&= (results == Windows::Error::SUCCESS)
       if ret
         results = service_restart(service_name)
@@ -320,4 +321,25 @@ class MetasploitModule < Msf::Post
   end
 =end
 
+    [
+     :service_start,
+     :service_stop,
+     :service_create,
+     :service_delete,
+    ].each do |method|
+      define_method(method) do
+        result = super
+        print_status("#{method} result #{format_windows_error(results)}") unless Windows::Error::SUCCESS
+        result
+      end
+    end
+
+    def format_windows_error(error)
+      error_name = ::Msf::Post::Windows::Error.constants.find do |const|
+        constant_value = ::Msf::Post::Windows::Error.const_get(const)
+        error == constant_value
+      end
+
+      "#{error_name || 'Unknown'} (0x#{error.to_s(16)})"
+    end
 end

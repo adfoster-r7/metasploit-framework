@@ -1,13 +1,15 @@
+require 'support/acceptance/meterpreter'
+
 module Acceptance::Meterpreter
   JAVA_METERPRETER = {
     payloads: [
       {
-        name: 'java/meterpreter/reverse_tcp',
-        extension: '.jar',
-        platforms: %i[osx linux windows],
-        execute_cmd: ['java', '-jar', '${payload_path}'],
+        name: "java/meterpreter/reverse_tcp",
+        extension: ".jar",
+        platforms: [:osx, :linux, :windows],
+        execute_cmd: ["java", "-jar", "${payload_path}"],
         generate_options: {
-          '-f': 'jar'
+          '-f': "jar"
         },
         datastore: {
           global: {},
@@ -19,297 +21,213 @@ module Acceptance::Meterpreter
     ],
     module_tests: [
       {
-        name: 'test/cmd_exec',
-        platforms: %i[osx linux windows],
-        lines: {
-          all: {
-            required: [
-              'Failed: 0'
-            ],
-            known_failures: []
-          },
-          osx: {
-            required: [],
-            known_failures: []
-          },
-          linux: {
-            required: [],
-            known_failures: []
-          },
-          windows: {
-            required: [],
-            known_failures: []
-          }
-        }
-      },
-      {
-        name: 'test/extapi',
-        platforms: %i[osx linux windows],
-        lines: {
-          all: {
-            required: [
-            ],
-            known_failures: [
-              'The "extapi" extension is not supported by this Meterpreter type',
-              'Call stack:',
-              'test/modules/post/test/extapi.rb'
-            ]
-          },
-          osx: {
-            required: [],
-            known_failures: []
-          },
-          linux: {
-            required: [],
-            known_failures: []
-          },
-          windows: {
-            required: [],
-            known_failures: []
-          }
-        }
-      },
-      {
-        name: 'test/file',
-        platforms: %i[osx linux windows],
-        lines: {
-          all: {
-            required: [
-
-            ],
-            known_failures: []
-          },
-          osx: {
-            required: [
-              'Passed: '
-            ],
-            known_failures: []
-          },
-          linux: {
-            required: [
-              'Passed: '
-            ],
-            known_failures: [
-              # Consistently fails on CI
-              ["Didn't read what we wrote, actual file on target: ||", { if: ENV['CI'] }],
-              # Occasionally fails
-              ['FAILED: should append binary data', { flaky: true }],
-              ['FAILED: should upload a file', { flaky: true }],
-              ['; Failed:', { flaky: true }],
-              ['Exception: EOFError : EOFError', { flaky: true }]
-            ]
-          },
-          windows: {
-            required: [],
-            known_failures: [
-              ['FAILED: should upload a file', { flaky: true }],
-              ['; Failed:', { flaky: true }],
-              ['Exception: EOFError : EOFError', { flaky: true }],
-              'Call stack:',
-              'modules/post/test/file.rb',
-              'lib/module_test.rb',
-              'failed to create the symbolic link'
-            ]
-          }
-        }
-      },
-      {
-        name: 'test/get_env',
-        platforms: %i[osx linux windows],
-        lines: {
-          all: {
-            required: [
-              'Failed: 0'
-            ],
-            known_failures: []
-          },
-          osx: {
-            required: [],
-            known_failures: []
-          },
-          linux: {
-            required: [],
-            known_failures: []
-          },
-          windows: {
-            required: [],
-            known_failures: []
-          }
-        }
-      },
-      {
-        name: 'test/meterpreter',
-        platforms: %i[osx linux windows],
-        lines: {
-          all: {
-            required: [
-              'Failed: 0'
-            ],
-            known_failures: []
-          },
-          osx: {
-            required: [],
-            known_failures: []
-          },
-          linux: {
-            required: [],
-            known_failures: []
-          },
-          windows: {
-            required: [],
-            known_failures: []
-          }
-        }
-      },
-      {
-        name: 'test/railgun',
-        platforms: %i[osx linux windows],
-        # Railgun is not supported on this platform
-        skip: true
-      },
-      {
-        name: 'test/railgun_reverse_lookups',
-        platforms: %i[osx linux windows],
-        # Railgun is not supported on this platform
-        skip: true
-      },
-      {
-        name: 'test/registry',
+        name: "test/services",
         platforms: [:windows],
+        skipped: false,
+        flaky: false,
         lines: {
-          all: {
-            required: [
-            ],
-            known_failures: []
-          },
-          osx: {
-            required: [],
-            known_failures: []
-          },
-          linux: {
-            required: [],
-            known_failures: []
-          },
           windows: {
-            required: [],
             known_failures: [
-              'FAILED: should create keys',
-              'FAILED: should write REG_BINARY values',
-              'FAILED: should write REG_SZ values',
-              'FAILED: should write REG_EXPAND_SZ values',
-              'FAILED: should write REG_MULTI_SZ values',
-              'FAILED: should write REG_DWORD values',
-              'FAILED: should delete keys',
-              'FAILED: should create unicode keys',
-              'FAILED: should write REG_QWORD values',
-              'FAILED: should write REG_SZ unicode values',
-              'FAILED: should delete unicode keys',
-              'FAILED: should evaluate key existence',
-              'PENDING: should evaluate value existence',
-              'FAILED: should read values',
-              'Exception: NoMethodError : undefined method',
-              'FAILED: should return normalized values',
-              'FAILED: should enumerate keys and values',
-              'Passed: 0; Failed: 17'
+              "[-] FAILED: should start W32Time",
+              "[-] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
+              "[-] FAILED: should stop W32Time",
+              "[-] FAILED: should modify config on a given service",
+              "[-] FAILED: should return status on a given service winmgmt",
+              "[-] FAILED: should list services",
+              "[-] Could not retrieve the start type of the winmgmt service!",
+              "[-] FAILED: should return info on a given service  winmgmt",
+              "[-] FAILED: should restart a started service W32Time",
+              "[-] FAILED: should start a disabled service",
+              "[-] FAILED: should create a service  testes",
+              "[-] Could not retrieve the start type of the testes service!",
+              "[-] FAILED: should return info on the newly-created service testes",
+              "[-] FAILED: should delete the new service testes",
+              "[-] FAILED: should raise a runtime exception if services doesnt exist",
+              "[-] FAILED: should raise a runtime exception if no access to service"
             ]
           }
         }
       },
       {
-        name: 'test/search',
-        platforms: %i[osx linux windows],
+        name: "test/cmd_exec",
+        platforms: [:osx, :linux, :windows],
+        skipped: false,
+        flaky: false,
         lines: {
-          all: {
-            required: [
-              'Failed: 0'
-            ],
-            known_failures: [
-            ]
-          },
           osx: {
-            required: [],
-            known_failures: [
-            ]
+            known_failures: []
           },
           linux: {
-            required: [],
             known_failures: []
           },
           windows: {
-            required: [],
             known_failures: []
           }
         }
       },
       {
-        name: 'test/services',
+        name: "test/extapi",
+        platforms: [:osx, :linux, :windows],
+        skipped: false,
+        flaky: false,
+        lines: {
+          osx: {
+            known_failures: []
+          },
+          linux: {
+            known_failures: []
+          },
+          windows: {
+            known_failures: []
+          }
+        }
+      },
+      {
+        name: "test/file",
+        platforms: [:osx, :linux, :windows],
+        skipped: false,
+        flaky: false,
+        lines: {
+          osx: {
+            known_failures: []
+          },
+          linux: {
+            known_failures: [
+              [
+                "[-] Didn't read what we wrote, actual file on target:",
+                {
+                  flaky: true
+                }
+              ],
+              [
+                "[-] FAILED: should append text files",
+                {
+                  flaky: true
+                }
+              ],
+              [
+                "[-] Didn't read what we wrote, actual file on target: foobarbaz",
+                {
+                  flaky: true
+                }
+              ],
+              [
+                "[-] FAILED: should append binary data",
+                {
+                  flaky: true
+                }
+              ]
+            ]
+          },
+          windows: {
+            known_failures: [
+              "[-] failed to create the symbolic link"
+            ]
+          }
+        }
+      },
+      {
+        name: "test/get_env",
+        platforms: [:osx, :linux, :windows],
+        skipped: false,
+        flaky: false,
+        lines: {
+          osx: {
+            known_failures: []
+          },
+          linux: {
+            known_failures: []
+          },
+          windows: {
+            known_failures: []
+          }
+        }
+      },
+      {
+        name: "test/meterpreter",
+        platforms: [:osx, :linux, :windows],
+        skipped: false,
+        flaky: false,
+        lines: {
+          osx: {
+            known_failures: []
+          },
+          linux: {
+            known_failures: []
+          },
+          windows: {
+            known_failures: []
+          }
+        }
+      },
+      {
+        name: "test/search",
+        platforms: [:osx, :linux, :windows],
+        skipped: false,
+        flaky: false,
+        lines: {
+          osx: {
+            known_failures: []
+          },
+          linux: {
+            known_failures: []
+          },
+          windows: {
+            known_failures: []
+          }
+        }
+      },
+      {
+        name: "test/registry",
         platforms: [:windows],
-        # focus: true,
+        skipped: false,
+        flaky: false,
         lines: {
-          all: {
-            required: [
-            ],
-            known_failures: []
-          },
-          osx: {
-            required: [],
-            known_failures: [
-            ]
-          },
-          linux: {
-            required: [],
-            known_failures: []
-          },
           windows: {
-            required: [],
             known_failures: [
-              'stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type',
-              'Exception: Rex::Post::Meterpreter::ExtensionLoadError : The "extapi" extension is not supported by this Meterpreter type',
-              'Exception: Rex::NotImplementedError : The requested method is not implemented.',
-              'FAILED: should start W32Time',
-              'FAILED: should stop W32Time',
-              'FAILED: should list services',
-              'FAILED: should return info on a given service',
-              'FAILED: should create a service',
-              'FAILED: should return info on the newly-created service',
-              'FAILED: should delete the new service testes',
-              'FAILED: should return status on a given service',
-              'FAILED: should modify config on a given service',
-              'FAILED: should start a disabled service',
-              'FAILED: should restart a started service',
-              'FAILED: should raise a runtime exception if no access to service',
-              'FAILED: should raise a runtime exception if services doesnt exist',
-              'Could not retrieve the start type of the winmgmt service!',
-              'Could not retrieve the start type of the testes service!',
-              'Failed: 13'
+              "[-] FAILED: should create keys",
+              "[-] FAILED: should write REG_BINARY values",
+              "[-] FAILED: should write REG_DWORD values",
+              "[-] FAILED: should write REG_EXPAND_SZ values",
+              "[-] FAILED: should write REG_MULTI_SZ values",
+              "[-] FAILED: should write REG_QWORD values",
+              "[-] FAILED: should write REG_SZ values",
+              "[-] FAILED: should delete keys",
+              "[-] FAILED: should create unicode keys",
+              "[-] FAILED: should write REG_SZ unicode values",
+              "[-] FAILED: should delete unicode keys",
+              "[-] FAILED: should evaluate key existence",
+              "[-] FAILED: should read values",
+              "[-] Exception: NoMethodError : undefined method `[]' for nil:NilClass",
+              "[-] FAILED: should read values with a 32-bit view",
+              "[-] FAILED: should read values with a 64-bit view",
+              "[-] FAILED: should return normalized values",
+              "[-] FAILED: should enumerate keys and values"
             ]
           }
         }
       },
       {
-        name: 'test/unix',
-        platforms: %i[osx linux],
+        name: "test/unix",
+        platforms: [:osx, :linux],
+        skipped: false,
+        flaky: false,
         lines: {
-          all: {
-            required: [
-              'Failed: 0'
-            ],
-            known_failures: []
-          },
           osx: {
-            required: [],
             known_failures: []
           },
           linux: {
-            required: [],
-            known_failures: []
-          },
-          windows: {
-            required: [],
-            known_failures: []
+            known_failures: [
+              [
+                "[-] FAILED: should list users",
+                {
+                  flaky: true
+                }
+              ]
+            ]
           }
         }
-      },
+      }
     ]
   }
 end

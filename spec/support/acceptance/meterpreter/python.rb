@@ -4,12 +4,12 @@ module Acceptance::Meterpreter
   PYTHON_METERPRETER = {
     payloads: [
       {
-        name: 'python/meterpreter_reverse_tcp',
-        extension: '.py',
-        platforms: %i[osx linux windows],
-        execute_cmd: ['python', '${payload_path}'],
+        name: "python/meterpreter_reverse_tcp",
+        extension: ".py",
+        platforms: [:osx, :linux, :windows],
+        execute_cmd: ["python", "${payload_path}"],
         generate_options: {
-          '-f': 'raw'
+          '-f': "raw"
         },
         datastore: {
           global: {},
@@ -18,431 +18,236 @@ module Acceptance::Meterpreter
             PythonMeterpreterDebug: true
           }
         }
-      },
+      }
     ],
     module_tests: [
       {
-        name: 'test/cmd_exec',
-        platforms: %i[osx linux windows],
-        lines: {
-          all: {
-            required: [
-              'Passed: '
-            ],
-            known_failures: []
-          },
-          osx: {
-            required: [],
-            known_failures: [
-              ['should return the stderr output', { flaky: true }],
-              ['should return the result of echo', { flaky: true }],
-              ['should return the result of echo with double quotes', { flaky: true }],
-              ['; Failed:', { flaky: true }],
-            ]
-          },
-          linux: {
-            required: [],
-            known_failures: [
-              ['should return the stderr output', { flaky: true }],
-              ['should return the result of echo', { flaky: true }],
-              ['should return the result of echo with double quotes', { flaky: true }],
-              ['; Failed:', { flaky: true }],
-            ]
-          },
-          windows: {
-            required: [],
-            known_failures: []
-          }
-        }
-      },
-      {
-        name: 'test/extapi',
-        platforms: %i[osx linux windows],
-        lines: {
-          all: {
-            required: [
-            ],
-            known_failures: [
-              'The "extapi" extension is not supported by this Meterpreter type',
-              'Call stack:',
-              'test/modules/post/test/extapi.rb'
-            ]
-          },
-          osx: {
-            required: [],
-            known_failures: []
-          },
-          linux: {
-            required: [],
-            known_failures: []
-          },
-          windows: {
-            required: [],
-            known_failures: []
-          }
-        }
-      },
-      {
-        name: 'test/file',
-        platforms: %i[osx linux windows],
-        lines: {
-          all: {
-            required: [
-
-            ],
-            known_failures: [
-            ]
-          },
-          osx: {
-            required: [
-              'Failed: 0'
-            ],
-            known_failures: [
-            ]
-          },
-          linux: {
-            required: [
-              'Failed: 0'
-            ],
-            known_failures: [
-            ]
-          },
-          windows: {
-            required: [
-            ],
-            known_failures: [
-              # 'Call stack:',
-              'test/modules/post/test/file.rb',
-              'test/lib/module_test.rb',
-              [
-                [
-                  # 'FAILED: should test for file existence',
-                  'FAILED: should delete a symbolic link target',
-                  'Exception: Rex::Post::Meterpreter::RequestError : stdapi_sys_process_execute: Operation failed: Python exception: FileNotFoundError',
-                  'FAILED: should not recurse into symbolic link directories',
-                ],
-                { if: ENV['METERPRETER_RUNTIME_VERSION'] == '2.7' }
-              ],
-              [
-                '; Failed: ',
-                { flaky: true}
-              ]
-            ]
-          }
-        }
-      },
-      {
-        name: 'test/get_env',
-        platforms: %i[osx linux windows],
-        lines: {
-          all: {
-            required: [
-              'Failed: 0'
-            ],
-            known_failures: [
-            ]
-          },
-          osx: {
-            required: [],
-            known_failures: []
-          },
-          linux: {
-            required: [],
-            known_failures: []
-          },
-          windows: {
-            required: [],
-            known_failures: []
-          }
-        }
-      },
-      {
-        name: 'test/meterpreter',
-        platforms: %i[osx linux windows],
-        lines: {
-          all: {
-            required: [
-            ],
-            known_failures: [
-            ]
-          },
-          osx: {
-            required: [
-              '; Failed: '
-            ],
-            # TODO: Python OSX Meterpreter chokes on netstat -rn output:
-            #   '172.16.83.3        0.c.29.a1.cb.67    UHLWIi     bridge1    358'
-            #  Exception:
-            #   'gateway': inet_pton(state, gateway),
-            #   *** error: illegal IP address string passed to inet_pton
-            known_failures: [
-              [
-                [
-                  'FAILED: should return network interfaces',
-                  'stdapi_net_config_get_interfaces: Operation failed: Python exception: TypeError',
-                  'FAILED: should have an interface that matches session_host',
-                  'stdapi_net_config_get_routes: Operation failed: Python exception: TypeError'
-                ],
-                { if: ENV['METERPRETER_RUNTIME_VERSION'] == '3.6' }
-              ],
-
-              # TODO: Delete
-              # [
-              #   [
-              #     'FAILED: should return network routes',
-              #     'stdapi_net_config_get_routes: Operation failed: Unknown error',
-              #   ],
-              #   { if: (Acceptance::Meterpreter.current_platform == :osx && ENV['METERPRETER_RUNTIME_VERSION'] == '3.6') || !ENV['CI'] }
-              # ],
-              [
-                [
-                  'FAILED: should return network interfaces',
-                  'stdapi_net_config_get_interfaces: Operation failed: Python exception: TypeError',
-                  'FAILED: should have an interface that matches session_host',
-                  'FAILED: should return network routes',
-                  'stdapi_net_config_get_routes: Operation failed: Python exception: TypeError',
-                ],
-                { if: Acceptance::Meterpreter.current_platform == :osx && ENV['METERPRETER_RUNTIME_VERSION'] == '3.8' }
-              ],
-              [
-                [
-                  '; Failed: ',
-                ],
-                { flaky: true }
-              ]
-            ]
-          },
-          linux: {
-            required: [],
-            known_failures: []
-          },
-          windows: {
-            required: [],
-            known_failures: [
-              # https://github.com/rapid7/metasploit-framework/pull/16178
-              [
-                [
-                  'FAILED: should return the proper directory separator',
-                  '; Failed: 1',
-                ],
-                { flaky: true }
-              ]
-            ]
-          }
-        }
-      },
-      {
-        name: 'test/railgun',
-        platforms: [
-          :windows
-        ],
-        lines: {
-          all: {
-            required: [
-            ],
-            known_failures: [
-            ]
-          },
-          osx: {
-            required: [
-            ],
-            known_failures: [
-            ]
-          },
-          linux: {
-            required: [
-              'Failed: 0'
-            ],
-            known_failures: [
-              'FAILED: Should retrieve the win32k file version',
-              'Exception: Rex::NotImplementedError : The requested method is not implemented',
-              'FAILED: Should include error information in the results',
-              'FAILED: Should support functions with no parameters',
-              'FAILED: Should support functions with literal parameters',
-              'FAILED: Should support functions with in/out/inout parameter types',
-              'FAILED: Should support calling multiple functions at once',
-              'FAILED: Should support writing memory',
-              'FAILED: Should support reading memory'
-            ]
-          },
-          windows: {
-            required: [
-              'Failed: 0'
-            ],
-            known_failures: [
-              # 'stdapi_fs_file_expand_path: Operation failed: 1',
-              # 'FAILED: Should retrieve the win32k file version',
-              'Exception: Rex::NotImplementedError : The requested method is not implemented',
-              'FAILED: Should include error information in the results',
-              'FAILED: Should support functions with no parameters',
-              'FAILED: Should support functions with literal parameters',
-              'FAILED: Should support functions with in/out/inout parameter types',
-              'FAILED: Should support calling multiple functions at once',
-              'FAILED: Should support writing memory',
-              'FAILED: Should support reading memory'
-            ]
-          }
-        }
-      },
-      {
-        name: 'test/railgun_reverse_lookups',
-        platforms: %i[osx linux windows],
-        lines: {
-          all: {
-            required: [
-            ],
-            known_failures: [
-            ]
-          },
-          osx: {
-            required: [
-              'Passed: 0; Failed: 2'
-            ],
-            known_failures: [
-              'FAILED: should return a constant name given a const and a filter',
-              'FAILED: should return an error string given an error code',
-              'Passed: 0; Failed: 2'
-            ]
-          },
-          linux: {
-            required: [
-              'Passed: 0; Failed: 2'
-            ],
-            known_failures: [
-              'FAILED: should return a constant name given a const and a filter',
-              'FAILED: should return an error string given an error code',
-              'Passed: 0; Failed: 2'
-            ]
-          },
-          windows: {
-            required: [],
-            known_failures: []
-          }
-        }
-      },
-      {
-        name: 'test/registry',
+        name: "test/meterpreter",
         platforms: [:windows],
+        skipped: false,
+        flaky: false,
         lines: {
-          all: {
-            required: [
-            ],
-            known_failures: [
-            ]
-          },
-          osx: {
-            required: [],
-            known_failures: []
-          },
-          linux: {
-            required: [],
-            known_failures: []
-          },
           windows: {
-            required: [
-              'Failed: 0'
-            ],
             known_failures: [
+              "[-] FAILED: should start W32Time",
+              "[-] Exception: RuntimeError : Could not open service. OpenServiceA error: FormatMessage failed to retrieve the error.",
+              "[-] FAILED: should stop W32Time",
+              "[-] FAILED: should modify config on a given service",
+              "[-] FAILED: should return status on a given service winmgmt",
+              "[-] FAILED: should list services",
+              "[-] Exception: NoMethodError : undefined method `service' for nil:NilClass",
+              "[-] FAILED: should return info on a given service  winmgmt",
+              "[-] FAILED: should restart a started service W32Time",
+              "[-] FAILED: should start a disabled service",
+              "[-] FAILED: should create a service  testes",
+              "[-] FAILED: should return info on the newly-created service testes",
+              "[-] FAILED: should delete the new service testes"
             ]
           }
         }
       },
       {
-        name: 'test/search',
-        platforms: %i[osx linux windows],
+        name: "test/cmd_exec",
+        platforms: [:osx, :linux, :windows],
+        skipped: false,
+        flaky: false,
         lines: {
-          all: {
-            required: [
-              'Failed: 0'
-            ],
-            known_failures: [
-            ]
-          },
           osx: {
-            required: [
-            ],
-            known_failures: [
-            ]
+            known_failures: []
           },
           linux: {
-            required: [],
             known_failures: []
           },
           windows: {
-            required: [],
             known_failures: []
           }
         }
       },
       {
-        name: 'test/services',
+        name: "test/extapi",
+        platforms: [:osx, :linux, :windows],
+        skipped: false,
+        flaky: false,
+        lines: {
+          osx: {
+            known_failures: []
+          },
+          linux: {
+            known_failures: []
+          },
+          windows: {
+            known_failures: [
+              "[-] FAILED: should return clipboard jpg dimensions",
+              "[-] Exception: NoMethodError : undefined method `clipboard' for nil:NilClass",
+              "[-] FAILED: should download clipboard jpg data"
+            ]
+          }
+        }
+      },
+      {
+        name: "test/file",
+        platforms: [:osx, :linux, :windows],
+        skipped: false,
+        flaky: false,
+        lines: {
+          osx: {
+            known_failures: []
+          },
+          linux: {
+            known_failures: []
+          },
+          windows: {
+            known_failures: [
+              [
+                "[-] FAILED: should test for file existence",
+                {
+                  flaky: true
+                }
+              ],
+              "[-] FAILED: should delete a symbolic link target",
+              "[-] Exception: Rex::Post::Meterpreter::RequestError : stdapi_sys_process_execute: Operation failed: Python exception: FileNotFoundError",
+              "[-] FAILED: should not recurse into symbolic link directories"
+            ]
+          }
+        }
+      },
+      {
+        name: "test/get_env",
+        platforms: [:osx, :linux, :windows],
+        skipped: false,
+        flaky: false,
+        lines: {
+          osx: {
+            known_failures: []
+          },
+          linux: {
+            known_failures: []
+          },
+          windows: {
+            known_failures: []
+          }
+        }
+      },
+      {
+        name: "test/meterpreter",
+        platforms: [:osx, :linux, :windows],
+        skipped: false,
+        flaky: false,
+        lines: {
+          osx: {
+            known_failures: [
+              [
+                [
+                  "[-] FAILED: should return network interfaces",
+                  "[-] Exception: Rex::Post::Meterpreter::RequestError : stdapi_net_config_get_interfaces: Operation failed: Python exception: TypeError",
+                  "[-] FAILED: should have an interface that matches session_host",
+                  "[-] FAILED: should return network routes",
+                  "[-] Exception: Rex::Post::Meterpreter::RequestError : stdapi_net_config_get_routes: Operation failed: Python exception: TypeError"
+                ],
+                {
+                  if: [
+                    [
+                      :meterpreter_runtime_version,
+                      :==,
+                      "python3.8"
+                    ],
+                    :or,
+                    [
+                      :meterpreter_runtime_version,
+                      :==,
+                      "python3.6"
+                    ]
+                  ]
+                }
+              ]
+            ]
+          },
+          linux: {
+            known_failures: []
+          },
+          windows: {
+            known_failures: [
+              "[-] FAILED: should return the proper directory separator"
+            ]
+          }
+        }
+      },
+      {
+        name: "test/railgun_reverse_lookups",
+        platforms: [:osx, :linux, :windows],
+        skipped: false,
+        flaky: false,
+        lines: {
+          osx: {
+            known_failures: [
+              "[-] FAILED: should return a constant name given a const and a filter",
+              "[-] FAILED: should return an error string given an error code"
+            ]
+          },
+          linux: {
+            known_failures: [
+              "[-] FAILED: should return a constant name given a const and a filter",
+              "[-] FAILED: should return an error string given an error code"
+            ]
+          },
+          windows: {
+            known_failures: []
+          }
+        }
+      },
+      {
+        name: "test/search",
+        platforms: [:osx, :linux, :windows],
+        skipped: false,
+        flaky: false,
+        lines: {
+          osx: {
+            known_failures: []
+          },
+          linux: {
+            known_failures: []
+          },
+          windows: {
+            known_failures: []
+          }
+        }
+      },
+      {
+        name: "test/railgun",
         platforms: [:windows],
+        skipped: false,
+        flaky: false,
         lines: {
-          all: {
-            required: [
-            ],
-            known_failures: [
-            ]
-          },
-          osx: {
-            required: [],
-            known_failures: []
-          },
-          linux: {
-            required: [],
-            known_failures: []
-          },
           windows: {
-            required: [
-            ],
-            known_failures: [
-              'FAILED: should start W32Time',
-              'FAILED: should stop W32Time',
-              'FAILED: should list services',
-              'Exception: RuntimeError : Could not open service. OpenServiceA error: FormatMessage failed to retrieve the error',
-              # "Exception: NoMethodError : undefined method `include?' for true:TrueClass",
-              # 'FAILED: should raise a runtime exception if no access to service',
-              # 'The "extapi" extension is not supported by this Meterpreter type',
-              'FAILED: should return info on a given service',
-              'FAILED: should create a service',
-              'FAILED: should return info on the newly-created service',
-              # 'FAILED: should raise a runtime exception if services doesnt exist',
-              'FAILED: should delete the new service',
-              'FAILED: should return status on a given service',
-              'FAILED: should modify config on a given service',
-              'FAILED: should start a disabled service',
-              'FAILED: should restart a started service',
-              "Exception: NoMethodError : undefined method `service' for nil:NilClass",
-              "Failed: 11"
-            ]
+            known_failures: []
           }
         }
       },
       {
-        name: 'test/unix',
-        platforms: %i[osx linux],
+        name: "test/registry",
+        platforms: [:windows],
+        skipped: false,
+        flaky: false,
         lines: {
-          all: {
-            required: [
-              'Failed: 0'
-            ],
-            known_failures: [
-            ]
-          },
-          osx: {
-            required: [],
-            known_failures: []
-          },
-          linux: {
-            required: [],
-            known_failures: []
-          },
           windows: {
-            required: [],
             known_failures: []
           }
         }
       },
+      {
+        name: "test/unix",
+        platforms: [:osx, :linux],
+        skipped: false,
+        flaky: false,
+        lines: {
+          osx: {
+            known_failures: []
+          },
+          linux: {
+            known_failures: []
+          }
+        }
+      }
     ]
   }
 end

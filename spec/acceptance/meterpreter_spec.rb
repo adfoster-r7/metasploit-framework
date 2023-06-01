@@ -110,6 +110,10 @@ RSpec.describe 'Meterpreter' do
             )
           end
 
+          let(:test_environment) do
+            AllureRspec.configuration.environment_properties
+          end
+
           # The shared payload process and session instance that will be reused across the test run
           #
           let(:payload_process_and_session_id) do
@@ -167,6 +171,13 @@ RSpec.describe 'Meterpreter' do
               return content
             else
               return 'none present'
+            end
+          end
+
+          before :each do |example|
+            # Add the test environment metadata to the rspec example instance - so it apepras in the final allure report
+            test_environment.each do |key, value|
+              example.parameter(key, value)
             end
           end
 
@@ -238,7 +249,7 @@ RSpec.describe 'Meterpreter' do
                       validated_lines = test_result.lines.reject do |line|
                         is_acceptable = known_failures.any? do |acceptable_failure|
                           line.include?(acceptable_failure.value) &&
-                            acceptable_failure.if?
+                            acceptable_failure.if?(test_environment)
                         end || line.match?(/Passed: \d+; Failed: \d+/)
 
                         is_acceptable
@@ -251,7 +262,7 @@ RSpec.describe 'Meterpreter' do
 
                       # Assert all expected lines are present
                       required_lines.each do |required|
-                        next unless required.if?
+                        next unless required.if?(test_environment)
 
                         expect(test_result).to include(required.value)
                       end
@@ -259,8 +270,8 @@ RSpec.describe 'Meterpreter' do
                       # Assert all ignored lines are present, if they are not present - they should be removed from
                       # the calling config
                       known_failures.each do |acceptable_failure|
-                        next if acceptable_failure.flaky?
-                        next unless acceptable_failure.if?
+                        next if acceptable_failure.flaky?(test_environment)
+                        next unless acceptable_failure.if?(test_environment)
 
                         expect(test_result).to include(acceptable_failure.value)
                       end

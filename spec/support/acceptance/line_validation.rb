@@ -22,13 +22,51 @@ module Acceptance
     end
 
     # @return [boolean] returns true if the current failure applies under the current environment or the result is flaky, false otherwise.
-    def flaky?
-      !!@options.fetch(:flaky, false)
+    # @param [Hash] environment The current execution environment
+    # @return [TrueClass, FalseClass] True if the line is flaky - and may not always be present, false otherwise
+    def flaky?(environment = {})
+      value = @options.fetch(:flaky, false)
+
+      evaluate_predicate(value, environment)
+    rescue => e
+      require 'pry-byebug'; binding.pry
     end
 
     # @return [boolean] returns true if the current failure applies under the current environment or the result is flaky, false otherwise.
-    def if?
-      !!@options.fetch(:if, true)
+    # @param [Hash] environment
+    # @return [TrueClass, FalseClass] True if the line should be considered valid, false otherwise
+    def if?(environment = {})
+      value = @options.fetch(:if, true)
+      evaluate_predicate(value, environment)
+    end
+
+    private
+
+    # Evaluates a simple predicate; Similar to Msf::OptCondition.eval_condition
+    # @param [TrueClass,FalseClass,Array] value
+    # @param [Hash] environment
+    # @return [TrueClass, FalseClass] True or false
+    def evaluate_predicate(value, environment)
+      case value
+      when Array
+        left_operand, operator, right_operand = value
+        # Map values such as `:meterpreter_name` to the runtime value
+        left_operand = environment[left_operand] if environment.key?(left_operand)
+        right_operand = environment[right_operand] if environment.key?(right_operand)
+
+        case operator.to_sym
+        when :==
+          evaluate_predicate(left_operand, environment) == evaluate_predicate(right_operand, environment)
+        when :!=
+          evaluate_predicate(left_operand, environment) != evaluate_predicate(right_operand, environment)
+        when :or
+          evaluate_predicate(left_operand, environment) != evaluate_predicate(right_operand, environment)
+        else
+          raise "unexpected operator #{operator.inspect}"
+        end
+      else
+        value
+      end
     end
   end
 end
