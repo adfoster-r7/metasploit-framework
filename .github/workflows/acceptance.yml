@@ -65,8 +65,8 @@ jobs:
           - { meterpreter: { name: windows_meterpreter }, os: windows-2022 }
 
           # Mettle
-          - { name: mettle, os: macos-11 }
-          - { name: mettle, os: ubuntu-20.04 }
+          - { meterpreter: { name: mettle }, os: macos-11 }
+          - { meterpreter: { name: mettle }, os: ubuntu-20.04 }
 
     runs-on: ${{ matrix.os }}
 

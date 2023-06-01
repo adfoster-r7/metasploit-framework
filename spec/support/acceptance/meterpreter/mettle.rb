@@ -281,8 +281,7 @@ module Acceptance::Meterpreter
       {
         name: 'test/search',
         platforms: [
-          # TODO: Hangs:
-          #  :osx,
+          :osx,
           :linux,
           :windows
         ],
