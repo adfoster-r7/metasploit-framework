@@ -67,6 +67,8 @@ class MetasploitModule < Msf::Post
       session.railgun.user32.keybd_event(44, 0, 'KEYEVENTF_KEYUP', 0)
 
       clipboard = session.extapi.clipboard.get_data(false)
+      vprint_status("clipboard: #{clipboard}")
+
       ret = clipboard && clipboard.first && (clipboard.first[:type] == :jpg) && clipboard.first[:width]
       ret
     end
@@ -76,9 +78,12 @@ class MetasploitModule < Msf::Post
 
       text = Rex::Text.rand_text_alphanumeric(1024)
       ret = session.extapi.clipboard.set_text(text)
+      vprint_status("ret: #{ret}")
+
 
       if ret
         clipboard = session.extapi.clipboard.get_data(false)
+        vprint_status("clipboard: #{clipboard}")
         ret = clipboard && clipboard.first && (clipboard.first[:type] == :text) && (clipboard.first[:data] == text)
       end
 
@@ -90,7 +95,10 @@ class MetasploitModule < Msf::Post
 
       text = Rex::Text.rand_text_alphanumeric(1024)
       ret = session.extapi.clipboard.set_text(text)
+      vprint_status("ret: #{ret}")
+
       clipboard = session.extapi.clipboard.get_data(true)
+      vprint_status("clipboard: #{clipboard}")
       ret = clipboard && clipboard.first && (clipboard.first[:type] == :text) && (clipboard.first[:data] == text)
       ret
     end
@@ -106,6 +114,7 @@ class MetasploitModule < Msf::Post
       session.railgun.user32.keybd_event(44, 0, 'KEYEVENTF_KEYUP', 0)
 
       clipboard = session.extapi.clipboard.get_data(true)
+      vprint_status("clipboard: #{clipboard}")
       if clipboard && clipboard.first && (clipboard.first[:type] == :jpg) && !(clipboard.first[:data].empty?)
         # JPG Magic Bytes
         ret = (clipboard.first[:data][0, 2] == "\xFF\xD8")
@@ -171,6 +180,7 @@ class MetasploitModule < Msf::Post
 
       ret = false
       windows = session.extapi.window.enumerate(true, nil)
+      vprint_status("windows: #{windows}")
 
       if windows && windows.any?
         unknowns = windows.select { |w| w[:title] == "<unknown>" }

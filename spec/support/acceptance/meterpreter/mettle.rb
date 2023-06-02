@@ -54,9 +54,6 @@ module Acceptance::Meterpreter
         skipped: false,
         flaky: false,
         lines: {
-          osx: {
-            known_failures: []
-          },
           linux: {
             known_failures: []
           }

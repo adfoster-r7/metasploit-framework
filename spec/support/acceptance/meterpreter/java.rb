@@ -28,22 +28,65 @@ module Acceptance::Meterpreter
         lines: {
           windows: {
             known_failures: [
-              "[-] FAILED: should start W32Time",
-              "[-] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
-              "[-] FAILED: should stop W32Time",
-              "[-] FAILED: should modify config on a given service",
-              "[-] FAILED: should return status on a given service winmgmt",
-              "[-] FAILED: should list services",
-              "[-] Could not retrieve the start type of the winmgmt service!",
-              "[-] FAILED: should return info on a given service  winmgmt",
-              "[-] FAILED: should restart a started service W32Time",
-              "[-] FAILED: should start a disabled service",
-              "[-] FAILED: should create a service  testes",
-              "[-] Could not retrieve the start type of the testes service!",
-              "[-] FAILED: should return info on the newly-created service testes",
-              "[-] FAILED: should delete the new service testes",
-              "[-] FAILED: should raise a runtime exception if services doesnt exist",
-              "[-] FAILED: should raise a runtime exception if no access to service"
+              "[-] [should start W32Time] FAILED: should start W32Time",
+              "[-] [should start W32Time] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
+              "[-] [should stop W32Time] FAILED: should stop W32Time",
+              "[-] [should stop W32Time] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
+              "[-] [should list services] FAILED: should list services",
+              "[-] [should return info on a given service  winmgmt] FAILED: should return info on a given service  winmgmt",
+              "[-] [should create a service  testes] FAILED: should create a service  testes",
+              "[-] [should create a service  testes] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
+              "[-] [should return info on the newly-created service testes] FAILED: should return info on the newly-created service testes",
+              "[-] [should delete the new service testes] FAILED: should delete the new service testes",
+              "[-] [should delete the new service testes] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
+              "[-] [should return status on a given service winmgmt] FAILED: should return status on a given service winmgmt",
+              "[-] [should return status on a given service winmgmt] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
+              "[-] [should modify config on a given service] FAILED: should modify config on a given service",
+              "[-] [should modify config on a given service] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
+              "[-] [should start a disabled service] FAILED: should start a disabled service",
+              "[-] [should start a disabled service] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
+              "[-] [should restart a started service W32Time] FAILED: should restart a started service W32Time",
+              "[-] [should restart a started service W32Time] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
+              "[-] [should raise a runtime exception if no access to service] FAILED: should raise a runtime exception if no access to service",
+              "[-] [should raise a runtime exception if no access to service] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
+              "[-] [should raise a runtime exception if services doesnt exist] FAILED: should raise a runtime exception if services doesnt exist",
+              "[-] [should raise a runtime exception if services doesnt exist] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
+              [
+                "[-] [should list services] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
+                {
+                  flaky: true
+                }
+              ],
+              [
+                "[-] [should return info on a given service  winmgmt] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
+                {
+                  flaky: true
+                }
+              ],
+              [
+                "[-] [should return info on the newly-created service testes] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
+                {
+                  flaky: true
+                }
+              ],
+              [
+                "[-] [should list services] Exception: Rex::TimeoutError : Send timed out",
+                {
+                  flaky: true
+                }
+              ],
+              [
+                "[-] [should return info on a given service  winmgmt] Exception: Rex::TimeoutError : Send timed out",
+                {
+                  flaky: true
+                }
+              ],
+              [
+                "[-] [should return info on the newly-created service testes] Exception: Rex::TimeoutError : Send timed out",
+                {
+                  flaky: true
+                }
+              ]
             ]
           }
         }
@@ -94,7 +137,13 @@ module Acceptance::Meterpreter
           linux: {
             known_failures: [
               [
-                "[-] Didn't read what we wrote, actual file on target:",
+                "[-] FAILED: should append binary data",
+                {
+                  flaky: true
+                }
+              ],
+              [
+                "[-] [should append text files] Didn't read what we wrote, actual file on target:",
                 {
                   flaky: true
                 }
@@ -104,24 +153,12 @@ module Acceptance::Meterpreter
                 {
                   flaky: true
                 }
-              ],
-              [
-                "[-] Didn't read what we wrote, actual file on target: foobarbaz",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] FAILED: should append binary data",
-                {
-                  flaky: true
-                }
               ]
             ]
           },
           windows: {
             known_failures: [
-              "[-] failed to create the symbolic link"
+              "[-] [should delete a symbolic link target] failed to create the symbolic link"
             ]
           }
         }
@@ -185,24 +222,8 @@ module Acceptance::Meterpreter
         lines: {
           windows: {
             known_failures: [
-              "[-] FAILED: should create keys",
-              "[-] FAILED: should write REG_BINARY values",
-              "[-] FAILED: should write REG_DWORD values",
               "[-] FAILED: should write REG_EXPAND_SZ values",
-              "[-] FAILED: should write REG_MULTI_SZ values",
-              "[-] FAILED: should write REG_QWORD values",
-              "[-] FAILED: should write REG_SZ values",
-              "[-] FAILED: should delete keys",
-              "[-] FAILED: should create unicode keys",
-              "[-] FAILED: should write REG_SZ unicode values",
-              "[-] FAILED: should delete unicode keys",
-              "[-] FAILED: should evaluate key existence",
-              "[-] FAILED: should read values",
-              "[-] Exception: NoMethodError : undefined method `[]' for nil:NilClass",
-              "[-] FAILED: should read values with a 32-bit view",
-              "[-] FAILED: should read values with a 64-bit view",
-              "[-] FAILED: should return normalized values",
-              "[-] FAILED: should enumerate keys and values"
+              "[-] FAILED: should write REG_SZ unicode values"
             ]
           }
         }
@@ -217,14 +238,7 @@ module Acceptance::Meterpreter
             known_failures: []
           },
           linux: {
-            known_failures: [
-              [
-                "[-] FAILED: should list users",
-                {
-                  flaky: true
-                }
-              ]
-            ]
+            known_failures: []
           }
         }
       }

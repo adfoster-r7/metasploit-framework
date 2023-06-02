@@ -94,7 +94,7 @@ jobs:
 
       - name: Set up Python
         if: ${{ matrix.meterpreter.name == 'python' }}
-        uses: actions/setup-python@v3
+        uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.meterpreter.runtime_version }}
 

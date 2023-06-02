@@ -54,6 +54,7 @@ class MetasploitModule < Msf::Post
       ret = false
       [
         'c:\\',
+        'd:\\',
         '/etc/',
         '/tmp'
       ].each do |path|
@@ -244,7 +245,12 @@ class MetasploitModule < Msf::Post
       bin = read_file(datastore['BaseFileName'])
       rm_f(datastore['BaseFileName'])
 
-      bin == "\xde\xad\xbe\xef"
+      test_string = "\xde\xad\xbe\xef"
+
+      vprint_status "expected: #{test_string} - #{test_string.bytes} - #{test_string.encoding}"
+      vprint_status "actual: #{bin} - #{bin.bytes} - #{bin.encoding}"
+
+      bin == test_string
     end
   end
 

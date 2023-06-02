@@ -23,26 +23,18 @@ module Acceptance::Meterpreter
     module_tests: [
       {
         name: "test/meterpreter",
-        platforms: [:windows],
+        platforms: [:osx, :linux, :windows],
         skipped: false,
         flaky: false,
         lines: {
+          osx: {
+            known_failures: []
+          },
+          linux: {
+            known_failures: []
+          },
           windows: {
-            known_failures: [
-              "[-] FAILED: should start W32Time",
-              "[-] Exception: RuntimeError : Could not open service. OpenServiceA error: FormatMessage failed to retrieve the error.",
-              "[-] FAILED: should stop W32Time",
-              "[-] FAILED: should modify config on a given service",
-              "[-] FAILED: should return status on a given service winmgmt",
-              "[-] FAILED: should list services",
-              "[-] Exception: NoMethodError : undefined method `service' for nil:NilClass",
-              "[-] FAILED: should return info on a given service  winmgmt",
-              "[-] FAILED: should restart a started service W32Time",
-              "[-] FAILED: should start a disabled service",
-              "[-] FAILED: should create a service  testes",
-              "[-] FAILED: should return info on the newly-created service testes",
-              "[-] FAILED: should delete the new service testes"
-            ]
+            known_failures: []
           }
         }
       },
@@ -77,9 +69,10 @@ module Acceptance::Meterpreter
           },
           windows: {
             known_failures: [
-              "[-] FAILED: should return clipboard jpg dimensions",
-              "[-] Exception: NoMethodError : undefined method `clipboard' for nil:NilClass",
-              "[-] FAILED: should download clipboard jpg data"
+              "[-] [should return clipboard jpg dimensions] FAILED: should return clipboard jpg dimensions",
+              "[-] [should return clipboard jpg dimensions] Exception: NoMethodError : undefined method `clipboard' for nil:NilClass",
+              "[-] [should download clipboard jpg data] FAILED: should download clipboard jpg data",
+              "[-] [should download clipboard jpg data] Exception: NoMethodError : undefined method `clipboard' for nil:NilClass"
             ]
           }
         }
@@ -98,15 +91,16 @@ module Acceptance::Meterpreter
           },
           windows: {
             known_failures: [
+              "[-] [should delete a symbolic link target] FAILED: should delete a symbolic link target",
+              "[-] [should delete a symbolic link target] Exception: Rex::Post::Meterpreter::RequestError : stdapi_sys_process_execute: Operation failed: Python exception: FileNotFoundError",
+              "[-] [should not recurse into symbolic link directories] FAILED: should not recurse into symbolic link directories",
+              "[-] [should not recurse into symbolic link directories] Exception: Rex::Post::Meterpreter::RequestError : stdapi_sys_process_execute: Operation failed: Python exception: FileNotFoundError",
               [
                 "[-] FAILED: should test for file existence",
                 {
                   flaky: true
                 }
-              ],
-              "[-] FAILED: should delete a symbolic link target",
-              "[-] Exception: Rex::Post::Meterpreter::RequestError : stdapi_sys_process_execute: Operation failed: Python exception: FileNotFoundError",
-              "[-] FAILED: should not recurse into symbolic link directories"
+              ]
             ]
           }
         }
@@ -138,11 +132,10 @@ module Acceptance::Meterpreter
             known_failures: [
               [
                 [
-                  "[-] FAILED: should return network interfaces",
-                  "[-] Exception: Rex::Post::Meterpreter::RequestError : stdapi_net_config_get_interfaces: Operation failed: Python exception: TypeError",
-                  "[-] FAILED: should have an interface that matches session_host",
-                  "[-] FAILED: should return network routes",
-                  "[-] Exception: Rex::Post::Meterpreter::RequestError : stdapi_net_config_get_routes: Operation failed: Python exception: TypeError"
+                  "[-] [should return network interfaces] FAILED: should return network interfaces",
+                  "[-] [should return network interfaces] Exception: Rex::Post::Meterpreter::RequestError : stdapi_net_config_get_interfaces: Operation failed: Python exception: TypeError",
+                  "[-] [should have an interface that matches session_host] FAILED: should have an interface that matches session_host",
+                  "[-] [should have an interface that matches session_host] Exception: Rex::Post::Meterpreter::RequestError : stdapi_net_config_get_interfaces: Operation failed: Python exception: TypeError"
                 ],
                 {
                   if: [
@@ -190,45 +183,6 @@ module Acceptance::Meterpreter
               "[-] FAILED: should return an error string given an error code"
             ]
           },
-          windows: {
-            known_failures: []
-          }
-        }
-      },
-      {
-        name: "test/search",
-        platforms: [:osx, :linux, :windows],
-        skipped: false,
-        flaky: false,
-        lines: {
-          osx: {
-            known_failures: []
-          },
-          linux: {
-            known_failures: []
-          },
-          windows: {
-            known_failures: []
-          }
-        }
-      },
-      {
-        name: "test/railgun",
-        platforms: [:windows],
-        skipped: false,
-        flaky: false,
-        lines: {
-          windows: {
-            known_failures: []
-          }
-        }
-      },
-      {
-        name: "test/registry",
-        platforms: [:windows],
-        skipped: false,
-        flaky: false,
-        lines: {
           windows: {
             known_failures: []
           }

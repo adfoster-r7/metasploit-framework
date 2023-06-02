@@ -2282,7 +2282,14 @@ def stdapi_net_config_get_interfaces_via_osx_ifconfig():
     proc_h = subprocess.Popen('/sbin/ifconfig', stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if proc_h.wait():
         raise Exception('ifconfig exited with non-zero status')
-    output = proc_h.stdout.read()
+    output = str(proc_h.stdout.read())
+
+
+    debug_print(sys.version)
+
+    debug_print("osx ifconfig::::")
+    debug_print(output)
+    debug_print("^^^^^^^^^^^^^^^^")
 
     interfaces = []
     iface = {}
@@ -2498,7 +2505,11 @@ def stdapi_net_config_get_routes_via_osx_netstat():
     proc_h = subprocess.Popen(['/usr/sbin/netstat', '-rn'], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
     if proc_h.wait():
         raise Exception('netstat exited with non-zero status')
-    output = proc_h.stdout.read()
+    output = str(proc_h.stdout.read())
+
+    debug_print("osx stdapi_net_config_get_routes_via_osx_netstat::::")
+    debug_print(output)
+    debug_print("^^^^^^^^^^^^^^^^")
 
     routes = []
     state = None

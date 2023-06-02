@@ -41,12 +41,16 @@ module Acceptance::Meterpreter
         lines: {
           windows: {
             known_failures: [
-              "[-] FAILED: should return an array of clipboard data",
-              "[-] Exception: TypeError : no implicit conversion of Symbol into Integer",
-              "[-] FAILED: should return clipboard jpg dimensions",
-              "[-] FAILED: should set clipboard text",
-              "[-] FAILED: should download clipboard text data",
-              "[-] FAILED: should download clipboard jpg data"
+              "[-] [should return an array of clipboard data] FAILED: should return an array of clipboard data",
+              "[-] [should return an array of clipboard data] Exception: TypeError : no implicit conversion of Symbol into Integer",
+              "[-] [should return clipboard jpg dimensions] FAILED: should return clipboard jpg dimensions",
+              "[-] [should return clipboard jpg dimensions] Exception: TypeError : no implicit conversion of Symbol into Integer",
+              "[-] [should set clipboard text] FAILED: should set clipboard text",
+              "[-] [should set clipboard text] Exception: TypeError : no implicit conversion of Symbol into Integer",
+              "[-] [should download clipboard text data] FAILED: should download clipboard text data",
+              "[-] [should download clipboard text data] Exception: TypeError : no implicit conversion of Symbol into Integer",
+              "[-] [should download clipboard jpg data] FAILED: should download clipboard jpg data",
+              "[-] [should download clipboard jpg data] Exception: TypeError : no implicit conversion of Symbol into Integer"
             ]
           }
         }

@@ -36,7 +36,7 @@ class MetasploitModule < Msf::Post
       end
 
       vprint_status "expected: #{test_string} - #{test_string.bytes} - #{test_string.encoding}"
-      vprint_status "actual: #{output} - #{output.bytes} - #{test_string.encoding}"
+      vprint_status "actual: #{output} - #{output.bytes} - #{output.encoding}"
 
       output == test_string
     end
@@ -84,7 +84,7 @@ class MetasploitModule < Msf::Post
         output = cmd_exec("echo '#{test_string}'")
 
         vprint_status "expected: #{test_string} - #{test_string.bytes} - #{test_string.encoding}"
-        vprint_status "actual: #{output} - #{output.bytes} - #{test_string.encoding}"
+        vprint_status "actual: #{output} - #{output.bytes} - #{output.encoding}"
 
         output == test_string
       end
@@ -102,7 +102,7 @@ class MetasploitModule < Msf::Post
         output = cmd_exec("echo \"#{test_string}\"")
 
         vprint_status "expected: #{test_string} - #{test_string.bytes} - #{test_string.encoding}"
-        vprint_status "actual: #{output} - #{output.bytes} - #{test_string.encoding}"
+        vprint_status "actual: #{output} - #{output.bytes} - #{output.encoding}"
 
         output == test_string
       end
@@ -120,7 +120,7 @@ class MetasploitModule < Msf::Post
       else
         output = cmd_exec("echo #{test_string} 1>&2")
         vprint_status "expected: #{test_string} - #{test_string.bytes} - #{test_string.encoding}"
-        vprint_status "actual: #{output} - #{output.bytes} - #{test_string.encoding}"
+        vprint_status "actual: #{output} - #{output.bytes} - #{output.encoding}"
 
         output == test_string
       end

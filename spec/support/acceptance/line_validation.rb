@@ -28,8 +28,6 @@ module Acceptance
       value = @options.fetch(:flaky, false)
 
       evaluate_predicate(value, environment)
-    rescue => e
-      require 'pry-byebug'; binding.pry
     end
 
     # @return [boolean] returns true if the current failure applies under the current environment or the result is flaky, false otherwise.
@@ -38,6 +36,13 @@ module Acceptance
     def if?(environment = {})
       value = @options.fetch(:if, true)
       evaluate_predicate(value, environment)
+    end
+
+    def to_h
+      {
+        values: @values,
+        options: @options
+      }
     end
 
     private

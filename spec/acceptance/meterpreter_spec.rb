@@ -235,16 +235,16 @@ RSpec.describe 'Meterpreter' do
                     # Expect the test module to complete
                     test_result = console.recvuntil('Post module execution completed')
 
+                    known_failures = module_test.dig(:lines, :all, :known_failures) || []
+                    known_failures += module_test.dig(:lines, current_platform, :known_failures) || []
+                    known_failures = known_failures.flat_map { |value| Acceptance::LineValidation.new(*Array(value)).flatten }
+
+                    required_lines = module_test.dig(:lines, :all, :required) || []
+                    required_lines += module_test.dig(:lines, current_platform, :required) || []
+                    required_lines = required_lines.flat_map { |value| Acceptance::LineValidation.new(*Array(value)).flatten }
+
                     # Ensure there are no failures, and assert tests are complete
                     aggregate_failures("#{payload_config[:name].inspect} payload and passes the #{module_test[:name].inspect} tests") do
-                      known_failures = module_test.dig(:lines, :all, :known_failures) || []
-                      known_failures += module_test.dig(:lines, current_platform, :known_failures) || []
-                      known_failures = known_failures.flat_map { |value| Acceptance::LineValidation.new(*Array(value)).flatten }
-
-                      required_lines = module_test.dig(:lines, :all, :required) || []
-                      required_lines += module_test.dig(:lines, current_platform, :required) || []
-                      required_lines = required_lines.flat_map { |value| Acceptance::LineValidation.new(*Array(value)).flatten }
-
                       # Skip any ignored lines from the validation input
                       validated_lines = test_result.lines.reject do |line|
                         is_acceptable = known_failures.any? do |acceptable_failure|
@@ -355,6 +355,18 @@ RSpec.describe 'Meterpreter' do
                   Allure.add_attachment(
                     name: 'console data',
                     source: current_console_data,
+                    type: Allure::ContentType::TXT
+                  )
+
+                  test_assertions = JSON.pretty_generate(
+                    {
+                      required_lines: required_lines.map(&:to_h),
+                      known_failures: known_failures.map(&:to_h),
+                    }
+                  )
+                  Allure.add_attachment(
+                    name: 'test assertions',
+                    source: test_assertions,
                     type: Allure::ContentType::TXT
                   )
 

@@ -154,14 +154,15 @@ class MetasploitModule < Msf::Post
 
     it "should return the proper directory separator" do
       sysinfo = session.sys.config.sysinfo
+      vprint_status("received sysinfo #{sysinfo}")
       if sysinfo["OS"] =~ /windows/i
-        sep = session.fs.file.separator
-        res = (sep == "\\")
+        expected_sep = "\\"
       else
-        sep = session.fs.file.separator
-        res = (sep == "/")
+        expected_sep = "/"
       end
-
+      sep = session.fs.file.separator
+      vprint_status("Received separator #{sep.inspect} - expected: #{expected_sep.inspect}")
+      res = (sep == expected_sep)
       res
     end
 

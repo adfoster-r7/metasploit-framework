@@ -32,6 +32,7 @@ class MetasploitModule < Msf::Post
     it "should list users" do
       ret = true
       users = get_users
+      vprint_status("get_users result: #{get_users.inspect}")
       ret &&= users.kind_of? Array
       ret &&= users.length > 0
       have_root = false
