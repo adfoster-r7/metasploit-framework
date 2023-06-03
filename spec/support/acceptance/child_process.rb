@@ -134,9 +134,11 @@ module Acceptance
     #   raise ChildProcessRecvError, "Failed #{__method__}: remaining buffer: #{self.buffer.string[buffer.pos..].inspect}"
     # end
 
-    def unrecv(data)
-      buffer.write(data)
-      buffer.pos = [0, buffer.pos - data.length].max
+    def unrecv(x, data)
+      previous_data = x.string[x.pos - data.length...x.pos]
+      raise "the unrecv data did not match, expected: #{data.inspect} but got #{previous_data.inspect}" if previous_data != data
+      x.pos = x.pos - data.length
+      puts previous_data
     end
 
     def recv(size = 4096, timeout: @default_timeout)
