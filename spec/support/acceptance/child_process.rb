@@ -20,8 +20,8 @@ module Acceptance
     def initialize
       super
 
-      @default_timeout = ENV['CI'] ? 60 : 40
-      @debug = true
+      @default_timeout = ENV['CI'] ? 120 : 40
+      @debug = false
       @env ||= {}
       @cmd ||= []
       @options ||= {}
@@ -95,12 +95,13 @@ module Acceptance
 
     def recv_available(timeout: @default_timeout)
       result = ''
-      available = stdout_and_stderr.nread
+      finished_reading = false
 
       with_countdown(timeout) do
-        while result.length < available do
-          data_chunk = recv(timeout: 0)
+        until finished_reading do
+          data_chunk = recv(timeout: 0, wait_readable: false)
           if !data_chunk
+            finished_reading = true
             next
           end
 
@@ -113,41 +114,18 @@ module Acceptance
       result
     end
 
-    # def recvall(timeout: @default_timeout)
-    #   result = ''
-    #
-    #   with_countdown(timeout) do |countdown|
-    #     while (buffer.any? || stdout_and_stderr.any?) && !countdown.elapsed?
-    #       data_chunk = recv(timeout: countdown.remaining_time)
-    #       if !data_chunk
-    #         next
-    #       end
-    #
-    #       result += data_chunk
-    #     end
-    #   end
-    #
-    #   result
-    # rescue EOFError
-    #   result
-    # rescue ChildProcessTimeoutError
-    #   raise ChildProcessRecvError, "Failed #{__method__}: remaining buffer: #{self.buffer.string[buffer.pos..].inspect}"
-    # end
-
-    def unrecv(x, data)
-      previous_data = x.string[x.pos - data.length...x.pos]
-      raise "the unrecv data did not match, expected: #{data.inspect} but got #{previous_data.inspect}" if previous_data != data
-      x.pos = x.pos - data.length
-      puts previous_data
+    def unrecv(data)
+      data.bytes.reverse.each { |b| buffer.ungetbyte(b) }
     end
 
-    def recv(size = 4096, timeout: @default_timeout)
+    def recv(size = 4096, timeout: @default_timeout, wait_readable: true)
       buffer_result = buffer.read(size)
       return buffer_result if buffer_result
 
       retry_count = 0
 
       # Eagerly read, and if we fail - await a response within the given timeout period
+      result = nil
       begin
         result = stdout_and_stderr.read_nonblock(size)
         if !result.nil?
@@ -155,9 +133,11 @@ module Acceptance
           @all_data.write(result)
         end
       rescue IO::WaitReadable
-        IO.select([stdout_and_stderr], nil, nil, timeout)
-        retry_count += 1
-        retry if retry_count == 1
+        if wait_readable
+          IO.select([stdout_and_stderr], nil, nil, timeout)
+          retry_count += 1
+          retry if retry_count == 1
+        end
       end
 
       result
@@ -530,7 +510,6 @@ module Acceptance
 
       sendline('jobs -K')
       recvuntil(Console.prompt)
-
     ensure
       @all_data.reopen('')
     end

@@ -403,7 +403,8 @@ class Msf::Ui::Console::CommandDispatcher::Developer
 
     begin
       start_time = Process.clock_gettime(Process::CLOCK_MONOTONIC)
-      command = args.join(' ')
+      # repeat -n 10 time sessions -i -1 -c 'cmd.exe /c reg query "HKEY_LOCAL_MACHINE\SYSTEM\CurrentControlSet\Services\.NET CLR Data\Linkage" /v "Export"'
+      command = Shellwords.shelljoin(args)
 
       case profiler
       when '--cpu'

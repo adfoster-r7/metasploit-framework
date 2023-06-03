@@ -147,7 +147,7 @@ jobs:
         # Note: rspec retry is intentioanlly not used, as it can cause issues with allure's reporting
         # Additionally - flakey tests should be fixed or marked as flakey instead of silently retried
         run: |
-          bundle exec rspec spec/acceptance
+          bundle exec rspec spec/acceptance/
 
       - name: Archive results
         if: always()

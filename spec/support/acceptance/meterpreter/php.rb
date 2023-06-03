@@ -32,11 +32,10 @@ module Acceptance::Meterpreter
               "[-] [should start W32Time] Exception: Rex::NotImplementedError : Unsupported architecture (must be ARCH_X86 or ARCH_X64)",
               "[-] [should stop W32Time] FAILED: should stop W32Time",
               "[-] [should stop W32Time] Exception: Rex::NotImplementedError : Unsupported architecture (must be ARCH_X86 or ARCH_X64)",
-              "[-] [should list services] FAILED: should list services",
-              "[-] [should return info on a given service  winmgmt] FAILED: should return info on a given service  winmgmt",
-              "[-] [should create a service  testes] FAILED: should create a service  testes",
-              "[-] [should create a service  testes] Exception: Rex::NotImplementedError : Unsupported architecture (must be ARCH_X86 or ARCH_X64)",
-              "[-] [should return info on the newly-created service testes] FAILED: should return info on the newly-created service testes",
+              "[-] [should create a service testes] FAILED: should create a service testes",
+              "[-] [should create a service testes] Exception: Rex::NotImplementedError : Unsupported architecture (must be ARCH_X86 or ARCH_X64)",
+              "[-] [should return info on the newly-created service testes] Could not retrieve the start type of the testes service!",
+              "[-] FAILED: should return info on the newly-created service testes",
               "[-] [should delete the new service testes] FAILED: should delete the new service testes",
               "[-] [should delete the new service testes] Exception: Rex::NotImplementedError : Unsupported architecture (must be ARCH_X86 or ARCH_X64)",
               "[-] [should return status on a given service winmgmt] FAILED: should return status on a given service winmgmt",
@@ -50,43 +49,7 @@ module Acceptance::Meterpreter
               "[-] [should raise a runtime exception if no access to service] FAILED: should raise a runtime exception if no access to service",
               "[-] [should raise a runtime exception if no access to service] Exception: Rex::NotImplementedError : Unsupported architecture (must be ARCH_X86 or ARCH_X64)",
               "[-] [should raise a runtime exception if services doesnt exist] FAILED: should raise a runtime exception if services doesnt exist",
-              "[-] [should raise a runtime exception if services doesnt exist] Exception: Rex::NotImplementedError : Unsupported architecture (must be ARCH_X86 or ARCH_X64)",
-              [
-                [
-                  "[-] [should list services] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
-                  "[-] [should return info on a given service  winmgmt] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
-                  "[-] [should return info on the newly-created service testes] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host."
-                ],
-                {
-                  if: [
-                    :meterpreter_runtime_version,
-                    :==,
-                    "php5.3"
-                  ]
-                }
-              ],
-              [
-                [
-                  "[-] [should list services] Exception: Rex::TimeoutError : Send timed out",
-                  "[-] [should return info on a given service  winmgmt] Exception: Rex::TimeoutError : Send timed out",
-                  "[-] [should return info on the newly-created service testes] Exception: Rex::TimeoutError : Send timed out"
-                ],
-                {
-                  if: [
-                    [
-                      :meterpreter_runtime_version,
-                      :==,
-                      "php8.2"
-                    ],
-                    :or,
-                    [
-                      :meterpreter_runtime_version,
-                      :==,
-                      "php7.4"
-                    ]
-                  ]
-                }
-              ]
+              "[-] [should raise a runtime exception if services doesnt exist] Exception: Rex::NotImplementedError : Unsupported architecture (must be ARCH_X86 or ARCH_X64)"
             ]
           }
         }
@@ -217,12 +180,6 @@ module Acceptance::Meterpreter
             known_failures: [
               [
                 [
-                  "[-] [should read values] FAILED: should read values",
-                  "[-] [should read values] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
-                  "[-] [should read values with a 32-bit view] FAILED: should read values with a 32-bit view",
-                  "[-] [should read values with a 32-bit view] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
-                  "[-] [should read values with a 64-bit view] FAILED: should read values with a 64-bit view",
-                  "[-] [should read values with a 64-bit view] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
                   "[-] [should return normalized values] FAILED: should return normalized values",
                   "[-] [should return normalized values] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
                   "[-] [should enumerate keys and values] FAILED: should enumerate keys and values",

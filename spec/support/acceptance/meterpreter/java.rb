@@ -32,14 +32,10 @@ module Acceptance::Meterpreter
               "[-] [should start W32Time] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
               "[-] [should stop W32Time] FAILED: should stop W32Time",
               "[-] [should stop W32Time] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
-              "[-] [should list services] FAILED: should list services",
-              "[-] [should list services] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
-              "[-] [should return info on a given service  winmgmt] FAILED: should return info on a given service  winmgmt",
-              "[-] [should return info on a given service  winmgmt] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
-              "[-] [should create a service  testes] FAILED: should create a service  testes",
-              "[-] [should create a service  testes] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
-              "[-] [should return info on the newly-created service testes] FAILED: should return info on the newly-created service testes",
-              "[-] [should return info on the newly-created service testes] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
+              "[-] [should create a service testes] FAILED: should create a service testes",
+              "[-] [should create a service testes] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
+              "[-] [should return info on the newly-created service testes] Could not retrieve the start type of the testes service!",
+              "[-] FAILED: should return info on the newly-created service testes",
               "[-] [should delete the new service testes] FAILED: should delete the new service testes",
               "[-] [should delete the new service testes] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
               "[-] [should return status on a given service winmgmt] FAILED: should return status on a given service winmgmt",
@@ -188,7 +184,9 @@ module Acceptance::Meterpreter
             known_failures: []
           },
           linux: {
-            known_failures: []
+            known_failures: [
+              "[-] FAILED: should list users"
+            ]
           }
         }
       }

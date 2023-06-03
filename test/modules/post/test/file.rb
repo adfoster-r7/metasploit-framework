@@ -132,7 +132,9 @@ class MetasploitModule < Msf::Post
         '%WINDIR%\\system32\\calc.exe',
         File.expand_path(__FILE__)
       ].each do |path|
-        ret = true if file?(path)
+        file_exists = file?(path)
+        vprint_status("result of #{path} is #{file_exists.inspect}")
+        ret = true if file_exists
       end
 
       ret
@@ -149,7 +151,7 @@ class MetasploitModule < Msf::Post
       f = read_file(datastore['BaseFileName'])
       ret = (f == 'foo')
       unless ret
-        print_error("Didn't read what we wrote, actual file on target: |#{f}|")
+        vprint_status("Didn't read what we wrote, actual file on target: |#{f.inspect}| - #{f.bytes.inspect}")
       end
 
       ret
@@ -164,7 +166,7 @@ class MetasploitModule < Msf::Post
       final_contents = read_file(datastore['BaseFileName'])
       ret &&= final_contents == 'foobarbaz'
       unless ret
-        print_error("Didn't read what we wrote, actual file on target: #{final_contents}")
+        vprint_error("Didn't read what we wrote, actual file on target:  |#{final_contents.inspect}| - #{final_contents.bytes.inspect}")
       end
 
       ret

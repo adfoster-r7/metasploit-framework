@@ -377,7 +377,9 @@ protected
     }
 
     # REG QUERY KeyName [/v ValueName | /ve] [/s]
+    vprint_status("query before is #{["query \"#{key}\" /v \"#{valname}\"", view].inspect}")
     results = shell_registry_cmd("query \"#{key}\" /v \"#{valname}\"", view)
+    vprint_status("result after is #{Base64.strict_encode64(results)}")
 
     # pull out the interesting line (the one with the value name in it)
     return nil unless match_arr = /^ +#{valname}.*/i.match(results)
