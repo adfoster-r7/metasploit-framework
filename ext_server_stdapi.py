@@ -14,6 +14,11 @@ import sys
 import time
 import binascii
 
+# import tracemalloc
+#
+# tracemalloc.start()
+
+
 try:
     import ctypes
     import ctypes.util
@@ -1236,28 +1241,17 @@ def stdapi_sys_config_getsid(request, response):
 
 @register_function
 def stdapi_sys_config_getuid(request, response):
-    debug_print("stdapi_sys_config_getuid 1")
     if has_pwd:
-        debug_print("stdapi_sys_config_getuid 2")
         username = pwd.getpwuid(os.getuid()).pw_name
-        debug_print("stdapi_sys_config_getuid 3")
     elif has_windll:
-        debug_print("stdapi_sys_config_getuid 4")
         token = get_token_user(ctypes.windll.kernel32.GetCurrentProcess())
-        debug_print("stdapi_sys_config_getuid 5")
         if not token:
-            debug_print("stdapi_sys_config_getuid 6")
             return error_result_windows(), response
-        debug_print("stdapi_sys_config_getuid 7")
         username = get_username_from_token(token)
-        debug_print("stdapi_sys_config_getuid 8")
         if not username:
-            debug_print("stdapi_sys_config_getuid 9")
             return error_result_windows(), response
     else:
-        debug_print("stdapi_sys_config_getuid 10")
         username = getpass.getuser()
-    debug_print("stdapi_sys_config_getuid 11")
     response += tlv_pack(TLV_TYPE_USER_NAME, username)
     return ERROR_SUCCESS, response
 
@@ -2199,8 +2193,8 @@ def stdapi_net_config_get_interfaces(request, response):
         iface_tlv += tlv_pack(TLV_TYPE_MAC_ADDRESS, iface_info.get('hw_addr', '\x00\x00\x00\x00\x00\x00'))
         if 'mtu' in iface_info:
             iface_tlv += tlv_pack(TLV_TYPE_INTERFACE_MTU, iface_info['mtu'])
-        if 'flags' in iface_info:
-            iface_tlv += tlv_pack(TLV_TYPE_INTERFACE_FLAGS, iface_info['flags'])
+        if 'flags_str' in iface_info:
+            iface_tlv += tlv_pack(TLV_TYPE_INTERFACE_FLAGS, iface_info['flags_str'])
         iface_tlv += tlv_pack(TLV_TYPE_INTERFACE_INDEX, iface_info['index'])
         for address in iface_info.get('addrs', []):
             iface_tlv += tlv_pack(TLV_TYPE_IP, address[1])
@@ -2235,7 +2229,8 @@ def stdapi_net_config_get_interfaces_via_netlink():
         for flag in iface_flags_sorted:
             if (iface.flags & flag):
                 flags.append(iface_flags[flag])
-        iface_info['flags'] = ' '.join(flags)
+        iface_info['flags'] = iface.flags
+        iface_info['flags_str'] = ' '.join(flags)
         cursor = ctypes.sizeof(IFINFOMSG)
         while cursor < len(res_data):
             attribute = ctstruct_unpack(RTATTR, res_data[cursor:])
@@ -2284,24 +2279,25 @@ def stdapi_net_config_get_interfaces_via_osx_ifconfig():
         raise Exception('ifconfig exited with non-zero status')
     output = str(proc_h.stdout.read())
 
-
     debug_print(sys.version)
 
     debug_print("osx ifconfig::::")
     debug_print(output)
     debug_print("^^^^^^^^^^^^^^^^")
 
+
     interfaces = []
     iface = {}
     for line in output.split('\n'):
-        match = re.match(r'^([a-z0-9]+): flags=(\d+)<[A-Z,]*> mtu (\d+)\s*$', line)
+        match = re.match(r'^([a-z0-9]+): flags=(\d+)<([A-Z,]*)> mtu (\d+)\s*$', line)
         if match is not None:
             if iface:
                 interfaces.append(iface)
             iface = {}
             iface['name'] = match.group(1)
             iface['flags'] = int(match.group(2))
-            iface['mtu'] = int(match.group(3))
+            iface['flags_str'] = match.group(3)
+            iface['mtu'] = int(match.group(4))
             iface['index'] = len(interfaces)
             continue
         match = re.match(r'^\s+ether (([a-f0-9]{2}:){5}[a-f0-9]{2})\s*$', line)
@@ -2511,6 +2507,7 @@ def stdapi_net_config_get_routes_via_osx_netstat():
     debug_print(output)
     debug_print("^^^^^^^^^^^^^^^^")
 
+
     routes = []
     state = None
     has_refs = None
@@ -2546,7 +2543,7 @@ def stdapi_net_config_get_routes_via_osx_netstat():
             continue
         if destination == 'default':
             destination = all_nets
-        if re.match('link#\d+', gateway) or re.match('([0-9a-f]{1,2}:){5}[0-9a-f]{1,2}', gateway):
+        if re.match('link#\\d+', gateway) or re.match('([0-9a-f]{1,2}:){5}[0-9a-f]{1,2}', gateway):
             gateway = all_nets[:-2]
         if '/' in destination:
             destination, netmask_bits = destination.rsplit('/', 1)
@@ -2560,6 +2557,8 @@ def stdapi_net_config_get_routes_via_osx_netstat():
         if state == socket.AF_INET:
             while destination.count('.') < 3:
                 destination += '.0'
+
+        print("the destion: " + destination + " the gateway: " + gateway)
         routes.append({
             'subnet': inet_pton(state, destination),
             'netmask': calc_netmask(netmask_bits),

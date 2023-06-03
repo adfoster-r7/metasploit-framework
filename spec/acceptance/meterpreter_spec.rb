@@ -208,6 +208,14 @@ RSpec.describe 'Meterpreter' do
                     replication_commands = []
                     current_payload_status = ''
 
+                    known_failures = module_test.dig(:lines, :all, :known_failures) || []
+                    known_failures += module_test.dig(:lines, current_platform, :known_failures) || []
+                    known_failures = known_failures.flat_map { |value| Acceptance::LineValidation.new(*Array(value)).flatten }
+
+                    required_lines = module_test.dig(:lines, :all, :required) || []
+                    required_lines += module_test.dig(:lines, current_platform, :required) || []
+                    required_lines = required_lines.flat_map { |value| Acceptance::LineValidation.new(*Array(value)).flatten }
+
                     # Ensure we have a valid session id; We intentionally omit this from a `before(:each)` to ensure the allure attachments are generated if the session dies
                     payload_process, session_id = payload_process_and_session_id
 
@@ -234,14 +242,6 @@ RSpec.describe 'Meterpreter' do
 
                     # Expect the test module to complete
                     test_result = console.recvuntil('Post module execution completed')
-
-                    known_failures = module_test.dig(:lines, :all, :known_failures) || []
-                    known_failures += module_test.dig(:lines, current_platform, :known_failures) || []
-                    known_failures = known_failures.flat_map { |value| Acceptance::LineValidation.new(*Array(value)).flatten }
-
-                    required_lines = module_test.dig(:lines, :all, :required) || []
-                    required_lines += module_test.dig(:lines, current_platform, :required) || []
-                    required_lines = required_lines.flat_map { |value| Acceptance::LineValidation.new(*Array(value)).flatten }
 
                     # Ensure there are no failures, and assert tests are complete
                     aggregate_failures("#{payload_config[:name].inspect} payload and passes the #{module_test[:name].inspect} tests") do

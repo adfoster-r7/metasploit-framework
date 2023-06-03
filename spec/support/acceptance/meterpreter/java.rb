@@ -33,10 +33,13 @@ module Acceptance::Meterpreter
               "[-] [should stop W32Time] FAILED: should stop W32Time",
               "[-] [should stop W32Time] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
               "[-] [should list services] FAILED: should list services",
+              "[-] [should list services] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
               "[-] [should return info on a given service  winmgmt] FAILED: should return info on a given service  winmgmt",
+              "[-] [should return info on a given service  winmgmt] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
               "[-] [should create a service  testes] FAILED: should create a service  testes",
               "[-] [should create a service  testes] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
               "[-] [should return info on the newly-created service testes] FAILED: should return info on the newly-created service testes",
+              "[-] [should return info on the newly-created service testes] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
               "[-] [should delete the new service testes] FAILED: should delete the new service testes",
               "[-] [should delete the new service testes] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
               "[-] [should return status on a given service winmgmt] FAILED: should return status on a given service winmgmt",
@@ -50,43 +53,7 @@ module Acceptance::Meterpreter
               "[-] [should raise a runtime exception if no access to service] FAILED: should raise a runtime exception if no access to service",
               "[-] [should raise a runtime exception if no access to service] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
               "[-] [should raise a runtime exception if services doesnt exist] FAILED: should raise a runtime exception if services doesnt exist",
-              "[-] [should raise a runtime exception if services doesnt exist] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
-              [
-                "[-] [should list services] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should return info on a given service  winmgmt] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should return info on the newly-created service testes] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should list services] Exception: Rex::TimeoutError : Send timed out",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should return info on a given service  winmgmt] Exception: Rex::TimeoutError : Send timed out",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should return info on the newly-created service testes] Exception: Rex::TimeoutError : Send timed out",
-                {
-                  flaky: true
-                }
-              ]
+              "[-] [should raise a runtime exception if services doesnt exist] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)"
             ]
           }
         }
@@ -136,24 +103,7 @@ module Acceptance::Meterpreter
           },
           linux: {
             known_failures: [
-              [
-                "[-] FAILED: should append binary data",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should append text files] Didn't read what we wrote, actual file on target:",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] FAILED: should append text files",
-                {
-                  flaky: true
-                }
-              ]
+              "[-] FAILED: should append binary data"
             ]
           },
           windows: {

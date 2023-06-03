@@ -52,39 +52,39 @@ module Acceptance::Meterpreter
               "[-] [should raise a runtime exception if services doesnt exist] FAILED: should raise a runtime exception if services doesnt exist",
               "[-] [should raise a runtime exception if services doesnt exist] Exception: Rex::NotImplementedError : Unsupported architecture (must be ARCH_X86 or ARCH_X64)",
               [
-                "[-] [should list services] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
+                [
+                  "[-] [should list services] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
+                  "[-] [should return info on a given service  winmgmt] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
+                  "[-] [should return info on the newly-created service testes] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host."
+                ],
                 {
-                  flaky: true
+                  if: [
+                    :meterpreter_runtime_version,
+                    :==,
+                    "php5.3"
+                  ]
                 }
               ],
               [
-                "[-] [should return info on a given service  winmgmt] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
+                [
+                  "[-] [should list services] Exception: Rex::TimeoutError : Send timed out",
+                  "[-] [should return info on a given service  winmgmt] Exception: Rex::TimeoutError : Send timed out",
+                  "[-] [should return info on the newly-created service testes] Exception: Rex::TimeoutError : Send timed out"
+                ],
                 {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should return info on the newly-created service testes] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should list services] Exception: Rex::TimeoutError : Send timed out",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should return info on a given service  winmgmt] Exception: Rex::TimeoutError : Send timed out",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should return info on the newly-created service testes] Exception: Rex::TimeoutError : Send timed out",
-                {
-                  flaky: true
+                  if: [
+                    [
+                      :meterpreter_runtime_version,
+                      :==,
+                      "php8.2"
+                    ],
+                    :or,
+                    [
+                      :meterpreter_runtime_version,
+                      :==,
+                      "php7.4"
+                    ]
+                  ]
                 }
               ]
             ]
@@ -218,21 +218,37 @@ module Acceptance::Meterpreter
               [
                 [
                   "[-] [should read values] FAILED: should read values",
+                  "[-] [should read values] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
                   "[-] [should read values with a 32-bit view] FAILED: should read values with a 32-bit view",
+                  "[-] [should read values with a 32-bit view] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
                   "[-] [should read values with a 64-bit view] FAILED: should read values with a 64-bit view",
+                  "[-] [should read values with a 64-bit view] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
                   "[-] [should return normalized values] FAILED: should return normalized values",
+                  "[-] [should return normalized values] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
                   "[-] [should enumerate keys and values] FAILED: should enumerate keys and values",
+                  "[-] [should enumerate keys and values] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
                   "[-] [should create keys] FAILED: should create keys",
+                  "[-] [should create keys] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
                   "[-] [should write REG_BINARY values] FAILED: should write REG_BINARY values",
+                  "[-] [should write REG_BINARY values] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
                   "[-] [should write REG_DWORD values] FAILED: should write REG_DWORD values",
+                  "[-] [should write REG_DWORD values] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
                   "[-] [should write REG_EXPAND_SZ values] FAILED: should write REG_EXPAND_SZ values",
+                  "[-] [should write REG_EXPAND_SZ values] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
                   "[-] [should write REG_MULTI_SZ values] FAILED: should write REG_MULTI_SZ values",
+                  "[-] [should write REG_MULTI_SZ values] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
                   "[-] [should write REG_QWORD values] FAILED: should write REG_QWORD values",
+                  "[-] [should write REG_QWORD values] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
                   "[-] [should write REG_SZ values] FAILED: should write REG_SZ values",
+                  "[-] [should write REG_SZ values] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
                   "[-] [should delete keys] FAILED: should delete keys",
+                  "[-] [should delete keys] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
                   "[-] [should create unicode keys] FAILED: should create unicode keys",
+                  "[-] [should create unicode keys] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
                   "[-] [should write REG_SZ unicode values] FAILED: should write REG_SZ unicode values",
-                  "[-] [should delete unicode keys] FAILED: should delete unicode keys"
+                  "[-] [should write REG_SZ unicode values] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
+                  "[-] [should delete unicode keys] FAILED: should delete unicode keys",
+                  "[-] [should delete unicode keys] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host."
                 ],
                 {
                   if: [
@@ -240,198 +256,6 @@ module Acceptance::Meterpreter
                     :==,
                     "php5.3"
                   ]
-                }
-              ],
-              [
-                "[-] [should read values] Exception: Rex::TimeoutError : Send timed out",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should read values with a 32-bit view] Exception: Rex::TimeoutError : Send timed out",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should read values with a 64-bit view] Exception: Rex::TimeoutError : Send timed out",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should return normalized values] Exception: Rex::TimeoutError : Send timed out",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should enumerate keys and values] Exception: Rex::TimeoutError : Send timed out",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should create keys] Exception: Rex::TimeoutError : Send timed out",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should write REG_BINARY values] Exception: Rex::TimeoutError : Send timed out",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should write REG_DWORD values] Exception: Rex::TimeoutError : Send timed out",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should write REG_EXPAND_SZ values] Exception: Rex::TimeoutError : Send timed out",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should write REG_MULTI_SZ values] Exception: Rex::TimeoutError : Send timed out",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should write REG_QWORD values] Exception: Rex::TimeoutError : Send timed out",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should write REG_SZ values] Exception: Rex::TimeoutError : Send timed out",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should delete keys] Exception: Rex::TimeoutError : Send timed out",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should create unicode keys] Exception: Rex::TimeoutError : Send timed out",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should write REG_SZ unicode values] Exception: Rex::TimeoutError : Send timed out",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should delete unicode keys] Exception: Rex::TimeoutError : Send timed out",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should read values] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should read values with a 32-bit view] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should read values with a 64-bit view] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should return normalized values] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should enumerate keys and values] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should create keys] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should write REG_BINARY values] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should write REG_DWORD values] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should write REG_EXPAND_SZ values] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should write REG_MULTI_SZ values] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should write REG_QWORD values] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should write REG_SZ values] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should delete keys] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should create unicode keys] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should write REG_SZ unicode values] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
-                {
-                  flaky: true
-                }
-              ],
-              [
-                "[-] [should delete unicode keys] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
-                {
-                  flaky: true
                 }
               ],
               [

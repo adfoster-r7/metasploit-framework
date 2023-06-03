@@ -247,8 +247,8 @@ class MetasploitModule < Msf::Post
 
       test_string = "\xde\xad\xbe\xef"
 
-      vprint_status "expected: #{test_string} - #{test_string.bytes} - #{test_string.encoding}"
-      vprint_status "actual: #{bin} - #{bin.bytes} - #{bin.encoding}"
+      vprint_status "expected: #{test_string.bytes} - #{test_string.encoding}"
+      vprint_status "actual: #{bin.bytes} - #{bin.encoding}"
 
       bin == test_string
     end

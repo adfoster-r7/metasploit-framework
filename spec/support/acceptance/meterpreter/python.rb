@@ -23,7 +23,7 @@ module Acceptance::Meterpreter
     module_tests: [
       {
         name: "test/meterpreter",
-        platforms: [:osx, :linux, :windows],
+        platforms: [:osx, :linux],
         skipped: false,
         flaky: false,
         lines: {
@@ -31,9 +31,6 @@ module Acceptance::Meterpreter
             known_failures: []
           },
           linux: {
-            known_failures: []
-          },
-          windows: {
             known_failures: []
           }
         }
@@ -98,7 +95,11 @@ module Acceptance::Meterpreter
               [
                 "[-] FAILED: should test for file existence",
                 {
-                  flaky: true
+                  if: [
+                    :meterpreter_runtime_version,
+                    :==,
+                    "python2.7"
+                  ]
                 }
               ]
             ]
@@ -129,31 +130,7 @@ module Acceptance::Meterpreter
         flaky: false,
         lines: {
           osx: {
-            known_failures: [
-              [
-                [
-                  "[-] [should return network interfaces] FAILED: should return network interfaces",
-                  "[-] [should return network interfaces] Exception: Rex::Post::Meterpreter::RequestError : stdapi_net_config_get_interfaces: Operation failed: Python exception: TypeError",
-                  "[-] [should have an interface that matches session_host] FAILED: should have an interface that matches session_host",
-                  "[-] [should have an interface that matches session_host] Exception: Rex::Post::Meterpreter::RequestError : stdapi_net_config_get_interfaces: Operation failed: Python exception: TypeError"
-                ],
-                {
-                  if: [
-                    [
-                      :meterpreter_runtime_version,
-                      :==,
-                      "python3.8"
-                    ],
-                    :or,
-                    [
-                      :meterpreter_runtime_version,
-                      :==,
-                      "python3.6"
-                    ]
-                  ]
-                }
-              ]
-            ]
+            known_failures: []
           },
           linux: {
             known_failures: []
@@ -184,20 +161,6 @@ module Acceptance::Meterpreter
             ]
           },
           windows: {
-            known_failures: []
-          }
-        }
-      },
-      {
-        name: "test/unix",
-        platforms: [:osx, :linux],
-        skipped: false,
-        flaky: false,
-        lines: {
-          osx: {
-            known_failures: []
-          },
-          linux: {
             known_failures: []
           }
         }
