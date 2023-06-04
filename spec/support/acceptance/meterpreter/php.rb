@@ -22,9 +22,24 @@ module Acceptance::Meterpreter
     module_tests: [
       {
         name: "test/services",
-        platforms: [:windows],
+        platforms: [
+          [
+            :linux,
+            {
+              skip: true,
+              reason: "Windows only test"
+            }
+          ],
+          [
+            :osx,
+            {
+              skip: true,
+              reason: "Windows only test"
+            }
+          ],
+          :windows
+        ],
         skipped: false,
-        flaky: false,
         lines: {
           windows: {
             known_failures: [
@@ -51,14 +66,19 @@ module Acceptance::Meterpreter
               "[-] [should raise a runtime exception if services doesnt exist] FAILED: should raise a runtime exception if services doesnt exist",
               "[-] [should raise a runtime exception if services doesnt exist] Exception: Rex::NotImplementedError : Unsupported architecture (must be ARCH_X86 or ARCH_X64)"
             ]
+          },
+          linux: {
+            known_failures: []
+          },
+          osx: {
+            known_failures: []
           }
         }
       },
       {
         name: "test/cmd_exec",
-        platforms: [:osx, :linux, :windows],
+        platforms: [:linux, :osx, :windows],
         skipped: false,
-        flaky: false,
         lines: {
           osx: {
             known_failures: []
@@ -75,9 +95,8 @@ module Acceptance::Meterpreter
       },
       {
         name: "test/extapi",
-        platforms: [:osx, :linux, :windows],
+        platforms: [:linux, :osx, :windows],
         skipped: false,
-        flaky: false,
         lines: {
           osx: {
             known_failures: []
@@ -92,9 +111,8 @@ module Acceptance::Meterpreter
       },
       {
         name: "test/file",
-        platforms: [:osx, :linux, :windows],
+        platforms: [:linux, :osx, :windows],
         skipped: false,
-        flaky: false,
         lines: {
           osx: {
             known_failures: [
@@ -119,9 +137,8 @@ module Acceptance::Meterpreter
       },
       {
         name: "test/get_env",
-        platforms: [:osx, :linux, :windows],
+        platforms: [:linux, :osx, :windows],
         skipped: false,
-        flaky: false,
         lines: {
           osx: {
             known_failures: []
@@ -136,9 +153,8 @@ module Acceptance::Meterpreter
       },
       {
         name: "test/meterpreter",
-        platforms: [:osx, :linux, :windows],
+        platforms: [:linux, :osx, :windows],
         skipped: false,
-        flaky: false,
         lines: {
           osx: {
             known_failures: [
@@ -154,10 +170,25 @@ module Acceptance::Meterpreter
         }
       },
       {
-        name: "test/search",
-        platforms: [:osx, :linux, :windows],
+        name: "test/railgun",
+        platforms: [:linux, :osx, :windows],
         skipped: false,
-        flaky: false,
+        lines: {
+          osx: {
+            known_failures: []
+          },
+          linux: {
+            known_failures: []
+          },
+          windows: {
+            known_failures: []
+          }
+        }
+      },
+      {
+        name: "test/railgun_reverse_lookups",
+        platforms: [:linux, :osx, :windows],
+        skipped: false,
         lines: {
           osx: {
             known_failures: []
@@ -172,40 +203,57 @@ module Acceptance::Meterpreter
       },
       {
         name: "test/registry",
-        platforms: [:windows],
+        platforms: [
+          [
+            :linux,
+            {
+              skip: true,
+              reason: "Windows only test"
+            }
+          ],
+          [
+            :osx,
+            {
+              skip: true,
+              reason: "Windows only test"
+            }
+          ],
+          :windows
+        ],
         skipped: false,
-        flaky: false,
         lines: {
           windows: {
             known_failures: [
               [
                 [
+                  "[-] [should read values with a 64-bit view] FAILED: should read values with a 64-bit view",
+                  "[-] [should read values with a 64-bit view] Exception: Rex::TimeoutError : Send timed out",
                   "[-] [should return normalized values] FAILED: should return normalized values",
-                  "[-] [should return normalized values] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
+                  "[-] [should return normalized values] Exception: Rex::TimeoutError : Send timed out",
                   "[-] [should enumerate keys and values] FAILED: should enumerate keys and values",
-                  "[-] [should enumerate keys and values] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
+                  "[-] [should enumerate keys and values] Exception: Rex::TimeoutError : Send timed out",
                   "[-] [should create keys] FAILED: should create keys",
-                  "[-] [should create keys] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
+                  "[-] [should create keys] Exception: Rex::TimeoutError : Send timed out",
                   "[-] [should write REG_BINARY values] FAILED: should write REG_BINARY values",
-                  "[-] [should write REG_BINARY values] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
+                  "[-] [should write REG_BINARY values] Exception: Rex::TimeoutError : Send timed out",
                   "[-] [should write REG_DWORD values] FAILED: should write REG_DWORD values",
-                  "[-] [should write REG_DWORD values] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
+                  "[-] [should write REG_DWORD values] Exception: Rex::TimeoutError : Send timed out",
                   "[-] [should write REG_EXPAND_SZ values] FAILED: should write REG_EXPAND_SZ values",
-                  "[-] [should write REG_EXPAND_SZ values] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
+                  "[-] [should write REG_EXPAND_SZ values] Exception: Rex::TimeoutError : Send timed out",
                   "[-] [should write REG_MULTI_SZ values] FAILED: should write REG_MULTI_SZ values",
-                  "[-] [should write REG_MULTI_SZ values] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
+                  "[-] [should write REG_MULTI_SZ values] Exception: Rex::TimeoutError : Send timed out",
                   "[-] [should write REG_QWORD values] FAILED: should write REG_QWORD values",
-                  "[-] [should write REG_QWORD values] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
+                  "[-] [should write REG_QWORD values] Exception: Rex::TimeoutError : Send timed out",
                   "[-] [should write REG_SZ values] FAILED: should write REG_SZ values",
-                  "[-] [should write REG_SZ values] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
+                  "[-] [should write REG_SZ values] Exception: Rex::TimeoutError : Send timed out",
                   "[-] [should delete keys] FAILED: should delete keys",
-                  "[-] [should delete keys] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
+                  "[-] [should delete keys] Exception: Rex::TimeoutError : Send timed out",
                   "[-] [should create unicode keys] FAILED: should create unicode keys",
-                  "[-] [should create unicode keys] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
+                  "[-] [should create unicode keys] Exception: Rex::TimeoutError : Send timed out",
                   "[-] [should write REG_SZ unicode values] FAILED: should write REG_SZ unicode values",
-                  "[-] [should write REG_SZ unicode values] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host.",
+                  "[-] [should write REG_SZ unicode values] Exception: Rex::TimeoutError : Send timed out",
                   "[-] [should delete unicode keys] FAILED: should delete unicode keys",
-                  "[-] [should delete unicode keys] Exception: Errno::ECONNRESET : An existing connection was forcibly closed by the remote host."
+                  "[-] [should delete unicode keys] Exception: Rex::TimeoutError : Send timed out"
                 ],
                 {
                   if: [
@@ -234,19 +282,53 @@ module Acceptance::Meterpreter
                 }
               ]
             ]
+          },
+          linux: {
+            known_failures: []
+          },
+          osx: {
+            known_failures: []
           }
         }
       },
       {
-        name: "test/unix",
-        platforms: [:osx, :linux],
+        name: "test/search",
+        platforms: [:linux, :osx, :windows],
         skipped: false,
-        flaky: false,
         lines: {
           osx: {
             known_failures: []
           },
           linux: {
+            known_failures: []
+          },
+          windows: {
+            known_failures: []
+          }
+        }
+      },
+      {
+        name: "test/unix",
+        platforms: [
+          :linux,
+          :osx,
+          [
+            :windows,
+            {
+              skip: true,
+              reason: "Unix only test"
+            }
+          ]
+        ],
+        skipped: false,
+        lines: {
+          osx: {
+            known_failures: []
+          },
+          linux: {
+            known_failures: []
+          },
+          windows: {
             known_failures: []
           }
         }

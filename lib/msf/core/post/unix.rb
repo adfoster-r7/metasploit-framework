@@ -35,6 +35,10 @@ module Msf::Post::Unix
         break
       end
     }
+    content = read_file(etc_passwd)
+    puts "found file #{etc_passwd}, with contents:"
+    puts content
+    puts "^^^^^^^^^^"
     cmd_out = read_file(etc_passwd).split("\n")
     cmd_out.each do |l|
       entry = {}

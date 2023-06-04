@@ -22,9 +22,24 @@ module Acceptance::Meterpreter
     module_tests: [
       {
         name: "test/services",
-        platforms: [:windows],
+        platforms: [
+          [
+            :linux,
+            {
+              skip: true,
+              reason: "Windows only test"
+            }
+          ],
+          [
+            :osx,
+            {
+              skip: true,
+              reason: "Windows only test"
+            }
+          ],
+          :windows
+        ],
         skipped: false,
-        flaky: false,
         lines: {
           windows: {
             known_failures: [
@@ -51,14 +66,19 @@ module Acceptance::Meterpreter
               "[-] [should raise a runtime exception if services doesnt exist] FAILED: should raise a runtime exception if services doesnt exist",
               "[-] [should raise a runtime exception if services doesnt exist] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)"
             ]
+          },
+          linux: {
+            known_failures: []
+          },
+          osx: {
+            known_failures: []
           }
         }
       },
       {
         name: "test/cmd_exec",
-        platforms: [:osx, :linux, :windows],
+        platforms: [:linux, :osx, :windows],
         skipped: false,
-        flaky: false,
         lines: {
           osx: {
             known_failures: []
@@ -73,9 +93,8 @@ module Acceptance::Meterpreter
       },
       {
         name: "test/extapi",
-        platforms: [:osx, :linux, :windows],
+        platforms: [:linux, :osx, :windows],
         skipped: false,
-        flaky: false,
         lines: {
           osx: {
             known_failures: []
@@ -90,17 +109,14 @@ module Acceptance::Meterpreter
       },
       {
         name: "test/file",
-        platforms: [:osx, :linux, :windows],
+        platforms: [:linux, :osx, :windows],
         skipped: false,
-        flaky: false,
         lines: {
           osx: {
             known_failures: []
           },
           linux: {
-            known_failures: [
-              "[-] FAILED: should append binary data"
-            ]
+            known_failures: []
           },
           windows: {
             known_failures: [
@@ -111,9 +127,8 @@ module Acceptance::Meterpreter
       },
       {
         name: "test/get_env",
-        platforms: [:osx, :linux, :windows],
+        platforms: [:linux, :osx, :windows],
         skipped: false,
-        flaky: false,
         lines: {
           osx: {
             known_failures: []
@@ -128,9 +143,8 @@ module Acceptance::Meterpreter
       },
       {
         name: "test/meterpreter",
-        platforms: [:osx, :linux, :windows],
+        platforms: [:linux, :osx, :windows],
         skipped: false,
-        flaky: false,
         lines: {
           osx: {
             known_failures: []
@@ -144,10 +158,25 @@ module Acceptance::Meterpreter
         }
       },
       {
-        name: "test/search",
-        platforms: [:osx, :linux, :windows],
+        name: "test/railgun",
+        platforms: [:linux, :osx, :windows],
         skipped: false,
-        flaky: false,
+        lines: {
+          osx: {
+            known_failures: []
+          },
+          linux: {
+            known_failures: []
+          },
+          windows: {
+            known_failures: []
+          }
+        }
+      },
+      {
+        name: "test/railgun_reverse_lookups",
+        platforms: [:linux, :osx, :windows],
+        skipped: false,
         lines: {
           osx: {
             known_failures: []
@@ -162,31 +191,78 @@ module Acceptance::Meterpreter
       },
       {
         name: "test/registry",
-        platforms: [:windows],
+        platforms: [
+          [
+            :linux,
+            {
+              skip: true,
+              reason: "Windows only test"
+            }
+          ],
+          [
+            :osx,
+            {
+              skip: true,
+              reason: "Windows only test"
+            }
+          ],
+          :windows
+        ],
         skipped: false,
-        flaky: false,
         lines: {
           windows: {
             known_failures: [
               "[-] FAILED: should write REG_EXPAND_SZ values",
               "[-] FAILED: should write REG_SZ unicode values"
             ]
+          },
+          linux: {
+            known_failures: []
+          },
+          osx: {
+            known_failures: []
           }
         }
       },
       {
-        name: "test/unix",
-        platforms: [:osx, :linux],
+        name: "test/search",
+        platforms: [:linux, :osx, :windows],
         skipped: false,
-        flaky: false,
         lines: {
           osx: {
             known_failures: []
           },
           linux: {
-            known_failures: [
-              "[-] FAILED: should list users"
-            ]
+            known_failures: []
+          },
+          windows: {
+            known_failures: []
+          }
+        }
+      },
+      {
+        name: "test/unix",
+        platforms: [
+          :linux,
+          :osx,
+          [
+            :windows,
+            {
+              skip: true,
+              reason: "Unix only test"
+            }
+          ]
+        ],
+        skipped: false,
+        lines: {
+          osx: {
+            known_failures: []
+          },
+          linux: {
+            known_failures: []
+          },
+          windows: {
+            known_failures: []
           }
         }
       }

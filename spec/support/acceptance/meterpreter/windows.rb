@@ -26,7 +26,16 @@ module Acceptance::Meterpreter
         name: "test/services",
         platforms: [:windows],
         skipped: false,
-        flaky: false,
+        lines: {
+          windows: {
+            known_failures: []
+          }
+        }
+      },
+      {
+        name: "test/cmd_exec",
+        platforms: [:windows],
+        skipped: false,
         lines: {
           windows: {
             known_failures: []
@@ -37,7 +46,6 @@ module Acceptance::Meterpreter
         name: "test/extapi",
         platforms: [:windows],
         skipped: false,
-        flaky: false,
         lines: {
           windows: {
             known_failures: [
@@ -59,7 +67,6 @@ module Acceptance::Meterpreter
         name: "test/file",
         platforms: [:windows],
         skipped: false,
-        flaky: false,
         lines: {
           windows: {
             known_failures: []
@@ -70,7 +77,6 @@ module Acceptance::Meterpreter
         name: "test/get_env",
         platforms: [:windows],
         skipped: false,
-        flaky: false,
         lines: {
           windows: {
             known_failures: []
@@ -81,7 +87,6 @@ module Acceptance::Meterpreter
         name: "test/meterpreter",
         platforms: [:windows],
         skipped: false,
-        flaky: false,
         lines: {
           windows: {
             known_failures: []
@@ -92,7 +97,6 @@ module Acceptance::Meterpreter
         name: "test/railgun",
         platforms: [:windows],
         skipped: false,
-        flaky: false,
         lines: {
           windows: {
             known_failures: []
@@ -103,7 +107,6 @@ module Acceptance::Meterpreter
         name: "test/railgun_reverse_lookups",
         platforms: [:windows],
         skipped: false,
-        flaky: false,
         lines: {
           windows: {
             known_failures: []
@@ -114,7 +117,6 @@ module Acceptance::Meterpreter
         name: "test/registry",
         platforms: [:windows],
         skipped: false,
-        flaky: false,
         lines: {
           windows: {
             known_failures: []
@@ -125,7 +127,6 @@ module Acceptance::Meterpreter
         name: "test/search",
         platforms: [:windows],
         skipped: false,
-        flaky: false,
         lines: {
           windows: {
             known_failures: []
@@ -133,10 +134,9 @@ module Acceptance::Meterpreter
         }
       },
       {
-        name: "test/cmd_exec",
+        name: "test/unix",
         platforms: [:windows],
         skipped: false,
-        flaky: false,
         lines: {
           windows: {
             known_failures: []

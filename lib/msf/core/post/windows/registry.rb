@@ -253,7 +253,10 @@ protected
     elsif view == REGISTRY_VIEW_64_BIT
       cmd << " /reg:64"
     end
-    cmd_exec(cmd)
+    vprint_status("running cmd: #{cmd}")
+    result = cmd_exec(cmd)
+    vprint_status("finished running cmd: #{Base64.strict_encode64(cmd)}")
+    result
   end
 
   def shell_registry_cmd_result(suffix, view = REGISTRY_VIEW_NATIVE)
