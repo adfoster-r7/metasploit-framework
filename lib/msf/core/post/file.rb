@@ -300,7 +300,8 @@ module Msf::Post::File
     if session.type == 'meterpreter'
       stat = begin
         session.fs.file.stat(path)
-      rescue StandardError
+       rescue StandardError => e
+         vprint_status("failed to read stat response: #{e}")
         nil
       end
       return !!stat
@@ -815,10 +816,16 @@ protected
   def _write_file_meterpreter(file_name, data, mode = 'wb')
     fd = session.fs.file.new(file_name, mode)
     fd.write(data)
-    fd.close
     return true
   rescue ::Rex::Post::Meterpreter::RequestError => e
+    vprint_status("Failed writing to file - #{e}")
     return false
+  ensure
+    begin
+      fd.close if fd
+    rescue => e
+      vprint_status("failed closing #{e}")
+    end
   end
 
   # Meterpreter-specific file read.  Returns contents of remote file
@@ -835,14 +842,26 @@ protected
     data << fd.read until fd.eof?
 
     data
-  rescue EOFError
+  rescue EOFError => e
+    vprint_status("Got eof reading file meterpreter #{e}")
+
+    # [read] [+] should delete binary files
+    # [read] [*] [should append binary data] Got eof reading file meterpreter EOFError
+    # [read] [*] [should append binary data] expected: [222, 173, 190, 239] - ASCII-8BIT
+    # [read] [*] [should append binary data] actual: [] - ASCII-8BIT
+    # [read] [-] FAILED: should append binary data
+
     # Sometimes fd isn't marked EOF in time?
-    ''
+    data
   rescue ::Rex::Post::Meterpreter::RequestError => e
     print_error("Failed to open file: #{file_name}: #{e}")
     return nil
   ensure
-    fd.close if fd
+    begin
+      fd.close if fd
+    rescue => e
+      vprint_status("failed closing #{e}")
+    end
   end
 
   # Windows ANSI file write for shell sessions. Writes given object content to a remote file.

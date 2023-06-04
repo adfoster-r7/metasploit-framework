@@ -9,6 +9,7 @@ require 'module_test'
 class MetasploitModule < Msf::Post
 
   include Msf::ModuleTest::PostTest
+  include Msf::ModuleTest::PostTestFileSystem
   include Msf::Post::Common
   include Msf::Post::File
 
@@ -24,13 +25,6 @@ class MetasploitModule < Msf::Post
         'SessionTypes' => [ 'meterpreter', 'shell', 'powershell' ]
       )
     )
-
-    register_options(
-      [
-        OptString.new('BaseDirectoryName', [true, 'Directory name to create', 'test-dir']),
-        OptString.new('BaseFileName', [true, 'File name to create', 'test-file'])
-      ], self.class
-    )
   end
 
   #
@@ -39,11 +33,12 @@ class MetasploitModule < Msf::Post
   # The +cleanup+ method will change it back
   #
   def setup
-    @old_pwd = pwd
-    tmp = directory?('/tmp') ? '/tmp' : '%TEMP%'
-    vprint_status("Setup: changing working directory to #{tmp}")
-    cd(tmp)
+    push_test_directory
+    super
+  end
 
+  def cleanup
+    pop_test_directory
     super
   end
 
@@ -292,21 +287,43 @@ class MetasploitModule < Msf::Post
     end
   end
 
-  def cleanup
-    vprint_status("Cleanup: changing working directory back to #{@old_pwd}")
-    cd(@old_pwd)
-    super
-  end
-
   def make_symlink(target, symlink)
+    vprint_status("about to run make_symlink")
     if session.platform == 'windows'
-      cmd_exec("cmd.exe /c mklink #{directory?(target) ? '/D ' : ''}#{symlink} #{target}")
+      cmd = "cmd.exe /c mklink #{directory?(target) ? '/D ' : ''}#{symlink} #{target}"
+      vprint_status("command to run is: #{cmd}")
+      result = cmd_exec(cmd)
+      vprint_status("result was: #{result}")
+      result
     else
-      cmd_exec("ln -s $(pwd)/#{target} $(pwd)/#{symlink}")
+      cmd = "ln -s $(pwd)/#{target} $(pwd)/#{symlink}"
+      vprint_status("command to run is: #{cmd}")
+      result = cmd_exec(cmd)
+      vprint_status("result was: #{result}")
+      result
     end
   end
 
   def register_dir_for_cleanup(path)
+  end
+
+
+  [
+    :cmd_exec,
+    :file?,
+    :file_exist?,
+    :directory?,
+    :expand_path,
+    :mkdir,
+    :exists?,
+    :rm_rf,
+  ].each do |method|
+    define_method(method) do |*args, **kwargs|
+      vprint_status("running command #{method} with #{args} and #{kwargs}")
+      result = super(*args, **kwargs)
+      vprint_status("#{method} result #{result}")
+      result
+    end
   end
 
 end

@@ -47,8 +47,15 @@ RSpec.shared_context 'Msf::UIDriver' do
     allow(target).to receive(:print_status, &append_output)
     allow(target).to receive(:print_good, &append_output)
 
+    allow(target).to receive(:vprint_good, &append_output)
+    allow(target).to receive(:vprint_status, &append_output)
+
     allow(target).to receive(:print_warning, &append_error)
     allow(target).to receive(:print_error, &append_error)
     allow(target).to receive(:print_bad, &append_error)
+
+    allow(target).to receive(:vprint_error, &append_error)
+    allow(target).to receive(:vprint_bad, &append_error)
+    allow(target).to receive(:vprint_warning, &append_error)
   end
 end

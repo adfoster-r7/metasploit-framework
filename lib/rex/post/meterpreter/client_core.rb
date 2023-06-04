@@ -398,6 +398,9 @@ class ClientCore < Extension
   # Set the UUID on the target session.
   #
   def set_uuid(uuid)
+
+    puts caller
+
     request = Packet.create_request(COMMAND_ID_CORE_SET_UUID)
     request.add_tlv(TLV_TYPE_UUID, uuid.to_raw)
 

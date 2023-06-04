@@ -374,10 +374,12 @@ class Tlv
     else
       val = value.inspect
       is_val_truncation_allowed = ![
+        Rex::Post::Meterpreter::TLV_TYPE_UUID,
         Rex::Post::Meterpreter::Extensions::Priv::TLV_TYPE_FS_FILE_PATH,
         Rex::Post::Meterpreter::Extensions::Priv::TLV_TYPE_FS_SRC_FILE_PATH,
         Rex::Post::Meterpreter::Extensions::Stdapi::TLV_TYPE_FILE_PATH,
-        Rex::Post::Meterpreter::Extensions::Stdapi::TLV_TYPE_DIRECTORY_PATH
+        Rex::Post::Meterpreter::Extensions::Stdapi::TLV_TYPE_DIRECTORY_PATH,
+        Rex::Post::Meterpreter::Extensions::Stdapi::TLV_TYPE_STAT_BUF,
       ].include?(type)
       if is_val_truncation_allowed && val.length > 50
         val = val[0,50] + ' ..."'

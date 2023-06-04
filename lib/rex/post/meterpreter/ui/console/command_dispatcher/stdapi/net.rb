@@ -257,7 +257,7 @@ class Console::CommandDispatcher::Stdapi::Net
 
     # Process the commands
     case cmd
-      when 'list'
+    when 'list'
         routes = client.net.config.routes
 
         # IPv4

@@ -243,7 +243,8 @@ module Msf::Post::Common
     else
       cmd_exec("command -v #{cmd} || which #{cmd} && echo #{verification_token}").include?(verification_token)
     end
-  rescue
+  rescue => e
+    vprint_error("#{e.class} #{e} #{e.backtrace}")
     raise "Unable to check if command `#{cmd}' exists"
   end
 

@@ -887,7 +887,9 @@ def ctstruct_unpack(structure, raw_data):
 def get_stat_buffer(path):
     si = os.stat(path)
     rdev = 0
-    if hasattr(si, 'st_rdev'):
+    # Older versions of Python on Windows return invalid/negative values for st_rdev - skip it entirely
+    # https://github.com/python/cpython/commit/a10c1f221a5248cedf476736eea365e1dfc84910#diff-b419a047f587ec3afef8493e19dbfc142624bf278f3298bfc74729abd89e311d
+    if hasattr(si, 'st_rdev') and not sys.platform.startswith('win'):
         rdev = si.st_rdev
     st_buf = struct.pack('<III', int(si.st_dev), int(si.st_mode), int(si.st_nlink))
     st_buf += struct.pack('<IIIQ', int(si.st_uid), int(si.st_gid), int(rdev), long(si.st_ino))
@@ -2068,10 +2070,28 @@ def stdapi_fs_sha1(request, response):
 
 @register_function
 def stdapi_fs_stat(request, response):
-    path = packet_get_tlv(request, TLV_TYPE_FILE_PATH)['value']
-    st_buf = get_stat_buffer(unicode(path))
-    response += tlv_pack(TLV_TYPE_STAT_BUF, st_buf)
-    return ERROR_SUCCESS, response
+    # path = packet_get_tlv(request, TLV_TYPE_FILE_PATH)['value']
+    # st_buf = get_stat_buffer(unicode(path))
+    # response += tlv_pack(TLV_TYPE_STAT_BUF, st_buf)
+    # return ERROR_SUCCESS, response
+    try:
+        debug_print("before attempting to read path")
+        path = packet_get_tlv(request, TLV_TYPE_FILE_PATH)['value']
+        debug_print("Attempting to read path for " + path)
+        debug_print('attempting unicode')
+        unicode_path = unicode(path)
+        debug_print('attempting stat buffer')
+        st_buf = get_stat_buffer(unicode_path)
+
+        debug_print("Got back buffer")
+        response += tlv_pack(TLV_TYPE_STAT_BUF, st_buf)
+        debug_print("dumping buffer")
+        return ERROR_SUCCESS, response
+    except Exception as e:
+        debug_print("we exploded")
+        debug_traceback("we exploded here for path " + path)
+        debug_print("after logs")
+        raise e
 
 @register_function_if(has_windll)
 def stdapi_fs_mount_show(request, response):
@@ -2543,7 +2563,7 @@ def stdapi_net_config_get_routes_via_osx_netstat():
             continue
         if destination == 'default':
             destination = all_nets
-        if re.match('link#\\d+', gateway) or re.match('([0-9a-f]{1,2}:){5}[0-9a-f]{1,2}', gateway):
+        if re.match('link#\\d+', gateway) or re.match('([0-9a-f]{1,2}:){5}[0-9a-f]{1,2}', gateway) or re.match('([0-9a-f]{1,2}.){5}[0-9a-f]{1,2}', gateway):
             gateway = all_nets[:-2]
         if '/' in destination:
             destination, netmask_bits = destination.rsplit('/', 1)
@@ -2557,8 +2577,6 @@ def stdapi_net_config_get_routes_via_osx_netstat():
         if state == socket.AF_INET:
             while destination.count('.') < 3:
                 destination += '.0'
-
-        print("the destion: " + destination + " the gateway: " + gateway)
         routes.append({
             'subnet': inet_pton(state, destination),
             'netmask': calc_netmask(netmask_bits),

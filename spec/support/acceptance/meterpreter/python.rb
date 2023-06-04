@@ -44,6 +44,9 @@ module Acceptance::Meterpreter
         lines: {
           windows: {
             known_failures: [
+              "[-] FAILED: should start a disabled service",
+              "[-] [should restart a started service W32Time] FAILED: should restart a started service W32Time",
+              "[-] [should restart a started service W32Time] Exception: RuntimeError : Could not open service. OpenServiceA error: FormatMessage failed to retrieve the error for value 0x6.",
               "[-] [should start W32Time] FAILED: should start W32Time",
               "[-] [should start W32Time] Exception: RuntimeError : Could not open service. OpenServiceA error: FormatMessage failed to retrieve the error for value 0x6.",
               "[-] [should stop W32Time] FAILED: should stop W32Time",
@@ -60,10 +63,7 @@ module Acceptance::Meterpreter
               "[-] [should return status on a given service winmgmt] FAILED: should return status on a given service winmgmt",
               "[-] [should return status on a given service winmgmt] Exception: RuntimeError : Could not open service. OpenServiceA error: FormatMessage failed to retrieve the error for value 0x6.",
               "[-] [should modify config on a given service] FAILED: should modify config on a given service",
-              "[-] [should modify config on a given service] Exception: RuntimeError : Could not open service. OpenServiceA error: FormatMessage failed to retrieve the error for value 0x6.",
-              "[-] FAILED: should start a disabled service",
-              "[-] [should restart a started service W32Time] FAILED: should restart a started service W32Time",
-              "[-] [should restart a started service W32Time] Exception: RuntimeError : Could not open service. OpenServiceA error: FormatMessage failed to retrieve the error for value 0x6."
+              "[-] [should modify config on a given service] Exception: RuntimeError : Could not open service. OpenServiceA error: FormatMessage failed to retrieve the error for value 0x6."
             ]
           },
           linux: {
@@ -124,20 +124,20 @@ module Acceptance::Meterpreter
           },
           windows: {
             known_failures: [
+              "[-] [should delete a symbolic link target] FAILED: should delete a symbolic link target",
+              "[-] [should delete a symbolic link target] Exception: Rex::Post::Meterpreter::RequestError : stdapi_sys_process_execute: Operation failed: Python exception: FileNotFoundError",
+              "[-] [should not recurse into symbolic link directories] FAILED: should not recurse into symbolic link directories",
+              "[-] [should not recurse into symbolic link directories] Exception: Rex::Post::Meterpreter::RequestError : stdapi_sys_process_execute: Operation failed: Python exception: FileNotFoundError",
               [
                 "[-] FAILED: should test for file existence",
                 {
                   if: [
                     :meterpreter_runtime_version,
                     :==,
-                    "python2.7"
+                    "python3.6"
                   ]
                 }
-              ],
-              "[-] [should delete a symbolic link target] FAILED: should delete a symbolic link target",
-              "[-] [should delete a symbolic link target] Exception: Rex::Post::Meterpreter::RequestError : stdapi_sys_process_execute: Operation failed: Python exception: FileNotFoundError",
-              "[-] [should not recurse into symbolic link directories] FAILED: should not recurse into symbolic link directories",
-              "[-] [should not recurse into symbolic link directories] Exception: Rex::Post::Meterpreter::RequestError : stdapi_sys_process_execute: Operation failed: Python exception: FileNotFoundError"
+              ]
             ]
           }
         }
@@ -171,24 +171,7 @@ module Acceptance::Meterpreter
           },
           windows: {
             known_failures: [
-              [
-                "[-] FAILED: should return the proper directory separator",
-                {
-                  if: [
-                    [
-                      :meterpreter_runtime_version,
-                      :==,
-                      "python3.8"
-                    ],
-                    :or,
-                    [
-                      :meterpreter_runtime_version,
-                      :==,
-                      "python3.6"
-                    ]
-                  ]
-                }
-              ]
+              "[-] FAILED: should return the proper directory separator"
             ]
           }
         }

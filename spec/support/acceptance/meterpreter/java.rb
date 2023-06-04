@@ -43,6 +43,14 @@ module Acceptance::Meterpreter
         lines: {
           windows: {
             known_failures: [
+              "[-] [should start a disabled service] FAILED: should start a disabled service",
+              "[-] [should start a disabled service] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
+              "[-] [should restart a started service W32Time] FAILED: should restart a started service W32Time",
+              "[-] [should restart a started service W32Time] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
+              "[-] [should raise a runtime exception if no access to service] FAILED: should raise a runtime exception if no access to service",
+              "[-] [should raise a runtime exception if no access to service] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
+              "[-] [should raise a runtime exception if services doesnt exist] FAILED: should raise a runtime exception if services doesnt exist",
+              "[-] [should raise a runtime exception if services doesnt exist] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
               "[-] [should start W32Time] FAILED: should start W32Time",
               "[-] [should start W32Time] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
               "[-] [should stop W32Time] FAILED: should stop W32Time",
@@ -56,15 +64,7 @@ module Acceptance::Meterpreter
               "[-] [should return status on a given service winmgmt] FAILED: should return status on a given service winmgmt",
               "[-] [should return status on a given service winmgmt] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
               "[-] [should modify config on a given service] FAILED: should modify config on a given service",
-              "[-] [should modify config on a given service] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
-              "[-] [should start a disabled service] FAILED: should start a disabled service",
-              "[-] [should start a disabled service] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
-              "[-] [should restart a started service W32Time] FAILED: should restart a started service W32Time",
-              "[-] [should restart a started service W32Time] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
-              "[-] [should raise a runtime exception if no access to service] FAILED: should raise a runtime exception if no access to service",
-              "[-] [should raise a runtime exception if no access to service] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
-              "[-] [should raise a runtime exception if services doesnt exist] FAILED: should raise a runtime exception if services doesnt exist",
-              "[-] [should raise a runtime exception if services doesnt exist] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)"
+              "[-] [should modify config on a given service] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)"
             ]
           },
           linux: {
