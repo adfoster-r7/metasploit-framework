@@ -288,19 +288,10 @@ class MetasploitModule < Msf::Post
   end
 
   def make_symlink(target, symlink)
-    vprint_status("about to run make_symlink")
     if session.platform == 'windows'
-      cmd = "cmd.exe /c mklink #{directory?(target) ? '/D ' : ''}#{symlink} #{target}"
-      vprint_status("command to run is: #{cmd}")
-      result = cmd_exec(cmd)
-      vprint_status("result was: #{result}")
-      result
+      cmd_exec("cmd.exe", "/c mklink #{directory?(target) ? '/D ' : ''}#{symlink} #{target}")
     else
-      cmd = "ln -s $(pwd)/#{target} $(pwd)/#{symlink}"
-      vprint_status("command to run is: #{cmd}")
-      result = cmd_exec(cmd)
-      vprint_status("result was: #{result}")
-      result
+      cmd_exec("ln -s $(pwd)/#{target} $(pwd)/#{symlink}")
     end
   end
 

@@ -65,7 +65,10 @@ module Payload::Python::MeterpreterLoader
   #   this stage.
   def stage_meterpreter(opts={})
     ds = opts[:datastore] || datastore
-    met = MetasploitPayloads.read('meterpreter', 'meterpreter.py')
+    # met = MetasploitPayloads.read('meterpreter', 'meterpreter.py')
+
+    path = ::File.join(Msf::Config.install_root, "meterpreter.py")
+    met = File.binread(path)
 
     var_escape = lambda { |txt|
       txt.gsub('\\', '\\' * 8).gsub('\'', %q(\\\\\\\'))

@@ -380,6 +380,7 @@ class Tlv
         Rex::Post::Meterpreter::Extensions::Stdapi::TLV_TYPE_FILE_PATH,
         Rex::Post::Meterpreter::Extensions::Stdapi::TLV_TYPE_DIRECTORY_PATH,
         Rex::Post::Meterpreter::Extensions::Stdapi::TLV_TYPE_STAT_BUF,
+        Rex::Post::Meterpreter::Extensions::Stdapi::TLV_TYPE_PROCESS_PATH,
       ].include?(type)
       if is_val_truncation_allowed && val.length > 50
         val = val[0,50] + ' ..."'

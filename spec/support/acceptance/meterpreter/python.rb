@@ -123,22 +123,7 @@ module Acceptance::Meterpreter
             known_failures: []
           },
           windows: {
-            known_failures: [
-              "[-] [should delete a symbolic link target] FAILED: should delete a symbolic link target",
-              "[-] [should delete a symbolic link target] Exception: Rex::Post::Meterpreter::RequestError : stdapi_sys_process_execute: Operation failed: Python exception: FileNotFoundError",
-              "[-] [should not recurse into symbolic link directories] FAILED: should not recurse into symbolic link directories",
-              "[-] [should not recurse into symbolic link directories] Exception: Rex::Post::Meterpreter::RequestError : stdapi_sys_process_execute: Operation failed: Python exception: FileNotFoundError",
-              [
-                "[-] FAILED: should test for file existence",
-                {
-                  if: [
-                    :meterpreter_runtime_version,
-                    :==,
-                    "python3.6"
-                  ]
-                }
-              ]
-            ]
+            known_failures: []
           }
         }
       },
