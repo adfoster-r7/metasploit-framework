@@ -41,8 +41,16 @@ module Acceptance::Meterpreter
         ],
         skipped: false,
         lines: {
+          linux: {
+            known_failures: []
+          },
+          osx: {
+            known_failures: []
+          },
           windows: {
             known_failures: [
+              "[-] [should modify config on a given service] FAILED: should modify config on a given service",
+              "[-] [should modify config on a given service] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
               "[-] [should start a disabled service] FAILED: should start a disabled service",
               "[-] [should start a disabled service] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
               "[-] [should restart a started service W32Time] FAILED: should restart a started service W32Time",
@@ -62,16 +70,8 @@ module Acceptance::Meterpreter
               "[-] [should delete the new service testes] FAILED: should delete the new service testes",
               "[-] [should delete the new service testes] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
               "[-] [should return status on a given service winmgmt] FAILED: should return status on a given service winmgmt",
-              "[-] [should return status on a given service winmgmt] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)",
-              "[-] [should modify config on a given service] FAILED: should modify config on a given service",
-              "[-] [should modify config on a given service] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)"
+              "[-] [should return status on a given service winmgmt] Exception: Rex::Post::Meterpreter::RequestError : stdapi_railgun_api: Operation failed: The command is not supported by this Meterpreter type (java/windows)"
             ]
-          },
-          linux: {
-            known_failures: []
-          },
-          osx: {
-            known_failures: []
           }
         }
       },
@@ -80,10 +80,10 @@ module Acceptance::Meterpreter
         platforms: [:linux, :osx, :windows],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: []
           },
-          linux: {
+          osx: {
             known_failures: []
           },
           windows: {
@@ -96,10 +96,10 @@ module Acceptance::Meterpreter
         platforms: [:linux, :osx, :windows],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: []
           },
-          linux: {
+          osx: {
             known_failures: []
           },
           windows: {
@@ -112,10 +112,10 @@ module Acceptance::Meterpreter
         platforms: [:linux, :osx, :windows],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: []
           },
-          linux: {
+          osx: {
             known_failures: []
           },
           windows: {
@@ -130,10 +130,10 @@ module Acceptance::Meterpreter
         platforms: [:linux, :osx, :windows],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: []
           },
-          linux: {
+          osx: {
             known_failures: []
           },
           windows: {
@@ -146,10 +146,10 @@ module Acceptance::Meterpreter
         platforms: [:linux, :osx, :windows],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: []
           },
-          linux: {
+          osx: {
             known_failures: []
           },
           windows: {
@@ -162,10 +162,10 @@ module Acceptance::Meterpreter
         platforms: [:linux, :osx, :windows],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: []
           },
-          linux: {
+          osx: {
             known_failures: []
           },
           windows: {
@@ -178,10 +178,10 @@ module Acceptance::Meterpreter
         platforms: [:linux, :osx, :windows],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: []
           },
-          linux: {
+          osx: {
             known_failures: []
           },
           windows: {
@@ -210,17 +210,17 @@ module Acceptance::Meterpreter
         ],
         skipped: false,
         lines: {
-          windows: {
-            known_failures: [
-              "[-] FAILED: should write REG_EXPAND_SZ values",
-              "[-] FAILED: should write REG_SZ unicode values"
-            ]
-          },
           linux: {
             known_failures: []
           },
           osx: {
             known_failures: []
+          },
+          windows: {
+            known_failures: [
+              "[-] FAILED: should write REG_EXPAND_SZ values",
+              "[-] FAILED: should write REG_SZ unicode values"
+            ]
           }
         }
       },
@@ -229,10 +229,10 @@ module Acceptance::Meterpreter
         platforms: [:linux, :osx, :windows],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: []
           },
-          linux: {
+          osx: {
             known_failures: []
           },
           windows: {
@@ -255,10 +255,10 @@ module Acceptance::Meterpreter
         ],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: []
           },
-          linux: {
+          osx: {
             known_failures: []
           },
           windows: {

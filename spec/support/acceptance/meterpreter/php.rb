@@ -37,12 +37,33 @@ module Acceptance::Meterpreter
               reason: "Windows only test"
             }
           ],
-          :windows
+          [
+            :meterpreter,
+            {
+              if: [
+                :meterpreter_runtime_version,
+                :==,
+                "php5.3"
+              ],
+              reason: "Skip PHP 5.3 - as cmd_exec takes 15 seconds for each call, due to failure to detect feof correctly - https://github.com/rapid7/metasploit-payloads/blame/c7f7bc2fc0b86e17c3bc078149c71745c5e478b3/php/meterpreter/meterpreter.php#L1127-L1145"
+            }
+          ]
         ],
         skipped: false,
         lines: {
+          linux: {
+            known_failures: []
+          },
+          meterpreter: {
+            known_failures: []
+          },
+          osx: {
+            known_failures: []
+          },
           windows: {
             known_failures: [
+              "[-] [should modify config on a given service] FAILED: should modify config on a given service",
+              "[-] [should modify config on a given service] Exception: Rex::NotImplementedError : Unsupported architecture (must be ARCH_X86 or ARCH_X64)",
               "[-] [should start a disabled service] FAILED: should start a disabled service",
               "[-] [should start a disabled service] Exception: Rex::NotImplementedError : Unsupported architecture (must be ARCH_X86 or ARCH_X64)",
               "[-] [should restart a started service W32Time] FAILED: should restart a started service W32Time",
@@ -62,16 +83,8 @@ module Acceptance::Meterpreter
               "[-] [should delete the new service testes] FAILED: should delete the new service testes",
               "[-] [should delete the new service testes] Exception: Rex::NotImplementedError : Unsupported architecture (must be ARCH_X86 or ARCH_X64)",
               "[-] [should return status on a given service winmgmt] FAILED: should return status on a given service winmgmt",
-              "[-] [should return status on a given service winmgmt] Exception: Rex::NotImplementedError : Unsupported architecture (must be ARCH_X86 or ARCH_X64)",
-              "[-] [should modify config on a given service] FAILED: should modify config on a given service",
-              "[-] [should modify config on a given service] Exception: Rex::NotImplementedError : Unsupported architecture (must be ARCH_X86 or ARCH_X64)"
+              "[-] [should return status on a given service winmgmt] Exception: Rex::NotImplementedError : Unsupported architecture (must be ARCH_X86 or ARCH_X64)"
             ]
-          },
-          linux: {
-            known_failures: []
-          },
-          osx: {
-            known_failures: []
           }
         }
       },
@@ -80,10 +93,10 @@ module Acceptance::Meterpreter
         platforms: [:linux, :osx, :windows],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: []
           },
-          linux: {
+          osx: {
             known_failures: []
           },
           windows: {
@@ -98,10 +111,10 @@ module Acceptance::Meterpreter
         platforms: [:linux, :osx, :windows],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: []
           },
-          linux: {
+          osx: {
             known_failures: []
           },
           windows: {
@@ -114,12 +127,12 @@ module Acceptance::Meterpreter
         platforms: [:linux, :osx, :windows],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: [
               "[-] FAILED: should read the binary data we just wrote"
             ]
           },
-          linux: {
+          osx: {
             known_failures: [
               "[-] FAILED: should read the binary data we just wrote"
             ]
@@ -138,10 +151,10 @@ module Acceptance::Meterpreter
         platforms: [:linux, :osx, :windows],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: []
           },
-          linux: {
+          osx: {
             known_failures: []
           },
           windows: {
@@ -154,13 +167,13 @@ module Acceptance::Meterpreter
         platforms: [:linux, :osx, :windows],
         skipped: false,
         lines: {
+          linux: {
+            known_failures: []
+          },
           osx: {
             known_failures: [
               "[-] FAILED: should return a list of processes"
             ]
-          },
-          linux: {
-            known_failures: []
           },
           windows: {
             known_failures: []
@@ -172,10 +185,10 @@ module Acceptance::Meterpreter
         platforms: [:linux, :osx, :windows],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: []
           },
-          linux: {
+          osx: {
             known_failures: []
           },
           windows: {
@@ -188,10 +201,10 @@ module Acceptance::Meterpreter
         platforms: [:linux, :osx, :windows],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: []
           },
-          linux: {
+          osx: {
             known_failures: []
           },
           windows: {
@@ -216,26 +229,34 @@ module Acceptance::Meterpreter
               reason: "Windows only test"
             }
           ],
-          :windows
+          [
+            :meterpreter,
+            {
+              if: [
+                :meterpreter_runtime_version,
+                :==,
+                "php5.3"
+              ],
+              reason: "Skip PHP 5.3 - as cmd_exec takes 15 seconds for each call, due to failure to detect feof correctly - https://github.com/rapid7/metasploit-payloads/blame/c7f7bc2fc0b86e17c3bc078149c71745c5e478b3/php/meterpreter/meterpreter.php#L1127-L1145"
+            }
+          ]
         ],
         skipped: false,
         lines: {
+          linux: {
+            known_failures: []
+          },
+          meterpreter: {
+            known_failures: []
+          },
+          osx: {
+            known_failures: []
+          },
           windows: {
             known_failures: [
+              "[-] FAILED: should write REG_EXPAND_SZ values",
               [
                 [
-                  "[-] [should return normalized values] FAILED: should return normalized values",
-                  "[-] [should return normalized values] Exception: Rex::TimeoutError : Send timed out",
-                  "[-] [should enumerate keys and values] FAILED: should enumerate keys and values",
-                  "[-] [should enumerate keys and values] Exception: Rex::TimeoutError : Send timed out",
-                  "[-] [should create keys] FAILED: should create keys",
-                  "[-] [should create keys] Exception: Rex::TimeoutError : Send timed out",
-                  "[-] [should write REG_BINARY values] FAILED: should write REG_BINARY values",
-                  "[-] [should write REG_BINARY values] Exception: Rex::TimeoutError : Send timed out",
-                  "[-] [should write REG_DWORD values] FAILED: should write REG_DWORD values",
-                  "[-] [should write REG_DWORD values] Exception: Rex::TimeoutError : Send timed out",
-                  "[-] [should write REG_EXPAND_SZ values] FAILED: should write REG_EXPAND_SZ values",
-                  "[-] [should write REG_EXPAND_SZ values] Exception: Rex::TimeoutError : Send timed out",
                   "[-] [should write REG_MULTI_SZ values] FAILED: should write REG_MULTI_SZ values",
                   "[-] [should write REG_MULTI_SZ values] Exception: Rex::TimeoutError : Send timed out",
                   "[-] [should write REG_QWORD values] FAILED: should write REG_QWORD values",
@@ -249,7 +270,19 @@ module Acceptance::Meterpreter
                   "[-] [should write REG_SZ unicode values] FAILED: should write REG_SZ unicode values",
                   "[-] [should write REG_SZ unicode values] Exception: Rex::TimeoutError : Send timed out",
                   "[-] [should delete unicode keys] FAILED: should delete unicode keys",
-                  "[-] [should delete unicode keys] Exception: Rex::TimeoutError : Send timed out"
+                  "[-] [should delete unicode keys] Exception: Rex::TimeoutError : Send timed out",
+                  "[-] [should evaluate key existence] FAILED: should evaluate key existence",
+                  "[-] [should evaluate key existence] Exception: Rex::TimeoutError : Send timed out",
+                  "[-] [should read values] FAILED: should read values",
+                  "[-] [should read values] Exception: Rex::TimeoutError : Send timed out",
+                  "[-] [should read values with a 32-bit view] FAILED: should read values with a 32-bit view",
+                  "[-] [should read values with a 32-bit view] Exception: Rex::TimeoutError : Send timed out",
+                  "[-] [should read values with a 64-bit view] FAILED: should read values with a 64-bit view",
+                  "[-] [should read values with a 64-bit view] Exception: Rex::TimeoutError : Send timed out",
+                  "[-] [should return normalized values] FAILED: should return normalized values",
+                  "[-] [should return normalized values] Exception: Rex::TimeoutError : Send timed out",
+                  "[-] [should enumerate keys and values] FAILED: should enumerate keys and values",
+                  "[-] [should enumerate keys and values] Exception: Rex::TimeoutError : Send timed out"
                 ],
                 {
                   if: [
@@ -258,32 +291,8 @@ module Acceptance::Meterpreter
                     "php5.3"
                   ]
                 }
-              ],
-              [
-                "[-] FAILED: should write REG_EXPAND_SZ values",
-                {
-                  if: [
-                    [
-                      :meterpreter_runtime_version,
-                      :==,
-                      "php8.2"
-                    ],
-                    :or,
-                    [
-                      :meterpreter_runtime_version,
-                      :==,
-                      "php7.4"
-                    ]
-                  ]
-                }
               ]
             ]
-          },
-          linux: {
-            known_failures: []
-          },
-          osx: {
-            known_failures: []
           }
         }
       },
@@ -292,10 +301,10 @@ module Acceptance::Meterpreter
         platforms: [:linux, :osx, :windows],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: []
           },
-          linux: {
+          osx: {
             known_failures: []
           },
           windows: {
@@ -318,10 +327,10 @@ module Acceptance::Meterpreter
         ],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: []
           },
-          linux: {
+          osx: {
             known_failures: []
           },
           windows: {

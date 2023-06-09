@@ -42,8 +42,16 @@ module Acceptance::Meterpreter
         ],
         skipped: false,
         lines: {
+          linux: {
+            known_failures: []
+          },
+          osx: {
+            known_failures: []
+          },
           windows: {
             known_failures: [
+              "[-] [should modify config on a given service] FAILED: should modify config on a given service",
+              "[-] [should modify config on a given service] Exception: RuntimeError : Could not open service. OpenServiceA error: FormatMessage failed to retrieve the error for value 0x6.",
               "[-] FAILED: should start a disabled service",
               "[-] [should restart a started service W32Time] FAILED: should restart a started service W32Time",
               "[-] [should restart a started service W32Time] Exception: RuntimeError : Could not open service. OpenServiceA error: FormatMessage failed to retrieve the error for value 0x6.",
@@ -61,16 +69,8 @@ module Acceptance::Meterpreter
               "[-] [should delete the new service testes] FAILED: should delete the new service testes",
               "[-] [should delete the new service testes] Exception: RuntimeError : Could not open service. OpenServiceA error: FormatMessage failed to retrieve the error for value 0x6.",
               "[-] [should return status on a given service winmgmt] FAILED: should return status on a given service winmgmt",
-              "[-] [should return status on a given service winmgmt] Exception: RuntimeError : Could not open service. OpenServiceA error: FormatMessage failed to retrieve the error for value 0x6.",
-              "[-] [should modify config on a given service] FAILED: should modify config on a given service",
-              "[-] [should modify config on a given service] Exception: RuntimeError : Could not open service. OpenServiceA error: FormatMessage failed to retrieve the error for value 0x6."
+              "[-] [should return status on a given service winmgmt] Exception: RuntimeError : Could not open service. OpenServiceA error: FormatMessage failed to retrieve the error for value 0x6."
             ]
-          },
-          linux: {
-            known_failures: []
-          },
-          osx: {
-            known_failures: []
           }
         }
       },
@@ -79,10 +79,10 @@ module Acceptance::Meterpreter
         platforms: [:linux, :osx, :windows],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: []
           },
-          linux: {
+          osx: {
             known_failures: []
           },
           windows: {
@@ -95,10 +95,10 @@ module Acceptance::Meterpreter
         platforms: [:linux, :osx, :windows],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: []
           },
-          linux: {
+          osx: {
             known_failures: []
           },
           windows: {
@@ -116,10 +116,10 @@ module Acceptance::Meterpreter
         platforms: [:linux, :osx, :windows],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: []
           },
-          linux: {
+          osx: {
             known_failures: []
           },
           windows: {
@@ -132,10 +132,10 @@ module Acceptance::Meterpreter
         platforms: [:linux, :osx, :windows],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: []
           },
-          linux: {
+          osx: {
             known_failures: []
           },
           windows: {
@@ -148,10 +148,10 @@ module Acceptance::Meterpreter
         platforms: [:linux, :osx, :windows],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: []
           },
-          linux: {
+          osx: {
             known_failures: []
           },
           windows: {
@@ -166,10 +166,10 @@ module Acceptance::Meterpreter
         platforms: [:linux, :osx, :windows],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: []
           },
-          linux: {
+          osx: {
             known_failures: []
           },
           windows: {
@@ -182,10 +182,10 @@ module Acceptance::Meterpreter
         platforms: [:linux, :osx, :windows],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: []
           },
-          linux: {
+          osx: {
             known_failures: []
           },
           windows: {
@@ -214,13 +214,13 @@ module Acceptance::Meterpreter
         ],
         skipped: false,
         lines: {
-          windows: {
-            known_failures: []
-          },
           linux: {
             known_failures: []
           },
           osx: {
+            known_failures: []
+          },
+          windows: {
             known_failures: []
           }
         }
@@ -230,10 +230,10 @@ module Acceptance::Meterpreter
         platforms: [:linux, :osx, :windows],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: []
           },
-          linux: {
+          osx: {
             known_failures: []
           },
           windows: {
@@ -256,10 +256,10 @@ module Acceptance::Meterpreter
         ],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: []
           },
-          linux: {
+          osx: {
             known_failures: []
           },
           windows: {

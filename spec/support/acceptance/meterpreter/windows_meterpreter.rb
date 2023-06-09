@@ -43,13 +43,13 @@ module Acceptance::Meterpreter
         ],
         skipped: false,
         lines: {
-          windows: {
-            known_failures: []
-          },
           linux: {
             known_failures: []
           },
           osx: {
+            known_failures: []
+          },
+          windows: {
             known_failures: []
           }
         }
@@ -75,13 +75,13 @@ module Acceptance::Meterpreter
         ],
         skipped: false,
         lines: {
-          windows: {
-            known_failures: []
-          },
           linux: {
             known_failures: []
           },
           osx: {
+            known_failures: []
+          },
+          windows: {
             known_failures: []
           }
         }
@@ -107,6 +107,12 @@ module Acceptance::Meterpreter
         ],
         skipped: false,
         lines: {
+          linux: {
+            known_failures: []
+          },
+          osx: {
+            known_failures: []
+          },
           windows: {
             known_failures: [
               "[-] [should return an array of clipboard data] FAILED: should return an array of clipboard data",
@@ -120,12 +126,6 @@ module Acceptance::Meterpreter
               "[-] [should download clipboard jpg data] FAILED: should download clipboard jpg data",
               "[-] [should download clipboard jpg data] Exception: TypeError : no implicit conversion of Symbol into Integer"
             ]
-          },
-          linux: {
-            known_failures: []
-          },
-          osx: {
-            known_failures: []
           }
         }
       },
@@ -150,13 +150,13 @@ module Acceptance::Meterpreter
         ],
         skipped: false,
         lines: {
-          windows: {
-            known_failures: []
-          },
           linux: {
             known_failures: []
           },
           osx: {
+            known_failures: []
+          },
+          windows: {
             known_failures: []
           }
         }
@@ -182,13 +182,13 @@ module Acceptance::Meterpreter
         ],
         skipped: false,
         lines: {
-          windows: {
-            known_failures: []
-          },
           linux: {
             known_failures: []
           },
           osx: {
+            known_failures: []
+          },
+          windows: {
             known_failures: []
           }
         }
@@ -214,13 +214,13 @@ module Acceptance::Meterpreter
         ],
         skipped: false,
         lines: {
-          windows: {
-            known_failures: []
-          },
           linux: {
             known_failures: []
           },
           osx: {
+            known_failures: []
+          },
+          windows: {
             known_failures: []
           }
         }
@@ -246,13 +246,13 @@ module Acceptance::Meterpreter
         ],
         skipped: false,
         lines: {
-          windows: {
-            known_failures: []
-          },
           linux: {
             known_failures: []
           },
           osx: {
+            known_failures: []
+          },
+          windows: {
             known_failures: []
           }
         }
@@ -278,13 +278,13 @@ module Acceptance::Meterpreter
         ],
         skipped: false,
         lines: {
-          windows: {
-            known_failures: []
-          },
           linux: {
             known_failures: []
           },
           osx: {
+            known_failures: []
+          },
+          windows: {
             known_failures: []
           }
         }
@@ -310,13 +310,13 @@ module Acceptance::Meterpreter
         ],
         skipped: false,
         lines: {
-          windows: {
-            known_failures: []
-          },
           linux: {
             known_failures: []
           },
           osx: {
+            known_failures: []
+          },
+          windows: {
             known_failures: []
           }
         }
@@ -342,13 +342,13 @@ module Acceptance::Meterpreter
         ],
         skipped: false,
         lines: {
-          windows: {
-            known_failures: []
-          },
           linux: {
             known_failures: []
           },
           osx: {
+            known_failures: []
+          },
+          windows: {
             known_failures: []
           }
         }

@@ -86,10 +86,10 @@ module Acceptance::Meterpreter
         ],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: []
           },
-          linux: {
+          osx: {
             known_failures: []
           },
           windows: {
@@ -112,9 +112,6 @@ module Acceptance::Meterpreter
         ],
         skipped: false,
         lines: {
-          osx: {
-            known_failures: []
-          },
           linux: {
             known_failures: [
               "[-] Post failed: RuntimeError x86_64-linux-musl/extapi not found",
@@ -123,6 +120,9 @@ module Acceptance::Meterpreter
               "metasploit-framework/lib/rex/post/meterpreter/client_core.rb:356:in `use'",
               "metasploit-framework/test/modules/post/test/extapi.rb:32:in `setup'"
             ]
+          },
+          osx: {
+            known_failures: []
           },
           windows: {
             known_failures: []
@@ -144,10 +144,10 @@ module Acceptance::Meterpreter
         ],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: []
           },
-          linux: {
+          osx: {
             known_failures: []
           },
           windows: {
@@ -170,10 +170,10 @@ module Acceptance::Meterpreter
         ],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: []
           },
-          linux: {
+          osx: {
             known_failures: []
           },
           windows: {
@@ -196,14 +196,14 @@ module Acceptance::Meterpreter
         ],
         skipped: false,
         lines: {
+          linux: {
+            known_failures: []
+          },
           osx: {
             known_failures: [
               "[-] FAILED: should return network interfaces",
               "[-] FAILED: should have an interface that matches session_host"
             ]
-          },
-          linux: {
-            known_failures: []
           },
           windows: {
             known_failures: []
@@ -225,10 +225,10 @@ module Acceptance::Meterpreter
         ],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: []
           },
-          linux: {
+          osx: {
             known_failures: []
           },
           windows: {
@@ -251,10 +251,10 @@ module Acceptance::Meterpreter
         ],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: []
           },
-          linux: {
+          osx: {
             known_failures: []
           },
           windows: {
@@ -341,10 +341,10 @@ module Acceptance::Meterpreter
         ],
         skipped: false,
         lines: {
-          osx: {
+          linux: {
             known_failures: []
           },
-          linux: {
+          osx: {
             known_failures: []
           },
           windows: {
