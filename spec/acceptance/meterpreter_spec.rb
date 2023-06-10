@@ -14,6 +14,8 @@ RSpec.describe 'Meterpreter' do
     }
   )
 
+  TEST_ENVIRONMENT = AllureRspec.configuration.environment_properties
+
   let_it_be(:current_platform) { Acceptance::Meterpreter::current_platform }
 
   # @!attribute [r] port_generator
@@ -90,6 +92,8 @@ RSpec.describe 'Meterpreter' do
             }
           end
 
+          let(:test_environment) { TEST_ENVIRONMENT }
+
           let(:default_module_datastore) do
             {
               AutoVerifySessionTimeout: ENV['CI'] ? 30 : 10,
@@ -108,10 +112,6 @@ RSpec.describe 'Meterpreter' do
                 err: file
               }
             )
-          end
-
-          let(:test_environment) do
-            AllureRspec.configuration.environment_properties
           end
 
           # The shared payload process and session instance that will be reused across the test run
@@ -175,7 +175,7 @@ RSpec.describe 'Meterpreter' do
           end
 
           before :each do |example|
-            # Add the test environment metadata to the rspec example instance - so it apepras in the final allure report
+            # Add the test environment metadata to the rspec example instance - so it appears in the final allure report UI
             test_environment.each do |key, value|
               example.parameter(key, value)
             end
@@ -199,7 +199,7 @@ RSpec.describe 'Meterpreter' do
                       # Only run payloads / tests, if the host machine can run them
                       Acceptance::Meterpreter.supported_platform?(payload_config) &&
                       Acceptance::Meterpreter.supported_platform?(module_test) &&
-                      !Acceptance::Meterpreter.skipped?(module_test)
+                      !Acceptance::Meterpreter.skipped_module_test?(module_test, TEST_ENVIRONMENT)
                   ),
                   # metadata
                   module_test: module_test[:name]

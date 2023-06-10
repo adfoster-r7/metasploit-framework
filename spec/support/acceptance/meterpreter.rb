@@ -43,10 +43,12 @@ module Acceptance::Meterpreter
     payload_config[:platforms].include?(current_platform)
   end
 
-  # @param [Hash] payload_config
+  # @param [Hash] module_test
   # @return [Boolean]
-  def self.skipped?(payload_config)
-    payload_config.fetch(:skip, false)
+  def self.skipped_module_test?(module_test, test_environment)
+    current_platform_requirements = Array(module_test[:platforms].find { |platform| Array(platform)[0] == current_platform })[1] || {}
+    module_test.fetch(:skip, false) ||
+      self.eval_predicate(current_platform_requirements.fetch(:skip, false), test_environment)
   end
 
   # @param [Hash] payload_config
@@ -68,6 +70,33 @@ module Acceptance::Meterpreter
   def self.with_meterpreter_name_merged(hash)
     hash.each_with_object({}) do |(name, config), acc|
       acc[name] = config.merge({ name: name })
+    end
+  end
+
+  # Evaluates a simple predicate; Similar to Msf::OptCondition.eval_condition
+  # @param [TrueClass,FalseClass,Array] value
+  # @param [Hash] environment
+  # @return [TrueClass, FalseClass] True or false
+  def self.eval_predicate(value, environment)
+    case value
+    when Array
+      left_operand, operator, right_operand = value
+      # Map values such as `:meterpreter_name` to the runtime value
+      left_operand = environment[left_operand] if environment.key?(left_operand)
+      right_operand = environment[right_operand] if environment.key?(right_operand)
+
+      case operator.to_sym
+      when :==
+        evaluate_predicate(left_operand, environment) == evaluate_predicate(right_operand, environment)
+      when :!=
+        evaluate_predicate(left_operand, environment) != evaluate_predicate(right_operand, environment)
+      when :or
+        evaluate_predicate(left_operand, environment) || evaluate_predicate(right_operand, environment)
+      else
+        raise "unexpected operator #{operator.inspect}"
+      end
+    else
+      value
     end
   end
 end

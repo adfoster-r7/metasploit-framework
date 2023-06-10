@@ -47,31 +47,9 @@ module Acceptance
 
     private
 
-    # Evaluates a simple predicate; Similar to Msf::OptCondition.eval_condition
-    # @param [TrueClass,FalseClass,Array] value
-    # @param [Hash] environment
-    # @return [TrueClass, FalseClass] True or false
+    # (see Acceptance::Meterpreter#eval_predicate)
     def evaluate_predicate(value, environment)
-      case value
-      when Array
-        left_operand, operator, right_operand = value
-        # Map values such as `:meterpreter_name` to the runtime value
-        left_operand = environment[left_operand] if environment.key?(left_operand)
-        right_operand = environment[right_operand] if environment.key?(right_operand)
-
-        case operator.to_sym
-        when :==
-          evaluate_predicate(left_operand, environment) == evaluate_predicate(right_operand, environment)
-        when :!=
-          evaluate_predicate(left_operand, environment) != evaluate_predicate(right_operand, environment)
-        when :or
-          evaluate_predicate(left_operand, environment) != evaluate_predicate(right_operand, environment)
-        else
-          raise "unexpected operator #{operator.inspect}"
-        end
-      else
-        value
-      end
+      Acceptance::Meterpreter.eval_predicate(value, environment)
     end
   end
 end
