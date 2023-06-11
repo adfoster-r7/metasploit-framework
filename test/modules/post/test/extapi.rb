@@ -50,7 +50,7 @@ class MetasploitModule < Msf::Post
       ret = false
       clipboard = session.extapi.clipboard.get_data(false)
 
-      if clipboard && clipboard.any? && clipboard.first[:type]
+      if clipboard && clipboard.any? && !clipboard.values.first.nil?
         vprint_status("Clipboard: #{clipboard}")
         ret = true
       end
@@ -69,7 +69,7 @@ class MetasploitModule < Msf::Post
       clipboard = session.extapi.clipboard.get_data(false)
       vprint_status("clipboard: #{clipboard}")
 
-      ret = clipboard && clipboard.first && (clipboard.first[:type] == :jpg) && clipboard.first[:width]
+      ret = clipboard && clipboard.values.first && clipboard.values.first['Image'] && clipboard.values.first['Image'][:width]
       ret
     end
 
@@ -84,7 +84,7 @@ class MetasploitModule < Msf::Post
       if ret
         clipboard = session.extapi.clipboard.get_data(false)
         vprint_status("clipboard: #{clipboard}")
-        ret = clipboard && clipboard.first && (clipboard.first[:type] == :text) && (clipboard.first[:data] == text)
+        ret = clipboard && clipboard.values.first && clipboard.values.first['Text'] == text
       end
 
       ret
@@ -99,7 +99,8 @@ class MetasploitModule < Msf::Post
 
       clipboard = session.extapi.clipboard.get_data(true)
       vprint_status("clipboard: #{clipboard}")
-      ret = clipboard && clipboard.first && (clipboard.first[:type] == :text) && (clipboard.first[:data] == text)
+
+      ret = clipboard && clipboard.values.first && clipboard.values.first['Text'] == text
       ret
     end
 
@@ -115,9 +116,10 @@ class MetasploitModule < Msf::Post
 
       clipboard = session.extapi.clipboard.get_data(true)
       vprint_status("clipboard: #{clipboard}")
-      if clipboard && clipboard.first && (clipboard.first[:type] == :jpg) && !(clipboard.first[:data].empty?)
+
+      if clipboard && clipboard.values.first && clipboard.values.first['Image'] && !clipboard.values.first['Image'][:data].empty?
         # JPG Magic Bytes
-        ret = (clipboard.first[:data][0, 2] == "\xFF\xD8")
+        ret = clipboard.values.first['Image'][:data].start_with?("\xFF\xD8".b)
       end
 
       ret
