@@ -232,6 +232,9 @@ class MetasploitModule < Msf::Post
         (contents == "test")
       }
 
+      # XXX: On windows this can fail with:
+      #   Rex::Post::Meterpreter::RequestError : stdapi_fs_delete_file: Operation failed: The process cannot access the file because it is being used by another process.
+      # Presumably the Ruby process still has a handle to the file
       session.fs.file.rm(file_name)
       res &&= !session.fs.dir.entries.include?(file_name)
 

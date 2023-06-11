@@ -30,9 +30,9 @@ on:
     branches:
       - '*'
 
-# Example of running as a cron, to weed out flaky tests
+#  Example of running as a cron, to weed out flaky tests
 #  schedule:
-#    - cron: '0,5,10,15,25,30,35,45,50,55 * * * *'
+#    - cron: '*/15 * * * *'
 
 jobs:
   # Run all test individually, note there is a separate job for aggregating the test results
