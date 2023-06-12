@@ -221,6 +221,13 @@ RSpec.describe 'Meterpreter' do
 
                     expect(payload_process).to(be_alive, proc do
                       current_payload_status = "Expected Payload process to be running. Instead got: payload process exited with #{payload_process.wait_thread.value} - when running the command #{payload_process.cmd.inspect}"
+
+                      Allure.add_attachment(
+                        name: 'Failed payload blob',
+                        source: Base64.strict_encode64(File.binread(payload_process.payload_path)),
+                        type: Allure::ContentType::TXT
+                      )
+
                       current_payload_status
                     end)
                     expect(session_id).to_not(be_nil, proc do

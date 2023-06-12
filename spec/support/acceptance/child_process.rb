@@ -387,11 +387,16 @@ module Acceptance
     # @return [String] the executed command
     attr_reader :cmd
 
+    # @return [String] the payload path on disk
+    attr_reader :payload_path
+
     # @param [Array<String>] cmd The command which can be used to execute this payload. For instance ["python3", "/tmp/path.py"]
+    # @param [path] payload_path The payload path on disk
     # @param [Hash] opts the opts to pass to the Process#spawn call
-    def initialize(cmd, opts = {})
+    def initialize(cmd, payload_path, opts = {})
       super()
 
+      @payload_path = payload_path
       @debug = false
       @env = {}
       @cmd = cmd
@@ -439,7 +444,7 @@ module Acceptance
         FileUtils.chmod('+x', payload.path)
       end
 
-      payload_process = PayloadProcess.new(payload.execute_command, opts)
+      payload_process = PayloadProcess.new(payload.execute_command, payload.path, opts)
       payload_process.run
       @payload_processes << payload_process
       payload_process
