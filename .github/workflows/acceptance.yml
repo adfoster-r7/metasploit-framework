@@ -172,34 +172,34 @@ jobs:
           path: tmp/allure-raw-data
 
   # Generate a final report from the previous test results
-  report:
-    name: Generate report
-    needs: test
-    runs-on: ubuntu-latest
-    if: always()
-
-    steps:
-      - uses: actions/download-artifact@v3
-        id: download
-        if: always()
-        with:
-          # Note: Not specifying a name will download all artifacts from the previous workflow jobs
-          path: raw-data
-
-      - name: allure generate
-        if: always()
-        run: |
-          export VERSION=2.22.1
-
-          curl -o allure-$VERSION.tgz -Ls https://github.com/allure-framework/allure2/releases/download/$VERSION/allure-$VERSION.tgz
-          tar -zxvf allure-$VERSION.tgz -C .
-
-          ./allure-$VERSION/bin/allure generate ${{steps.download.outputs.download-path}}/* -o ./allure-report
-
-      - name: archive results
-        if: always()
-        uses: actions/upload-artifact@v3
-        with:
-          name: final-report-${{ github.run_id }}
-          path: |
-            ./allure-report
+#  report:
+#    name: Generate report
+#    needs: test
+#    runs-on: ubuntu-latest
+#    if: always()
+#
+#    steps:
+#      - uses: actions/download-artifact@v3
+#        id: download
+#        if: always()
+#        with:
+#          # Note: Not specifying a name will download all artifacts from the previous workflow jobs
+#          path: raw-data
+#
+#      - name: allure generate
+#        if: always()
+#        run: |
+#          export VERSION=2.22.1
+#
+#          curl -o allure-$VERSION.tgz -Ls https://github.com/allure-framework/allure2/releases/download/$VERSION/allure-$VERSION.tgz
+#          tar -zxvf allure-$VERSION.tgz -C .
+#
+#          ./allure-$VERSION/bin/allure generate ${{steps.download.outputs.download-path}}/* -o ./allure-report
+#
+#      - name: archive results
+#        if: always()
+#        uses: actions/upload-artifact@v3
+#        with:
+#          name: final-report-${{ github.run_id }}
+#          path: |
+#            ./allure-report

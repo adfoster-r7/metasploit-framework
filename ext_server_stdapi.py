@@ -935,12 +935,54 @@ def get_username_from_token(token_user):
     LookupAccountSid = ctypes.windll.advapi32.LookupAccountSidA
     debug_print("inside ctypes get_username_from_token 9")
     LookupAccountSid.argtypes = [ctypes.c_void_p] * 7
+    LookupAccountSid.restype = ctypes.c_bool
+
     debug_print("inside ctypes get_username_from_token 10")
 
-    if not LookupAccountSid(None, token_user.User.Sid, user, ctypes.byref(user_len), domain, ctypes.byref(domain_len), ctypes.byref(use)):
-        debug_print("inside ctypes get_username_from_token 11")
-        return None
+    temp_user_sid = token_user.User.Sid
+    debug_print("inside ctypes get_username_from_token 11")
+
+    temp_user_len = ctypes.byref(user_len)
     debug_print("inside ctypes get_username_from_token 12")
+
+    temp_domain_len = ctypes.byref(domain_len)
+
+    debug_print("inside ctypes get_username_from_token 13")
+
+    temp_use = ctypes.byref(use)
+
+    debug_print("inside ctypes get_username_from_token 14")
+
+    debug_print("inside ctypes get_username_from_token 15 " + repr(temp_user_sid))
+
+    debug_print("inside ctypes get_username_from_token 17 " )
+
+    debug_print("inside ctypes get_username_from_token 18 " + repr([None, temp_user_sid, user, temp_user_len, domain, temp_domain_len, temp_use]))
+
+    # DEBUG:root:inside ctypes get_username_from_token 15 2363228745840
+    # DEBUG:root:inside ctypes get_username_from_token 17
+    # DEBUG:root:inside ctypes get_username_from_token 18 [None, 2363228745840, <c_char_Array_512 object at 0x000002263bf26240>, <cparam 'P' (0x000002263bf26090)>, <c_char_Array_512 object at 0x000002263bf26140>, <cparam 'P' (0x000002263be37d90)>, <cparam 'P' (0x000002263be37e90)>]
+
+    result = LookupAccountSid(
+                         #   [in, optional]  LPCSTR        lpSystemName,
+                         None,
+                         #   [in]            PSID          Sid,
+                         temp_user_sid,
+                         #   [out, optional] LPSTR         Name,
+                         user,
+                         #   [in, out]       LPDWORD       cchName,
+                          temp_user_len,
+                          #   [out, optional] LPSTR         ReferencedDomainName,
+                         domain,
+                         #   [in, out]       LPDWORD       cchReferencedDomainName,
+                         temp_domain_len,
+                         #   [out]           PSID_NAME_USE peUse
+                          temp_use)
+
+    if not result:
+        debug_print("inside ctypes get_username_from_token 19")
+        return None
+    debug_print("inside ctypes get_username_from_token 20")
 
     return str(ctypes.string_at(domain)) + '\\' + str(ctypes.string_at(user))
 
@@ -1246,7 +1288,10 @@ def stdapi_sys_config_getenv(request, response):
 
 @register_function_if(has_windll)
 def stdapi_sys_config_getsid(request, response):
-    token = get_token_user(ctypes.windll.kernel32.GetCurrentProcess())
+    GetCurrentProcess = ctypes.windll.kernel32.GetCurrentProcess
+    GetCurrentProcess.restype = ctypes.c_void_p
+
+    token = get_token_user(GetCurrentProcess())
     if not token:
         return error_result_windows(), response
     sid_str = ctypes.c_char_p()
