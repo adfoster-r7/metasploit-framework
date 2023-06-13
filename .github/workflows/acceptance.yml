@@ -40,29 +40,38 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-#        os:
-#          - macos-11
-#          - windows-2019
-#          - ubuntu-20.04
-#        ruby:
-#          - 3.0.2
-#        meterpreter:
-#          # Python
-#          - { name: python, runtime_version: 2.7 }
-#          - { name: python, runtime_version: 3.6 }
-#          - { name: python, runtime_version: 3.8 }
-#
-#          # Java - newer versions of Java are not supported currently: https://github.com/rapid7/metasploit-payloads/issues/647
-#          - { name: java, runtime_version: 8 }
-#
-#          # PHP
-#          - { name: php, runtime_version: 5.3 }
-#          - { name: php, runtime_version: 7.4 }
-#          - { name: php, runtime_version: 8.2 }
+        os:
+          - macos-11
+          - windows-2019
+          - ubuntu-20.04
+        ruby:
+          - 3.0.2
+        meterpreter:
+          # Python
+          - { name: python, runtime_version: 2.7 }
+          - { name: python, runtime_version: 3.6 }
+          - { name: python, runtime_version: 3.8 }
+
+          # Java - newer versions of Java are not supported currently: https://github.com/rapid7/metasploit-payloads/issues/647
+          - { name: java, runtime_version: 8 }
+
+          # PHP
+          - { name: php, runtime_version: 5.3 }
+          - { name: php, runtime_version: 7.4 }
+          - { name: php, runtime_version: 8.2 }
         include:
           # Windows Meterpreter
           - { meterpreter: { name: windows_meterpreter }, os: windows-2019 }
           - { meterpreter: { name: windows_meterpreter }, os: windows-2022 }
+          - { meterpreter: { name: windows_meterpreter }, os: windows-2019 }
+          - { meterpreter: { name: windows_meterpreter }, os: windows-2022 }
+          - { meterpreter: { name: windows_meterpreter }, os: windows-2019 }
+          - { meterpreter: { name: windows_meterpreter }, os: windows-2022 }
+          - { meterpreter: { name: windows_meterpreter }, os: windows-2019 }
+          - { meterpreter: { name: windows_meterpreter }, os: windows-2022 }
+          - { meterpreter: { name: windows_meterpreter }, os: windows-2019 }
+          - { meterpreter: { name: windows_meterpreter }, os: windows-2022 }
+
 
           # Mettle
 #          - { meterpreter: { name: mettle }, os: macos-11 }
