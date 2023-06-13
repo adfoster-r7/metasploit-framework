@@ -314,7 +314,7 @@ require 'digest/sha1'
     data = text.read(0,text.size)
 
     # Pick a random offset to store the payload
-    poff = rand(block[1] - payload.length - 256)
+    poff = rand(block[1] - payload.length - 256).floor
 
     # Flip a coin to determine if EP is before or after
     eloc = rand(2)
@@ -326,10 +326,10 @@ require 'digest/sha1'
     # Pick an offset to store the new entry point
     if eloc == 0 # place the entry point before the payload
       poff += 256
-      eidx = rand(poff-(entry.length + 5))
+      eidx = rand(poff-(entry.length + 5)).floor
     else          # place the entry pointer after the payload
-      poff -= 256
-      eidx = rand(block[1] - (poff + payload.length)) + poff + payload.length
+      poff -= [256, poff].min
+      eidx = rand(block[1] - (poff + payload.length + 256)).floor + poff + payload.length
     end
 
     # Relative jump from the end of the nops to the payload
@@ -340,8 +340,17 @@ require 'digest/sha1'
       data[ block[0] + rand(block[1]), 1] = [rand(0x100)].pack("C")
     end
 
+    $stderr.puts "block = #{block.inspect}; eloc = #{eloc.inspect} # #{eloc == 0 ? 'before' : 'after'}; poff = #{poff.inspect}; payload.length = #{payload.length.inspect}; eidx = #{eidx.inspect}; entry.length = #{entry.length.inspect}"
+
     # Patch the payload and the new entry point into the .text
+    if ((block[0] + poff + payload.length) > block[1]) || poff < 0
+      raise RuntimeError.new("Failure: poff = #{poff}, payload.length = #{payload.length}")
+    end
     data[block[0] + poff, payload.length] = payload
+
+    if ((block[0] + eidx + entry.length) > block[1]) || eidx < 0
+      raise RuntimeError.new("Failure: eidx = #{eidx}, entry.length = #{entry.length}")
+    end
     data[block[0] + eidx, entry.length]   = entry
 
     # Create the modified version of the input executable
