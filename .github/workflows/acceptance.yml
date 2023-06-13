@@ -50,6 +50,11 @@ jobs:
           # Python
           - { name: python, runtime_version: 2.7 }
           - { name: python, runtime_version: 3.6 }
+          - { name: python, runtime_version: 3.6 }
+          - { name: python, runtime_version: 3.6 }
+          - { name: python, runtime_version: 3.6 }
+          - { name: python, runtime_version: 3.6 }
+          - { name: python, runtime_version: 3.6 }
           - { name: python, runtime_version: 3.8 }
 
           # Java - newer versions of Java are not supported currently: https://github.com/rapid7/metasploit-payloads/issues/647

@@ -913,18 +913,35 @@ def get_token_user(handle):
     return ctstruct_unpack(TOKEN_USER, token_user_buffer)
 
 def get_username_from_token(token_user):
+    debug_print("inside ctypes get_username_from_token")
     user = (ctypes.c_char * 512)()
+    debug_print("inside ctypes get_username_from_token 1")
     domain = (ctypes.c_char * 512)()
+    debug_print("inside ctypes get_username_from_token 2")
     user_len = ctypes.c_uint32()
+    debug_print("inside ctypes get_username_from_token 3")
     user_len.value = ctypes.sizeof(user)
+    debug_print("inside ctypes get_username_from_token 4")
     domain_len = ctypes.c_uint32()
+    debug_print("inside ctypes get_username_from_token 5")
     domain_len.value = ctypes.sizeof(domain)
+    debug_print("inside ctypes get_username_from_token 6")
     use = ctypes.c_ulong()
+    debug_print("inside ctypes get_username_from_token 7")
+
     use.value = 0
+    debug_print("inside ctypes get_username_from_token 8")
+
     LookupAccountSid = ctypes.windll.advapi32.LookupAccountSidA
+    debug_print("inside ctypes get_username_from_token 9")
     LookupAccountSid.argtypes = [ctypes.c_void_p] * 7
+    debug_print("inside ctypes get_username_from_token 10")
+
     if not LookupAccountSid(None, token_user.User.Sid, user, ctypes.byref(user_len), domain, ctypes.byref(domain_len), ctypes.byref(use)):
+        debug_print("inside ctypes get_username_from_token 11")
         return None
+    debug_print("inside ctypes get_username_from_token 12")
+
     return str(ctypes.string_at(domain)) + '\\' + str(ctypes.string_at(user))
 
 def get_windll_lang():
@@ -1244,16 +1261,25 @@ def stdapi_sys_config_getsid(request, response):
 @register_function
 def stdapi_sys_config_getuid(request, response):
     if has_pwd:
+        debug_print("has_pwd")
         username = pwd.getpwuid(os.getuid()).pw_name
     elif has_windll:
+        debug_print("before get_token_user")
         token = get_token_user(ctypes.windll.kernel32.GetCurrentProcess())
+        debug_print("after get_token_user")
         if not token:
+            debug_print("inside if not token")
             return error_result_windows(), response
+        debug_print("before get_username_from_token")
         username = get_username_from_token(token)
+        debug_print("after get_username_from_token")
         if not username:
+            debug_print("inside if not username")
             return error_result_windows(), response
     else:
+        debug_print("fallback to getpass")
         username = getpass.getuser()
+    debug_print("responding")
     response += tlv_pack(TLV_TYPE_USER_NAME, username)
     return ERROR_SUCCESS, response
 
