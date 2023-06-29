@@ -60,6 +60,7 @@ ruby -run -e httpd . -p 8000
 ### Debugging
 
 If a test has failed you can enter into an interactive breakpoint with:
+
 ```
 require 'pry'; binding.pry
 ```

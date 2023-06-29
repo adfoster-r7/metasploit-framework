@@ -29,6 +29,10 @@ on:
   pull_request:
     branches:
       - '*'
+#    paths:
+#      - 'Gemfile.lock'
+#      - 'spec/acceptance'
+#      - 'spec/acceptance_spec_helper.rb'
   # Example of running as a cron, to weed out flaky tests
   schedule:
     - cron: '*/15 * * * *'
@@ -136,7 +140,7 @@ jobs:
       - name: acceptance
         env:
           SPEC_HELPER_LOAD_METASPLOIT: false
-          SPEC_OPTS: "--require acceptance_spec_helper.rb --color --format documentation --format AllureRspec::RSpecFormatter --require rspec-rerun/formatter --format RSpec::Rerun::Formatter"
+          SPEC_OPTS: "--tag acceptance --require acceptance_spec_helper.rb --color --format documentation --format AllureRspec::RSpecFormatter"
         # Unix run command:
         #   SPEC_HELPER_LOAD_METASPLOIT=false bundle exec ./spec/acceptance
         # Windows cmd command:

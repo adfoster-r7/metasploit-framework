@@ -98,7 +98,7 @@ module Acceptance
 
       result
     rescue ChildProcessTimeoutError
-      raise ChildProcessRecvError, "Failed #{__method__}: Did not match #{delim.inspect}, remaining buffer: #{self.buffer.string[self.buffer.pos..].inspect}"
+      raise ChildProcessRecvError, "Failed #{__method__}: Did not match #{delim.inspect}, process was alive?=#{alive?.inspect}, remaining buffer: #{self.buffer.string[self.buffer.pos..].inspect}"
     end
 
     # @return [String] Recv until additional reads would cause a block, or eof is reached, or a maximum timeout is reached

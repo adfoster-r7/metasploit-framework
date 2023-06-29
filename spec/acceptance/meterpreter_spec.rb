@@ -170,6 +170,8 @@ RSpec.describe 'Meterpreter' do
           end
 
           before :each do |example|
+            raise 'Failed to load allure metadata method' unless example.respond_to?(:parameter)
+
             # Add the test environment metadata to the rspec example instance - so it appears in the final allure report UI
             test_environment.each do |key, value|
               example.parameter(key, value)

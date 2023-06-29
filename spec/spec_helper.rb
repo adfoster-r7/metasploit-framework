@@ -61,11 +61,12 @@ RSpec.configure do |config|
   config.raise_errors_for_deprecations!
   config.include RuboCop::RSpec::ExpectOffense
   config.expose_dsl_globally = false
-  config.filter_run_excluding({ acceptance: true })
 
-  config.define_derived_metadata(file_path: %{spec/acceptance/}) do |metadata|
-    metadata[:type] ||= :acceptance
+  # Don't run Acceptance tests by default
+  config.define_derived_metadata(file_path: %r{spec/acceptance/}) do |metadata|
+    metadata[:acceptance] ||= true
   end
+  config.filter_run_excluding({ acceptance: true })
 
   # These two settings work together to allow you to limit a spec run
   # to individual examples or groups you care about by tagging them with

@@ -360,11 +360,6 @@ class ClientCore < Extension
         modname = "ext_server_#{mod.downcase}"
         path = MetasploitPayloads.meterpreter_path(modname, suffix, debug: client.debug_build)
 
-        # Serve the local file for for now
-        if modname == 'ext_server_stdapi' && suffix == 'py'
-          path = ::File.join(Msf::Config.install_root, "ext_server_stdapi.py")
-        end
-
         if opts['ExtensionPath']
           path = ::File.expand_path(opts['ExtensionPath'])
         end
