@@ -98,6 +98,8 @@ class CommandShell
   end
 
   def bootstrap(datastore = {}, handler = nil)
+    require 'pry-byebug'; binding.pry
+
     session = self
 
     if datastore['AutoVerifySession']

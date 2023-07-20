@@ -236,6 +236,8 @@ module Msf::Sessions
     end
 
     def bootstrap(datastore = {}, handler = nil)
+      require 'pry-byebug'; binding.pry
+
       # this won't work after the rstream is initialized, so do it first
       @platform = Metasploit::Framework::Ssh::Platform.get_platform(ssh_connection)
 
