@@ -55,6 +55,6 @@ module MetasploitModule
     #   "\x48\xc7\xc0\x3b\x00\x00\x02" +                # mov rax, 0x200003b (execve)
     #   "\x0f\x05"                                      # syscall
 
-    "\x40\x00\x20\xD4".force_encoding("ASCII")
+    "
   end
 end
