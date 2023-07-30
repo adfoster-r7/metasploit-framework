@@ -33,6 +33,8 @@ class MsfAutoload
         'Json'
       elsif basename == 'powershell' && abspath.end_with?("#{__dir__}/msf/base/sessions/powershell.rb")
         'PowerShell'
+      elsif basename == 'smb' && abspath.end_with?("#{__dir__}/msf/core/module/ui", "#{__dir__}/msf/core/module/ui.rb", "#{__dir__}/rex/post/ui", "#{__dir__}/rex/post/ui.rb")
+        'SMB'
       elsif basename == 'ui' && abspath.end_with?("#{__dir__}/msf/core/module/ui", "#{__dir__}/msf/core/module/ui.rb", "#{__dir__}/rex/post/ui", "#{__dir__}/rex/post/ui.rb", "#{__dir__}/rex/post/meterpreter/extensions/stdapi/ui.rb")
         'UI'
       elsif basename == 'ssh' && abspath.end_with?("#{__dir__}/rex/proto/ssh")

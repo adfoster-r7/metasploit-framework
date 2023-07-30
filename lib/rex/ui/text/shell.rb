@@ -497,7 +497,8 @@ module Shell
   attr_accessor :local_hostname, :local_username # :nodoc:
   attr_reader   :cont_flag # :nodoc:
   attr_accessor :name
-private
+
+  private
 
   def try_exec(command)
     begin

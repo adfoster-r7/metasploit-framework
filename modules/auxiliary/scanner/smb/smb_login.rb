@@ -10,6 +10,7 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::DCERPC
   include Msf::Exploit::Remote::SMB::Client
   include Msf::Exploit::Remote::SMB::Client::Authenticated
+  include Msf::Auxiliary::CommandShell
 
   include Msf::Auxiliary::Scanner
   include Msf::Auxiliary::Report
@@ -62,7 +63,7 @@ class MetasploitModule < Msf::Auxiliary
       ]
     )
 
-    deregister_options('USERNAME', 'PASSWORD', 'PASSWORD_SPRAY')
+    deregister_options('USERNAME', 'PASSWORD', 'PASSWORD_SPRAY', 'CommandShellCleanupCommand', 'AutoVerifySession')
   end
 
   def run_host(ip)
@@ -104,7 +105,8 @@ class MetasploitModule < Msf::Auxiliary
       send_delay: datastore['TCP::send_delay'],
       framework: framework,
       framework_module: self,
-      kerberos_authenticator_factory: kerberos_authenticator_factory
+      kerberos_authenticator_factory: kerberos_authenticator_factory,
+      use_client_as_proof: datastore['CreateSession']
     )
 
     if datastore['DETECT_ANY_AUTH']
@@ -146,6 +148,15 @@ class MetasploitModule < Msf::Auxiliary
         :next_user
       when Metasploit::Model::Login::Status::SUCCESSFUL
         print_brute level: :good, ip: ip, msg: "Success: '#{result.credential}' #{result.access_level}"
+        if datastore['CreateSession']
+          begin
+            smb_client = result.proof
+            session_setup(result, smb_client)
+          rescue StandardError => e
+            elog('Failed to setup the session', error: e)
+            print_brute level: :error, ip: ip, msg: "Failed to setup the session - #{e.class} #{e.message}"
+          end
+        end
         report_creds(ip, rport, result)
         :next_user
       when Metasploit::Model::Login::Status::UNABLE_TO_CONNECT
@@ -242,4 +253,46 @@ class MetasploitModule < Msf::Auxiliary
 
     create_credential_login(login_data)
   end
+
+  # @param [RubySMB::Client] client
+  def session_setup(result, client)
+    return unless client
+
+    platform = 'windows' # scanner.get_platform(result.proof)
+
+    # Create a new session
+    rstream = client.dispatcher.tcp_socket
+    sess = Msf::Sessions::SMB.new(
+      rstream,
+      {
+        client: client,
+      }
+    )
+
+    merge_me = {
+      'USERPASS_FILE' => nil,
+      'USER_FILE'     => nil,
+      'PASS_FILE'     => nil,
+      'USERNAME'      => result.credential.public,
+      'PASSWORD'      => result.credential.private
+    }
+    s = start_session(self, nil, merge_me, false, sess.rstream, sess)
+
+    # Set the session platform
+    s.platform = platform
+
+    # Create database host information
+    # TODO - Shouldn't this already happen?
+    # host_info = { host: scanner.host }
+    #
+    # unless s.platform == 'unknown'
+    #   host_info[:os_name] = s.platform
+    # end
+    #
+    # report_host(host_info)
+
+    s
+  end
+
+
 end
