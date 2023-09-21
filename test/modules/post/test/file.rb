@@ -67,6 +67,15 @@ class MetasploitModule < Msf::Post
       ret
     end
 
+    it 'should create create files recursively' do
+      mkdir(datastore['BaseDirectoryName'])
+      nested_path = File.join(datastore['BaseDirectoryName'], "a", "b", "c", "d")
+      ret = directory?(datastore['BaseDirectoryName'])
+      ret &&= mkdir(nested_path)
+      ret &&= directory?(nested_path)
+      ret
+    end
+
     it 'should list the directory we just made' do
       dents = dir(datastore['BaseDirectoryName'])
       dents.include?('file') && dents.include?('directory')
