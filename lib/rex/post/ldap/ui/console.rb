@@ -123,7 +123,7 @@ module Rex
           def format_prompt(val)
             prompt = session.address.to_s
 
-            substitute_colors("%undLDAP%clr (#{prompt}) > ", true)
+            substitute_colors("%undLDAP%clr (#{prompt}) > ", false)
           end
 
           protected

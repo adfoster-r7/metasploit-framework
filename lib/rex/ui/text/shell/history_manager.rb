@@ -29,7 +29,7 @@ class HistoryManager
   # @return [nil]
   def with_context(history_file: nil, name: nil, input_library: nil, &block)
     # Default to Readline for backwards compatibility.
-    push_context(history_file: history_file, name: name, input_library: input_library || :readline)
+    push_context(history_file: history_file, name: name, input_library: input_library || :reline)
 
     begin
       block.call
@@ -79,6 +79,7 @@ class HistoryManager
     when :readline
       ::Readline::HISTORY
     when :reline
+      require 'reline'
       ::Reline::HISTORY
     else
       $stderr.puts("Unknown input library: #{input_library}") if debug?

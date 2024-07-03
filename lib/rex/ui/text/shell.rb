@@ -195,7 +195,7 @@ module Shell
   # new_prompt_char the char to append to the prompt
   def update_prompt(new_prompt = self.prompt, new_prompt_char = self.prompt_char)
     if (self.input)
-      p = substitute_colors(new_prompt + ' ' + new_prompt_char + ' ', true)
+      p = substitute_colors(new_prompt + ' ' + new_prompt_char + ' ', false)
 
       # Save the prompt before any substitutions
       self.prompt = new_prompt

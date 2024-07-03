@@ -25,9 +25,9 @@ begin
       self.extend(::Readline)
 
       if tab_complete_proc
-        ::Readline.basic_word_break_characters = ""
+        ::Reline.basic_word_break_characters = ""
         @rl_saved_proc = with_error_handling(tab_complete_proc)
-        ::Readline.completion_proc = @rl_saved_proc
+        ::Reline.completion_proc = @rl_saved_proc
       end
     end
 
@@ -35,8 +35,8 @@ begin
     # Reattach the original completion proc
     #
     def reset_tab_completion(tab_complete_proc = nil)
-      ::Readline.basic_word_break_characters = "\x00"
-      ::Readline.completion_proc = tab_complete_proc ? with_error_handling(tab_complete_proc) : @rl_saved_proc
+      ::Reline.basic_word_break_characters = "\x00"
+      ::Reline.completion_proc = tab_complete_proc ? with_error_handling(tab_complete_proc) : @rl_saved_proc
     end
 
 
@@ -44,8 +44,10 @@ begin
     # Retrieve the line buffer
     #
     def line_buffer
-      if defined? RbReadline
-        RbReadline.rl_line_buffer
+      if defined? Reline
+        Reline.line_buffer
+      # elsif defined? RbReadline
+      #   RbReadline.rl_line_buffer
       else
         ::Readline.line_buffer
       end
@@ -124,6 +126,7 @@ begin
     # The prompt that is to be displayed.
     #
     attr_accessor :prompt
+
     #
     # The output handle to use when displaying the prompt.
     #
@@ -153,27 +156,42 @@ begin
 =end
       reset_sequence = ""
 
-      if defined? RbReadline
-        RbReadline.rl_instream = fd
-        RbReadline.rl_outstream = output
+      require 'reline'
+      if defined? Reline
+        Reline.input = fd
+        Reline.output = output
 
-        begin
-          line = RbReadline.readline(reset_sequence + prompt)
-        rescue ::Exception => exception
-          RbReadline.rl_cleanup_after_signal()
-          RbReadline.rl_deprep_terminal()
-
-          raise exception
-        end
+        line = Reline.readline(reset_sequence + prompt)
 
         if add_history && line && !line.start_with?(' ')
           # Don't add duplicate lines to history
-          if ::Readline::HISTORY.empty? || line.strip != ::Readline::HISTORY[-1]
-            RbReadline.add_history(line.strip)
+          if ::Reline::HISTORY.empty? || line.strip != ::Reline::HISTORY[-1]
+            Reline::HISTORY << line.strip
           end
         end
 
         line.try(:dup)
+      # elsif defined? RbReadline
+      #   RbReadline.rl_instream = fd
+      #   RbReadline.rl_outstream = output
+      #
+      #   begin
+      #     line = RbReadline.readline(reset_sequence + prompt)
+      #   rescue ::Exception => exception
+      #     RbReadline.rl_cleanup_after_signal()
+      #     RbReadline.rl_deprep_terminal()
+      #
+      #     raise exception
+      #   end
+      #
+      #   if add_history && line && !line.start_with?(' ')
+      #     # Don't add duplicate lines to history
+      #     if ::Readline::HISTORY.empty? || line.strip != ::Readline::HISTORY[-1]
+      #       RbReadline.add_history(line.strip)
+      #     end
+      #   end
+      #
+      #   line.try(:dup)
       else
         # The line that's read is immediately added to history
         line = ::Readline.readline(reset_sequence + prompt, true)

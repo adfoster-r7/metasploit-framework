@@ -39,7 +39,7 @@ class Output < Rex::Ui::Output
 
   def update_prompt(prompt = nil)
     return if prompt.nil?
-    substitute_colors(prompt, true)
+    substitute_colors(prompt, false)
   end
 
   def print_error(msg = '')

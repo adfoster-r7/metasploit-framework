@@ -83,7 +83,7 @@ class Output::Stdio < Rex::Ui::Text::Output
   # Prints the supplied message to standard output.
   #
   def print_raw(msg = '')
-    if (Rex::Compat.is_windows and supports_color?)
+    if Rex::Compat.is_windows and supports_color?
       WindowsConsoleColorSupport.new(io).write(msg)
     else
       io.print(msg)
@@ -94,6 +94,7 @@ class Output::Stdio < Rex::Ui::Text::Output
     msg
   end
   alias_method :write, :print_raw
+  alias_method :<<, :write
 
   def supports_color?
     case config[:color]

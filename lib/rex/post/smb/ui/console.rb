@@ -148,7 +148,7 @@ module Rex
               prompt = session.address.to_s
             end
 
-            substitute_colors("%undSMB%clr (#{prompt}) > ", true)
+            substitute_colors("%undSMB%clr (#{prompt}) > ", false)
           end
 
           protected

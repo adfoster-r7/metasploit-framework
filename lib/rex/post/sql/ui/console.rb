@@ -115,7 +115,7 @@ module Rex
           # @param [Object] val
           # @return [String]
           def format_prompt(val)
-            substitute_colors("%und#{sql_prompt}%clr > ", true)
+            substitute_colors("%und#{sql_prompt}%clr > ", false)
           end
 
           #
