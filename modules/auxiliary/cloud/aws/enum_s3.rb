@@ -10,14 +10,14 @@ class MetasploitModule < Msf::Auxiliary
     super(
       update_info(
         info,
-        'Name'        => 'Amazon Web Services S3 instance enumeration',
-        'Description' => %q(
-                          Provided AWS credentials, this module will call the authenticated
-                          API of Amazon Web Services to list all S3 buckets associated
-                          with the account
-                         ),
-        'Author'      => ['Aaron Soto <aaron.soto@rapid7.com>'],
-        'License'     => MSF_LICENSE
+        'Name' => 'Amazon Web Services S3 instance enumeration',
+        'Description' => %q{
+          Provided AWS credentials, this module will call the authenticated
+          API of Amazon Web Services to list all S3 buckets associated
+          with the account
+        },
+        'Author' => ['Aaron Soto <aaron.soto@rapid7.com>'],
+        'License' => MSF_LICENSE
       )
     )
 
@@ -47,14 +47,14 @@ class MetasploitModule < Msf::Auxiliary
     begin
       print_good "  Website:        /#{@s3.get_bucket_website(bucket: i.name).index_document.suffix}"
     rescue Aws::S3::Errors::NoSuchWebsiteConfiguration
-      print_good "  Website:        (None)"
+      print_good '  Website:        (None)'
     end
 
     acl = @s3.get_bucket_acl(bucket: i.name)
     print_good "  Owner:          #{acl.owner.display_name}"
-    print_good "  Permissions:"
+    print_good '  Permissions:'
     acl.grants.each do |i|
-      grantee = i.grantee.type == "CanonicalUser" ? "User" : i.grantee.type
+      grantee = i.grantee.type == 'CanonicalUser' ? 'User' : i.grantee.type
       grantee << " '#{i.grantee.display_name}'"
       grantee << " (#{i.grantee.email_address})" unless i.grantee.email_address.nil?
       grantee << " (#{i.grantee.uri})" unless i.grantee.uri.nil?
@@ -67,14 +67,14 @@ class MetasploitModule < Msf::Auxiliary
     region = datastore['REGION']
 
     @s3 = Aws::S3::Client.new(
-      region: "us-west-2",      # This doesn't actually filter anything, but
-                                #   it's still required.  Thanks AWS.  :-(
+      region: 'us-west-2', # This doesn't actually filter anything, but
+      #   it's still required.  Thanks AWS.  :-(
       access_key_id: datastore['ACCESS_KEY_ID'],
       secret_access_key: datastore['SECRET_ACCESS_KEY']
     )
 
     buckets = @s3.list_buckets.buckets
-    unless buckets.length > 0
+    if buckets.empty?
       print_status 'No buckets found.'
       return
     end

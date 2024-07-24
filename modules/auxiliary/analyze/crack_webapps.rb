@@ -30,12 +30,12 @@ class MetasploitModule < Msf::Auxiliary
 
     register_options(
       [
-        OptBool.new('ATLASSIAN',[false, 'Include Atlassian hashes', true]),
-        OptBool.new('MEDIAWIKI',[false, 'Include MediaWiki hashes', true]),
-        OptBool.new('PHPASS',[false, 'Include Wordpress/PHPass, Joomla, phpBB3 hashes', true]),
-        OptBool.new('PBKDF2',[false, 'Apache Superset, some Flask and Werkzeug apps hashes', true]),
-        OptBool.new('INCREMENTAL',[false, 'Run in incremental mode', true]),
-        OptBool.new('WORDLIST',[false, 'Run in wordlist mode', true])
+        OptBool.new('ATLASSIAN', [false, 'Include Atlassian hashes', true]),
+        OptBool.new('MEDIAWIKI', [false, 'Include MediaWiki hashes', true]),
+        OptBool.new('PHPASS', [false, 'Include Wordpress/PHPass, Joomla, phpBB3 hashes', true]),
+        OptBool.new('PBKDF2', [false, 'Apache Superset, some Flask and Werkzeug apps hashes', true]),
+        OptBool.new('INCREMENTAL', [false, 'Run in incremental mode', true]),
+        OptBool.new('WORDLIST', [false, 'Run in wordlist mode', true])
       ]
     )
   end

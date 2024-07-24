@@ -9,23 +9,21 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'GTP Echo Scanner',
+      'Name' => 'GTP Echo Scanner',
       'Description' => %q{
         This module sends UDP GTP (GTP-U) echo requests to the target RHOSTS and
         reports on which ones respond, thus identifying General Packet Radio
         Service (GPRS) servers. This module does not support scanning with SCTP.
       },
-      'References'  =>
-        [
-          ['URL', 'https://insinuator.net/tag/gtp/'],
-          ['URL', 'https://www.etsi.org/deliver/etsi_ts/129200_129299/129281/08.00.00_60/ts_129281v080000p.pdf']
-        ],
-      'Author'      =>
-        [
-          'Daniel Mende',    # original gtp-scan.py script
-          'Spencer McIntyre' # metasploit module
-        ],
-      'License'     => MSF_LICENSE
+      'References' => [
+        ['URL', 'https://insinuator.net/tag/gtp/'],
+        ['URL', 'https://www.etsi.org/deliver/etsi_ts/129200_129299/129281/08.00.00_60/ts_129281v080000p.pdf']
+      ],
+      'Author' => [
+        'Daniel Mende', # original gtp-scan.py script
+        'Spencer McIntyre' # metasploit module
+      ],
+      'License' => MSF_LICENSE
     )
 
     register_options([
@@ -35,7 +33,7 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   class GTPv1 < BinData::Record
-    endian  :big
+    endian :big
 
     default_parameter version: 1
     default_parameter protocol_type: 1
@@ -43,24 +41,24 @@ class MetasploitModule < Msf::Auxiliary
     default_parameter has_sequence_number: 0
     default_parameter has_n_pdu_number: 0
     default_parameter message_type: 0
-    default_parameter data: ""
+    default_parameter data: ''
 
     # header
-    bit3   :version, :initial_value => :version
-    bit1   :protocol_type, :initial_value => :protocol_type
+    bit3   :version, initial_value: :version
+    bit1   :protocol_type, initial_value: :protocol_type
     bit1   :reserved
-    bit1   :has_next_extension_header, :initial_value => :has_next_extension_header
-    bit1   :has_sequence_number, :initial_value => :has_sequence_number
-    bit1   :has_n_pdu_number, :initial_value => :has_n_pdu_number
-    uint8  :message_type, :initial_value => :message_type
-    uint16 :len, :value => :calc_length
+    bit1   :has_next_extension_header, initial_value: :has_next_extension_header
+    bit1   :has_sequence_number, initial_value: :has_sequence_number
+    bit1   :has_n_pdu_number, initial_value: :has_n_pdu_number
+    uint8  :message_type, initial_value: :message_type
+    uint16 :len, value: :calc_length
     uint32 :teid
 
     # body
     uint16  :sequence_number, onlyif: -> { has_sequence_number.nonzero? }
     uint8   :n_pdu_number, onlyif: -> { has_n_pdu_number.nonzero? }
     uint8   :next_extension_header_type, onlyif: -> { has_next_extension_header.nonzero? }
-    string :data, :initial_value => :data, :read_length => :calc_length_read
+    string :data, initial_value: :data, read_length: :calc_length_read
 
     def calc_length
       length = data.length
@@ -85,27 +83,27 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   class GTPv2 < BinData::Record
-    endian  :big
+    endian :big
 
     default_parameter version: 2
     default_parameter piggybacking: 0
     default_parameter message_priority: 0
     default_parameter message_type: 0
-    default_parameter data: ""
+    default_parameter data: ''
 
     # header
-    bit3   :version, :initial_value => :version
-    bit1   :piggybacking, :initial_value => :piggybacking
+    bit3   :version, initial_value: :version
+    bit1   :piggybacking, initial_value: :piggybacking
     bit1   :has_teid
-    bit1   :message_priority, :initial_value => :message_priority
-    uint8  :message_type, :initial_value => :message_type
-    uint16 :len, :value => :calc_length
+    bit1   :message_priority, initial_value: :message_priority
+    uint8  :message_type, initial_value: :message_type
+    uint16 :len, value: :calc_length
 
     # body
     uint32 :teid, onlyif: -> { has_teid.nonzero? }
     uint24 :sequence_number
     uint8  :spare
-    string :data, :initial_value => :data, :read_length => :calc_length_read
+    string :data, initial_value: :data, read_length: :calc_length_read
 
     def calc_length
       length = data.length + 4
@@ -134,9 +132,10 @@ class MetasploitModule < Msf::Auxiliary
     end
   end
 
-  def scanner_postscan(batch)
+  def scanner_postscan(_batch)
     @results.each do |rhost, data|
       next unless data.length == 1
+
       data = data[0]
 
       if datastore['VERSION'] == '1'
@@ -162,10 +161,10 @@ class MetasploitModule < Msf::Auxiliary
       print_good("GTP v#{datastore['VERSION']} echo response received from: #{peer}")
 
       report_service(
-        :host  => rhost,
-        :proto => 'udp',
-        :port  => rport,
-        :name  => 'gtp'
+        host: rhost,
+        proto: 'udp',
+        port: rport,
+        name: 'gtp'
       )
     end
   end

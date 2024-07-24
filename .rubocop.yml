@@ -94,6 +94,19 @@ Lint/UnusedMethodArgument:
 Style/ArgumentsForwarding:
   Enabled: true
 
+Style/AccessorGrouping: &ignored_due_to_noise
+  Description: >-
+    This would cause a lot of noise, and potentially introduce subtly different code when
+    being auto fixed. Could potentially be enabled in isolation, but would require more
+    consideration.
+  Enabled: false
+
+Style/SoleNestedConditional:
+  <<: *ignored_due_to_noise
+
+Style/IdenticalConditionalBranches:
+  <<: *ignored_due_to_noise
+
 Style/BlockComments:
   Description: >-
     Disabled as multiline comments are great for embedded code snippets/payloads that can
@@ -166,6 +179,9 @@ Layout/ModuleHashValuesOnSameLine:
 
 Layout/ModuleDescriptionIndentation:
   Enabled: true
+
+Lint/UselessAssignment:
+  <<: *ignored_due_to_noise
 
 Lint/DetectInvalidPackDirectives:
   Enabled: true

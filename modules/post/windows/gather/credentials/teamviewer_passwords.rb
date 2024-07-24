@@ -69,7 +69,7 @@ class MetasploitModule < Msf::Post
       { value: 'LicenseKeyAES', description: 'Perpetual License Key' }, # for <= v14
     ]
 
-    keys.each do |parent_key, _child_key|
+    keys.each_key do |parent_key|
       locations.each do |location|
         secret = registry_getvaldata(parent_key, location[:value])
         next if secret.nil?

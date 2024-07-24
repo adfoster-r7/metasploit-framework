@@ -11,18 +11,18 @@ class MetasploitModule < Msf::Auxiliary
     super(
       update_info(
         info,
-        'Name'          => 'Test SSH Github Access',
-        'Description'   => %q(
+        'Name' => 'Test SSH Github Access',
+        'Description' => %q{
           This module will attempt to test remote Git access using
           (.ssh/id_* private keys). This works against GitHub and
           GitLab by default, but can easily be extended to support
           more server types.
-        ),
-        'License'       => MSF_LICENSE,
-        'Author'        => ['Wyatt Dahlenburg (@wdahlenb)'],
-        'Platform'      => ['linux'],
-        'SessionTypes'  => ['shell', 'meterpreter'],
-        'References'    => [['URL', 'https://docs.github.com/en/authentication/connecting-to-github-with-ssh/testing-your-ssh-connection']]
+        },
+        'License' => MSF_LICENSE,
+        'Author' => ['Wyatt Dahlenburg (@wdahlenb)'],
+        'Platform' => ['linux'],
+        'SessionTypes' => ['shell', 'meterpreter'],
+        'References' => [['URL', 'https://docs.github.com/en/authentication/connecting-to-github-with-ssh/testing-your-ssh-connection']]
       )
     )
 
@@ -36,16 +36,15 @@ class MetasploitModule < Msf::Auxiliary
     deregister_options(
       'RHOST', 'RHOSTS', 'PASSWORD', 'PASS_FILE', 'BLANK_PASSWORDS', 'USER_AS_PASS', 'USERPASS_FILE', 'DB_ALL_PASS', 'DB_ALL_CREDS'
     )
-
   end
 
   # OPTPath will revert to pwd when set back to ""
   def key_dir
-    datastore['KEY_DIR'] != `pwd`.strip ? datastore['KEY_DIR'] : ""
+    datastore['KEY_DIR'] != `pwd`.strip ? datastore['KEY_DIR'] : ''
   end
 
   def key_file
-    datastore['KEY_FILE'] != `pwd`.strip ? datastore['KEY_FILE'] : ""
+    datastore['KEY_FILE'] != `pwd`.strip ? datastore['KEY_FILE'] : ''
   end
 
   def has_passphrase?(file)
@@ -63,7 +62,7 @@ class MetasploitModule < Msf::Auxiliary
       end
       return keys
     else
-      keyfile = ::File.open(file, "rb") { |f| f.read(f.stat.size) }
+      keyfile = ::File.open(file, 'rb') { |f| f.read(f.stat.size) }
     end
     keys = []
     this_key = []
@@ -84,10 +83,10 @@ class MetasploitModule < Msf::Auxiliary
 
   def parse_user(output)
     vprint_status("SSH Test: #{output}")
-    if (output =~ /You\'ve successfully authenticated/)
-      return output.match(/Hi (.*)\! You\'ve successfully authenticated/)[1]
-    elsif (output =~ /Welcome to GitLab, \@(.*)\!$/)
-      return output.match(/Welcome to GitLab, \@(.*)\!$/)[1]
+    if (output =~ /You've successfully authenticated/)
+      return output.match(/Hi (.*)! You've successfully authenticated/)[1]
+    elsif (output =~ /Welcome to GitLab, @(.*)!$/)
+      return output.match(/Welcome to GitLab, @(.*)!$/)[1]
     end
   end
 
@@ -131,7 +130,11 @@ class MetasploitModule < Msf::Auxiliary
         t.map(&:join)
       rescue ::Timeout::Error
       ensure
-        t.each { |x| x.kill rescue nil }
+        t.each do |x|
+          x.kill
+        rescue StandardError
+          nil
+        end
       end
     end
     return results
@@ -141,7 +144,7 @@ class MetasploitModule < Msf::Auxiliary
     if key_file && File.readable?(key_file)
       keys = Array(read_keyfile(key_file))
     elsif !key_dir.nil? && !key_dir.empty?
-      return :missing_keyfile unless (File.directory?(key_dir) && File.readable?(key_dir))
+      return :missing_keyfile unless File.directory?(key_dir) && File.readable?(key_dir)
 
       @key_files ||= Dir.glob("#{key_dir}/**/id_*", File::FNM_DOTMATCH).reject { |f| f.include? '.pub' }
       vprint_status("Identified #{@key_files.size} potential keys")
@@ -164,7 +167,7 @@ class MetasploitModule < Msf::Auxiliary
     return if results.empty?
 
     keys_table = Rex::Text::Table.new(
-      'Header' => "Git Access Data",
+      'Header' => 'Git Access Data',
       'Columns' => [ 'Key Location', 'User Access' ]
     )
 

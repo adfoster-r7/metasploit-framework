@@ -10,14 +10,14 @@ class MetasploitModule < Msf::Auxiliary
     super(
       update_info(
         info,
-        'Name'        => 'Amazon Web Services IAM credential enumeration',
-        'Description' => %q(
-                          Provided AWS credentials, this module will call the authenticated
-                          API of Amazon Web Services to list all IAM credentials associated
-                          with the account
-                         ),
-        'Author'      => ['Aaron Soto <aaron.soto@rapid7.com>'],
-        'License'     => MSF_LICENSE
+        'Name' => 'Amazon Web Services IAM credential enumeration',
+        'Description' => %q{
+          Provided AWS credentials, this module will call the authenticated
+          API of Amazon Web Services to list all IAM credentials associated
+          with the account
+        },
+        'Author' => ['Aaron Soto <aaron.soto@rapid7.com>'],
+        'License' => MSF_LICENSE
       )
     )
 
@@ -49,7 +49,7 @@ class MetasploitModule < Msf::Auxiliary
 
     policies = i.attached_managed_policies
     if policies.empty?
-      print_good "  Policies:        []"
+      print_good '  Policies:        []'
     else
       print_good "  Policies:        #{policies[0].policy_name}"
       policies[1..policies.length].each do |p|
@@ -59,7 +59,7 @@ class MetasploitModule < Msf::Auxiliary
 
     certs = @iam.list_signing_certificates(user_name: user).certificates
     if certs.empty?
-      print_good "  Signing certs:   []"
+      print_good '  Signing certs:   []'
     else
       print_good "  Signing certs:   #{certs[0].certificate_id} (#{certs[0].status})"
       certs[1..certs.length].each do |c|
@@ -75,7 +75,7 @@ class MetasploitModule < Msf::Auxiliary
 
     keys = @iam.list_access_keys(user_name: user).access_key_metadata
     if keys.empty?
-      print_good "  AWS Access Keys: []"
+      print_good '  AWS Access Keys: []'
     else
       print_good "  AWS Access Keys: #{keys[0].access_key_id} (#{keys[0].status})"
       keys[1..keys.length].each do |k|
@@ -87,7 +87,7 @@ class MetasploitModule < Msf::Auxiliary
       console_login = @iam.get_login_profile(user_name: user).empty? ? 'Disabled' : 'Enabled'
       print_good "  Console login:   #{console_login}"
     rescue Aws::IAM::Errors::NoSuchEntity
-      print_good "  Console login:   Disabled"
+      print_good '  Console login:   Disabled'
     end
 
     mfa = @iam.list_mfa_devices(user_name: i.user_name).mfa_devices
@@ -99,7 +99,7 @@ class MetasploitModule < Msf::Auxiliary
 
   def run
     @iam = Aws::IAM::Client.new(
-      region: 'us-west-1',      # This is meaningless, but required.  Thanks AWS.
+      region: 'us-west-1', # This is meaningless, but required.  Thanks AWS.
       access_key_id: datastore['ACCESS_KEY_ID'],
       secret_access_key: datastore['SECRET_ACCESS_KEY']
     )

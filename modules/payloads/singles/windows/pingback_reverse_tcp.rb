@@ -3,9 +3,7 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 module MetasploitModule
-
   CachedSize = 307
 
   include Msf::Payload::Windows
@@ -136,7 +134,7 @@ module MetasploitModule
           jz exitfunk
           dec [esi+12]
           sleep:
-            push #{(pingback_sleep * 1000)}
+            push #{pingback_sleep * 1000}
             push #{Rex::Text.block_api_hash('kernel32.dll', 'Sleep')}
             call ebp                  ;sleep(pingback_sleep * 1000)
             jmp create_socket

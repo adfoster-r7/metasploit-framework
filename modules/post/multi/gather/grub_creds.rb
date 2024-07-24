@@ -133,7 +133,7 @@ class MetasploitModule < Msf::Post
         create_credential(credential_data)
       end
 
-      @pass_hash.each do |_index, pass|
+      @pass_hash.each_value do |pass|
         credential_data = {
           origin_type: :session,
           post_reference_name: refname,
