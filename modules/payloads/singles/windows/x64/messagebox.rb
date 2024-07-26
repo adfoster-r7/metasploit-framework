@@ -4,30 +4,32 @@
 ##
 
 module MetasploitModule
-
   CachedSize = 322
 
   include Msf::Payload::Windows
   include Msf::Payload::Single
 
   def initialize(info = {})
-    super(merge_info(info,
-      'Name'        => 'Windows MessageBox x64',
-      'Description' => 'Spawn a dialog via MessageBox using a customizable title, text & icon',
-      'Author'      => [
-        'pasta <jaguinaga[at]infobytesec.com>'
-      ],
-      'License'     => GPL_LICENSE,
-      'Platform'    => 'win',
-      'Arch'        => ARCH_X64
-    ))
+    super(
+      merge_info(
+        info,
+        'Name' => 'Windows MessageBox x64',
+        'Description' => 'Spawn a dialog via MessageBox using a customizable title, text & icon',
+        'Author' => [
+          'pasta <jaguinaga[at]infobytesec.com>'
+        ],
+        'License' => GPL_LICENSE,
+        'Platform' => 'win',
+        'Arch' => ARCH_X64
+      )
+    )
 
     icon_opts = ['NO', 'ERROR', 'INFORMATION', 'WARNING', 'QUESTION']
     register_options(
       [
-        OptString.new('TITLE', [true, "Messagebox Title", "MessageBox"]),
-        OptString.new('TEXT', [true, "Messagebox Text", "Hello, from MSF!"]),
-        OptEnum.new('ICON', [true, "Icon type", icon_opts[0], icon_opts])
+        OptString.new('TITLE', [true, 'Messagebox Title', 'MessageBox']),
+        OptString.new('TEXT', [true, 'Messagebox Text', 'Hello, from MSF!']),
+        OptEnum.new('ICON', [true, 'Icon type', icon_opts[0], icon_opts])
       ]
     )
   end
@@ -51,7 +53,7 @@ module MetasploitModule
   end
 
   def to_unicode(msg)
-    return msg.encode("binary").split('').join("\x00") + "\x00\x00"
+    return msg.encode('binary').split('').join("\x00") + "\x00\x00"
   end
 
   def api_hash(libname, function)
@@ -198,7 +200,7 @@ module MetasploitModule
     payload_data << exitfunc
     payload_data << datastore['TEXT'] + "\x00"
     payload_data << datastore['TITLE'] + "\x00"
-    payload_data << "user32.dll" + "\x00"
+    payload_data << 'user32.dll' + "\x00"
 
     return payload_data
   end

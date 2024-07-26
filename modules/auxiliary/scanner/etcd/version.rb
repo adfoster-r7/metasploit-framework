@@ -12,10 +12,10 @@ class MetasploitModule < Msf::Auxiliary
   def initialize
     super(
       'Name' => 'Etcd Version Scanner',
-      'Description' => %q(
+      'Description' => %q{
         This module connections to etcd API endpoints, typically on 2379/TCP, and attempts
         to obtain the version of etcd.
-      ),
+      },
       'References' => [
         ['URL', 'https://gcollazo.com/the-security-footgun-in-etcd/']
       ],
@@ -24,7 +24,7 @@ class MetasploitModule < Msf::Auxiliary
         'Jon Hart <jon_hart@rapid7.com>' # msf module
       ],
       'License' => MSF_LICENSE,
-      'DisclosureDate' => "Mar 16 2018"
+      'DisclosureDate' => 'Mar 16 2018'
     )
   end
 

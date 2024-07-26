@@ -10,17 +10,16 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'Gopher gophermap Scanner',
-      'Description' => %q(
+      'Name' => 'Gopher gophermap Scanner',
+      'Description' => %q{
         This module identifies Gopher servers, and processes the gophermap
         file which lists all the files on the server.
-      ),
-      'References'  =>
-        [
-          ['URL', 'https://sdfeu.org/w/tutorials:gopher']
-        ],
-      'Author'      => 'h00die',
-      'License'     => MSF_LICENSE
+      },
+      'References' => [
+        ['URL', 'https://sdfeu.org/w/tutorials:gopher']
+      ],
+      'Author' => 'h00die',
+      'License' => MSF_LICENSE
     )
 
     register_options(
@@ -58,46 +57,45 @@ class MetasploitModule < Msf::Auxiliary
   end
 
   def run_host(ip)
-    begin
-      connect
-      sock.put("#{datastore['path']}\r\n")
-      gophermap = sock.get_once
-      if gophermap
-        gophermap.split("\r\n").each do |line|
-          line_parts = line.split("\t")
-          next unless line_parts.length >= 2
-          # syntax: [type_character]description[tab]path[tab, after this is optional]server[tab]port
-          line_parts = line.split("\t")
-          desc = line_parts[0]
-          type_char = desc.slice!(0) # remove first character which is the file type
-          file_type = get_type(type_char)
-          if file_type && file_type == 'inline text'
-            print_good(desc)
-            next
-          end
-          if file_type
-            print_good("  #{file_type}: #{desc}")
-          else
-            print_good("  Invalid File Type (#{type_char}): #{desc}")
-          end
-          if line_parts.length >= 3
-            print_good("    Path: #{line_parts[2]}:#{line_parts[3]}#{line_parts[1]}")
-          elsif line.length >= 2
-            print_good("    Path: #{line_parts[2]}#{line_parts[1]}")
-          else
-            print_good("    Path: #{line_parts[1]}")
+    connect
+    sock.put("#{datastore['path']}\r\n")
+    gophermap = sock.get_once
+    if gophermap
+      gophermap.split("\r\n").each do |line|
+        line_parts = line.split("\t")
+        next unless line_parts.length >= 2
 
-          end
+        # syntax: [type_character]description[tab]path[tab, after this is optional]server[tab]port
+        line_parts = line.split("\t")
+        desc = line_parts[0]
+        type_char = desc.slice!(0) # remove first character which is the file type
+        file_type = get_type(type_char)
+        if file_type && file_type == 'inline text'
+          print_good(desc)
+          next
         end
-        report_service(host: ip, port: rport, service: 'gopher', info: gophermap)
-      else
-        print_error('No gophermap')
+        if file_type
+          print_good("  #{file_type}: #{desc}")
+        else
+          print_good("  Invalid File Type (#{type_char}): #{desc}")
+        end
+        if line_parts.length >= 3
+          print_good("    Path: #{line_parts[2]}:#{line_parts[3]}#{line_parts[1]}")
+        elsif line.length >= 2
+          print_good("    Path: #{line_parts[2]}#{line_parts[1]}")
+        else
+          print_good("    Path: #{line_parts[1]}")
+
+        end
       end
-    rescue ::Rex::ConnectionError, ::IOError, ::Errno::ECONNRESET
-    rescue ::Exception => e
-      print_error("#{ip}: #{e} #{e.backtrace}")
-    ensure
-      disconnect
+      report_service(host: ip, port: rport, service: 'gopher', info: gophermap)
+    else
+      print_error('No gophermap')
     end
+  rescue ::Rex::ConnectionError, ::IOError, ::Errno::ECONNRESET
+  rescue ::Exception => e
+    print_error("#{ip}: #{e} #{e.backtrace}")
+  ensure
+    disconnect
   end
 end

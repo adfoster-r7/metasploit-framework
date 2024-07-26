@@ -12,10 +12,10 @@ class MetasploitModule < Msf::Auxiliary
   def initialize
     super(
       'Name' => 'Etcd Keys API Information Gathering',
-      'Description' => %q(
+      'Description' => %q{
         This module queries the etcd API to recursively retrieve all of the stored
         key value pairs.  Etcd by default does not utilize authentication.
-      ),
+      },
       'References' => [
         ['URL', 'https://gcollazo.com/the-security-footgun-in-etcd/']
       ],
@@ -24,7 +24,7 @@ class MetasploitModule < Msf::Auxiliary
         'h00die' # msf module
       ],
       'License' => MSF_LICENSE,
-      'DisclosureDate' => "Mar 16 2018"
+      'DisclosureDate' => 'Mar 16 2018'
     )
   end
 
@@ -34,7 +34,7 @@ class MetasploitModule < Msf::Auxiliary
     banner = fingerprint_service(target_uri.to_s)
     vprint_status("#{peer} - Collecting data through #{path}...")
     res = send_request_raw(
-      'uri'    => path,
+      'uri' => path,
       'method' => 'GET'
     )
 
@@ -52,7 +52,7 @@ class MetasploitModule < Msf::Auxiliary
       vprint_errord("Invalid response #{res.code} for etcd open keys response")
       return
     else
-      verbose_error("No response for etcd open keys probe")
+      verbose_error('No response for etcd open keys probe')
       return
     end
   end

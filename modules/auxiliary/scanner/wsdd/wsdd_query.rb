@@ -9,21 +9,20 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'WS-Discovery Information Discovery',
+      'Name' => 'WS-Discovery Information Discovery',
       'Description' => %q{
         Discover information from Web Services Dynamic Discovery (WS-Discovery)
         enabled systems.
       },
-      'Author'      => 'bcoles',
-      'License'     => MSF_LICENSE,
-      'References'  =>
-        [
-          ['URL', 'https://msdn.microsoft.com/en-us/library/windows/desktop/bb513684(v=vs.85).aspx'],
-          ['URL', 'http://specs.xmlsoap.org/ws/2005/04/discovery/ws-discovery.pd'],
-          ['URL', 'https://en.wikipedia.org/wiki/Web_Services_for_Devices'],
-          ['URL', 'https://en.wikipedia.org/wiki/WS-Discovery'],
-          ['URL', 'https://en.wikipedia.org/wiki/Zero-configuration_networking#WS-Discovery']
-        ]
+      'Author' => 'bcoles',
+      'License' => MSF_LICENSE,
+      'References' => [
+        ['URL', 'https://msdn.microsoft.com/en-us/library/windows/desktop/bb513684(v=vs.85).aspx'],
+        ['URL', 'http://specs.xmlsoap.org/ws/2005/04/discovery/ws-discovery.pd'],
+        ['URL', 'https://en.wikipedia.org/wiki/Web_Services_for_Devices'],
+        ['URL', 'https://en.wikipedia.org/wiki/WS-Discovery'],
+        ['URL', 'https://en.wikipedia.org/wiki/Zero-configuration_networking#WS-Discovery']
+      ]
     )
     register_options [
       Opt::RPORT(3702),
@@ -47,7 +46,7 @@ class MetasploitModule < Msf::Auxiliary
     # WS-Discovery
     probe << '<wsa:To>urn:schemas-xmlsoap-org:ws:2005:04:discovery</wsa:To>'
     # Action (Probe)
-    probe << "<wsa:Action>http://schemas.xmlsoap.org/ws/2005/04/discovery/Probe</wsa:Action>"
+    probe << '<wsa:Action>http://schemas.xmlsoap.org/ws/2005/04/discovery/Probe</wsa:Action>'
     # Message identifier (unique GUID)
     probe << "<wsa:MessageID>urn:uuid:#{SecureRandom.uuid}</wsa:MessageID>"
     probe << '</soap:Header>'
@@ -109,7 +108,7 @@ class MetasploitModule < Msf::Auxiliary
     begin
       soap = ::Nokogiri::XML wsdd_res
       return nil if soap.xpath('//soap:Body//wsd:ProbeMatches//wsd:ProbeMatch').empty?
-    rescue
+    rescue StandardError
       return nil
     end
 
@@ -124,6 +123,7 @@ class MetasploitModule < Msf::Auxiliary
     probe_match = res['Envelope']['Body']['ProbeMatches'].first
     return nil unless probe_match[0].eql? 'ProbeMatch'
     return nil if probe_match[1].nil? || probe_match[1].empty?
+
     match = probe_match[1]
 
     # Device Address

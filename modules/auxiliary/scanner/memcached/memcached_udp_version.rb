@@ -10,22 +10,20 @@ class MetasploitModule < Msf::Auxiliary
 
   def initialize
     super(
-      'Name'        => 'Memcached UDP Version Scanner',
-      'Description' => %q(
+      'Name' => 'Memcached UDP Version Scanner',
+      'Description' => %q{
           This module can be used to discover Memcached servers which expose the
           unrestricted UDP port 11211. A basic "version" request is executed to obtain
           the version of memcached.
-      ),
-      'Author'      =>
-        [
-          'Jon Hart <jon_hart@rapid7.com>' # Metasploit scanner module
-        ],
-      'License'     => MSF_LICENSE,
+      },
+      'Author' => [
+        'Jon Hart <jon_hart@rapid7.com>' # Metasploit scanner module
+      ],
+      'License' => MSF_LICENSE,
       'DisclosureDate' => 'Jul 23 2003',
-      'References' =>
-          [
-            ['URL', 'https://github.com/memcached/memcached/blob/master/doc/protocol.txt']
-          ]
+      'References' => [
+        ['URL', 'https://github.com/memcached/memcached/blob/master/doc/protocol.txt']
+      ]
     )
 
     register_options(
@@ -37,18 +35,18 @@ class MetasploitModule < Msf::Auxiliary
 
   def build_probe
     # Memcached version probe, per https://github.com/memcached/memcached/blob/master/doc/protocol.txt
-    @memcached_probe ||= [
+    @build_probe ||= [
       rand(2**16), # random request ID
       0, # sequence number
       1, # number of datagrams in this sequence
       0, # reserved; must be 0
       "version\r\n"
-    ].pack("nnnna*")
+    ].pack('nnnna*')
   end
 
   def scanner_process(data, shost, sport)
     # Check the response data for a "VERSION" response
-    if /VERSION (?<version>[\d\.]+)\r\n/ =~ data
+    if /VERSION (?<version>[\d.]+)\r\n/ =~ data
       print_good("#{shost}:#{sport}/udp memcached version #{version}")
       report_service(
         host: shost,

@@ -109,8 +109,6 @@ class MetasploitModule < Msf::Post
             print_status("Deleting: #{route.subnet}/#{route.netmask}")
             delete_route(route.subnet, route.netmask)
           end
-        end
-        Rex::Socket::SwitchBoard.each do |route|
           count += 1 if route.comm == session
         end
         break if count == 0
@@ -197,7 +195,7 @@ class MetasploitModule < Msf::Post
   #
   # @return [string class] IPv4 subnet
   def check_ip(ip = nil)
-    return false if (ip.nil? || ip.strip.empty?)
+    return false if ip.nil? || ip.strip.empty?
 
     begin
       rw = Rex::Socket::RangeWalker.new(ip.strip)
@@ -306,7 +304,7 @@ class MetasploitModule < Msf::Post
 
     begin
       session.net.config.each_route do |route|
-        next unless (Rex::Socket.is_ipv4?(route.subnet) && Rex::Socket.is_ipv4?(route.netmask)) # Pick out the IPv4 addresses
+        next unless Rex::Socket.is_ipv4?(route.subnet) && Rex::Socket.is_ipv4?(route.netmask) # Pick out the IPv4 addresses
 
         subnet = get_subnet(route.subnet, route.netmask) # Make sure that the subnet is actually a subnet and not an IP address. Android phones like to send over their IP.
         next unless is_routable?(subnet, route.netmask)
@@ -340,7 +338,7 @@ class MetasploitModule < Msf::Post
           ip_addr = interface.addrs[index]
           netmask = interface.netmasks[index]
 
-          next unless (Rex::Socket.is_ipv4?(ip_addr) && Rex::Socket.is_ipv4?(netmask)) # Pick out the IPv4 addresses
+          next unless Rex::Socket.is_ipv4?(ip_addr) && Rex::Socket.is_ipv4?(netmask) # Pick out the IPv4 addresses
           next unless is_routable?(ip_addr, netmask)
 
           subnet = get_subnet(ip_addr, netmask)
@@ -473,12 +471,12 @@ class MetasploitModule < Msf::Post
       return false
     end
 
-    if (netmask && !Rex::Socket.addr_atoc(netmask))
+    if netmask && !Rex::Socket.addr_atoc(netmask)
       print_error 'Netmask invalid (must define contiguous IP addressing)'
       return false
     end
 
-    if (netmask && !check_ip(netmask))
+    if netmask && !check_ip(netmask)
       print_error 'Netmask invalid'
       return false
     end

@@ -26,7 +26,7 @@ class MetasploitModule < Msf::Post
   end
 
   def report_creds(user, pass, port)
-    return if (user.empty? || pass.empty?)
+    return if user.empty? || pass.empty?
 
     # Assemble data about the credential objects we will be creating
     credential_data = {
@@ -177,7 +177,7 @@ class MetasploitModule < Msf::Post
       file1_read.each do |line|
         if line.strip.include? 'deploy/httpha-invoker.sar'
           parse = true
-        elsif ((line.strip == '</bean>') && portfound)
+        elsif (line.strip == '</bean>') && portfound
           parse = false
         elsif parse && line.include?('<property name="port">')
           portnr = line.split('<property name="port">')[1].split('<')[0].to_i
@@ -279,7 +279,7 @@ class MetasploitModule < Msf::Post
         file1.each do |line|
           if line.strip.include? 'deploy/httpha-invoker.sar'
             parse = true
-          elsif ((line.strip == '</bean>') && portfound)
+          elsif (line.strip == '</bean>') && portfound
             parse = false
           elsif parse && line.include?('<property name="port">')
             portnr = line.split('<property name="port">')[1].split('<')[0].to_i

@@ -59,7 +59,7 @@ class MetasploitModule < Msf::Post
   def get_locations
     progfiles_env = session.sys.config.getenvs('ProgramData')
     locations = []
-    progfiles_env.each do |_k, v|
+    progfiles_env.each_value do |v|
       vprint_status("Searching PureVPN Client installation at #{v}")
       if session.fs.dir.entries(name = v).include? 'purevpn'
         vprint_status("Found PureVPN Client installation at #{v}")

