@@ -34,6 +34,26 @@ module Metasploit
         end
       end
 
+      # Gather a list of LoginScanner classes that can potentially be
+      # used for a given `service`, which should usually be an
+      # `Mdm::Service` object, but can be anything that responds to
+      # #name and #port.
+      #
+      # @param service [Mdm::Service,#port,#name]
+      # @return [Array<LoginScanner::Base>] A collection of LoginScanner
+      #   classes that will probably give useful results when run
+      #   against `service`.
+      def self.all_http_classes
+        require_login_scanners
+
+        http_base_class = Metasploit::Framework::LoginScanner::HTTP
+        Metasploit::Framework::LoginScanner.constants.sort.map { |sym| Metasploit::Framework::LoginScanner.const_get(sym) }.filter_map do |const|
+          next unless const.kind_of?(Class) && const.ancestors.include?(http_base_class) && const != http_base_class
+
+          const
+        end
+      end
+
       def self.all_service_names
         require_login_scanners
 
@@ -49,9 +69,9 @@ module Metasploit
 
         service_names
       end
-      
+
       private
-      
+
       def self.require_login_scanners
         unless @required
           # Make sure we've required all the scanner classes
