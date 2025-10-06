@@ -204,7 +204,7 @@ GEM
       aws-sigv4 (~> 1.5)
     aws-sigv4 (1.11.0)
       aws-eventstream (~> 1, >= 1.0.2)
-    base64 (0.2.0)
+    base64 (0.3.0)
     bcrypt (3.1.20)
     bcrypt_pbkdf (1.1.1)
     benchmark (0.4.1)
@@ -228,9 +228,9 @@ GEM
       irb (~> 1.10)
       reline (>= 0.3.8)
     diff-lcs (1.6.2)
-    dnsruby (1.72.4)
-      base64 (~> 0.2.0)
-      logger (~> 1.6.5)
+    dnsruby (1.73.0)
+      base64 (>= 0.2)
+      logger (~> 1.6)
       simpleidn (~> 0.2.1)
     docile (1.4.1)
     domain_name (0.6.20240107)
@@ -327,7 +327,7 @@ GEM
       mutex_m
       railties (~> 7.0)
       zeitwerk
-    metasploit-credential (6.0.16)
+    metasploit-credential (6.0.18)
       bigdecimal
       csv
       drb
@@ -340,7 +340,7 @@ GEM
       railties
       rex-socket
       rubyntlm
-      rubyzip
+      rubyzip (< 3.0.0)
     metasploit-model (5.0.4)
       activemodel (~> 7.0)
       activesupport (~> 7.0)
@@ -349,12 +349,15 @@ GEM
       mutex_m
       railties (~> 7.0)
     metasploit-payloads (2.0.221)
-    metasploit_data_models (6.0.9)
+    metasploit_data_models (6.0.10)
       activerecord (~> 7.0)
       activesupport (~> 7.0)
       arel-helpers
+      bigdecimal
+      drb
       metasploit-concern
       metasploit-model (>= 3.1)
+      mutex_m
       pg
       railties (~> 7.0)
       recog
@@ -388,7 +391,7 @@ GEM
     network_interface (0.0.4)
     nexpose (7.3.0)
     nio4r (2.7.4)
-    nokogiri (1.18.9)
+    nokogiri (1.18.10)
       mini_portile2 (~> 2.8.2)
       racc (~> 1.4)
     nori (2.7.1)
