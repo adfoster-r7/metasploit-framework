@@ -113,7 +113,10 @@ jobs:
 
       - name: ${{ matrix.test_cmd }}
         run: |
-          echo "${CMD}"
-          bash -c "${CMD}"
-        env:
-          CMD: ${{ matrix.test_cmd }}
+          bundle exec tools/modules/update_payload_cached_sizes.rb
+          git diff | cat
+
+          if ! git diff --exit-code; then
+            echo "Repository has uncommitted changes."
+            exit 1
+          fi
