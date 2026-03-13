@@ -29,6 +29,8 @@ exceptions = []
 framework.payloads.each_module do |name, mod|
   begin
     next if name =~ /generic/
+    next unless name == 'python/shell_bind_tcp'
+    puts 'Generating'
     mod_inst = framework.payloads.create(name)
     #mod_inst.datastore.merge!(framework.datastore)
     next if mod_inst.is_a?(Msf::Payload::Adapter) || Msf::Util::PayloadCachedSize.is_cached_size_accurate?(mod_inst)

