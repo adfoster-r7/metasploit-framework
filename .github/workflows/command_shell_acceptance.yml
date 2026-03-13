@@ -98,11 +98,14 @@ jobs:
         if: runner.os == 'Linux'
         run: sudo apt-get -y --no-install-recommends install libpcap-dev graphviz
 
-      - uses: shivammathur/setup-php@fc14643b0a99ee9db10a3c025a33d76544fa3761
+      - uses: shivammathur/setup-php@a33066c0017f7fe81bdb8e24512c418a6f7eb08a
         if: ${{ matrix.command_shell.name == 'php' }}
         with:
           php-version: ${{ matrix.command_shell.runtime_version }}
           tools: none
+          coverage: none
+        env:
+          debug: true
 
       - name: Install system dependencies (Windows)
         shell: cmd

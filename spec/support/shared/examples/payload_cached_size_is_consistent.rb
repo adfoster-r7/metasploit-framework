@@ -71,11 +71,9 @@
 # @return [void]
 RSpec.shared_examples_for 'payload cached size is consistent' do |options|
 
-  options.assert_valid_keys(:ancestor_reference_names, :modules_pathname, :reference_name, :dynamic_size)
+  options.assert_valid_keys(:ancestor_reference_names, :modules_pathname, :reference_name)
 
   ancestor_reference_names = options.fetch(:ancestor_reference_names)
-
-  dynamic_size = options.fetch(:dynamic_size)
 
   modules_pathname = options.fetch(:modules_pathname)
   modules_path = modules_pathname.to_path
@@ -93,7 +91,7 @@ RSpec.shared_examples_for 'payload cached size is consistent' do |options|
   context reference_name  do
     ancestor_reference_names.each do |ancestor_reference_name|
       it "can load '#{module_type}/#{ancestor_reference_name}'" do
-        @actual_ancestor_reference_name_set.add(ancestor_reference_name)
+        @actual_ancestor_reference_name_set.add(ancestor_reference_name) if @actual_ancestor_reference_name_set
 
         expect_to_load_module_ancestor(
             ancestor_reference_name: ancestor_reference_name,
@@ -114,31 +112,16 @@ RSpec.shared_examples_for 'payload cached size is consistent' do |options|
 
     next if reference_name =~ /generic|peinject/
 
-    if dynamic_size
-      it 'is dynamic_size?' do
-        pinst = load_and_create_module(
-              ancestor_reference_names: ancestor_reference_names,
-              module_type: module_type,
-              modules_path: modules_path,
-              reference_name: reference_name
-        )
-        expect(pinst.cached_size).to(be_nil)
-        expect(pinst.dynamic_size?).to be(true)
-      end
-    else
-      it 'has a valid cached_size' do
-        pinst = load_and_create_module(
-              ancestor_reference_names: ancestor_reference_names,
-              module_type: module_type,
-              modules_path: modules_path,
-              reference_name: reference_name
-        )
-        expect(pinst.cached_size).to_not(be_nil)
-        expect(pinst.dynamic_size?).to be(false)
+    it 'has a valid cached_size' do
+      pinst = load_and_create_module(
+            ancestor_reference_names: ancestor_reference_names,
+            module_type: module_type,
+            modules_path: modules_path,
+            reference_name: reference_name
+      )
 
-        module_options = Msf::Util::PayloadCachedSize.module_options(pinst)
-        expect(pinst.cached_size).to eq(pinst.generate_simple(module_options).size)
-      end
+      cache_size_errors = Msf::Util::PayloadCachedSize.cache_size_errors_for(framework, pinst)
+      expect(cache_size_errors).to be_nil
     end
   end
 end

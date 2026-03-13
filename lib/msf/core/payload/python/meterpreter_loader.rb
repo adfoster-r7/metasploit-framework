@@ -10,6 +10,8 @@ module Msf
 ###
 
 module Payload::Python::MeterpreterLoader
+  # Mark the payload as dynamic, as random uuid values lead to differing zlib compresed payloads
+  ForceDynamicCachedSize = true
 
   include Msf::Payload::Python
   include Msf::Payload::UUID::Options
