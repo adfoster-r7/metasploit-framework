@@ -21,28 +21,23 @@ gem 'rex-text'
 require 'rex'
 
 class StatusReporter
-  CLEAR_LINE = "\r\e[2K\r".freeze
+  CLEAR_LINE = "".freeze
   private_constant :CLEAR_LINE
 
   def print_progress(s)
     return if s.nil?
 
     @last_progress = s
-    print CLEAR_LINE
-    print info(s)
+    puts info(s)
     $stdout.flush
   end
 
   def print_info(s)
-    print CLEAR_LINE
     puts info(s)
-    print_progress(@last_progress)
   end
 
   def print_error(s)
-    $stderr.print CLEAR_LINE
     $stderr.puts error(s)
-    print_progress(@last_progress)
   end
 
   def finish
@@ -64,7 +59,6 @@ end
 # Initialize the simplified framework instance.
 framework = Msf::Simple::Framework.create('DisableDatabase' => true)
 exceptions = []
-total_payloads = framework.payloads.length
 reporter = StatusReporter.new
 current_payload = 0
 
@@ -74,9 +68,11 @@ stagers_to_stages = Hash.new { |hash, key| hash[key] = [] }
 
 modules = []
 framework.payloads.each_module do |name, mod|
+  next unless name.include?('java')
   modules << [name, mod]
 end
 
+total_payloads = modules.length
 modules.each do |name, mod|
   next if name =~ /generic/
 

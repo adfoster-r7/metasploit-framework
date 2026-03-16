@@ -47,6 +47,7 @@ module Payload
     # Import any options we may need
     payload._import_extra_options(opts)
     framework = payload.framework
+    puts "datastore=#{payload.datastore.to_h}"
 
     # Generate the payload
     e = EncodedPayload.create(payload,

@@ -168,7 +168,11 @@ class PayloadCachedSize
   def self.compute_cached_size(framework, mod)
     return ":dynamic" if is_dynamic?(framework, mod)
 
-    mod.replicant.generate_simple(module_options(mod)).bytesize
+    puts mod.fullname
+    mod_replicant = mod.replicant
+    payload = mod_replicant.generate_simple(module_options(mod))
+    puts Base64.strict_encode64(payload)
+    payload.bytesize
   end
 
   # Determines whether a payload generates a static sized output
@@ -185,6 +189,7 @@ class PayloadCachedSize
       # Ensure a new module instance is created for each attempt, as some options are randomized on load - such as tmp file path names etc
       new_mod = framework.payloads.create(mod.refname)
       bytesize = new_mod.generate_simple(opts).bytesize
+      puts "bytesize=#{bytesize}"
       last_bytesize ||= bytesize
       if last_bytesize != bytesize
         return true
