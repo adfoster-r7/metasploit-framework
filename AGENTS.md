@@ -1,9 +1,11 @@
 # AI Agent Instructions for Metasploit Framework
 
 ## Project Overview
+
 Metasploit Framework is an open-source penetration testing and exploitation framework written in Ruby. It provides infrastructure for developing, testing, and executing exploit code against remote targets.
 
 ## Project Structure
+
 - `modules/` — Metasploit modules (exploits, auxiliary, post, payloads, encoders, evasion, nops)
 - `lib/msf/` — Core framework library code
 - `lib/rex/` — Rex (Ruby Exploitation) library
@@ -15,9 +17,10 @@ Metasploit Framework is an open-source penetration testing and exploitation fram
 - `scripts/` — Example automation scripts
 
 ## Coding Conventions
+
 - Ruby (see `.ruby-version` for the current version). Minimum supported: 3.1+
 - Follow the project's `.rubocop.yml` configuration — run `rubocop` on changed files before submitting
-- Run `msftidy` to catch common module issues
+- Run `ruby tools/dev/msftidy.rb <module_file_path>` to catch common module issues
 - Add `# frozen_string_literal: true` to new files (the RuboCop cop is disabled project-wide for legacy code, but new files should include it)
 - No enforced line length limit, but keep code readable
 - Use `%q{}` for long multi-line strings (curly braces preferred for module descriptions)
@@ -26,7 +29,9 @@ Metasploit Framework is an open-source penetration testing and exploitation fram
 - Method parameter names must be at least 2 characters (exception for well-known crypto abbreviations)
 
 ### Module Development
+
 - Prefer writing modules in Ruby. Go and Python modules are accepted, but their external runtimes don't support the full framework API (e.g. network pivoting). Ruby modules do not have this limitation
+- Prefer using hash over an array for return values, and use kwargs for reusable APIs for future extensions
 - Before writing a new module, check that there is not an existing module or open pull request that already covers the same functionality
 - Each module should be in its own file under the appropriate `modules/` subdirectory. In some scenarios adding module actions or targets is preferred.
 - Exploits require a `DisclosureDate` field
@@ -61,17 +66,19 @@ Metasploit Framework is an open-source penetration testing and exploitation fram
 
 - `check` methods must only return `CheckCode` values (e.g. `CheckCode::Vulnerable`, `CheckCode::Safe`) — never raise exceptions or call `fail_with`
 - When writing a `check` method, verify it does not produce false positives when run against unrelated software or services
+- Prefer using `Rex::Version` for version checks
 - Use `fail_with(Failure::UnexpectedReply, '...')` (and other `Failure::*` constants) to bail out of `exploit`/`run` methods — don't use `raise` or bare `return` for error conditions
 - `get_version` methods should return a REX version
 - `CheckCode::Vulnerable` is only used when the vulnerability has been exploited
 - `CheckCode::Appears`  is only used when the application's versions has been checked`
-- Don't use a massive `&lt;href .*` dot star to grab the version, to be more precise.
+- Use specific regular expressions or `res.get_html_document` for version extraction with CSS selectors. Don't use a generic selectors like `href .*` dot star to grab the version, be more precise.
 - Do catch exceptions that may be raised and ensure a valid Check Code is returned
 - Do research and determine a minimum version where the application is vulnerable, mark prior versions as safe
 - Check helper methods that are used by both `#check` and `#exploit` (or `#run`) and make sure there is no condition (exception, return, etc) where `#check` could return something else than CheckCode.
 - Prefer `prepend Msf::Exploit::Remote::AutoCheck` over manually calling `check` inside `exploit` — this lets the framework handle check-before-exploit automatically
 
 ### Library Code
+
 - When adding complex binary or protocol parsing (e.g. BinData, RASN1, Rex::Struct2), include a code comment linking to the specification or RFC that defines the format being implemented
 - Write RSpec tests for any library changes
 - Follow [Better Specs](http://www.betterspecs.org/) conventions
@@ -80,17 +87,19 @@ Metasploit Framework is an open-source penetration testing and exploitation fram
 - Any new hash cracking implementations require adding a test hash to `tools/dev/hash_cracker_validator.rb` and ensuring that passes without error
 
 ### Testing
+
 - Tests live in `spec/` mirroring the `lib/` structure
-- Run tests with: `rspec spec/path/to/spec.rb`
-- Use `bundle exec rspec` to ensure correct gem versions
+- Run tests with: `bundle exec rspec spec/path/to/spec.rb`
 
 ### Preferred Libraries
+
 - Use the `RubySMB` library for SMB modules
 - Use `Rex::Stopwatch.elapsed_time` to track elapsed time
 - Use the `Rex::MIME::Message` class for MIME messages instead of hardcoding XML
 - When creating random variable names prefer `Rex::RandomIdentifier::Generator` and specify the runtime language used. This avoids generating langauge keywords that would break the script.
 
 ## Common Patterns
+
 - Register options with `register_options` and `register_advanced_options`
 - Use `SCREAMING_SNAKE_CASE` option names and `CamelCase` advanced option names
 - Use `datastore['OPTION_NAME']` to access module options
@@ -100,13 +109,14 @@ Metasploit Framework is an open-source penetration testing and exploitation fram
 - Use `connect` / `disconnect` for TCP socket operations
 
 ## Before Submitting
+
 - Ensure `rubocop` and `msftidy` pass on any changed files with no new offenses
-- Ensure `msftidy_docs` passes on any changed documentation markdown docs with no new offenses
+- Ensure `ruby tools/dev/msftidy_docs.rb <documentation_file>` passes on any changed documentation markdown docs with no new offenses
 
 ## What NOT to Do
+
 - Don't submit untested code — all code must be manually verified
 - Don't include sensitive information (IPs, credentials, API keys, hashes of credentials) in code or docs
 - Don't include more than one module per pull request
 - Don't add new scripts to `scripts/` — use post modules instead
 - Don't use `pack`/`unpack` with invalid directives (enforced by linter)
-
