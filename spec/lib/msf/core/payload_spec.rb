@@ -15,8 +15,8 @@ RSpec.describe Msf::Payload do
 
     context 'when CachedSize is defined as an integer' do
       let(:klass) do
-        Class.new(described_class) do
-          CachedSize = 123
+        Class.new(described_class).tap do |klass|
+          klass.const_set(:CachedSize, 123)
         end
       end
 
@@ -27,8 +27,8 @@ RSpec.describe Msf::Payload do
 
     context 'when CachedSize is defined as :dynamic' do
       let(:klass) do
-        Class.new(described_class) do
-          CachedSize = :dynamic
+        Class.new(described_class).tap do |klass|
+          klass.const_set(:CachedSize, :dynamic)
         end
       end
 
@@ -39,15 +39,11 @@ RSpec.describe Msf::Payload do
 
     context 'when class is a Stager and CachedSizeOverrides is defined' do
       let(:stager_klass) do
-        Class.new(described_class) do
-          include Msf::Payload::Stager
-
-          CachedSize = 111
-          CachedSizeOverrides = { 'windows/stage/stager' => 222 }
-
-          def self.refname
-            'windows/stage/stager'
-          end
+        Class.new(described_class).tap do |klass|
+          klass.send(:include, Msf::Payload::Stager)
+          klass.const_set(:CachedSize, 111)
+          klass.const_set(:CachedSizeOverrides, { 'windows/stage/stager' => 222 })
+          klass.define_singleton_method(:refname) { 'windows/stage/stager' }
         end
       end
 
