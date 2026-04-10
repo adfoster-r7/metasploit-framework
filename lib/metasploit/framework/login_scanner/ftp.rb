@@ -5,7 +5,6 @@ require 'metasploit/framework/login_scanner/rex_socket'
 module Metasploit
   module Framework
     module LoginScanner
-
       # This is the LoginScanner class for dealing with FTP.
       # It is responsible for taking a single target, and a list of credentials
       # and attempting them. It then saves the results.
@@ -14,29 +13,31 @@ module Metasploit
         include Metasploit::Framework::LoginScanner::RexSocket
         include Metasploit::Framework::Ftp::Client
 
-        DEFAULT_PORT         = 21
-        LIKELY_PORTS         = [ DEFAULT_PORT, 2121 ]
+        DEFAULT_PORT = 21
+        LIKELY_PORTS = [ DEFAULT_PORT, 2121 ]
         LIKELY_SERVICE_NAMES = [ 'ftp' ]
-        PRIVATE_TYPES        = [ :password ]
-        REALM_KEY           = nil
+        PRIVATE_TYPES = [ :password ]
+        REALM_KEY = nil
 
         # @!attribute ftp_timeout
         #   @return [Integer] The timeout in seconds to wait for a response to an FTP command
         attr_accessor :ftp_timeout
 
+        # @!attribute use_client_as_proof
+        #   @return [Boolean] If true, a successful login will store the socket as proof and keep the connection open
+        attr_accessor :use_client_as_proof
+
         validates :ftp_timeout,
                   presence: true,
                   numericality: {
-                      only_integer:             true,
-                      greater_than_or_equal_to: 1
+                    only_integer: true,
+                    greater_than_or_equal_to: 1
                   }
-
-
 
         # (see Base#attempt_login)
         def attempt_login(credential)
           result_options = {
-              credential: credential
+            credential: credential
           }
 
           begin
@@ -45,19 +46,27 @@ module Metasploit
             result_options[:status] = Metasploit::Model::Login::Status::UNABLE_TO_CONNECT
             success = false
           ensure
-            disconnect
+            disconnect unless (success && use_client_as_proof)
           end
 
           if success
             result_options[:status] = Metasploit::Model::Login::Status::SUCCESSFUL
-          elsif !(result_options.has_key? :status)
+
+            # This module no longer owns the socket so return it as proof so the calling context can perform additional operations
+            # Additionally assign values to nil to avoid closing the socket etc automatically
+            if use_client_as_proof
+              result_options[:proof] = sock
+              result_options[:connection] = sock
+              self.sock = nil
+            end
+          elsif !(result_options.key? :status)
             result_options[:status] = Metasploit::Model::Login::Status::INCORRECT
           end
 
           result = ::Metasploit::Framework::LoginScanner::Result.new(result_options)
-          result.host         = host
-          result.port         = port
-          result.protocol     = 'tcp'
+          result.host = host
+          result.port = port
+          result.protocol = 'tcp'
           result.service_name = 'ftp'
           result
         end
@@ -68,14 +77,13 @@ module Metasploit
         # like timeouts and TCP evasion options
         def set_sane_defaults
           self.connection_timeout ||= 30
-          self.port               ||= DEFAULT_PORT
-          self.max_send_size      ||= 0
-          self.send_delay         ||= 0
-          self.ftp_timeout        ||= 16
+          self.port ||= DEFAULT_PORT
+          self.max_send_size ||= 0
+          self.send_delay ||= 0
+          self.ftp_timeout ||= 16
         end
 
       end
-
     end
   end
 end

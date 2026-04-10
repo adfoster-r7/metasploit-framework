@@ -37,6 +37,8 @@ class MsfAutoload
         'UI'
       elsif basename == 'mysql' && abspath.end_with?("#{__dir__}/msf/core/exploit/remote/mysql.rb")
         'MYSQL'
+      elsif basename == 'ftp' && (abspath.end_with?("#{__dir__}/msf/base/sessions/ftp.rb") || abspath.end_with?("#{__dir__}/rex/proto/ftp"))
+        'FTP'
       elsif basename == 'ssh' && abspath.end_with?("#{__dir__}/rex/proto/ssh")
         'Ssh'
       elsif basename == 'http' && abspath.end_with?("#{__dir__}/rex/proto/http")

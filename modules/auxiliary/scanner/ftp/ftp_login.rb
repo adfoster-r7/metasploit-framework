@@ -11,6 +11,9 @@ class MetasploitModule < Msf::Auxiliary
   include Msf::Auxiliary::Scanner
   include Msf::Auxiliary::Report
   include Msf::Auxiliary::AuthBrute
+  include Msf::Auxiliary::CommandShell
+  include Msf::Sessions::CreateSessionOptions
+  include Msf::Auxiliary::ReportSummary
 
   def proto
     'ftp'
@@ -31,7 +34,8 @@ class MetasploitModule < Msf::Auxiliary
       ],
       'License' => MSF_LICENSE,
       'DefaultOptions' => {
-        'ConnectTimeout' => 30
+        'ConnectTimeout' => 30,
+        'CreateSession' => false
       }
     )
 
@@ -39,18 +43,51 @@ class MetasploitModule < Msf::Auxiliary
       [
         Opt::Proxies,
         Opt::RPORT(21),
-        OptBool.new('RECORD_GUEST', [ false, "Record anonymous/guest logins to the database", false])
+        OptBool.new('RECORD_GUEST', [ false, 'Record anonymous/guest logins to the database', false]),
+        OptBool.new('CreateSession', [false, 'Create a new session for every successful login', false])
       ]
     )
 
     register_advanced_options(
       [
         OptBool.new('SINGLE_SESSION', [ false, 'Disconnect after every login attempt', false]),
+        OptBool.new('FtpTrace', [ false, 'Trace FTP protocol commands and responses in the session', false]),
       ]
     )
 
-    deregister_options('FTPUSER', 'FTPPASS') # Can use these, but should use 'username' and 'password'
+    options_to_deregister = %w[FTPUSER FTPPASS CommandShellCleanupCommand AutoVerifySession]
+
+    if framework.features.enabled?(Msf::FeatureManager::FTP_SESSION_TYPE)
+      add_info('New in Metasploit 6.4 - The %grnCreateSession%clr option within this module can open an interactive session')
+    else
+      options_to_deregister << 'CreateSession'
+    end
+
+    deregister_options(*options_to_deregister)
     @accepts_all_logins = {}
+  end
+
+  def create_session?
+    if framework.features.enabled?(Msf::FeatureManager::FTP_SESSION_TYPE)
+      datastore['CreateSession']
+    else
+      false
+    end
+  end
+
+  def run
+    results = super
+    logins = results.flat_map { |_k, v| v[:successful_logins] }
+    sessions = results.flat_map { |_k, v| v[:successful_sessions] }
+    print_status("Bruteforce completed, #{logins.size} #{logins.size == 1 ? 'credential was' : 'credentials were'} successful.")
+    return results unless framework.features.enabled?(Msf::FeatureManager::FTP_SESSION_TYPE)
+
+    if create_session?
+      print_status("#{sessions.size} FTP #{sessions.size == 1 ? 'session was' : 'sessions were'} opened successfully.")
+    else
+      print_status('You can open an FTP session with these credentials and %grnCreateSession%clr set to true')
+    end
+    results
   end
 
   def run_host(ip)
@@ -81,14 +118,17 @@ class MetasploitModule < Msf::Auxiliary
         ssl_verify_mode: datastore['SSLVerifyMode'],
         ssl_cipher: datastore['SSLCipher'],
         local_port: datastore['CPORT'],
-        local_host: datastore['CHOST']
+        local_host: datastore['CHOST'],
+        use_client_as_proof: create_session?
       )
     )
 
+    successful_logins = []
+    successful_sessions = []
     scanner.scan! do |result|
       credential_data = result.to_h
       credential_data.merge!(
-        module_fullname: self.fullname,
+        module_fullname: fullname,
         workspace_id: myworkspace_id
       )
       if result.success?
@@ -98,11 +138,23 @@ class MetasploitModule < Msf::Auxiliary
         create_credential_login(credential_data)
 
         print_good "#{ip}:#{rport} - Login Successful: #{result.credential}"
+        successful_logins << result
+
+        if create_session?
+          begin
+            successful_sessions << session_setup(result)
+          rescue ::StandardError => e
+            elog('Failed to setup the session', error: e)
+            print_brute level: :error, ip: ip, msg: "Failed to setup the session - #{e.class} #{e.message}"
+            result.connection.close unless result.connection.nil?
+          end
+        end
       else
         invalidate_login(credential_data)
         vprint_error "#{ip}:#{rport} - LOGIN FAILED: #{result.credential} (#{result.status}: #{result.proof})"
       end
     end
+    { successful_logins: successful_logins, successful_sessions: successful_sessions }
   end
 
   # Always check for anonymous access by pretending to be a browser.
@@ -119,7 +171,7 @@ class MetasploitModule < Msf::Auxiliary
   def test_ftp_access(user, scanner)
     dir = Rex::Text.rand_text_alpha(8)
     write_check = scanner.send_cmd(['MKD', dir], true)
-    if write_check and write_check =~ /^2/
+    if write_check && write_check =~ (/^2/)
       scanner.send_cmd(['RMD', dir], true)
       print_status("#{rhost}:#{rport} - User '#{user}' has READ/WRITE access")
       return 'Read/Write'
@@ -127,6 +179,25 @@ class MetasploitModule < Msf::Auxiliary
       print_status("#{rhost}:#{rport} - User '#{user}' has READ access")
       return 'Read-only'
     end
+  end
+
+  # @param [Metasploit::Framework::LoginScanner::Result] result
+  # @return [Msf::Sessions::FTP]
+  def session_setup(result)
+    return unless (result.connection && result.proof)
+
+    # Wrap the authenticated socket in a Rex::Proto::FTP::Client
+    ftp_client = Rex::Proto::FTP::Client.new(result.proof, read_timeout: datastore['FTPTimeout'] || 16, trace: datastore['FtpTrace'])
+    my_session = Msf::Sessions::FTP.new(result.connection, { client: ftp_client })
+    merge_me = {
+      'USERPASS_FILE' => nil,
+      'USER_FILE' => nil,
+      'PASS_FILE' => nil,
+      'USERNAME' => result.credential.public,
+      'PASSWORD' => result.credential.private
+    }
+
+    start_session(self, nil, merge_me, false, my_session.rstream, my_session)
   end
 
 end

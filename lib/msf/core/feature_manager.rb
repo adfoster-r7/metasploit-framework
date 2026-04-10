@@ -26,6 +26,7 @@ module Msf
     MYSQL_SESSION_TYPE = 'mysql_session_type'
     MSSQL_SESSION_TYPE = 'mssql_session_type'
     LDAP_SESSION_TYPE = 'ldap_session_type'
+    FTP_SESSION_TYPE = 'ftp_session_type'
     SHOW_SUCCESSFUL_LOGINS = 'show_successful_logins'
     DISPLAY_MODULE_ACTION = 'display_module_action'
 
@@ -96,6 +97,13 @@ module Msf
         requires_restart: true,
         default_value: true,
         developer_notes: 'Enabled in Metasploit 6.4.52'
+      }.freeze,
+      {
+        name: FTP_SESSION_TYPE,
+        description: 'When enabled will allow for the creation/use of FTP sessions',
+        requires_restart: true,
+        default_value: true,
+        developer_notes: 'Added in Metasploit 6.4.x'
       }.freeze,
       {
         name: SHOW_SUCCESSFUL_LOGINS,

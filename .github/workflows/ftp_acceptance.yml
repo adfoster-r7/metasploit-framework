@@ -1,0 +1,153 @@
+name: FTP Acceptance
+
+# https://docs.github.com/en/actions/using-workflows/workflow-syntax-for-github-actions#permissions
+permissions:
+  actions: none
+  checks: none
+  contents: none
+  deployments: none
+  id-token: none
+  issues: none
+  discussions: none
+  packages: none
+  pages: none
+  pull-requests: none
+  repository-projects: none
+  security-events: none
+  statuses: none
+
+on:
+  push:
+    branches-ignore:
+      - gh-pages
+      - metakitty
+  pull_request:
+    branches:
+      - '*'
+    paths:
+      - 'metsploit-framework.gemspec'
+      - 'Gemfile.lock'
+      - '**/**ftp**'
+      - 'lib/metasploit/framework/tcp/**'
+      - 'lib/metasploit/framework/login_scanner/**'
+      - 'spec/acceptance/**'
+      - 'spec/support/acceptance/**'
+      - 'spec/acceptance_spec_helper.rb'
+      - '.github/**'
+
+jobs:
+  ftp:
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+
+    services:
+      ftp:
+        image: fauria/vsftpd
+        ports: ["21:21", "21100-21110:21100-21110"]
+        env:
+          FTP_USER: ftpuser
+          FTP_PASS: ftppass
+          PASV_ADDRESS: 127.0.0.1
+          PASV_MIN_PORT: 21100
+          PASV_MAX_PORT: 21110
+
+    strategy:
+      fail-fast: true
+      matrix:
+        ruby:
+          - '3.2'
+        os:
+          - ubuntu-latest
+
+    env:
+      RAILS_ENV: test
+      BUNDLE_WITHOUT: "coverage development pcap"
+
+    name: FTP - ${{ matrix.os }} - Ruby ${{ matrix.ruby }}
+    steps:
+      - name: Install system dependencies
+        run: sudo apt-get install -y --no-install-recommends libpcap-dev graphviz
+
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Ruby
+        env:
+          BUNDLE_FORCE_RUBY_PLATFORM: "${{ contains(matrix.ruby, 'preview') && 'true' || 'false' }}"
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '${{ matrix.ruby }}'
+          bundler-cache: true
+
+      - name: acceptance
+        env:
+          SPEC_HELPER_LOAD_METASPLOIT: false
+          SPEC_OPTS: "--tag acceptance --require acceptance_spec_helper.rb --color --format documentation --format AllureRspec::RSpecFormatter"
+          FTP_USERNAME: ftpuser
+          FTP_PASSWORD: ftppass
+          FTP_RHOST: 127.0.0.1
+          FTP_RPORT: 21
+        run: |
+          bundle exec rspec spec/acceptance/ftp_spec.rb
+
+      - name: Archive results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ftp-${{ matrix.os }}
+          path: tmp/allure-raw-data
+
+  # Generate a final report from the previous test results
+  report:
+    name: Generate report
+    needs:
+      - ftp
+    runs-on: ubuntu-latest
+    if: always()
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        if: always()
+
+      - name: Install system dependencies (Linux)
+        if: always()
+        run: sudo apt-get -y --no-install-recommends install libpcap-dev graphviz
+
+      - name: Setup Ruby
+        if: always()
+        env:
+          BUNDLE_FORCE_RUBY_PLATFORM: true
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '${{ matrix.ruby }}'
+          bundler-cache: true
+          cache-version: 4
+
+      - uses: actions/download-artifact@v4
+        id: download
+        if: always()
+        with:
+          path: raw-data
+
+      - name: allure generate
+        if: always()
+        run: |
+          export VERSION=2.22.1
+
+          curl -o allure-$VERSION.tgz -Ls https://github.com/allure-framework/allure2/releases/download/$VERSION/allure-$VERSION.tgz
+          tar -zxvf allure-$VERSION.tgz -C .
+
+          ls -la ${{steps.download.outputs.download-path}}
+          ./allure-$VERSION/bin/allure generate ${{steps.download.outputs.download-path}}/* -o ./allure-report
+
+          find ${{steps.download.outputs.download-path}}
+          bundle exec ruby tools/dev/report_generation/support_matrix/generate.rb --allure-data ${{steps.download.outputs.download-path}} > ./allure-report/support_matrix.html
+
+      - name: archive results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-report-${{ github.run_id }}
+          path: |
+            ./allure-report
