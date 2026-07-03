@@ -27,11 +27,11 @@ on:
       metasploit_payloads_commit:
         description: 'metasploit-payloads branch you want to test'
         required: true
-        default: 'master'
+        default: '6.5'
       mettle_commit:
         description: 'mettle branch you want to test'
         required: true
-        default: 'master'
+        default: '6.5'
   push:
     branches-ignore:
       - gh-pages
@@ -61,7 +61,8 @@ jobs:
   build:
     uses: ./.github/workflows/shared_meterpreter_acceptance.yml
     with:
-      metasploit_payloads_commit: ${{ github.event.inputs.metasploit_payloads_commit }}
-      mettle_commit: ${{ github.event.inputs.mettle_commit }}
-      build_metasploit_payloads: ${{ contains(github.event.pull_request.labels.*.name, 'payload-testing-branch') }}
-      build_mettle: ${{ contains(github.event.pull_request.labels.*.name, 'payload-testing-mettle-branch') }}
+      metasploit_payloads_repo: adfoster-r7/metasploit-payloads
+      metasploit_payloads_commit: update-php-meterpreter-errors
+      mettle_commit: ${{ github.event.inputs.mettle_commit || '6.5' }}
+      build_metasploit_payloads: true
+      build_mettle: true
