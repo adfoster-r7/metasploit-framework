@@ -206,7 +206,7 @@ class Request < Packet
   end
 
   # Returns a request packet
-  def to_s
+  def to_s(headers_only: false)
     str = ''
     if self.junk_pipeline
       host = ''
@@ -216,7 +216,7 @@ class Request < Packet
       str << "GET / HTTP/1.1\r\n#{host}Connection: Keep-Alive\r\n\r\n" * self.junk_pipeline
       self.headers['Connection'] = 'Closed'
     end
-    str + super
+    str + super(headers_only: headers_only)
   end
 
   #

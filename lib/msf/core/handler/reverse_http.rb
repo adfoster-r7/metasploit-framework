@@ -83,6 +83,16 @@ module ReverseHttp
         ),
         OptBool.new('IgnoreUnknownPayloads',
           'Whether to drop connections from payloads using unknown UUIDs'
+        ),
+        OptBool.new('HttpTrace',
+          'Show the raw HTTP requests and responses for the handler'
+        ),
+        OptBool.new('HttpTraceHeadersOnly',
+          'Show HTTP headers only in HttpTrace'
+        ),
+        OptString.new('HttpTraceColors',
+          'HTTP request and response colors for HttpTrace (unset to disable)',
+          default: 'red/blu'
         )
       ], Msf::Handler::ReverseHttp)
   end
@@ -260,6 +270,10 @@ module ReverseHttp
     raise ex if (ex)
 
     self.service.server_name = datastore['HttpServerName']
+
+    # Attach an HTTP logger subscriber so that HttpTrace/HttpTraceHeadersOnly/
+    # HttpTraceColors work on the inbound handler side (reverse HTTP/HTTPS).
+    self.service.subscriber = Rex::Proto::Http::HttpLoggerSubscriber.new(logger: self)
 
     # Add the new resource
     all_uris.each {|u|
