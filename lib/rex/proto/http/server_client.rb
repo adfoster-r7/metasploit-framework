@@ -40,6 +40,8 @@ module ServerClient
     # Add any other standard response headers.
     server.add_response_headers(self.request, response)
 
+    server.subscriber.on_response(response)
+
     # Send it off.
     put(response.to_s)
   end

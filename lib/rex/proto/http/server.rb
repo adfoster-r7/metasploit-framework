@@ -60,6 +60,7 @@ class Server
     self.listener        = nil
     self.resources       = {}
     self.server_name     = DefaultServer
+    self.subscriber      = HttpSubscriber.new
   end
 
   # More readable inspect that only shows the url and resources
@@ -224,7 +225,7 @@ class Server
 
   attr_accessor :listen_port, :listen_host, :server_name, :context, :comm
   attr_accessor :ssl, :ssl_cert, :ssl_compression, :ssl_cipher, :ssl_version
-  attr_accessor :listener, :resources
+  attr_accessor :listener, :resources, :subscriber
 
 protected
 
@@ -325,6 +326,7 @@ protected
         request.relative_resource = '/' + request.relative_resource if (request.relative_resource !~ /^\//)
       end
 
+      subscriber.on_request(request)
 
       # If we found the resource handler for this resource, call its
       # procedure.
