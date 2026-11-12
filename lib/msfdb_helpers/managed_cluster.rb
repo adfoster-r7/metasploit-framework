@@ -1,7 +1,9 @@
 # frozen_string_literal: true
 
 require 'etc'
+require 'digest'
 require 'fileutils'
+require 'json'
 require 'pg'
 require 'securerandom'
 require 'shellwords'
@@ -12,6 +14,12 @@ module MsfdbHelpers
   # Security and lifecycle policy for private, per-user clusters only. Distro
   # database-management scripts and Standalone deliberately do not inherit this.
   class ManagedCluster < DbInterface
+    LEGACY_TRUST_RULES = [
+      %r{\Ahost\s+"template1"\s+all\s+127\.0\.0\.1/32\s+trust\s*(?:#.*)?\z},
+      /\Alocal\s+all\s+all\s+trust\s*(?:#.*)?\z/,
+      %r{\Ahost\s+all\s+all\s+(?:127\.0\.0\.1/32|::1/128)\s+trust\s*(?:#.*)?\z}
+    ].freeze
+    INITIALIZATION_OPTIONS = %i[msf_db_name msf_db_user msftest_db_name msftest_db_user db_host db_port db_pool].freeze
     # @param db_path [String] the private cluster's data directory
     # @param options [Hash] msfdb options
     # @param localconf [String] the owning user's configuration directory
@@ -25,51 +33,180 @@ module MsfdbHelpers
 
     # @param msf_pass [String] the application password
     # @param msftest_pass [String] the test application password
+    #   An existing initialization checkpoint supplies the original passwords.
     # @return [Boolean] whether initialization completed
     def init(msf_pass, msftest_pass)
-      raise SecurityError, 'A database directory already exists; use start without reinitializing it' if exists?
-      if File.exist?(@db_conf) || File.symlink?(@db_conf)
-        raise SecurityError, 'Existing database.yml without a private cluster requires manual review; credentials have not been overwritten'
-      end
-
-      FileUtils.mkdir_p(@localconf, mode: 0o700)
-      authentication = server_version.split('.').first.to_i >= 10 ? 'scram-sha-256' : 'md5'
-      # Validate identifiers before creating cluster files or a bootstrap secret.
-      authentication_config(authentication: authentication)
-      password = SecureRandom.hex(32)
-      Dir.mkdir(@db, 0o700)
+      state = if pending_initialization?
+                initialization_state
+              else
+                prepare_initialization!(msf_pass, msftest_pass)
+              end
+      restore_initialization_options!(state)
+      authentication = state.fetch('authentication')
+      check_client_authentication!(authentication)
+      password = state.fetch('bootstrap_password')
       initialized = false
       start_attempted = false
       begin
-        with_password_file(password) { |path| initialize_cluster(path, authentication) }
-        configure_server!(authentication: authentication)
-        write_db_client_auth_config(hba_config, authentication: authentication, bootstrap: true)
-        # A failing startup command can still leave a server running.
-        start_attempted = true
-        raise SecurityError, 'Could not start the password-protected bootstrap database' unless start_cluster
+        if state['stage'] == 'creating'
+          initialize_or_resume_cluster!(password, authentication)
+          update_initialization_stage!(state, 'configuring')
+        end
 
-        create_database_users!(password, msf_pass, msftest_pass)
-        stop!
-        start_attempted = false
-        write_db_client_auth_config(hba_config, authentication: authentication)
-        start_attempted = true
-        raise SecurityError, 'Could not start the secured database' unless start_cluster
+        if state['stage'] == 'configuring'
+          configure_server!(authentication: authentication)
+          write_db_client_auth_config(hba_config, authentication: authentication, bootstrap: true)
+          update_initialization_stage!(state, 'bootstrap')
+        end
 
-        verify_connections!([
-          [@options[:msf_db_name], @options[:msf_db_user], msf_pass],
-          [@options[:msftest_db_name], @options[:msftest_db_user], msftest_pass]
-        ])
+        if state['stage'] == 'bootstrap'
+          ensure_socket_directory! unless Gem.win_platform?
+          start_attempted = true # rubocop:disable Lint/UselessAssignment -- The ensure block uses this if startup or bootstrap raises.
+          unless status == DatabaseStatus::RUNNING || start_cluster
+            raise SecurityError, 'Could not start the password-protected bootstrap database'
+          end
+
+          create_database_users!(password, state.fetch('msf_password'), state.fetch('msftest_password'))
+          stop!
+          start_attempted = false
+          update_initialization_stage!(state, 'finalizing')
+        end
+
+        if state['stage'] == 'finalizing'
+          stop!
+          write_db_client_auth_config(hba_config, authentication: authentication)
+          update_initialization_stage!(state, 'ready')
+        end
+
+        start_attempted = true
+        ensure_socket_directory! unless Gem.win_platform?
+        raise SecurityError, 'Could not start the secured database' unless status == DatabaseStatus::RUNNING || start_cluster
+
+        verify_connections!(initialization_connections(state))
         initialized = true
         true
       ensure
-        password.clear
+        password.clear if password && !password.frozen?
         stop! if start_attempted && !initialized
       end
     end
 
+    # @return [Boolean] whether an initialization checkpoint exists
+    def pending_initialization?
+      File.exist?(initialization_file) || File.symlink?(initialization_file)
+    end
+
+    # Keep credential publication and schema migration in the same initialization attempt.
+    # @yield performs initialization while the per-profile lock is held
+    # @return [Object] the block result
+    def with_initialization_lock
+      FileUtils.mkdir_p(@localconf, mode: 0o700)
+      path = File.join(@localconf, '.msfdb-initialization.lock')
+      raise SecurityError, 'The initialization lock must not be a symbolic link' if File.symlink?(path)
+
+      File.open(path, File::RDWR | File::CREAT, 0o600) do |file|
+        unless file.flock(File::LOCK_EX | File::LOCK_NB)
+          raise SecurityError, 'Another database initialization is running; wait for it to finish before retrying'
+        end
+
+        yield
+      ensure
+        file.flock(File::LOCK_UN)
+      end
+    end
+
+    # Restore the original credentials and options for a pending initialization.
+    # @return [Hash] application and test passwords
+    def initialization_credentials
+      state = initialization_state
+      restore_initialization_options!(state)
+      { msf_password: state.fetch('msf_password'), msftest_password: state.fetch('msftest_password') }
+    end
+
+    # Remove the checkpoint only after credentials and schema have been published.
+    # @return [void]
+    def complete_initialization!
+      File.delete(initialization_file) if pending_initialization?
+    end
+
+    # Remove an empty private socket directory belonging to this cluster.
+    # @return [void]
+    def cleanup_socket_directory
+      return if Gem.win_platform? || !File.file?(socket_directory_file)
+
+      directory = File.read(socket_directory_file)
+      return if directory == @db
+      raise SecurityError, 'The saved socket directory does not match this database' unless directory == socket_directory
+
+      stat = File.lstat(directory)
+      unless stat.directory? && stat.uid == Process.uid && (stat.mode & 0o077).zero?
+        raise SecurityError, "Private socket directory #{directory} is not owned and restricted to the current user"
+      end
+
+      Dir.rmdir(directory)
+    rescue Errno::ENOENT
+      nil
+    rescue Errno::ENOTEMPTY, Errno::EACCES => e
+      warn "Could not remove the private socket directory: #{e.message}"
+    end
+
     # @return [Boolean] whether the private database is running
     def start
+      if pending_initialization?
+        raise SecurityError, 'Database initialization is incomplete; run msfdb --component database init to resume it'
+      end
+
+      warn_insecure_authentication
+      ensure_socket_directory! if File.file?(socket_directory_file)
       status == DatabaseStatus::RUNNING || start_cluster
+    end
+
+    # Warn when a managed cluster still allows passwordless connections.
+    # @return [Boolean] whether trust authentication is present
+    def warn_insecure_authentication
+      return false unless exists? && File.file?(hba_config)
+
+      lines = File.readlines(hba_config)
+      if lines.any? { |line| authentication_include?(line) }
+        warn 'Warning: This database includes additional authentication files that require manual security review.'
+      end
+      return false unless lines.any? { |line| trust_rule?(line) }
+
+      warn 'Warning: This database permits passwordless access. Run msfdb --component database secure to remove the original msfdb trust rules.'
+      true
+    end
+
+    # Remove only authentication rules generated by older versions of msfdb.
+    # @return [Boolean] whether the authentication file is secured
+    def secure
+      raise SecurityError, 'Resume the incomplete initialization before securing this database' if pending_initialization?
+      raise SecurityError, 'No private database cluster exists' unless exists? && File.file?(hba_config)
+
+      lines = File.readlines(hba_config)
+      if lines.any? { |line| authentication_include?(line) }
+        raise SecurityError, 'The authentication file includes other files; review the complete configuration manually'
+      end
+
+      trust_lines = lines.select { |line| trust_rule?(line) }
+      if trust_lines.any? { |line| LEGACY_TRUST_RULES.none? { |pattern| pattern.match?(line.strip) } }
+        raise SecurityError, 'The authentication file contains custom trust rules; review them manually before securing this cluster'
+      end
+
+      if trust_lines.empty?
+        puts 'The private database authentication file has no trust rules'
+        return true
+      end
+
+      was_running = status == DatabaseStatus::RUNNING
+      stop! if was_running
+      secured = lines.reject { |line| LEGACY_TRUST_RULES.any? { |pattern| pattern.match?(line.strip) } }.join
+      atomic_write(hba_config, secured)
+      if was_running && !start_cluster
+        raise SecurityError, 'The authentication file was secured, but the database could not restart; inspect its log'
+      end
+
+      puts 'Removed legacy passwordless authentication rules without changing database contents'
+      true
     end
 
     # @return [Boolean] whether the private database was restarted
@@ -93,11 +230,112 @@ module MsfdbHelpers
     # @option options [String] :authentication password authentication method
     # @option options [Boolean] :bootstrap whether this is bootstrap configuration
     # @return [void]
-    def write_db_client_auth_config(client_auth_config = hba_config, **)
-      super(client_auth_config, **)
+    def write_db_client_auth_config(client_auth_config = hba_config, **options)
+      super(client_auth_config, **options)
     end
 
     protected
+
+    def initialization_file
+      File.join(@localconf, '.msfdb-initialization.json')
+    end
+
+    def prepare_initialization!(msf_pass, msftest_pass)
+      raise SecurityError, 'A database directory already exists; use start without reinitializing it' if exists?
+      if File.exist?(@db_conf) || File.symlink?(@db_conf)
+        raise SecurityError, 'Existing database.yml without a private cluster requires manual review; credentials have not been overwritten'
+      end
+
+      authentication = server_version.split('.').first.to_i >= 10 ? 'scram-sha-256' : 'md5'
+      check_client_authentication!(authentication)
+      validate_application_names!(authentication)
+      FileUtils.mkdir_p(@localconf, mode: 0o700)
+      state = {
+        'version' => 1, 'stage' => 'creating', 'db_path' => @db, 'db_conf' => @db_conf,
+        'authentication' => authentication, 'bootstrap_password' => SecureRandom.hex(32),
+        'msf_password' => msf_pass, 'msftest_password' => msftest_pass,
+        'options' => INITIALIZATION_OPTIONS.to_h { |key| [key.to_s, @options[key]] }
+      }
+      atomic_write(initialization_file, JSON.generate(state))
+      state
+    end
+
+    def validate_application_names!(authentication)
+      authentication_config(authentication: authentication)
+      roles = [@options[:msf_db_user], @options[:msftest_db_user]]
+      databases = [@options[:msf_db_name], @options[:msftest_db_name]]
+      if (roles + databases).any? { |name| !name.is_a?(String) } || roles.uniq.length != 2 || roles.include?('postgres') ||
+         databases.uniq.length != 2 || (databases & %w[postgres template0 template1]).any?
+        raise SecurityError, 'Application roles and databases must be distinct from each other and PostgreSQL system names'
+      end
+    rescue ArgumentError => e
+      raise SecurityError, "Invalid private database name or role: #{e.message}"
+    end
+
+    def check_client_authentication!(authentication)
+      if authentication == 'scram-sha-256' && PG.library_version < 100_000
+        raise SecurityError, 'PostgreSQL 10 or later requires a libpq client with SCRAM support; upgrade libpq and the pg gem before initializing'
+      end
+    end
+
+    def initialization_state
+      stat = File.lstat(initialization_file)
+      if !stat.file? || stat.symlink? || (!Gem.win_platform? && (stat.uid != Process.uid || (stat.mode & 0o077) != 0))
+        raise SecurityError, 'The initialization checkpoint is not a private file owned by the current user'
+      end
+
+      state = JSON.parse(File.read(initialization_file))
+      unless state.is_a?(Hash) && state['version'] == 1 && state['db_path'] == @db && state['db_conf'] == @db_conf &&
+             %w[creating configuring bootstrap finalizing ready].include?(state['stage']) &&
+             %w[md5 scram-sha-256].include?(state['authentication']) && state['options'].is_a?(Hash) &&
+             %w[bootstrap_password msf_password msftest_password].all? { |key| state[key].is_a?(String) && !state[key].empty? } &&
+             INITIALIZATION_OPTIONS.all? { |key| state['options'].key?(key.to_s) }
+        raise SecurityError, 'The initialization checkpoint is invalid; inspect it before retrying'
+      end
+
+      state
+    rescue JSON::ParserError
+      raise SecurityError, 'The initialization checkpoint is invalid; inspect it before retrying'
+    end
+
+    def restore_initialization_options!(state)
+      INITIALIZATION_OPTIONS.each { |key| @options[key] = state.fetch('options').fetch(key.to_s) }
+      validate_application_names!(state.fetch('authentication'))
+    end
+
+    def update_initialization_stage!(state, stage)
+      state['stage'] = stage
+      atomic_write(initialization_file, JSON.generate(state))
+    end
+
+    def initialize_or_resume_cluster!(password, authentication)
+      Dir.mkdir(@db, 0o700) unless exists?
+      unless Dir.empty?(@db) && !File.exist?(hba_config)
+        raise SecurityError, "Database initialization was interrupted while creating #{@db}; inspect the partial cluster before retrying"
+      end
+
+      with_password_file(password) { |path| initialize_cluster(path, authentication) }
+    end
+
+    def initialization_connections(state)
+      [
+        [@options[:msf_db_name], @options[:msf_db_user], state.fetch('msf_password')],
+        [@options[:msftest_db_name], @options[:msftest_db_user], state.fetch('msftest_password')]
+      ]
+    end
+
+    def trust_rule?(line)
+      quoted = false
+      line.each_char.with_index do |character, index|
+        quoted = !quoted if character == '"'
+        return line[0...index].match?(/\btrust\s*\z/) if character == '#' && !quoted
+      end
+      line.match?(/\btrust\s*\z/)
+    end
+
+    def authentication_include?(line)
+      line.match?(/\A\s*include(?:_if_exists|_dir)?\s+/)
+    end
 
     def configure_server!(authentication:)
       File.chmod(0o700, @db) unless Gem.win_platform?
@@ -110,7 +348,9 @@ module MsfdbHelpers
       contents << "listen_addresses = '127.0.0.1'\n"
       contents << "password_encryption = 'scram-sha-256'\n" if authentication == 'scram-sha-256'
       unless Gem.win_platform?
-        contents << "unix_socket_directories = #{postgresql_literal(@db)}\nunix_socket_permissions = 0700\n"
+        directory = ensure_socket_directory!
+        contents << "unix_socket_directories = #{postgresql_literal(directory)}\nunix_socket_permissions = 0700\n"
+        atomic_write(socket_directory_file, directory)
       end
       atomic_write(postgresql_config, contents)
     end
@@ -128,31 +368,40 @@ module MsfdbHelpers
       end
     end
 
-    def protect_directory!(path)
-      unless Gem.win_platform?
-        File.chmod(0o700, path)
-        return
-      end
-      checked_command!(['icacls', path, '/inheritance:r', '/grant:r', "*#{windows_sid}:(OI)(CI)F", '*S-1-5-18:(OI)(CI)F'])
+    def socket_directory_file
+      File.join(@db, '.msfdb-socket-directory')
     end
 
-    def windows_sid
-      @windows_sid ||= begin
-        script = "$ErrorActionPreference = 'Stop'; [System.Security.Principal.WindowsIdentity]::GetCurrent().User.Value"
-        output, _error, result = Open3.capture3('powershell.exe', '-NoProfile', '-NonInteractive', '-Command', script)
-        sid = output.strip
-        unless result.success? && sid.match?(/\AS-\d+(?:-\d+)+\z/)
-          raise SecurityError, 'Could not identify the Windows account for private database ACLs'
-        end
+    def socket_directory
+      # Leave room for the socket filename and the shorter sockaddr_un limit on macOS.
+      # postgresql-common does not parse quoted directory lists and uses the
+      # directory in a shell command, so use a simple path for those characters.
+      return @db if "#{@db}/.s.PGSQL.#{@options[:db_port]}".bytesize <= 90 && !@db.match?(/[,'"\r\n]/)
 
-        sid
+      File.join('/tmp', "msfdb-#{Process.uid}-#{Digest::SHA256.hexdigest(@db)[0, 16]}")
+    end
+
+    def ensure_socket_directory!
+      directory = socket_directory
+      return directory if directory == @db
+
+      begin
+        Dir.mkdir(directory, 0o700)
+      rescue Errno::EEXIST
+        # A persistent directory is reused after a restart or after /tmp is cleaned.
       end
+      stat = File.lstat(directory)
+      unless stat.directory? && stat.uid == Process.uid && (stat.mode & 0o077).zero?
+        raise SecurityError, "Private socket directory #{directory} is not owned and restricted to the current user"
+      end
+
+      directory
     end
 
     def create_database_users!(password, msf_pass, msftest_pass)
       # An explicit empty hostaddr prevents PGHOSTADDR from overriding the socket.
       bootstrap = {
-        host: @db,
+        host: socket_directory,
         hostaddr: '',
         port: @options[:db_port],
         user: 'postgres',
@@ -162,10 +411,20 @@ module MsfdbHelpers
       bootstrap.merge!(host: '127.0.0.1', hostaddr: '127.0.0.1') if Gem.win_platform?
       PG.connect(**bootstrap, dbname: 'postgres') do |connection|
         [[@options[:msf_db_user], msf_pass], [@options[:msftest_db_user], msftest_pass]].each do |user, secret|
-          connection.exec("CREATE ROLE #{connection.quote_ident(user)} LOGIN NOSUPERUSER NOCREATEROLE CREATEDB PASSWORD #{connection.escape_literal(secret)}")
+          role = connection.quote_ident(user)
+          exists = connection.exec_params('SELECT 1 FROM pg_roles WHERE rolname = $1', [user]).any?
+          operation = exists ? 'ALTER' : 'CREATE'
+          connection.exec("#{operation} ROLE #{role} LOGIN NOSUPERUSER NOCREATEROLE CREATEDB PASSWORD #{connection.escape_literal(secret)}")
         end
         [@options[:msf_db_name], @options[:msftest_db_name]].each do |database|
-          connection.exec("CREATE DATABASE #{connection.quote_ident(database)} OWNER #{connection.quote_ident(@options[:msf_db_user])}")
+          result = connection.exec_params('SELECT pg_get_userbyid(datdba) FROM pg_database WHERE datname = $1', [database])
+          if result.any?
+            unless result.getvalue(0, 0) == @options[:msf_db_user]
+              raise SecurityError, 'An existing initialization database has an unexpected owner; inspect the partial cluster'
+            end
+          else
+            connection.exec("CREATE DATABASE #{connection.quote_ident(database)} OWNER #{connection.quote_ident(@options[:msf_db_user])}")
+          end
         end
       end
       # PostgreSQL 15+ no longer grants public schema creation to PUBLIC. Keep

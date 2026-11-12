@@ -131,6 +131,10 @@ end
 
 def status_db
   update_db_port
+  if @db_driver.respond_to?(:pending_initialization?) && @db_driver.pending_initialization?
+    warn 'Database initialization is incomplete; run msfdb --component database init to resume it.'
+  end
+  @db_driver.warn_insecure_authentication if @db_driver.respond_to?(:warn_insecure_authentication)
 
   case @db_driver.status
   when DatabaseStatus::RUNNING
@@ -145,6 +149,10 @@ def status_db
 end
 
 def start_db
+  if @db_driver.respond_to?(:pending_initialization?) && @db_driver.pending_initialization?
+    raise MsfdbHelpers::SecurityError, 'Database initialization is incomplete; run msfdb --component database init to resume it'
+  end
+
   case @db_driver.status
   when DatabaseStatus::NOT_FOUND
     print_error 'No database found.'
@@ -177,20 +185,37 @@ def restart_db
 end
 
 def init_db
-  case @db_driver.status
-  when DatabaseStatus::RUNNING
-    puts 'Existing database running'
-    return
-
-  when DatabaseStatus::INACTIVE
-    puts 'Existing database found, attempting to start it'
-    raise MsfdbHelpers::SecurityError, 'Could not start the existing database' unless @db_driver.start
-
-    return
+  if @db_driver.respond_to?(:with_initialization_lock)
+    return @db_driver.with_initialization_lock { initialize_db }
   end
 
-  if @db_driver.exists? && !@options[:delete_existing_data] && !load_db_config
-    raise MsfdbHelpers::SecurityError, 'Could not load existing database credentials; repair the configuration without reinitializing'
+  initialize_db
+end
+
+def initialize_db
+  pending = @db_driver.respond_to?(:pending_initialization?) && @db_driver.pending_initialization?
+  if pending
+    credentials = @db_driver.initialization_credentials
+    @msf_pass = credentials.fetch(:msf_password)
+    @msftest_pass = credentials.fetch(:msftest_password)
+    puts 'Resuming the incomplete private database initialization'
+  else
+    case @db_driver.status
+    when DatabaseStatus::RUNNING
+      @db_driver.warn_insecure_authentication if @db_driver.respond_to?(:warn_insecure_authentication)
+      puts 'Existing database running'
+      return
+
+    when DatabaseStatus::INACTIVE
+      puts 'Existing database found, attempting to start it'
+      raise MsfdbHelpers::SecurityError, 'Could not start the existing database' unless @db_driver.start
+
+      return
+    end
+
+    if @db_driver.exists? && !@options[:delete_existing_data] && !load_db_config
+      raise MsfdbHelpers::SecurityError, 'Could not load existing database credentials; repair the configuration without reinitializing'
+    end
   end
 
   # Generate new database passwords if not already assigned
@@ -202,10 +227,11 @@ def init_db
 
   puts 'Creating initial database schema'
   Dir.chdir(@framework) do
-    unless @db_driver.run_cmd('bundle exec rake db:migrate').zero?
+    unless @db_driver.migrate_database(@db_conf).zero?
       raise MsfdbHelpers::SecurityError, 'Database initialization did not complete: schema migration failed. Inspect the migration error without reinitializing the database.'
     end
   end
+  @db_driver.complete_initialization! if @db_driver.respond_to?(:complete_initialization!)
   puts 'Database initialization successful'.green.bold.to_s
 end
 
@@ -245,28 +271,38 @@ end
 def write_db_config
   # Write a default database config file
   Dir.mkdir(@localconf) unless File.directory?(@localconf)
-  File.open(@db_conf, 'w', 0o600) do |f|
-    f.chmod(0o600) unless Gem.win_platform?
-    f.puts <<~EOF
-      development: &pgsql
-        adapter: postgresql
-        database: #{@options[:msf_db_name].to_json}
-        username: #{@options[:msf_db_user].to_json}
-        password: #{@msf_pass.to_json}
-        host: #{@options[:db_host].to_json}
-        port: #{@options[:db_port]}
-        pool: #{@options[:db_pool]}
+  contents = <<~EOF
+    development: &pgsql
+      adapter: postgresql
+      database: #{@options[:msf_db_name].to_json}
+      username: #{@options[:msf_db_user].to_json}
+      password: #{@msf_pass.to_json}
+      host: #{@options[:db_host].to_json}
+      port: #{@options[:db_port]}
+      pool: #{@options[:db_pool]}
 
-      production: &production
-        <<: *pgsql
+    production: &production
+      <<: *pgsql
 
-      test:
-        <<: *pgsql
-        database: #{@options[:msftest_db_name].to_json}
-        username: #{@options[:msftest_db_user].to_json}
-        password: #{@msftest_pass.to_json}
-    EOF
+    test:
+      <<: *pgsql
+      database: #{@options[:msftest_db_name].to_json}
+      username: #{@options[:msftest_db_user].to_json}
+      password: #{@msftest_pass.to_json}
+  EOF
+  if @db_driver.respond_to?(:pending_initialization?) && @db_driver.pending_initialization? && File.exist?(@db_conf) && File.binread(@db_conf) != contents.b
+    raise MsfdbHelpers::SecurityError, 'Existing database.yml differs from the pending initialization; inspect it before retrying'
   end
+
+  @db_driver.write_private_file(@db_conf, contents)
+end
+
+def secure_db
+  unless @db_driver.respond_to?(:secure)
+    raise MsfdbHelpers::SecurityError, 'Externally managed databases must be secured by their administrator'
+  end
+
+  @db_driver.secure
 end
 
 # Loads the database config, tolerating Psych versions that do not accept the aliases keyword.
@@ -813,6 +849,7 @@ def parse_args(args)
       start    start the component
       stop     stop the component
       restart  restart the component
+      secure   remove legacy trust authentication from a private database
   USAGE
 
   parser = OptionParser.new do |opts|
@@ -838,6 +875,7 @@ def parse_args(args)
     opts.separator('Database Options:')
     opts.on('--msf-db-name NAME', "Database name (default: #{@options[:msf_db_name]})") { |n|
       @options[:msf_db_name] = n
+      @options[:msf_db_name_specified] = true
     }
 
     opts.on('--msf-db-user-name USER', "Database username (default: #{@options[:msf_db_user]})") { |u|
@@ -1032,7 +1070,8 @@ if File.expand_path($PROGRAM_NAME) == File.expand_path(__FILE__)
           status: :status_db,
           start: :start_db,
           stop: :stop_db,
-          restart: :restart_db
+          restart: :restart_db,
+          secure: :secure_db
       },
       webservice: {
           init: :init_web_service,
@@ -1047,6 +1086,10 @@ if File.expand_path($PROGRAM_NAME) == File.expand_path(__FILE__)
 
   parse_args(ARGV)
   update_db_port
+  if !@connection_string && !@options[:msf_db_name_specified] && File.directory?(@db) && File.file?(@db_conf)
+    production = load_db_config_yaml['production']
+    @options[:msf_db_name] = production['database'] if production.is_a?(Hash) && production['database'].is_a?(String)
+  end
 
   if @connection_string
     @db_driver = MsfdbHelpers::Standalone.new(options: @options, db_conf: @db_conf, connection_string: @connection_string)

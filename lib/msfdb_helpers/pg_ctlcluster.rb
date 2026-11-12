@@ -18,10 +18,12 @@ module MsfdbHelpers
 
         if @options[:delete_existing_data]
           puts "Deleting all data at #{@db}"
+          cleanup_socket_directory
           run_cmd("pg_dropcluster #{@pg_version} #{@options[:msf_db_name].shellescape}")
           FileUtils.rm_rf(@db)
           FileUtils.rm_rf("#{@localconf}/.local/etc/postgresql")
           FileUtils.rm_r(@db_conf, force: true)
+          complete_initialization!
         end
       else
         puts "No data at #{@db}, doing nothing"
@@ -42,9 +44,10 @@ module MsfdbHelpers
 
     # @param cmd [String, Array<String>] command and arguments
     # @param env [Hash] additional environment variables
+    # @param show_output_on_failure [Boolean] print captured output when the command fails
     # @return [Integer] process exit status
-    def run_cmd(cmd, env: {})
-      super(cmd, env: env.merge('PG_CLUSTER_CONF_ROOT' => @pg_cluster_conf_root))
+    def run_cmd(cmd, env: {}, show_output_on_failure: false)
+      super(cmd, env: env.merge('PG_CLUSTER_CONF_ROOT' => @pg_cluster_conf_root), show_output_on_failure: show_output_on_failure)
     end
 
     protected

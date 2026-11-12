@@ -9,7 +9,9 @@ module MsfdbHelpers
 
         if @options[:delete_existing_data]
           puts "Deleting all data at #{@db}"
+          cleanup_socket_directory
           FileUtils.rm_rf(@db)
+          complete_initialization!
         end
 
         if @options[:delete_existing_data]
